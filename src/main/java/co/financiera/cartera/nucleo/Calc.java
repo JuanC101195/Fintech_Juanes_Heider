@@ -55,9 +55,15 @@ public final class Calc {
         return a.compareTo(b) >= 0 ? a : b;
     }
 
-    /** max(0, valor): ningún saldo ni pago puede ser negativo. */
+    /** Por debajo de esto un saldo es ruido de DECIMAL128 (del orden de 1e-27), no dinero. */
+    private static final BigDecimal RUIDO = new BigDecimal("1e-12");
+
+    /**
+     * max(0, valor): ningún saldo ni pago puede ser negativo. También lleva a cero el ruido de
+     * las restas en DECIMAL128 para que no aparezcan capital vencido o mora de 1e-27.
+     */
     public static BigDecimal noNegativo(BigDecimal valor) {
-        return max(CERO, valor);
+        return valor.compareTo(RUIDO) < 0 ? CERO : valor;
     }
 
     public static boolean esCero(BigDecimal valor) {

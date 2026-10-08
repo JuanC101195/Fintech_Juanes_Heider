@@ -1,5 +1,11 @@
 package co.financiera.cartera.contabilidad;
 
+import co.financiera.cartera.contabilidad.reglas.AbonoExtraordinario;
+import co.financiera.cartera.contabilidad.reglas.CobranzaYMora;
+import co.financiera.cartera.contabilidad.reglas.DacionEnPago;
+import co.financiera.cartera.contabilidad.reglas.PagoInferior;
+import co.financiera.cartera.contabilidad.reglas.RecaudoCuota;
+import co.financiera.cartera.contabilidad.reglas.Retoma;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,19 +27,12 @@ public final class Contabilizador {
      */
     public static Contabilizador estandar() {
         List<ReglaContable> reglas = new ArrayList<>();
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.RecaudoCuota()); // caso 1
-        // reglas.add(new AbonoExtraordinario()); // casos 5, 6 y 7
-        // reglas.add(new RecaudoCuota());        // caso 1
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.AbonoExtraordinario()); // casos 5, 6 y 7
-        // reglas.add(new PagoInferior());        // caso 8
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.PagoInferior()); // caso 8
-        // reglas.add(new CobranzaYMora());       // caso 9
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.DacionEnPago()); // caso 3
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.CobranzaYMora()); // caso 9
-        // reglas.add(new DacionEnPago());        // caso 3
-        // reglas.add(new Retoma());              // caso 4
-        // reglas.add(new DacionEnPago());        // caso 3
-        reglas.add(new co.financiera.cartera.contabilidad.reglas.Retoma()); // caso 4
+        reglas.add(new RecaudoCuota());        // caso 1: cuota pagada completa y a tiempo
+        reglas.add(new AbonoExtraordinario()); // casos 5, 6 y 7: prepago y abono extra
+        reglas.add(new PagoInferior());        // caso 8: pago incompleto y reclasificación a vencida
+        reglas.add(new CobranzaYMora());       // caso 9: pago tardío con cobranza y mora
+        reglas.add(new DacionEnPago());        // caso 3: moto recibida por menos que la deuda
+        reglas.add(new Retoma());              // caso 4: moto recibida por más que la deuda
         return new Contabilizador(reglas);
     }
 
