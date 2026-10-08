@@ -23,6 +23,8 @@ public final class Contabilizador {
         List<ReglaContable> reglas = new ArrayList<>();
         reglas.add(new co.financiera.cartera.contabilidad.reglas.RecaudoCuota()); // caso 1
         // reglas.add(new AbonoExtraordinario()); // casos 5, 6 y 7
+        // reglas.add(new RecaudoCuota());        // caso 1
+        reglas.add(new co.financiera.cartera.contabilidad.reglas.AbonoExtraordinario()); // casos 5, 6 y 7
         // reglas.add(new PagoInferior());        // caso 8
         // reglas.add(new CobranzaYMora());       // caso 9
         reglas.add(new co.financiera.cartera.contabilidad.reglas.DacionEnPago()); // caso 3
