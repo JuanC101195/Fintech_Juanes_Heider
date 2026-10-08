@@ -171,6 +171,10 @@ public final class MotorCartera {
             saldoPlan = noNegativo(restar(saldoPlan, capitalContractual));
             boolean pagoCompleto = recibido.compareTo(restar(cuotaTotal, Calc.EPSILON_SALDO)) >= 0;
 
+            // La fila reporta la cuota que se cobró esta semana: un abono a menor cuota (caso 7) cambia
+            // la cuota solo desde la semana siguiente (Caso7 F46 = MIN(B20, D + E); F47 = PMT(...)).
+            BigDecimal cuotaDeLaSemana = cuota;
+
             // 4. Abono extraordinario o prepago, después de la cuota de la semana.
             BigDecimal abonoAplicado = CERO;
             if (abono != null) {
@@ -240,7 +244,7 @@ public final class MotorCartera {
             if (evento == null) {
                 evento = describir(periodo, pago, pagoCompleto, dias, recibido);
             }
-            return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuota, interes, mora,
+            return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDeLaSemana, interes, mora,
                     capitalContractual, cobranza, servicios, recibido, pagoCobranza, pagoMora, pagoInteres, pagoServicios,
                     pagoCapital, abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios, capitalVencido,
                     max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, deuda, inventario, cxcFcc, cxpDeudor, giro,
