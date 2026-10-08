@@ -1,0 +1,64 @@
+celda,etiqueta,valor
+B3,Monto financiado (valor final colocación),5904400
+B4,Valor de la moto,5100000
+B5,Ítems de alistamiento (subtotal),664400
+B6,   a. Matrícula y RUNT,171100
+B7,   b. SOAT,373300
+B8,   c. Constitución de prenda,120000
+B9,Tecnología (subtotal),80000
+B10,   GPS y plataforma,80000
+B11,Gastos comerciales,60000
+B12,Plazo (meses),20
+B13,Semanas por año,52
+B14,Semanas por mes,4.333333333333333
+B15,Número de cuotas semanales,86
+B16,Tasa EA base,0.8732
+B17,Tasa semanal,0.012143295980573843
+B18,Tasa diaria,0.0017210634375772749
+B19,Tasa mensual equivalente,0.05369603483312746
+B20,Cuota financiera semanal,111014.82187676849
+B24,FCC. Porcentaje mensual sobre financiación,0.03
+B25,Asistencia mensual,40000
+B26,Seguro de vida. Porcentaje mensual sobre financiación,0.0025
+B27,"IVA servicios gravados (asistencias, garantías)",0.19
+B28,FCC semanal incluye IVA ,48643.172307692315
+B29,Asistencia semanal incluye IVA,10984.615384615387
+B30,Seguro vida por cuota (excluido de IVA),3406.3846153846157
+B31,Servicios totales por cuota,63034.172307692315
+B32,Pago total base al cliente,174048.9941844608
+C36,Caso 2 · Cambio de tasa · Mes cambio de tasa,11
+C37,Caso 2 · EA nueva,0.8
+C38,Caso 2 · Tasa semanal nueva,0.011367716673677863
+C39,Caso 2 · Periodo desde el que aplica cambio tasa,44
+C40,Caso 3 · Dación en pago · Último mes pagado,7
+C41,Caso 3 · Mes del siniestro,8
+C42,Caso 3 · Valor dación,3000000
+C43,Caso 3 · Último periodo pagado,30
+C44,Caso 3 · Periodo siniestro,34
+C45,Caso 4 · Retoma · Mes inicio incumplimiento,4
+C46,Caso 4 · Mes retoma,4
+C47,Caso 4 · Avalúo moto,6800000
+C48,Caso 4 · Último periodo pagado,13
+C49,Caso 4 · Periodo retoma,17
+C50,Caso 5 · Prepago total · Mes prepago total,10
+C51,Caso 5 · Periodo prepago,43
+C52,Caso 6 · Menor plazo · Mes abono extra,10
+C53,Caso 6 · Valor abono extra,2000000
+C54,Caso 6 · Periodo abono,43
+C55,Caso 7 · Menor cuota · Mes abono extra,10
+C56,Caso 7 · Valor abono extra,2000000
+C57,Caso 7 · Periodo abono,43
+C58,Caso 8 · Pago inferior · Mes pago inferior,10
+C59,Caso 8 · % cuota total pagado,0.4
+C60,Caso 8 · Periodo evento,43
+C61,Caso 8 · Plazo límite permitido (semanas),100
+C62,Caso 9 · Cobranza · Mes inicio pagos tardíos,10
+C63,Caso 9 · Días atraso por cuota,14
+C64,Caso 9 · Gasto cobranza diario,3000
+C65,Caso 9 · Gasto cobranza por pago,42000
+C66,Caso 9 · Periodo inicio,43
+C67,Caso 9 · Plazo límite permitido (semanas),120
+B71,Dinero,1
+B72,Tasa,1e-06
+B73,Conteo,0
+B74,Exacto,0
