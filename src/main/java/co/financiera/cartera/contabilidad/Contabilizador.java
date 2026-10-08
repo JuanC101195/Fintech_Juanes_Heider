@@ -26,7 +26,7 @@ public final class Contabilizador {
         // reglas.add(new PagoInferior());        // caso 8
         // reglas.add(new CobranzaYMora());       // caso 9
         // reglas.add(new DacionEnPago());        // caso 3
-        // reglas.add(new Retoma());              // caso 4
+        reglas.add(new co.financiera.cartera.contabilidad.reglas.Retoma()); // caso 4
         return new Contabilizador(reglas);
     }
 
