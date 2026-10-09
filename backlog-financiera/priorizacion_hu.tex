@@ -1,0 +1,773 @@
+\documentclass[11pt,a4paper]{article}
+
+% Compila en Overleaf con pdfLaTeX (configuración por defecto).
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage[table]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable,skins}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+\definecolor{primario}{HTML}{006B5E}
+\definecolor{suave}{HTML}{E6F2EF}
+\definecolor{alerta}{HTML}{B3261E}
+\definecolor{gris}{HTML}{5F6B68}
+
+\hypersetup{colorlinks=true,linkcolor=primario,urlcolor=primario}
+\setlist{itemsep=2pt,topsep=4pt}
+\renewcommand{\arraystretch}{1.25}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small Motor de reglas de cartera · Financiera}
+\rhead{\small Priorización de historias de usuario}
+\cfoot{\small\thepage}
+
+% ── Gherkin ──────────────────────────────────────────────────────────────────
+\newtcolorbox{gherkin}{breakable,enhanced,colback=suave,colframe=primario,
+  boxrule=0.4pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt,fontupper=\small\ttfamily}
+\newcommand{\kw}[1]{\textbf{\color{primario}#1}}
+\newcommand{\nv}[1]{\par\hspace*{#1em}}
+
+% ── Historia de usuario ──────────────────────────────────────────────────────
+\newcommand{\hu}[5]{%
+  \subsection*{#1 · #2}
+  \noindent\textbf{Prioridad:} #3 \quad\textbf{Épica:} #4\par\smallskip
+  \noindent #5\par\smallskip}
+\newcommand{\como}[3]{\textbf{Como} #1, \textbf{quiero} #2, \textbf{para} #3.}
+\newcommand{\paraht}[2]{\textbf{Para} #1, \textbf{se necesita} #2.}
+\newcommand{\nota}[1]{\par\smallskip\noindent{\small\color{gris}\textit{Nota: #1}}}
+
+\newcommand{\must}{\colorbox{alerta}{\color{white}\textbf{\small Must}}}
+\newcommand{\should}{\colorbox{primario}{\color{white}\textbf{\small Should}}}
+\newcommand{\could}{\colorbox{gris}{\color{white}\textbf{\small Could}}}
+\newcommand{\wont}{\colorbox{gray!40}{\textbf{\small Won't (ahora)}}}
+
+\title{\color{primario}\textbf{Motor de reglas de cartera de motos}\\[4pt]
+\large Contrato de capacidad y priorización de historias de usuario}
+\author{Proyecto Financiera · Azure DevOps \texttt{motosdelcaribe/Financiera}}
+\date{8 de octubre de 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{tcolorbox}[colback=white,colframe=gris,boxrule=0.3pt,arc=2pt]
+\small
+\textbf{Cómo se hizo.} Se aplicó la skill \texttt{product-capability} del repositorio ECC
+(\texttt{affaan-m/ECC}): primero se fija qué debe ser cierto antes de programar (capacidad,
+restricciones, contrato, lo que no se hace, preguntas abiertas) y de ahí sale el orden de trabajo.
+Las reglas vienen del Excel \textit{Casos Operaciones V2 mejorado.xlsx} (Diego González);
+las cifras de los escenarios se verificaron contra ese Excel.
+Arquitectura decidida: \textbf{monolito modular}. El backlog separa historias de usuario (HU)
+e historias técnicas (HT).
+\end{tcolorbox}
+
+\tableofcontents
+\newpage
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Capacidad}
+
+Un \textbf{motor de reglas de cartera} para créditos de moto con cuotas semanales que, ante cada
+abono registrado en el CRM, identifica solo el caso que aplica (pago normal, pago inferior, pago
+tardío, abono extra, prepago, cambio de tasa, dación o retoma), lo aplica con las reglas del Excel
+y genera el asiento contable en partida doble. El front de los asesores solo origina el crédito y
+muestra el plan de la operación normal (caso~1). Lo demás ocurre entre el CRM y el motor, sin
+pantallas.
+
+\begin{itemize}
+  \item \textbf{Actor principal:} el CRM (sistema) y, detrás, el área de cartera y contabilidad.
+  \item \textbf{Resultado después de salir:} ningún abono se aplica ni se contabiliza a mano.
+  \item \textbf{Señal de éxito:} las 33 pruebas de la hoja \textit{Validaciones} pasan con
+        tolerancia de 1~COP y los asientos cuadran el 100~\% de las veces.
+\end{itemize}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Restricciones}
+
+\subsection*{Reglas de negocio fijas (del Excel)}
+\begin{itemize}
+  \item Cuotas semanales: 52 semanas/año, $\lfloor \text{meses}\times 52/12 \rfloor$ cuotas
+        (20 meses $\Rightarrow$ 86 cuotas).
+  \item Tasa semanal $= (1+\text{EA})^{1/52}-1$; amortización francesa (PMT).
+  \item Monto financiado $=$ moto $+$ alistamiento $+$ tecnología $+$ gastos comerciales.
+  \item Servicios por cuota: FCC (3~\% mensual $+$ IVA), asistencia (40.000/mes $+$ IVA),
+        seguro de vida (0,25~\% mensual, sin IVA).
+  \item Prelación (según fórmulas): cobranza $\rightarrow$ mora $\rightarrow$ interés corriente
+        $\rightarrow$ servicios $\rightarrow$ capital. \textit{Pendiente de confirmar.}
+\end{itemize}
+
+\subsection*{Invariantes (nunca se pueden romper)}
+\begin{enumerate}
+  \item El saldo de capital nunca es negativo.
+  \item Todo asiento cuadra: débitos $=$ créditos (tolerancia 1~COP).
+  \item La suma de la distribución de un abono es igual al valor del abono.
+  \item Un mismo abono (mismo identificador) nunca se aplica dos veces.
+  \item Un crédito cancelado o cerrado por evento no recibe abonos.
+  \item Ningún movimiento se borra: los errores se corrigen con reversos.
+  \item Cada movimiento guarda la versión de reglas y de parámetros con que se calculó.
+\end{enumerate}
+
+\subsection*{Restricciones regulatorias y técnicas}
+\begin{itemize}
+  \item La tasa no supera la usura de la modalidad; si la supera: usura $-$ 1 punto.
+  \item Datos personales según la Ley 1581 de 2012.
+  \item Cálculo con decimales exactos (nunca punto flotante).
+  \item Arquitectura: monolito modular (un servicio, una base de datos, módulos con fronteras).
+\end{itemize}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Contrato de implementación}
+
+\subsection*{Actores y superficies}
+\begin{tabularx}{\linewidth}{>{\bfseries}l X}
+\toprule
+Actor & Superficie \\
+\midrule
+Asesor del concesionario & Front React: cotizar, originar, plan de la operación normal. \\
+CRM & API: registrar abono, consultar crédito; recibe avisos de cambio de estado. \\
+Contabilidad & Exportación de asientos y reporte de terceros. \\
+Procesos programados & Cierre diario, revisión de usura, liquidación mensual. \\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Estados del crédito y transiciones}
+\begin{center}
+\begin{tabular}{l c l l}
+\toprule
+Desde & & Hacia & Evento \\
+\midrule
+Originado & $\rightarrow$ & Vigente al día & Desembolso \\
+Vigente al día & $\rightarrow$ & En mora & Pago inferior o cuota vencida sin pago \\
+En mora & $\rightarrow$ & Vigente al día & Pagos que cubren todo lo vencido \\
+Vigente al día & $\rightarrow$ & Cancelado & Prepago total o última cuota pagada \\
+En mora & $\rightarrow$ & Cancelado & Pago de todo lo adeudado \\
+En mora & $\rightarrow$ & Cerrado por evento & Dación en pago o retoma \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Módulos del monolito}
+\begin{tabularx}{\linewidth}{>{\ttfamily}l X}
+\toprule
+\normalfont\bfseries Módulo & \bfseries Responsabilidad \\
+\midrule
+nucleo-calculo & Reglas puras de los casos 1 a 9; sin base de datos ni HTTP. \\
+creditos & Originación, historial de movimientos, estados, versiones. \\
+abonos & Clasificador del caso, prelación, idempotencia, reversos. \\
+contabilidad & Plan de cuentas, asientos, cuadre, exportación. \\
+integracion-crm & API, avisos con reintentos (outbox), conciliación. \\
+procesos & Cierre diario, usura, liquidación a terceros. \\
+api & Autenticación, validación de entrada, controladores. \\
+\bottomrule
+\end{tabularx}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Lo que el motor no hace}
+\begin{itemize}
+  \item No aprueba créditos (estudio, centrales, visita domiciliaria): eso es del CRM y del área de riesgo.
+  \item No recauda dinero ni se conecta con bancos o PSE: recibe abonos ya recaudados.
+  \item No se comunica con el cliente (mensajes, WhatsApp, llamadas): emite avisos al CRM.
+  \item No es el sistema contable oficial: genera los asientos y los exporta.
+  \item No tiene pantallas para los casos 2 a 9.
+\end{itemize}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Preguntas abiertas que bloquean}
+
+\begin{longtable}{>{\bfseries}p{0.6cm} p{8.6cm} p{5.6cm}}
+\toprule
+\# & Pregunta & Bloquea \\
+\midrule
+\endhead
+P1 & ¿Prelación oficial? ¿Servicios antes o después del capital? & Casos 8 y 9, contabilidad \\
+P2 & ¿Se calcula con centavos o se redondea a pesos? ¿Dónde se absorbe el residuo? & Todo el núcleo \\
+P3 & ¿Fórmula única de mora (semanal o por días)? & Casos 8 y 9 \\
+P4 & ¿Hay cuota inicial? ¿LTV máximo? & Originación y front \\
+P5 & ¿La EA de 87,32~\% cumple la usura de la modalidad? & Salida a producción \\
+P6 & ¿FCC y seguro sobre el monto inicial o sobre el saldo? & Casos 5, 6 y 7 \\
+P7 & ¿Mora en dación y retoma? & Casos 3 y 4 \\
+P8 & ¿Qué CRM es y cómo se integra (API, webhooks, n8n)? & Integración \\
+P9 & ¿Cuál es el sistema contable oficial y su formato? & Exportación contable \\
+P10 & ¿Abono tardío e incompleto a la vez (caso 10)? & Clasificador \\
+\bottomrule
+\end{longtable}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Historias de usuario e historias técnicas}
+
+El backlog separa dos tipos de trabajo:
+
+\begin{tabularx}{\linewidth}{>{\bfseries}l X X}
+\toprule
+ & Historia de usuario (HU) & Historia técnica (HT) \\
+\midrule
+Qué es & Valor que un usuario o el negocio puede ver y validar. & Trabajo que el sistema necesita para que las HU funcionen, sean confiables o se puedan probar. \\
+Formato & \textbf{Como} \ldots, \textbf{quiero} \ldots, \textbf{para} \ldots & \textbf{Para} \ldots, \textbf{se necesita} \ldots \\
+Se demuestra & En la revisión del sprint, a negocio. & Con evidencia técnica: pruebas, pipeline, ADR. \\
+En Azure DevOps & User Story / Product Backlog Item. & Mismo tipo, con prefijo \texttt{[HT]} y etiqueta \texttt{historia-tecnica}. \\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Historias que pasan a ser técnicas}
+\begin{tabularx}{\linewidth}{>{\bfseries}l >{\bfseries}l X}
+\toprule
+Antes & Ahora & Historia \\
+\midrule
+HU-06 & HT-01 & ADR de monolito modular y esqueleto de los módulos \\
+HU-18 & HT-02 & Proteger los invariantes del motor \\
+HU-20 & HT-03 & Historial inmutable de movimientos y recálculo \\
+HU-21 & HT-04 & Versionar parámetros con fecha de vigencia \\
+HU-24 & HT-05 & Evitar aplicar dos veces el mismo abono (idempotencia) \\
+HU-31 & HT-06 & Rechazar asientos descuadrados \\
+HU-37 & HT-07 & Avisos al CRM sin pérdida (outbox) \\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Historias técnicas nuevas}
+\begin{tabularx}{\linewidth}{>{\bfseries}l X l}
+\toprule
+ID & Historia & Sprint \\
+\midrule
+HT-08 & Repositorio y estructura del proyecto & 1 \\
+HT-09 & Pipeline de integración continua con pruebas y prueba de arquitectura & 1 \\
+HT-10 & Cronogramas del Excel como datos de prueba & 1 \\
+HT-11 & Ambiente de pruebas desplegado & 3 \\
+\bottomrule
+\end{tabularx}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Plan de 3 sprints de una semana}
+
+\subsection*{Criterio}
+Se ordena por: (1) lo que \textbf{bloquea} a otras historias va primero; (2) lo que
+\textbf{reduce el riesgo} de calcular mal el dinero; (3) el \textbf{valor} para el negocio;
+(4) el tamaño. La prioridad usa MoSCoW: \must{} imprescindible en el sprint,
+\should{} entra si alcanza la capacidad, \could{} deseable, \wont{} fuera de estos 3 sprints.
+Las historias técnicas se priorizan igual que las de usuario: van cuando otra historia las necesita.
+
+\begin{tcolorbox}[colback=white,colframe=alerta,boxrule=0.4pt,arc=2pt]
+\small\textbf{Alcance realista.} Los 3 sprints suman \textbf{98 puntos}. Con el supuesto de
+\textbf{25 puntos por semana} caben unos 75: sobran cerca de 23. Si la velocidad real del Sprint~1
+confirma ese ritmo, se abre un Sprint~4 y se mueven, en este orden: HU-39, HT-04, HT-11, HU-36,
+HU-38 y la contabilidad base (HU-29, HU-30, HT-06).
+Estos sprints entregan el \textbf{núcleo del motor}: caso 1, abonos al día y extraordinarios
+(casos 5, 6 y 7), mora y cobranza (casos 8 y 9), con contabilidad y avisos al CRM. El cambio de tasa,
+la dación, la retoma, la usura automática y el front semanal quedan para después.
+\end{tcolorbox}
+
+\begin{longtable}{>{\bfseries}p{1.4cm} p{6.4cm} p{1.2cm} p{1.2cm} p{1.2cm} p{2.6cm}}
+\toprule
+Sprint & Objetivo (lo que se demuestra el viernes) & HU & HT & Puntos & Casos \\
+\midrule
+\endhead
+Sprint 1 & Reglas cerradas con negocio y núcleo de cálculo que reproduce el caso 1 al centavo & 13 & 5 & 29 & Caso 1 \\
+Sprint 2 & El motor recibe abonos al día y extraordinarios por API, los aplica y los contabiliza & 10 & 4 & 35 & 1, 5, 6 y 7 \\
+Sprint 3 & Pagos incompletos, mora y cobranza, con avisos al CRM sin pérdida & 9 & 2 & 34 & 8 y 9 \\
+Después & Cambio de tasa, usura, dación, retoma, front semanal, terceros & 10 & — & — & 2, 3 y 4 \\
+\bottomrule
+\end{longtable}
+
+% ── Sprint 1 ─────────────────────────────────────────────────────────────────
+\subsection{Sprint 1 · Semana 1 (priorizado)}
+
+\noindent\textbf{Objetivo:} que negocio cierre las reglas que bloquean, que el proyecto quede
+montado con su pipeline y que el núcleo de cálculo reproduzca el caso~1 del Excel con tolerancia de 1~COP.
+
+\begin{longtable}{>{\bfseries}p{0.6cm} p{1.2cm} p{7.4cm} p{1.5cm} p{1.1cm} p{2.2cm}}
+\toprule
+\# & ID & Historia & Prioridad & Puntos & Depende de \\
+\midrule
+\endhead
+1 & HU-02 & Resolver la prelación de abonos (P1) & \must & 1 & — \\
+2 & HU-03 & Definir el redondeo del motor (P2) & \must & 1 & — \\
+3 & HU-04 & Definir la fórmula de mora (P3) & \must & 1 & — \\
+4 & HU-05 & Decidir cuota inicial y monto financiado (P4) & \must & 1 & — \\
+5 & HU-09 & Confirmar el IVA de los servicios & \must & 1 & — \\
+6 & HT-08 & Repositorio y estructura del proyecto & \must & 2 & — \\
+7 & HT-01 & ADR de monolito modular y esqueleto de los módulos & \must & 3 & HT-08 \\
+8 & HT-09 & Pipeline de integración continua & \must & 2 & HT-08 \\
+9 & HT-10 & Cronogramas del Excel como datos de prueba & \must & 1 & — \\
+10 & HU-01 & Catálogo de reglas del Excel (caso 1 primero) & \must & 2 & HU-02 a 05 \\
+11 & HU-11 & Convertir la EA a tasas semanal, diaria y mensual & \must & 1 & HU-03 \\
+12 & HU-12 & Calcular el número de cuotas semanales & \must & 1 & — \\
+13 & HU-13 & Calcular el monto financiado por componentes & \must & 1 & HU-05 \\
+14 & HU-14 & Calcular la cuota financiera semanal fija & \must & 2 & HU-11, 12 \\
+15 & HU-15 & Generar el cronograma semanal de amortización & \must & 3 & HU-14 \\
+16 & HU-16 & Calcular los servicios complementarios por cuota & \must & 2 & HU-09 \\
+17 & HU-17 & Validaciones del caso 1 (filas 1 a 5 de la hoja Validaciones) & \must & 2 & HU-15, HT-10 \\
+18 & HT-02 & Invariantes del cálculo (saldo nunca negativo, cierre en cero) & \should & 2 & HU-15 \\
+\midrule
+ & & \textbf{Total} (\must{} 27 · \should{} 2) — 13 HU y 5 HT & & \textbf{29} & \\
+\bottomrule
+\end{longtable}
+
+\noindent{\small\color{alerta}\textit{Pasa de 25 puntos: si no alcanza, sale primero HT-02 (\should) y
+luego la validación del FCC del mes~1 dentro de HU-17.}}
+
+\subsubsection*{Plan de la semana}
+\begin{tabularx}{\linewidth}{>{\bfseries}l X}
+\toprule
+Día & Trabajo \\
+\midrule
+Lunes & Sesión de refinamiento de 2 horas con Diego González y Heider Galvis: cerrar P1 a P4 y el IVA (HU-02 a 05 y HU-09). En paralelo: repositorio (HT-08), ADR y esqueleto del monolito (HT-01). \\
+Martes & Pipeline de integración continua (HT-09) y cronogramas del Excel como datos de prueba (HT-10). Catálogo de reglas (HU-01). Tasas, número de cuotas y monto financiado (HU-11 a 13), con pruebas primero (TDD). \\
+Miércoles & Cuota financiera (HU-14) y cronograma semanal (HU-15). \\
+Jueves & Servicios complementarios (HU-16) e invariantes del cálculo (HT-02). \\
+Viernes & Validaciones del caso 1 contra el Excel (HU-17). Revisión del sprint con negocio: se muestra el cronograma de 86 cuotas comparado con el Excel. Retrospectiva. \\
+\bottomrule
+\end{tabularx}
+
+\subsubsection*{Definición de terminado (Sprint 1)}
+\begin{itemize}
+  \item Las decisiones P1 a P4 y el IVA quedan escritas y aprobadas por negocio.
+  \item Cada regla tiene prueba automática escrita antes del código.
+  \item El pipeline corre en cada pull request y está en verde.
+  \item Las 5 validaciones del caso~1 pasan con tolerancia de 1~COP: monto desembolsado,
+        tasa semanal, cuota financiera, saldo final y pago FCC del mes 1.
+  \item El módulo \texttt{nucleo-calculo} no depende de ningún otro módulo (prueba de arquitectura en verde).
+  \item Código revisado en pull request y unido a la rama principal.
+\end{itemize}
+
+\subsubsection*{Riesgos del Sprint 1}
+\begin{itemize}
+  \item \textbf{Negocio no cierra P1 a P3 el lunes:} el cálculo del caso~1 no depende de ellas,
+        así que se sigue con el núcleo; lo que sí bloquean es el Sprint 3.
+  \item \textbf{P2 (redondeo) cambia la convención:} el núcleo se programa con decimales exactos
+        y el redondeo en un solo punto, para cambiarlo sin tocar las fórmulas.
+  \item \textbf{No está decidido el lenguaje:} HT-08 lo fija el lunes; sin eso no arranca nada más.
+\end{itemize}
+
+% ── Sprint 2 y 3 ─────────────────────────────────────────────────────────────
+\subsection{Sprint 2 · Semana 2}
+\noindent\textbf{Objetivo:} el motor recibe abonos al día y extraordinarios por API, los aplica y los contabiliza.
+
+\begin{longtable}{>{\bfseries}p{1.2cm} p{8.6cm} p{1.5cm} p{1.1cm} p{2.2cm}}
+\toprule
+ID & Historia & Prioridad & Puntos & Depende de \\
+\midrule
+\endhead
+HU-07 & Contrato de datos con el CRM & \must & 2 & — \\
+HU-19 & Máquina de estados del crédito & \must & 3 & — \\
+HT-03 & Historial inmutable de movimientos y recálculo & \must & 5 & HT-01 \\
+HT-04 & Versionar parámetros con fecha de vigencia & \must & 2 & HT-03 \\
+HU-23 & API para registrar abonos desde el CRM & \must & 3 & HU-07, HT-03 \\
+HT-05 & Evitar aplicar dos veces el mismo abono & \must & 2 & HU-23 \\
+HU-25 & Clasificar el abono (normal, extra, prepago) & \must & 3 & HU-19 \\
+HU-26 & Prepago total (caso 5) & \must & 2 & HU-25 \\
+HU-27 & Abono extra con menor plazo (caso 6) & \must & 2 & HU-25 \\
+HU-28 & Abono extra con menor cuota (caso 7) & \must & 2 & HU-25 \\
+HU-29 & Configurar el mapeo de conceptos a cuentas & \must & 2 & — \\
+HU-30 & Contabilizar la cuota normal y los abonos extra & \must & 3 & HU-29 \\
+HT-06 & Rechazar asientos descuadrados & \must & 1 & HU-30 \\
+HU-17 & Validaciones de los casos 5, 6 y 7 & \must & 3 & HU-26 a 28 \\
+\midrule
+ & \textbf{Total} — 10 HU y 4 HT & & \textbf{35} & \\
+\bottomrule
+\end{longtable}
+
+\subsection{Sprint 3 · Semana 3}
+\noindent\textbf{Objetivo:} pagos incompletos, mora y cobranza, con avisos al CRM sin pérdida.
+
+\begin{longtable}{>{\bfseries}p{1.2cm} p{8.6cm} p{1.5cm} p{1.1cm} p{2.2cm}}
+\toprule
+ID & Historia & Prioridad & Puntos & Depende de \\
+\midrule
+\endhead
+HU-22 & Calcular fechas de vencimiento semanales & \must & 2 & HU-15 \\
+HU-32 & Calcular días de atraso & \must & 2 & HU-22 \\
+HU-33 & Aplicar un pago inferior con la prelación (caso 8) & \must & 5 & HU-02, 25 \\
+HU-34 & Causar interés de mora sobre capital vencido & \must & 3 & HU-04 \\
+HU-35 & Gastos de cobranza por días de atraso (caso 9) & \must & 3 & HU-32 \\
+HU-36 & Cierre diario de cartera & \must & 3 & HU-34 \\
+HT-07 & Avisos al CRM sin pérdida (outbox) & \must & 3 & HU-19 \\
+HT-11 & Ambiente de pruebas desplegado & \must & 3 & HT-09 \\
+HU-38 & Contabilizar pagos inferiores, mora y cobranza & \must & 5 & HU-33 \\
+HU-17 & Validaciones de los casos 8 y 9 & \must & 3 & HU-33 a 35 \\
+HU-39 & Reversar un abono aplicado por error & \should & 2 & HT-03 \\
+\midrule
+ & \textbf{Total} — 9 HU y 2 HT & & \textbf{34} & \\
+\bottomrule
+\end{longtable}
+
+\subsection{Después de los 3 sprints}
+\begin{longtable}{>{\bfseries}p{1.2cm} p{10.2cm} p{1.5cm}}
+\toprule
+ID & Historia & Prioridad \\
+\midrule
+\endhead
+HU-08 & Validar la tasa EA frente a la usura (debe estar antes de producción) & \should \\
+HU-40 & Cambio de tasa (caso 2) & \should \\
+HU-41 & Ajuste automático por usura & \should \\
+HU-42 & Dación en pago (caso 3) y retoma (caso 4) & \should \\
+HU-43 & Cotizador semanal en el front (llama al motor) & \should \\
+HU-44 & Reporte mensual de pagos a terceros & \should \\
+HU-45 & Conciliación diaria CRM–motor & \should \\
+HU-10 & Spike de Fineract (solo para confirmar la decisión) & \could \\
+HU-46 & Combinar casos: abono tardío e incompleto (P10) & \could \\
+HU-47 & Proyección al horizonte de 120 semanas & \wont \\
+\bottomrule
+\end{longtable}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Sprint 1 en detalle}
+
+\textit{Criterios de aceptación de las 18 historias del Sprint 1 (13 HU y 5 HT), en el orden en que
+se trabajan. Las nuevas de los sprints 2 y 3 van en la sección siguiente; el resto conserva los
+criterios del backlog cargado en Azure DevOps.}
+
+% ── Decisiones (lunes) ───────────────────────────────────────────────────────
+\hu{HU-02}{Resolver la prelación de abonos}{\must}{E1 · Descubrimiento}{%
+\como{Product Owner}{confirmar con negocio el orden exacto en que se aplica un abono}{programar una sola prelación sin ambigüedad}}
+\begin{gherkin}
+\kw{Característica:} Prelación oficial de aplicación de abonos
+\nv{1}\kw{Escenario:} Se elimina la contradicción entre texto y fórmulas
+\nv{2}\kw{Dado} que la hoja Casos describe "mora, interés corriente, capital"
+\nv{2}\kw{Y} que las fórmulas aplican "cobranza, mora, interés, servicios, capital"
+\nv{2}\kw{Cuando} negocio define la prelación oficial
+\nv{2}\kw{Entonces} queda un único orden que incluye todos los conceptos
+\nv{2}\kw{Y} el Excel se actualiza para que texto y fórmulas coincidan
+\end{gherkin}
+
+\hu{HU-03}{Definir el redondeo del motor}{\must}{E1 · Descubrimiento}{%
+\como{Product Owner}{definir si el motor trabaja con centavos o redondea a pesos}{que las pruebas contra el Excel tengan una tolerancia clara}}
+\begin{gherkin}
+\kw{Característica:} Precisión de los cálculos
+\nv{1}\kw{Escenario:} Se fija la convención de redondeo
+\nv{2}\kw{Dado} que el Excel no redondea y acepta 1 COP de tolerancia
+\nv{2}\kw{Cuando} negocio y contabilidad definen la convención
+\nv{2}\kw{Entonces} queda escrito con cuántos decimales se calcula y se guarda
+\nv{2}\kw{Y} cómo se redondea lo que se cobra y lo que se contabiliza
+\nv{2}\kw{Y} en qué cuota se absorbe la diferencia de redondeo
+\end{gherkin}
+
+\hu{HU-04}{Definir la fórmula de mora}{\must}{E1 · Descubrimiento}{%
+\como{Product Owner}{una sola fórmula de interés de mora}{no tener dos cálculos distintos entre el caso 8 y el caso 9}}
+\begin{gherkin}
+\kw{Característica:} Fórmula única de interés de mora
+\nv{1}\kw{Escenario:} Se unifica la mora de los casos 8 y 9
+\nv{2}\kw{Dado} que el caso 8 calcula mora = capital vencido x tasa semanal
+\nv{2}\kw{Y} que el caso 9 suma capital de la cuota x ((1 + tasa diaria)\^{}días - 1)
+\nv{2}\kw{Cuando} negocio define la fórmula oficial
+\nv{2}\kw{Entonces} existe una única regla con su base, su tasa y su periodo
+\nv{2}\kw{Y} se confirma que la tasa de mora no supera el límite legal
+\end{gherkin}
+
+\hu{HU-05}{Decidir cuota inicial y monto financiado}{\must}{E1 · Descubrimiento}{%
+\como{Product Owner}{decidir si el crédito exige cuota inicial o financia el 116~\% de la moto como el Excel}{alinear el front con el motor}}
+\begin{gherkin}
+\kw{Característica:} Composición del monto financiado
+\nv{1}\kw{Escenario:} Se define si hay cuota inicial
+\nv{2}\kw{Dado} que el Excel financia 5.904.400 sobre una moto de 5.100.000
+\nv{2}\kw{Y} que el front actual exige una cuota inicial mínima del 10 \%
+\nv{2}\kw{Cuando} negocio toma la decisión
+\nv{2}\kw{Entonces} queda definido si existe cuota inicial y su porcentaje mínimo
+\nv{2}\kw{Y} si se descuenta de la moto o del total financiado
+\nv{2}\kw{Y} el LTV máximo permitido
+\end{gherkin}
+
+\hu{HU-09}{Confirmar el IVA de los servicios}{\must}{E1 · Descubrimiento}{%
+\como{contador}{confirmar qué servicios llevan IVA del 19~\% y cuáles no}{liquidar bien lo que se cobra y lo que se paga a terceros}}
+\begin{gherkin}
+\kw{Característica:} IVA de servicios
+\nv{1}\kw{Escenario:} Servicios gravados y excluidos
+\nv{2}\kw{Dado} que el Excel grava FCC y asistencia y excluye el seguro de vida
+\nv{2}\kw{Cuando} contabilidad confirma el tratamiento tributario
+\nv{2}\kw{Entonces} cada servicio queda marcado como gravado o excluido con su tarifa
+\nv{2}\kw{Y} queda definido quién responde por el IVA de cada servicio
+\end{gherkin}
+
+% ── Base técnica (lunes y martes) ────────────────────────────────────────────
+\hu{HT-08}{Repositorio y estructura del proyecto}{\must}{E9 · Plataforma \textit{(técnica, nueva)}}{%
+\paraht{que el equipo empiece a programar el lunes sin bloquearse}{un repositorio con el lenguaje, la base de datos local, las convenciones y la estructura de carpetas acordadas}}
+\begin{gherkin}
+\kw{Característica:} Proyecto listo para desarrollar
+\nv{1}\kw{Escenario:} Arranque en un equipo nuevo
+\nv{2}\kw{Dado} un desarrollador que clona el repositorio
+\nv{2}\kw{Cuando} sigue las instrucciones del README
+\nv{2}\kw{Entonces} compila el proyecto y corre las pruebas en menos de 15 minutos
+\nv{2}\kw{Y} la base de datos local se levanta con un solo comando
+\nv{1}\kw{Escenario:} Convenciones escritas
+\nv{2}\kw{Dado} el repositorio creado
+\nv{2}\kw{Cuando} se revisa la documentación
+\nv{2}\kw{Entonces} están el lenguaje y su versión, el estilo de código, las ramas y el flujo de pull request
+\end{gherkin}
+
+\hu{HT-01}{ADR de monolito modular y esqueleto de los módulos}{\must}{E9 · Plataforma \textit{(técnica)}}{%
+\paraht{construir sobre una base acordada y que las fronteras entre módulos no se rompan}{un registro de decisión (ADR) y el esqueleto de los 7 módulos con sus reglas de dependencia}}
+\begin{gherkin}
+\kw{Característica:} Arquitectura de monolito modular
+\nv{1}\kw{Escenario:} Se documenta la decisión
+\nv{2}\kw{Dado} las opciones evaluadas: monolito modular, microservicios y Fineract
+\nv{2}\kw{Cuando} el equipo registra el ADR
+\nv{2}\kw{Entonces} queda la decisión, sus razones y cuándo separar un módulo
+\nv{1}\kw{Escenario:} Las fronteras se verifican solas
+\nv{2}\kw{Dado} el módulo nucleo-calculo
+\nv{2}\kw{Cuando} corre la prueba de arquitectura
+\nv{2}\kw{Entonces} falla si nucleo-calculo depende de otro módulo
+\nv{2}\kw{Y} falla si un módulo lee las tablas de otro módulo
+\end{gherkin}
+
+\hu{HT-09}{Pipeline de integración continua}{\must}{E9 · Plataforma \textit{(técnica, nueva)}}{%
+\paraht{detectar en cada cambio si el motor deja de cuadrar con el Excel}{un pipeline que compile y corra todas las pruebas en cada pull request}}
+\begin{gherkin}
+\kw{Característica:} Integración continua
+\nv{1}\kw{Escenario:} Pull request con pruebas en verde
+\nv{2}\kw{Dado} un pull request hacia la rama principal
+\nv{2}\kw{Cuando} se ejecuta el pipeline
+\nv{2}\kw{Entonces} corren las pruebas unitarias, las del Excel y la de arquitectura
+\nv{2}\kw{Y} el resultado queda visible en el pull request
+\nv{1}\kw{Escenario:} Una prueba falla
+\nv{2}\kw{Dado} un cambio que rompe una validación del Excel
+\nv{2}\kw{Cuando} corre el pipeline
+\nv{2}\kw{Entonces} el pull request no se puede unir a la rama principal
+\end{gherkin}
+
+\hu{HT-10}{Cronogramas del Excel como datos de prueba}{\must}{E8 · Calidad \textit{(técnica, nueva)}}{%
+\paraht{comparar el motor contra el Excel sin copiar cifras a mano}{exportar los parámetros y los cronogramas de los 9 casos a archivos que las pruebas puedan leer}}
+\begin{gherkin}
+\kw{Característica:} Datos de prueba desde el Excel
+\nv{1}\kw{Escenario:} Exportación de los casos
+\nv{2}\kw{Dado} el Excel "Casos Operaciones V2 mejorado.xlsx"
+\nv{2}\kw{Cuando} se ejecuta el exportador
+\nv{2}\kw{Entonces} se genera un archivo por caso con todas las filas y columnas del cronograma
+\nv{2}\kw{Y} un archivo con las 33 filas de la hoja Validaciones
+\nv{1}\kw{Escenario:} Nueva versión del Excel
+\nv{2}\kw{Dado} que Diego entrega una versión corregida del Excel
+\nv{2}\kw{Cuando} se vuelve a ejecutar el exportador
+\nv{2}\kw{Entonces} los archivos se regeneran y las pruebas muestran qué cambió
+\end{gherkin}
+
+% ── Núcleo de cálculo (martes a viernes) ─────────────────────────────────────
+\hu{HU-01}{Catálogo de reglas del Excel}{\must}{E1 · Descubrimiento}{%
+\como{Product Owner}{un catálogo de reglas numeradas extraído de las hojas Inputs y Casos}{que desarrollo, pruebas y negocio hablen de la misma regla}}
+\begin{gherkin}
+\kw{Característica:} Catálogo de reglas del motor de cartera
+\nv{1}\kw{Escenario:} Cada fórmula queda como regla trazable
+\nv{2}\kw{Dado} el Excel con sus 12 hojas
+\nv{2}\kw{Cuando} se documenta el catálogo
+\nv{2}\kw{Entonces} cada fórmula tiene identificador, descripción, fórmula y celda de origen
+\nv{2}\kw{Y} indica en qué caso (1 a 9) aplica
+\nv{1}\kw{Escenario:} Aprobación por negocio
+\nv{2}\kw{Dado} el catálogo documentado
+\nv{2}\kw{Cuando} Diego González lo revisa
+\nv{2}\kw{Entonces} cada regla queda "aprobada", "ajustar" o "descartar"
+\nv{2}\kw{Y} solo se programan reglas aprobadas
+\end{gherkin}
+\nota{en el Sprint~1 se cataloga primero el caso~1; los demás casos se completan antes de su sprint.}
+
+\hu{HU-11}{Convertir la EA a tasas semanal, diaria y mensual}{\must}{E2 · Originación}{%
+\como{analista de crédito}{que el motor derive las tasas periódicas de la EA pactada}{usar la tasa contractual en todos los cálculos}}
+\begin{gherkin}
+\kw{Característica:} Conversión de tasas
+\nv{1}\kw{Escenario:} Tasas equivalentes de una EA de 87,32 \%
+\nv{2}\kw{Dado} una tasa efectiva anual de 87,32 \%
+\nv{2}\kw{Cuando} se calculan las tasas equivalentes
+\nv{2}\kw{Entonces} la tasa semanal es 0,012143296 (tolerancia 0,000001)
+\nv{2}\kw{Y} la tasa diaria es 0,001721063
+\nv{2}\kw{Y} la tasa mensual de referencia es 0,053696035
+\end{gherkin}
+
+\hu{HU-12}{Calcular el número de cuotas semanales}{\must}{E2 · Originación}{%
+\como{analista de crédito}{convertir el plazo en meses a cuotas semanales}{generar el cronograma semanal}}
+\begin{gherkin}
+\kw{Característica:} Número de cuotas semanales
+\nv{1}\kw{Esquema del escenario:} Conversión de meses a semanas
+\nv{2}\kw{Dado} un año de 52 semanas y 12 meses
+\nv{2}\kw{Cuando} el plazo es de <meses> meses
+\nv{2}\kw{Entonces} el número de cuotas es <cuotas>
+\nv{2}\kw{Ejemplos:}
+\nv{3}| meses | cuotas |
+\nv{3}| 20 \ \ | 86 \ \ \ |
+\nv{3}| 12 \ \ | 52 \ \ \ |
+\nv{3}| 18 \ \ | 78 \ \ \ |
+\end{gherkin}
+
+\hu{HU-13}{Calcular el monto financiado por componentes}{\must}{E2 · Originación}{%
+\como{analista de crédito}{que el monto financiado sume moto, alistamiento, tecnología y gastos comerciales}{colocar el valor final correcto}}
+\begin{gherkin}
+\kw{Característica:} Monto financiado
+\nv{1}\kw{Escenario:} Suma de componentes
+\nv{2}\kw{Dado} una moto de 5.100.000
+\nv{2}\kw{Y} matrícula y RUNT 171.100, SOAT 373.300 y prenda 120.000
+\nv{2}\kw{Y} GPS y plataforma 80.000 y gastos comerciales 60.000
+\nv{2}\kw{Cuando} se calcula el monto financiado
+\nv{2}\kw{Entonces} el monto financiado es 5.904.400
+\nv{2}\kw{Y} el porcentaje de financiación sobre la moto es 115,77 \%
+\end{gherkin}
+
+\hu{HU-14}{Calcular la cuota financiera semanal fija}{\must}{E2 · Originación}{%
+\como{analista de crédito}{calcular la cuota fija de capital más interés}{informar al cliente cuánto paga cada semana}}
+\begin{gherkin}
+\kw{Característica:} Cuota financiera
+\nv{1}\kw{Escenario:} Cuota del crédito base
+\nv{2}\kw{Dado} un monto financiado de 5.904.400
+\nv{2}\kw{Y} una tasa semanal de 0,012143296 y 86 cuotas
+\nv{2}\kw{Cuando} se calcula la cuota con amortización francesa
+\nv{2}\kw{Entonces} la cuota financiera es 111.014,82 (tolerancia 1 COP)
+\nv{2}\kw{Y} la cuota total con servicios es 174.048,99
+\end{gherkin}
+
+\hu{HU-15}{Generar el cronograma semanal de amortización}{\must}{E2 · Originación}{%
+\como{analista de crédito}{el plan cuota a cuota con saldo, interés, capital y servicios}{conocer el comportamiento esperado del crédito}}
+\begin{gherkin}
+\kw{Característica:} Cronograma de amortización
+\nv{1}\kw{Escenario:} Primera cuota
+\nv{2}\kw{Dado} el crédito base de 5.904.400 a 86 cuotas
+\nv{2}\kw{Cuando} se genera el cronograma
+\nv{2}\kw{Entonces} la cuota 1 tiene interés 71.698,88 y capital 39.315,95
+\nv{2}\kw{Y} saldo final 5.865.084,05
+\nv{1}\kw{Escenario:} Cierre del crédito
+\nv{2}\kw{Dado} el mismo cronograma
+\nv{2}\kw{Cuando} se llega a la cuota 86
+\nv{2}\kw{Entonces} el saldo final es 0 (tolerancia 1 COP)
+\nv{2}\kw{Y} los intereses totales son 3.642.874,68
+\end{gherkin}
+
+\hu{HU-16}{Calcular los servicios complementarios por cuota}{\must}{E2 · Originación}{%
+\como{analista de crédito}{configurar FCC, asistencia y seguro con su base, periodicidad e IVA}{calcular lo que paga el cliente en cada cuota}}
+\begin{gherkin}
+\kw{Característica:} Servicios complementarios
+\nv{1}\kw{Escenario:} Servicios de una cuota semanal
+\nv{2}\kw{Dado} un monto financiado de 5.904.400 y 4,333333 semanas por mes
+\nv{2}\kw{Cuando} se calculan los servicios por cuota
+\nv{2}\kw{Entonces} el FCC con IVA es 48.643,17
+\nv{2}\kw{Y} la asistencia con IVA es 10.984,62
+\nv{2}\kw{Y} el seguro de vida es 3.406,38
+\nv{2}\kw{Y} los servicios por cuota suman 63.034,17
+\end{gherkin}
+
+\hu{HU-17}{Automatizar las 33 pruebas de la hoja Validaciones}{\must}{E8 · Calidad}{%
+\como{QA}{que cada fila de Validaciones sea una prueba automática}{saber en cada cambio si el motor sigue cuadrando con el Excel}}
+\begin{gherkin}
+\kw{Característica:} Pruebas de validación del Excel
+\nv{1}\kw{Esquema del escenario:} Prueba de la hoja Validaciones
+\nv{2}\kw{Dado} el caso <caso> con los parámetros de la hoja Inputs
+\nv{2}\kw{Cuando} el motor calcula <variable> en el periodo <periodo>
+\nv{2}\kw{Entonces} coincide con el Excel dentro de <tolerancia>
+\nv{2}\kw{Ejemplos:}
+\nv{3}| Caso 1 | Cuota financiera \ \ \ | 1 \ | 1 COP \ |
+\nv{3}| Caso 2 | Nueva cuota \ \ \ \ \ \ \ \ | 44 | 1 COP \ |
+\nv{3}| Caso 6 | Último periodo pago | 61 | exacto |
+\nv{3}| Caso 8 | Interés mora \ \ \ \ \ \ \ | 44 | 1 COP \ |
+\end{gherkin}
+\nota{en el Sprint~1 solo se automatizan las 5 validaciones del caso~1; las de los casos 5, 6 y 7
+van en el Sprint~2 y las de los casos 8 y 9 en el Sprint~3.}
+
+\hu{HT-02}{Proteger los invariantes del motor}{\should}{E2 · Originación \textit{(técnica)}}{%
+\paraht{que nunca haya saldos ni libros inconsistentes}{que el motor rechace cualquier operación que rompa un invariante y que se prueben con datos aleatorios}}
+\begin{gherkin}
+\kw{Característica:} Invariantes del motor
+\nv{1}\kw{Escenario:} La distribución suma el abono
+\nv{2}\kw{Dado} cualquier abono aplicado
+\nv{2}\kw{Cuando} se suma su distribución por concepto
+\nv{2}\kw{Entonces} el total es igual al valor del abono
+\nv{1}\kw{Escenario:} Crédito cerrado
+\nv{2}\kw{Dado} un crédito en estado "Cancelado" o "Cerrado por evento"
+\nv{2}\kw{Cuando} llega un abono
+\nv{2}\kw{Entonces} el motor lo rechaza y no modifica saldos
+\nv{1}\kw{Escenario:} Pruebas con datos aleatorios
+\nv{2}\kw{Dado} 10.000 secuencias aleatorias de abonos válidos
+\nv{2}\kw{Cuando} se aplican
+\nv{2}\kw{Entonces} ningún saldo queda negativo y todos los asientos cuadran
+\end{gherkin}
+\nota{en el Sprint~1 se cubre la parte del cálculo: el saldo nunca es negativo y el cronograma
+cierra en cero para cualquier monto, tasa y plazo válidos. Los escenarios de abonos y asientos se
+completan en los sprints 2 y 3.}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Historias nuevas de los sprints 2 y 3}
+
+\hu{HU-07}{Contrato de datos con el CRM}{\must}{E6 · Integración \textit{(nueva, Sprint 2)}}{%
+\como{área de cartera}{que el CRM y el motor acuerden qué datos se mandan, qué se recibe y quién es dueño de cada dato}{que los abonos lleguen completos y no se dupliquen gestiones}}
+\begin{gherkin}
+\kw{Característica:} Contrato de integración CRM–motor
+\nv{1}\kw{Escenario:} Contrato acordado
+\nv{2}\kw{Dado} el CRM que registra los abonos de los clientes
+\nv{2}\kw{Cuando} se firma el contrato de integración
+\nv{2}\kw{Entonces} quedan definidos los campos del abono, el identificador único,
+\nv{2}el formato de respuesta, los avisos que recibe el CRM y los códigos de error
+\nv{2}\kw{Y} queda definido que el motor es dueño de saldos, estados y asientos
+\nv{2}\kw{Y} que el CRM es dueño de clientes, contactos y gestiones de cobro
+\end{gherkin}
+
+\hu{HU-19}{Máquina de estados del crédito}{\must}{E3 · Eventos \textit{(nueva, Sprint 2)}}{%
+\como{analista de cartera}{que el crédito solo cambie de estado por las transiciones permitidas}{que el estado siempre refleje la realidad del crédito}}
+\begin{gherkin}
+\kw{Característica:} Estados del crédito
+\nv{1}\kw{Esquema del escenario:} Transición permitida
+\nv{2}\kw{Dado} un crédito en estado "<desde>"
+\nv{2}\kw{Cuando} ocurre "<evento>"
+\nv{2}\kw{Entonces} el crédito queda en "<hacia>"
+\nv{2}\kw{Ejemplos:}
+\nv{3}| Vigente al día | pago inferior \ \ \ \ \ \ | En mora \ \ \ \ \ \ \ \ \ \ \ |
+\nv{3}| En mora \ \ \ \ \ \ \ | cubre todo lo vencido | Vigente al día \ \ \ \ |
+\nv{3}| Vigente al día | prepago total \ \ \ \ \ \ | Cancelado \ \ \ \ \ \ \ \ \ |
+\nv{3}| En mora \ \ \ \ \ \ \ | dación o retoma \ \ \ \ | Cerrado por evento |
+\nv{1}\kw{Escenario:} Transición no permitida
+\nv{2}\kw{Dado} un crédito "Cancelado"
+\nv{2}\kw{Cuando} se intenta pasarlo a "En mora"
+\nv{2}\kw{Entonces} el motor lo rechaza y registra el intento
+\end{gherkin}
+
+\hu{HT-03}{Historial inmutable de movimientos y recálculo}{\must}{E9 · Plataforma \textit{(técnica, Sprint 2)}}{%
+\paraht{reconstruir el crédito a cualquier fecha y aceptar pagos con fecha atrasada}{guardar cada abono, reverso o cambio de tasa como un movimiento que no se borra y recalcular recorriéndolos en orden}}
+\begin{gherkin}
+\kw{Característica:} Historial de movimientos
+\nv{1}\kw{Escenario:} Pago registrado con fecha atrasada
+\nv{2}\kw{Dado} un crédito con abonos aplicados hasta la cuota 45
+\nv{2}\kw{Cuando} llega un abono con fecha de la cuota 43 que no se había registrado
+\nv{2}\kw{Entonces} el motor recalcula el crédito desde la cuota 43 en orden cronológico
+\nv{2}\kw{Y} genera los asientos de ajuste necesarios
+\nv{1}\kw{Escenario:} Consulta a una fecha
+\nv{2}\kw{Dado} el mismo crédito
+\nv{2}\kw{Cuando} se consulta su estado al cierre de la cuota 40
+\nv{2}\kw{Entonces} se obtienen los saldos tal como estaban en esa fecha
+\end{gherkin}
+
+\hu{HT-07}{Avisos al CRM sin pérdida (outbox)}{\must}{E6 · Integración \textit{(técnica, Sprint 3)}}{%
+\paraht{que el CRM no pierda ningún cambio de estado aunque esté caído}{guardar cada aviso en la misma transacción del abono y enviarlo con reintentos}}
+\begin{gherkin}
+\kw{Característica:} Envío confiable de avisos
+\nv{1}\kw{Escenario:} El CRM no responde
+\nv{2}\kw{Dado} un abono que deja el crédito "En mora"
+\nv{2}\kw{Y} el CRM caído
+\nv{2}\kw{Cuando} se aplica el abono
+\nv{2}\kw{Entonces} el aviso queda guardado en la misma transacción del abono
+\nv{2}\kw{Y} se reintenta hasta que el CRM confirme la recepción
+\nv{2}\kw{Y} el CRM no recibe el mismo aviso dos veces como si fuera nuevo
+\end{gherkin}
+
+\hu{HT-11}{Ambiente de pruebas desplegado}{\must}{E9 · Plataforma \textit{(técnica, nueva, Sprint 3)}}{%
+\paraht{probar la integración con el CRM antes de producción}{un ambiente de pruebas con su base de datos que se actualiza solo cuando se une un cambio a la rama principal}}
+\begin{gherkin}
+\kw{Característica:} Ambiente de pruebas
+\nv{1}\kw{Escenario:} Despliegue automático
+\nv{2}\kw{Dado} un cambio unido a la rama principal con el pipeline en verde
+\nv{2}\kw{Cuando} termina el pipeline
+\nv{2}\kw{Entonces} la nueva versión queda desplegada en el ambiente de pruebas
+\nv{2}\kw{Y} el CRM de pruebas puede llamar a la API con sus credenciales
+\nv{1}\kw{Escenario:} Datos separados
+\nv{2}\kw{Dado} el ambiente de pruebas
+\nv{2}\kw{Cuando} se revisa su configuración
+\nv{2}\kw{Entonces} usa su propia base de datos y ninguna credencial de producción
+\end{gherkin}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Entrega (handoff)}
+\begin{itemize}
+  \item \textbf{¿Listo para implementar?} Sí el Sprint~1: base técnica (HT-08, HT-01, HT-09, HT-10) y núcleo del caso~1. Los casos 8 y 9 esperan P1, P3 y P4.
+  \item \textbf{¿Necesita revisión de arquitectura?} Sí, confirmar el ADR del monolito modular (HT-01) y, antes del Sprint~2, el contrato con el CRM (HU-07).
+  \item \textbf{¿Necesita aclaración de producto?} Sí: preguntas P1 a P10 con Diego González y Heider Galvis.
+  \item \textbf{Siguiente paso:} el lunes del Sprint~1, sesión de refinamiento de 2 horas con negocio,
+        repositorio y ADR; desde el martes, núcleo de cálculo con pruebas primero (TDD) contra la hoja \textit{Validaciones}.
+\end{itemize}
+
+\end{document}
