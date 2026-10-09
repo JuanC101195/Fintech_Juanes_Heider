@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/comparador.tsx","./src/preguntatarjeta.tsx","./src/cuestionario.test.ts","./src/escenarios.ts","./src/exportar.ts","./src/formato.ts","./src/main.tsx","./src/preguntas.ts","./src/respuestas.ts","./src/tipos.ts","./src/vite-env.d.ts","./vite.config.ts"],"version":"6.0.3"}

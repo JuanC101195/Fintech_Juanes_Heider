@@ -19,10 +19,21 @@ public final class Escenario {
     private final Map<Integer, List<Instruccion>> instrucciones = new TreeMap<>();
     /** Desde esta semana, toda semana sin instrucción propia usa esta (pagos tardíos recurrentes, caso 9). */
     private final Map<Integer, Instruccion> porDefectoDesde = new TreeMap<>();
+    private ReglasNegocio reglas = ReglasNegocio.EXCEL;
 
     public Escenario(Operacion operacion, ParametrosProducto parametros) {
         this.operacion = operacion;
         this.parametros = parametros;
+    }
+
+    /** Reglas de negocio con que corre el motor; por defecto las del Excel. */
+    public Escenario conReglas(ReglasNegocio reglas) {
+        this.reglas = reglas;
+        return this;
+    }
+
+    public ReglasNegocio reglas() {
+        return reglas;
     }
 
     public Escenario en(int periodo, Instruccion instruccion) {

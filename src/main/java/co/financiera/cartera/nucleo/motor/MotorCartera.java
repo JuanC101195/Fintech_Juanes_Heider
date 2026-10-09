@@ -123,19 +123,32 @@ public final class MotorCartera {
             int dias = diasAtraso(pago);
             boolean dentroDelPlazo = periodo <= cuotasPactadas;
 
-            // 2. Causación de la semana.
-            BigDecimal interes = multiplicar(saldoInicial, tasa);
+            // 2. Causación de la semana. Las variantes de ReglasNegocio son las opciones que se le
+            // preguntan a negocio; EXCEL reproduce el Excel tal cual.
+            ReglasNegocio reglas = escenario.reglas();
+            BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
+                    ? noNegativo(restar(saldoInicial, capitalVencido)) : saldoInicial;
+            BigDecimal interes = multiplicar(baseInteres, tasa);
             BigDecimal capitalContractual = CERO;
             if (dentroDelPlazo && !sinPagoSinMora && !esCero(saldoPlan)) {
                 capitalContractual = min(saldoPlan, restar(cuota, multiplicar(saldoPlan, tasa)));
             }
-            Servicios servicios = (dentroDelPlazo && !sinPagoSinMora) ? serviciosPorCuota : Servicios.NINGUNO;
+            boolean causaServicios = !sinPagoSinMora
+                    && (dentroDelPlazo || (reglas.serviciosDespuesDelPlazo() && !esCero(saldoInicial)));
+            Servicios servicios = Servicios.NINGUNO;
+            if (causaServicios) {
+                servicios = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
+                        ? Servicios.porCuota(saldoInicial, p) : serviciosPorCuota;
+            }
             BigDecimal mora = multiplicar(capitalVencido, tasa);
-            if (dias > 0) {
+            if (dias > 0 && reglas.formulaMora() == ReglasNegocio.FormulaMora.VENCIDO_MAS_DIAS) {
                 BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
                 mora = sumar(mora, multiplicar(capitalContractual, factorDias));
             }
             BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), p.cobranzaDiaria()) : CERO;
+            if (reglas.topeCobranzaPorPago() != null) {
+                cobranza = min(cobranza, reglas.topeCobranzaPorPago());
+            }
 
             // 3. Pago y prelación.
             BigDecimal exigible = sumar(saldoInicial, cxcCobranza, cobranza, cxcMora, mora, cxcInteres, interes, cxcServicios,
@@ -156,9 +169,20 @@ public final class MotorCartera {
             restante = restar(restante, pagoMora);
             BigDecimal pagoInteres = min(restante, sumar(cxcInteres, interes));
             restante = restar(restante, pagoInteres);
-            BigDecimal pagoServicios = min(restante, sumar(cxcServicios, servicios.total()));
-            restante = restar(restante, pagoServicios);
-            BigDecimal pagoCapital = min(restante, saldoInicial);
+            BigDecimal pagoServicios;
+            BigDecimal pagoCapital;
+            if (reglas.prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS) {
+                // Solo se adelanta el capital de la cuota (contractual + vencido); el excedente pasa a servicios.
+                pagoCapital = min(restante, min(saldoInicial, sumar(capitalVencido, capitalContractual)));
+                restante = restar(restante, pagoCapital);
+                pagoServicios = min(restante, sumar(cxcServicios, servicios.total()));
+                restante = restar(restante, pagoServicios);
+                pagoCapital = sumar(pagoCapital, min(restante, restar(saldoInicial, pagoCapital)));
+            } else {
+                pagoServicios = min(restante, sumar(cxcServicios, servicios.total()));
+                restante = restar(restante, pagoServicios);
+                pagoCapital = min(restante, saldoInicial);
+            }
 
             cxcCobranza = noNegativo(restar(sumar(cxcCobranza, cobranza), pagoCobranza));
             cxcMora = noNegativo(restar(sumar(cxcMora, mora), pagoMora));
