@@ -33,7 +33,8 @@ build/
 .vscode/
 
 ### Copias de trabajo de agentes
-.claude/
+.claude/*
+!.claude/skills/
 
 # Recibos de archify (se regeneran con finalize)
 docs/diagrama/*.json
