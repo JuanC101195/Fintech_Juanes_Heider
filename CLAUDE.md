@@ -38,6 +38,25 @@ Un solo ciclo semanal (`MotorCartera.Corrida.semana`) para los 9 casos:
 
 Cada caso del Excel es un `Escenario`: la operación, los parámetros y las instrucciones por semana (`Instruccion`: `PagoContractual`, `PagoParcial`, `PagoValor`, `SinPago`, `AbonoExtra`, `PrepagoTotal`, `CambioTasa`, `CierrePorRecuperacion`). Las semanas sin instrucción son pagos completos a tiempo.
 
+## Cuestionario de reglas para negocio (`cuestionario/`)
+
+Front (React 19 + Vite + Tailwind 4 con los tokens de Prestaya) para que Diego responda las preguntas abiertas viendo el efecto de cada opción. Las cifras vienen del motor real, no del navegador.
+
+```bash
+cd cuestionario
+npm install
+npm run escenarios   # corre GeneradorEscenarios (Java) → src/datos/escenarios.json
+npm test             # integridad de preguntas/escenarios y exportación a Excel
+npm run build        # dist/index.html: un solo archivo para enviar por correo
+node pruebas/humo.mjs   # Chromium: celular y escritorio sin desbordes + descarga del Excel
+```
+
+Flujo: Diego responde → descarga el Excel → `python herramientas/importar_respuestas.py <excel>` escribe `config/reglas-negocio.properties` (lo que el motor ya aplica, `ReglasNegocio.CLAVES`) y `docs/respuestas-negocio.md` (todo, con lo pendiente de desarrollo) → `./mvnw -q -B test`: `ReglasNegocioConfiguradaTest` corre los casos con esas reglas.
+
+- Preguntas en `cuestionario/src/preguntas.ts`. Los códigos de opción y las claves de `ajustes` los lee el importador: no cambiarlos sin actualizarlo.
+- Una pregunta con previsualización necesita su entrada en `GeneradorEscenarios` (misma clave de opción).
+- `ReglasNegocio.EXCEL` es el comportamiento del Excel; las pruebas de los casos 1 a 9 siempre corren con él.
+
 ## Decisiones vigentes
 
 Ver `docs/decisiones.md`. Las más importantes:
