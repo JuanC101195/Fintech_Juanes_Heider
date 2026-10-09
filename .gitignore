@@ -34,3 +34,6 @@ build/
 
 ### Copias de trabajo de agentes
 .claude/
+
+# Recibos de archify (se regeneran con finalize)
+docs/diagrama/*.json

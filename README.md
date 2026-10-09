@@ -12,7 +12,7 @@ Respaldo del trabajo de **Juan Esteban Cardozo** para la plataforma de crédito 
 | [`cuestionario/`](cuestionario/) | Front (React + Vite + Tailwind con el diseño de Prestaya) para que Diego responda las reglas viendo el efecto de cada opción; exporta a Excel |
 | [`herramientas/`](herramientas/) | Exportador del Excel a CSV de prueba e importador de las respuestas del cuestionario |
 | [`docs/`](docs/) | Decisiones, ADR, reglas por caso, preguntas para Diego, pendientes y documentación de los agentes |
-| [`docs/diagrama/`](docs/diagrama/agentes-motor-cartera.html) | Diagrama interactivo de cómo operaron los 9 agentes |
+| [`docs/diagrama/`](docs/diagrama/agentes-motor-cartera.html) | Diagrama interactivo de cómo operaron los 9 agentes, generado con [archify](https://github.com/tt-a1i/archify) (fuente en `docs/diagrama/fuente/`) |
 | [`backlog-financiera/`](backlog-financiera/) | Épicas, features e historias (Gherkin) del proyecto en Azure DevOps, priorización por sprints en LaTeX |
 | [`docs/fuentes/`](docs/fuentes/) | Excel de casos operativos de Diego (fuente de verdad de las reglas) |
 
@@ -56,7 +56,15 @@ flowchart LR
 | **Ejecución** | En paralelo y en segundo plano: 7 min 14 s en total, 1.032.778 tokens, 237 llamadas a herramientas |
 | **Resultado** | 9 de 9 casos al centavo, 122 pruebas de los agentes, 1 solo cambio al motor compartido |
 
-Prompts, métricas por agente, reglas para que no se pisaran y cómo repetir el método: [docs/agentes/README.md](docs/agentes/README.md). Diagrama interactivo: abrir [`docs/diagrama/agentes-motor-cartera.html`](docs/diagrama/agentes-motor-cartera.html) en el navegador.
+Prompts, métricas por agente, reglas para que no se pisaran y cómo repetir el método: [docs/agentes/README.md](docs/agentes/README.md). Diagrama interactivo: abrir [`docs/diagrama/agentes-motor-cartera.html`](docs/diagrama/agentes-motor-cartera.html) en el navegador (tema claro/oscuro, estilos, modo presentación, exportar a PNG/SVG, ruta entre nodos, lente y búsqueda).
+
+El diagrama se genera con [archify](https://github.com/tt-a1i/archify) 3.0.1, que valida composición, rutas y lectura en navegador antes de entregar:
+
+```bash
+git clone https://github.com/tt-a1i/archify ../archify
+node docs/diagrama/fuente/generar.mjs ../archify    # escribe docs/diagrama/fuente/agentes.architecture.json
+node ../archify/archify/bin/archify.mjs finalize architecture docs/diagrama/fuente/agentes.architecture.json docs/diagrama/agentes-motor-cartera.html --quality showcase --json
+```
 
 ## Comandos
 
