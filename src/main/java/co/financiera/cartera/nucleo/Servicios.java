@@ -14,7 +14,7 @@ public record Servicios(BigDecimal fondoGarantias, BigDecimal asistencia, BigDec
     public static final Servicios NINGUNO = new Servicios(Calc.CERO, Calc.CERO, Calc.CERO);
 
     public static Servicios porCuota(BigDecimal montoFinanciado, ParametrosProducto p) {
-        BigDecimal semanasMes = p.semanasPorMes();
+        BigDecimal semanasMes = p.periodosPorMes();
         BigDecimal conIva = Calc.sumar(Calc.UNO, p.iva());
         BigDecimal fondoGarantias = Calc.multiplicar(
                 Calc.dividir(Calc.multiplicar(montoFinanciado, p.fondoGarantiasPorcentajeMensual()), semanasMes), conIva);
@@ -25,6 +25,20 @@ public record Servicios(BigDecimal fondoGarantias, BigDecimal asistencia, BigDec
 
     public BigDecimal total() {
         return Calc.sumar(fondoGarantias, asistencia, seguro);
+    }
+
+    /** Solo el seguro de vida: en periodos de atraso o impago el fondo y la asistencia no se causan. */
+    public Servicios soloSeguro() {
+        return new Servicios(Calc.CERO, Calc.CERO, seguro);
+    }
+
+    public Servicios menos(Servicios otro) {
+        return new Servicios(Calc.restar(fondoGarantias, otro.fondoGarantias), Calc.restar(asistencia, otro.asistencia),
+                Calc.restar(seguro, otro.seguro));
+    }
+
+    public Servicios noNegativo() {
+        return new Servicios(Calc.noNegativo(fondoGarantias), Calc.noNegativo(asistencia), Calc.noNegativo(seguro));
     }
 
     public Servicios mas(Servicios otro) {

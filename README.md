@@ -6,14 +6,15 @@ La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](
 
 **En línea:** [diagrama interactivo](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html) · [cuestionario de reglas para negocio](https://juanc101195.github.io/Fintech_Juanes_Heider/cuestionario.html) · [inicio](https://juanc101195.github.io/Fintech_Juanes_Heider/)
 
-## Estado (16 oct 2026)
+## Estado (16 oct 2026 · Excel de Diego del 11 de octubre)
 
-- **Los 9 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa, dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora y pago tardío con cobranza.
-- **147 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
-- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma.
+- **Los 12 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa (con fecha final fija o con cuota fija), dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora, pago tardío con cobranza, pago inferior seguido de dación y pago inferior con normalización.
+- **Producto parametrizable**: catálogo de líneas de crédito (CPPU 87,62 % EA, CPPR, Bajo monto y Ordinario, cada una con su plazo máximo), periodicidad diaria, semanal o mensual y número de cuotas (104 en el ejemplo).
+- **156 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
+- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma (cada concepto extinguido con la moto en su propia cuenta).
 - **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
 - **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
-- **Cuestionario para negocio en línea** con solo las 25 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.
+- **Cuestionario para negocio en línea** con solo las 24 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.
 
 ## Cómo funciona el motor
 
@@ -40,6 +41,9 @@ Lo que el Excel no define se configura en `ReglasNegocio`. Por defecto reproduce
 | Abono mayor que el saldo | Se rechaza | Diego, P-14 |
 | Mora antes de dación o retoma | Se causa como en cualquier atraso | Diego, P-16 |
 | Interés sobre capital vencido | El vencido paga solo mora | Diego, P-03 |
+| Prelación | Cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital, también para el valor de la moto | Excel 11 oct, Inputs ⑥ |
+| Servicios en atraso o impago | Solo se causa el seguro; fondo y asistencia no | Excel 11 oct, Inputs ⑥ |
+| Giro a terceros | Lo recaudado de cada servicio, al cierre de cada mes | Excel 11 oct |
 | Fondo de garantías y seguro | Sobre el monto financiado inicial | Diego, P-07 |
 | Redondeo | Ninguno en el cálculo; solo en la presentación | Diego, P-05 |
 

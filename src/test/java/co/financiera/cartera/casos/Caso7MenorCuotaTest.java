@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Caso 7 · Abono extra como menor cuota: en el mes 10 (periodo 43), después de la cuota ordinaria,
- * el cliente abona 2.000.000 a capital; se conserva la cuota 86 como última y se recalcula una
+ * el cliente abona 2.000.000 a capital; se conserva la cuota 104 como última y se recalcula una
  * cuota menor. Hoja Caso7_MenorCuota. Reglas en docs/reglas/caso-7.md.
  */
 class Caso7MenorCuotaTest {
@@ -110,21 +110,21 @@ class Caso7MenorCuotaTest {
         // V2 periodo abono, V3 abono extra
         assertThat(abono.abonoExtra()).isCloseTo(ABONO, within(UN_PESO));
         // V4 saldo tras abono = INDEX(J, C57)
-        assertThat(abono.saldoFinal()).isCloseTo(new BigDecimal("1701573.6220031078"), within(UN_PESO));
+        assertThat(abono.saldoFinal()).isCloseTo(new BigDecimal("2305138.1901533296"), within(UN_PESO));
         // V5 nueva cuota = INDEX(F, C57 + 1)
-        assertThat(siguiente.cuotaFinanciera()).isCloseTo(new BigDecimal("51032.32080378282"), within(UN_PESO));
-        // V6 reducción de cuota = B20 − nueva cuota
+        assertThat(siguiente.cuotaFinanciera()).isCloseTo(new BigDecimal("53761.418780302854"), within(UN_PESO));
+        // V6 reducción de cuota = B24 − nueva cuota
         assertThat(Calc.restar(cuotaOriginal, siguiente.cuotaFinanciera()))
-                .isCloseTo(new BigDecimal("59982.501072985666"), within(UN_PESO));
+                .isCloseTo(new BigDecimal("46644.855401685745"), within(UN_PESO));
         // V7 periodo final, V8 saldo final
-        assertThat(motor.getLast().periodo()).isEqualTo(86);
+        assertThat(motor.getLast().periodo()).isEqualTo(104);
         assertThat(motor.getLast().saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
     }
 
     @Test
     void laNuevaCuotaEsElPmtSobreElSaldoTrasAbonoConLasCuotasRestantes() {
         Movimiento abono = periodo(motor, PERIODO_ABONO);
-        BigDecimal pmt = Amortizacion.cuotaFija(Tasas.de(P).semanal(), 86 - PERIODO_ABONO, abono.saldoFinal());
+        BigDecimal pmt = Amortizacion.cuotaFija(Tasas.de(P).periodica(), 104 - PERIODO_ABONO, abono.saldoFinal());
         assertThat(motor.subList(PERIODO_ABONO + 1, motor.size()))
                 .allSatisfy(m -> assertThat(m.cuotaFinanciera()).isCloseTo(pmt, within(UN_PESO)));
         // La cuota de la semana del abono sigue siendo la original (F46 = MIN(B20, D + E)).
@@ -161,9 +161,9 @@ class Caso7MenorCuotaTest {
         }
 
         @Test
-        void v24SaldoFinalEnElPeriodo86() {
+        void v24SaldoFinalEnElPeriodo104() {
             int p = periodoDe(24);
-            assertThat(p).isEqualTo(86);
+            assertThat(p).isEqualTo(104);
             assertThat(periodo(motor, p).saldoFinal()).isCloseTo(excel(p, "Saldo final"), within(toleranciaDe(24)));
             assertThat(periodo(motor, p).estado()).isEqualTo(EstadoCredito.CANCELADO);
         }
@@ -189,20 +189,20 @@ class Caso7MenorCuotaTest {
         /** (b) Abono en la última cuota: no hay cuotas restantes para el PMT; no debe fallar. */
         @Test
         void abonoEnLaUltimaCuotaSeRechazaPorqueYaNoHaySaldo() {
-            // Tras la cuota 86 el saldo es 0: el abono supera el saldo y se rechaza (P-14).
+            // Tras la cuota 104 el saldo es 0: el abono supera el saldo y se rechaza (P-14).
             Escenario e = new Escenario(Operacion.ejemploExcel(), P)
-                    .en(86, new AbonoExtra(ABONO, ModalidadAbono.MENOR_CUOTA));
+                    .en(104, new AbonoExtra(ABONO, ModalidadAbono.MENOR_CUOTA));
             assertThatThrownBy(() -> correr(e)).isInstanceOf(AbonoMayorQueElSaldoException.class);
         }
 
-        /** (b) Abono en la penúltima cuota: PMT con 1 periodo; la cuota 86 liquida el saldo. */
+        /** (b) Abono en la penúltima cuota: PMT con 1 periodo; la cuota 104 liquida el saldo. */
         @Test
         void abonoEnLaPenultimaCuotaDejaUnaSolaCuota() {
             List<Movimiento> movs = correr(new Escenario(Operacion.ejemploExcel(), P)
-                    .en(85, new AbonoExtra(new BigDecimal("50000"), ModalidadAbono.MENOR_CUOTA)));
-            Movimiento p85 = periodo(movs, 85);
-            Movimiento p86 = periodo(movs, 86);
-            BigDecimal esperado = Calc.multiplicar(p85.saldoFinal(), Calc.sumar(Calc.UNO, Tasas.de(P).semanal()));
+                    .en(103, new AbonoExtra(new BigDecimal("50000"), ModalidadAbono.MENOR_CUOTA)));
+            Movimiento p85 = periodo(movs, 103);
+            Movimiento p86 = periodo(movs, 104);
+            BigDecimal esperado = Calc.multiplicar(p85.saldoFinal(), Calc.sumar(Calc.UNO, Tasas.de(P).periodica()));
             assertThat(p86.cuotaFinanciera()).isCloseTo(esperado, within(UN_PESO));
             assertThat(p86.saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
             assertThat(p86.estado()).isEqualTo(EstadoCredito.CANCELADO);
@@ -223,7 +223,7 @@ class Caso7MenorCuotaTest {
             List<Movimiento> movs = correr(new Escenario(Operacion.ejemploExcel(), P)
                     .en(PERIODO_ABONO, new AbonoExtra(ABONO, ModalidadAbono.MENOR_CUOTA))
                     .en(segundo, new AbonoExtra(new BigDecimal("500000"), ModalidadAbono.MENOR_CUOTA)));
-            BigDecimal tasa = Tasas.de(P).semanal();
+            BigDecimal tasa = Tasas.de(P).periodica();
 
             // Entre los dos abonos se replica el Excel del caso 7.
             for (int p = 1; p < segundo; p++) {
@@ -235,18 +235,18 @@ class Caso7MenorCuotaTest {
             assertThat(s.saldoFinal()).isCloseTo(excel(segundo, "Saldo final").subtract(new BigDecimal("500000")),
                     within(UN_PESO));
 
-            BigDecimal segundaCuota = Amortizacion.cuotaFija(tasa, 86 - segundo, s.saldoFinal());
+            BigDecimal segundaCuota = Amortizacion.cuotaFija(tasa, 104 - segundo, s.saldoFinal());
             assertThat(periodo(movs, segundo + 1).cuotaFinanciera()).isCloseTo(segundaCuota, within(UN_PESO));
             assertThat(segundaCuota).isLessThan(excel(segundo + 1, "Cuota financiera"));
-            assertThat(movs.getLast().periodo()).isEqualTo(86);
+            assertThat(movs.getLast().periodo()).isEqualTo(104);
             assertThat(movs.getLast().saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
             assertThat(movs.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
             assertThat(movs).allSatisfy(m -> assertThat(m.capitalVencido()).isCloseTo(BigDecimal.ZERO, within(UN_PESO)));
         }
 
         /**
-         * Discrepancia D-7.1: el Excel calcula la nueva cuota con la tasa original (Inputs B17). El motor
-         * usa la tasa vigente; si antes hubo un cambio de tasa (caso 2) solo así el saldo llega a 0 en la 86.
+         * Discrepancia D-7.1: el Excel calcula la nueva cuota con la tasa original (Inputs B21). El motor
+         * usa la tasa vigente; si antes hubo un cambio de tasa (caso 2) solo así el saldo llega a 0 en la 104.
          */
         @Test
         void conCambioDeTasaPrevioLaNuevaCuotaUsaLaTasaVigente() {
@@ -255,15 +255,15 @@ class Caso7MenorCuotaTest {
             List<Movimiento> movs = correr(new Escenario(Operacion.ejemploExcel(), P)
                     .en(periodoCambio, new CambioTasa(nuevaEA))
                     .en(PERIODO_ABONO, new AbonoExtra(ABONO, ModalidadAbono.MENOR_CUOTA)));
-            Tasas vigente = Tasas.desdeEA(nuevaEA, P.semanasPorAnio(), P.mesesPorAnio());
+            Tasas vigente = Tasas.desdeEA(nuevaEA, P.periodosPorAnio(), P.mesesPorAnio());
             Movimiento abono = periodo(movs, PERIODO_ABONO);
-            BigDecimal esperada = Amortizacion.cuotaFija(vigente.semanal(), 86 - PERIODO_ABONO, abono.saldoFinal());
-            BigDecimal conTasaOriginal = Amortizacion.cuotaFija(Tasas.de(P).semanal(), 86 - PERIODO_ABONO,
+            BigDecimal esperada = Amortizacion.cuotaFija(vigente.periodica(), 104 - PERIODO_ABONO, abono.saldoFinal());
+            BigDecimal conTasaOriginal = Amortizacion.cuotaFija(Tasas.de(P).periodica(), 104 - PERIODO_ABONO,
                     abono.saldoFinal());
 
             assertThat(periodo(movs, PERIODO_ABONO + 1).cuotaFinanciera()).isCloseTo(esperada, within(UN_PESO));
             assertThat(esperada).isLessThan(conTasaOriginal);
-            assertThat(movs.getLast().periodo()).isEqualTo(86);
+            assertThat(movs.getLast().periodo()).isEqualTo(104);
             assertThat(movs.getLast().saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
         }
     }

@@ -16,6 +16,9 @@ public enum Cuenta {
     INGRESOS_COBRANZA("Ingresos por cobranza"),
     CXP_SERVICIOS_TERCEROS("CxP servicios a terceros"),
     CXC_SERVICIOS("CxC servicios complementarios"),
+    CXC_FONDO_CLIENTE("CxC FCC cliente (IVA incl.)"),
+    CXC_ASISTENCIAS("CxC asistencias (IVA incl.)"),
+    CXC_SEGUROS("CxC seguros"),
     INVENTARIO_MOTOS("Inventario de motos"),
     CXC_FONDO_GARANTIAS("CxC Fondo de garantías"),
     CXP_DEUDOR("CxP deudor");

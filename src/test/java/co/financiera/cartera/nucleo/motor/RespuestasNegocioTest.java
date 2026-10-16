@@ -48,26 +48,27 @@ class RespuestasNegocioTest {
     }
 
     @Test
-    void p16ConMoraAntesDeRecuperacionLaDacionCausaMoraComoLosCasos8y9() {
-        ReglasNegocio reglas = ReglasNegocio.EXCEL.conMoraAntesDeRecuperacion(true);
-        List<Movimiento> conRegla = motor.ejecutar(EscenariosExcel.caso3(p, false).conReglas(reglas));
+    void p16LaDacionCausaMoraComoLosCasos8y9YLaVarianteAnteriorNo() {
+        // El Excel del 11 de octubre ya causa mora y seguro mientras el cliente no paga (P-16).
+        ReglasNegocio sinMora = ReglasNegocio.EXCEL.conMoraAntesDeRecuperacion(false);
         List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso3(p, false));
         List<Movimiento> causaMora = motor.ejecutar(EscenariosExcel.caso3(p, true));
+        List<Movimiento> anterior = motor.ejecutar(EscenariosExcel.caso3(p, false).conReglas(sinMora));
 
-        assertThat(conRegla).isEqualTo(causaMora);
-        BigDecimal moraConRegla = conRegla.stream().map(Movimiento::interesMora).reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(excel).isEqualTo(causaMora);
         BigDecimal moraExcel = excel.stream().map(Movimiento::interesMora).reduce(BigDecimal.ZERO, BigDecimal::add);
-        assertThat(moraExcel).isZero();
-        assertThat(moraConRegla).isPositive();
-        // La deuda que extingue la moto es mayor: incluye la mora y los servicios no pagados.
-        assertThat(conRegla.getLast().deudaAExtinguir()).isGreaterThan(excel.getLast().deudaAExtinguir());
-        Contabilizador.estandar().contabilizar(conRegla);
+        BigDecimal moraAnterior = anterior.stream().map(Movimiento::interesMora).reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(moraExcel).isPositive();
+        assertThat(moraAnterior).isZero();
+        // La deuda que extingue la moto es mayor: incluye la mora y el seguro no pagados.
+        assertThat(excel.getLast().deudaAExtinguir()).isGreaterThan(anterior.getLast().deudaAExtinguir());
+        Contabilizador.estandar().contabilizar(excel);
     }
 
     @Test
     void p16LaClaveSeLeeDeLaConfiguracion() {
         assertThat(ReglasNegocio.desde(Map.of("moraAntesDeRecuperacion", "true")).moraAntesDeRecuperacion()).isTrue();
-        assertThat(ReglasNegocio.EXCEL.moraAntesDeRecuperacion()).isFalse();
+        assertThat(ReglasNegocio.EXCEL.moraAntesDeRecuperacion()).isTrue();
         assertThat(ReglasNegocio.CLAVES).contains("moraAntesDeRecuperacion");
     }
 }

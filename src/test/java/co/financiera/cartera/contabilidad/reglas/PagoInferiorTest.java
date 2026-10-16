@@ -44,16 +44,16 @@ class PagoInferiorTest {
     void reproduceElPanelContableDelEvento() {
         Asiento a = new PagoInferior().contabilizar(periodo(43)).orElseThrow();
 
-        assertThat(debito(a, Cuenta.CAJA)).isCloseTo(bd("69619.59767378433"), UN_PESO); // AC14
-        assertThat(credito(a, Cuenta.CXC_INTERES_CORRIENTE)).isCloseTo(bd("45741.932105863954"), UN_PESO); // AD15
-        assertThat(credito(a, Cuenta.CXP_SERVICIOS_TERCEROS)).isCloseTo(bd("23877.665567920376"), UN_PESO); // AD17
-        assertThat(debito(a, Cuenta.CARTERA_VENCIDA)).isCloseTo(bd("65272.88977090453"), UN_PESO); // AC18
-        // AD16 (capital 0) + AD19 (contrapartida de la reclasificación).
-        assertThat(credito(a, Cuenta.CARTERA_VIGENTE)).isCloseTo(bd("65272.88977090453"), UN_PESO);
+        assertThat(debito(a, Cuenta.CAJA)).isCloseTo(bd("65376.17859587236"), UN_PESO); // AI14
+        assertThat(credito(a, Cuenta.CXC_INTERES_CORRIENTE)).isCloseTo(bd("52989.932797465175"), UN_PESO); // AJ15
+        assertThat(credito(a, Cuenta.CXP_SERVICIOS_TERCEROS)).isCloseTo(bd("3406.3846153846157"), UN_PESO); // AJ17
+        assertThat(debito(a, Cuenta.CARTERA_VENCIDA)).isCloseTo(bd("38436.48020150085"), UN_PESO); // AI18
+        // AJ16 (capital 8.979,86) + AJ19 (contrapartida de la reclasificación 38.436,48).
+        assertThat(credito(a, Cuenta.CARTERA_VIGENTE)).isCloseTo(bd("47416.341384524423"), UN_PESO);
         assertThat(credito(a, Cuenta.CXC_INTERES_MORA)).isZero();
         assertThat(credito(a, Cuenta.CXC_GASTOS_COBRANZA)).isZero();
-        // AC20 = AD20 = 134.892,49 y AE20 = 0.
-        assertThat(a.totalDebitos()).isCloseTo(bd("134892.48744468886"), UN_PESO);
+        // AI20 = AJ20 = 103.812,66 y AK20 = 0.
+        assertThat(a.totalDebitos()).isCloseTo(bd("103812.65879737321"), UN_PESO);
         assertThat(a.cuadra()).isTrue();
     }
 
@@ -74,7 +74,7 @@ class PagoInferiorTest {
     void conTodasLasReglasLaCajaDelEventoSeDebitaUnaSolaVez() {
         List<Asiento> asientos = Contabilizador.estandar().contabilizar(periodo(43));
         BigDecimal caja = asientos.stream().map(a -> debito(a, Cuenta.CAJA)).reduce(BigDecimal.ZERO, BigDecimal::add);
-        assertThat(caja).isCloseTo(bd("69619.59767378433"), UN_PESO);
+        assertThat(caja).isCloseTo(bd("65376.17859587236"), UN_PESO);
         assertThat(Contabilizador.estandar().contabilizar(motor)).allSatisfy(a -> assertThat(a.cuadra()).isTrue());
     }
 }

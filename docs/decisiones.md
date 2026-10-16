@@ -18,6 +18,10 @@ Registro de lo decidido. Lo marcado **provisional** se tomó para avanzar y debe
 | D12 | 2026-10-16 | Un abono mayor que el saldo se **rechaza** (`AbonoMayorQueElSaldoException`); el Excel lo recortaba con MIN (P-14). | Tomada (Diego) |
 | D13 | 2026-10-16 | El interés corriente se causa solo sobre el capital vigente; el vencido paga solo mora (`baseInteres = SALDO_VIGENTE`, P-03). | Tomada (Diego) |
 | D14 | 2026-10-16 | "FCC" pasa a llamarse **fondo de garantías** en el código y la cuenta contable (`CXC_FONDO_GARANTIAS`); las columnas del Excel conservan su nombre (P-07). | Tomada (Diego) |
+| D15 | 2026-10-16 | Fuente de verdad: Excel de Diego del 11 de octubre (12 casos). Línea CPPU 87,62 % EA, 104 cuotas semanales, catálogo de líneas y periodicidad (`LineaCredito`, `Periodicidad`). | Tomada (Diego) |
+| D16 | 2026-10-16 | Prelación oficial (Inputs ⑥): cobranza → mora → interés corriente → fondo → asistencia → seguro → capital, con CxC y pagos por servicio. Se aplica igual al valor de la moto en dación y retoma. Cierra P1. | Tomada (Diego) |
+| D17 | 2026-10-16 | En periodos de atraso o impago (sin pago, pago inferior, pago tardío) solo se causa el seguro; fondo y asistencia no. A terceros se gira lo recaudado. | Tomada (Diego) |
+| D18 | 2026-10-16 | Casos nuevos: 10 (cambio de tasa conservando la cuota: `ModalidadCambioTasa.MISMA_CUOTA`, NPER), 11 (pago inferior + dación) y 12 (normalización: `Instruccion.PagoAlDia`). | Tomada (Diego) |
 
 ## Preguntas abiertas (P)
 

@@ -38,6 +38,7 @@ const components = [
   { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'ReglasNegocio · 139 pruebas', tag: '73756ea', pos: [1470, CY - 34], size: [170, 68] },
   { id: 'diego', type: 'external', label: 'Diego', sublabel: 'respondió P-01 a P-27', pos: [1470, CY + 130], size: [170, 60] },
   { id: 'respuestas', type: 'frontend', label: 'Reglas de Diego', sublabel: 'inicial · abonos · mora · 147 pruebas', tag: '16 oct', pos: [1440, CY + 250], size: [230, 68] },
+  { id: 'excel11', type: 'frontend', label: 'Excel de Diego · 11 oct', sublabel: '12 casos · prelación · 156 pruebas', tag: '16 oct', pos: [1440, CY + 380], size: [230, 68] },
   { id: 'github', type: 'external', label: 'GitHub', sublabel: 'Fintech_Juanes_Heider', pos: [1470, CY - 190], size: [170, 60] },
 ];
 const connections = [
@@ -48,6 +49,7 @@ const connections = [
   { id: 'envia', from: 'cuestionario', to: 'diego', label: 'envía', variant: 'dashed', fromSide: 'bottom', toSide: 'top' },
   { id: 'respaldo', from: 'cuestionario', to: 'github', label: 'push', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
   { id: 'aplica', from: 'diego', to: 'respuestas', label: 'aplica', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
+  { id: 'excel-nuevo', from: 'respuestas', to: 'excel11', label: 'Excel nuevo', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
 ];
 for (const [n, nombre, seg, her, pruebas, commit, entrega] of agentes) {
   const y = Y0 + (n - 1) * PASO;
@@ -99,7 +101,7 @@ const doc = {
       'Pago inicial opcional que digita el asesor',
       'Abono sin elección → menor plazo; mayor que el saldo → rechazo',
       'Mora antes de dación y retoma; vencido paga solo mora',
-      'Falta su último Excel: tasas por línea y servicios en mora',
+      'Excel del 11 oct: 12 casos al centavo, 156 pruebas',
     ] },
     { dot: 'slate', title: 'Cómo se lanzaron', items: ['Subagentes de propósito general del asistente de programación', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
   ],

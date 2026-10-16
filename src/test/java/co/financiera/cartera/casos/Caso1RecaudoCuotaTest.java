@@ -55,9 +55,9 @@ class Caso1RecaudoCuotaTest {
         assertThat(a.periodo()).isEqualTo(1);
         assertThat(a.lineas()).hasSize(4);
         // Valores del panel V12:Y17 (W13 = M4, X14 = F4, X15 = H4, X16 = L4).
-        assertThat(debito(a, Cuenta.CAJA)).isCloseTo(new BigDecimal("174048.9941844608"), UN_PESO);
-        assertThat(credito(a, Cuenta.INGRESOS_INTERESES)).isCloseTo(new BigDecimal("71698.8767877002"), UN_PESO);
-        assertThat(credito(a, Cuenta.CARTERA_VIGENTE)).isCloseTo(new BigDecimal("39315.94508906829"), UN_PESO);
+        assertThat(debito(a, Cuenta.CAJA)).isCloseTo(new BigDecimal("163440.4464896809"), UN_PESO);
+        assertThat(credito(a, Cuenta.INGRESOS_INTERESES)).isCloseTo(new BigDecimal("71882.7890477476"), UN_PESO);
+        assertThat(credito(a, Cuenta.CARTERA_VIGENTE)).isCloseTo(new BigDecimal("28523.485134240997"), UN_PESO);
         assertThat(credito(a, Cuenta.CXP_SERVICIOS_TERCEROS)).isCloseTo(new BigDecimal("63034.172307692315"), UN_PESO);
         assertThat(a.cuadra()).isTrue();
         assertThat(a.lineas()).extracting(l -> l.cuenta().nombreExcel())
@@ -85,7 +85,7 @@ class Caso1RecaudoCuotaTest {
     void elContabilizadorEstandarLaTieneRegistradaYLaCarteraSeExtingueCompleta() {
         List<Asiento> asientos = Contabilizador.estandar().contabilizar(caso1);
         List<Asiento> recaudos = asientos.stream().filter(a -> debito(a, Cuenta.CAJA).signum() > 0).toList();
-        assertThat(recaudos).hasSize(86);
+        assertThat(recaudos).hasSize(104);
         BigDecimal carteraAbonada = recaudos.stream().map(a -> credito(a, Cuenta.CARTERA_VIGENTE)).reduce(Calc.CERO, (x, y) -> Calc.sumar(x, y));
         assertThat(carteraAbonada).isCloseTo(new BigDecimal("5904400"), UN_PESO);
     }

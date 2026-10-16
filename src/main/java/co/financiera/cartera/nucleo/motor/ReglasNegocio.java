@@ -27,8 +27,12 @@ public record ReglasNegocio(
         boolean serviciosDespuesDelPlazo,
         boolean moraAntesDeRecuperacion) {
 
+    /**
+     * Comportamiento del Excel de Diego (versión del 11 de octubre): interés corriente sobre el capital
+     * vigente (P-03) y mora y servicios en las semanas sin pago antes de una dación o retoma (P-16).
+     */
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
-            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_TOTAL, null, BaseServicios.MONTO_INICIAL, false, false);
+            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */

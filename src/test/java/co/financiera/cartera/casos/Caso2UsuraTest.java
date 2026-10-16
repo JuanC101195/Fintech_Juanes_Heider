@@ -69,14 +69,14 @@ class Caso2UsuraTest {
                 new Escenario(Operacion.ejemploExcel(), P).en(PERIODO_44, ajuste));
 
         Movimiento cambio = motor.get(PERIODO_44);
-        BigDecimal tasa79 = Tasas.desdeEA(bd("0.79"), 52, 12).semanal();
-        assertThat(cambio.tasaSemanal()).isCloseTo(tasa79, offset(ComparadorExcel.TOLERANCIA_TASA));
+        BigDecimal tasa79 = Tasas.desdeEA(bd("0.79"), 52, 12).periodica();
+        assertThat(cambio.tasaPeriodica()).isCloseTo(tasa79, offset(ComparadorExcel.TOLERANCIA_TASA));
         assertThat(cambio.cuotaFinanciera()).isCloseTo(
                 Amortizacion.cuotaFija(tasa79, Calendario.numeroCuotas(P) - PERIODO_44 + 1, cambio.saldoInicial()),
                 offset(ComparadorExcel.TOLERANCIA_DINERO));
 
         Movimiento ultimo = motor.getLast();
-        assertThat(ultimo.periodo()).isEqualTo(86);
+        assertThat(ultimo.periodo()).isEqualTo(104);
         assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
         assertThat(ultimo.saldoFinal()).isCloseTo(BigDecimal.ZERO, offset(ComparadorExcel.TOLERANCIA_DINERO));
     }
@@ -90,7 +90,7 @@ class Caso2UsuraTest {
 
         ComparadorExcel comparador = new ComparadorExcel()
                 .dinero("Saldo inicial", Movimiento::saldoInicial)
-                .tasa("Tasa semanal", Movimiento::tasaSemanal)
+                .tasa("Tasa periódica", Movimiento::tasaPeriodica)
                 .dinero("Interés", Movimiento::interesCorriente)
                 .dinero("Cuota financiera", Movimiento::cuotaFinanciera)
                 .dinero("Capital", Movimiento::pagoCapital)

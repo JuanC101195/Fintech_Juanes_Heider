@@ -7,8 +7,11 @@ import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
+import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.CierrePorRecuperacion;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
+import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadCambioTasa;
+import co.financiera.cartera.nucleo.motor.Instruccion.PagoAlDia;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoContractual;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
@@ -59,5 +62,33 @@ public final class EscenariosExcel {
     public static Escenario caso9(ParametrosProducto p) {
         return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(120))
                 .desde(Calendario.periodoDelMes(10, p), new PagoContractual(14));
+    }
+
+    /** Caso 10: desde el mes 11 la tasa pasa a 80 % EA; se conserva la cuota y cambia el número de cuotas. */
+    public static Escenario caso10(ParametrosProducto p) {
+        return base(p).en(Calendario.primerPeriodoDelMes(11, p),
+                new CambioTasa(bd("0.80"), ModalidadCambioTasa.MISMA_CUOTA));
+    }
+
+    /**
+     * Caso 11: pago del 40 % de la cuota en el mes 10, tres periodos sin pago y dación por 3.000.000 en
+     * el cuarto (Inputs C80: 4 periodos de espera, incluido el cierre).
+     */
+    public static Escenario caso11(ParametrosProducto p) {
+        int inferior = Calendario.periodoDelMes(10, p);
+        int cierre = inferior + 4;
+        return base(p).en(inferior, new PagoParcial(bd("0.4"), 0))
+                .entre(inferior + 1, cierre, new SinPago(true))
+                .en(cierre, new CierrePorRecuperacion(TipoRecuperacion.DACION_EN_PAGO, bd(3_000_000)));
+    }
+
+    /**
+     * Caso 12: pago del 40 % de la cuota en el mes 10; en el mes 14 paga la cuota del periodo más todo lo
+     * atrasado y vuelve a estar al día (Inputs C89 = MIN(cuotas, MAX(inferior + 1, ROUNDDOWN(14 × 52/12)))).
+     */
+    public static Escenario caso12(ParametrosProducto p) {
+        int inferior = Calendario.periodoDelMes(10, p);
+        int normalizacion = Math.min(p.numeroCuotas(), Math.max(inferior + 1, Calendario.periodoDelMes(14, p)));
+        return base(p).en(inferior, new PagoParcial(bd("0.4"), 0)).en(normalizacion, new PagoAlDia());
     }
 }

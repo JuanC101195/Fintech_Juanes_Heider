@@ -47,8 +47,8 @@ class Caso1ValidacionesTest {
         int periodo = Integer.parseInt(v.get("Periodo"));
         BigDecimal tolerancia = new BigDecimal(v.get("Tolerancia"));
         BigDecimal esperadaPorTipo = switch (v.get("Tipo")) {
-            case "Dinero" -> input("B71");
-            case "Tasa" -> input("B72");
+            case "Dinero" -> input("B93");
+            case "Tasa" -> input("B94");
             default -> throw new IllegalStateException(v.get("Tipo"));
         };
         assertThat(tolerancia).isEqualByComparingTo(esperadaPorTipo);
@@ -73,30 +73,30 @@ class Caso1ValidacionesTest {
     @Test
     void validacion2TasaSemanal() {
         // Inputs!B17 = Caso1_Normal!E4.
-        assertThat(enCaso1(1, "Tasa semanal")).isEqualByComparingTo(input("B17"));
-        validar(2, "Tasa semanal", input("B17"), Movimiento::tasaSemanal);
+        assertThat(enCaso1(1, "Tasa periódica")).isEqualByComparingTo(input("B21"));
+        validar(2, "Tasa semanal", input("B21"), Movimiento::tasaPeriodica);
     }
 
     @Test
     void validacion3CuotaFinanciera() {
         // Inputs!B20 = PMT(B17, B15, −B3) = Caso1_Normal!G4.
-        assertThat(enCaso1(1, "Cuota financiera")).isEqualByComparingTo(input("B20"));
-        validar(3, "Cuota financiera", input("B20"), Movimiento::cuotaFinanciera);
-        validar(3, "Cuota financiera", input("B20"), m -> Calc.sumar(m.pagoInteresCorriente(), m.pagoCapital()));
+        assertThat(enCaso1(1, "Cuota financiera")).isEqualByComparingTo(input("B24"));
+        validar(3, "Cuota financiera", input("B24"), Movimiento::cuotaFinanciera);
+        validar(3, "Cuota financiera", input("B24"), m -> Calc.sumar(m.pagoInteresCorriente(), m.pagoCapital()));
     }
 
     @Test
     void validacion4SaldoFinal() {
-        // Caso1_Normal!N89 (periodo 86) = W8 ≈ 4,29e-9.
-        validar(4, "Saldo final", enCaso1(86, "Saldo final"), Movimiento::saldoFinal);
-        assertThat(motor.getLast().periodo()).isEqualTo(86);
+        // Caso1_Normal!N107 (periodo 104) = W8 ≈ 1,2e-9.
+        validar(4, "Saldo final", enCaso1(104, "Saldo final"), Movimiento::saldoFinal);
+        assertThat(motor.getLast().periodo()).isEqualTo(104);
     }
 
     @Test
     void validacion5PagoFccDelMes1() {
         // Caso1_Normal!O7 (periodo 4 = ROUNDDOWN(Inputs!B14)) = W9; es 4 × Inputs!B28.
         BigDecimal esperado = enCaso1(4, "Pago FCC");
-        assertThat(esperado).isCloseTo(Calc.multiplicar(Calc.bd(4), input("B28")), Offset.offset(BigDecimal.ONE));
+        assertThat(esperado).isCloseTo(Calc.multiplicar(Calc.bd(4), input("B32")), Offset.offset(BigDecimal.ONE));
         validar(5, "Pago FCC", esperado, m -> m.pagoTerceros().fondoGarantias());
     }
 }
