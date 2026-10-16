@@ -9,7 +9,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const aqui = path.dirname(fileURLToPath(import.meta.url))
 const raiz = path.resolve(aqui, '..')
 const { chromium } = createRequire('C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
-const ExcelJS = createRequire(path.join(raiz, 'package.json'))('exceljs')
 
 const archivo = pathToFileURL(path.join(raiz, 'dist', 'index.html')).href
 const salida = path.resolve(process.argv[2] ?? path.join(raiz, 'pruebas', 'capturas'))
@@ -36,7 +35,13 @@ let fallas = 0
 const navegador = await chromium.launch()
 for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280, 900]]) {
   const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto }, acceptDownloads: true })
-  await contexto.route((url) => !url.protocol.startsWith('file'), (r) => r.abort())
+  // La función de la nube se simula: se guarda lo que la página manda en vez de llamar a Azure.
+  const enviados = []
+  await contexto.route(/fn-motor-cartera-respuestas\.azurewebsites\.net/, (r) => {
+    enviados.push(JSON.parse(r.request().postData()))
+    r.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } })
+  })
+  await contexto.route((url) => !url.protocol.startsWith('file') && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
   const page = await contexto.newPage()
   const errores = []
   page.on('pageerror', (e) => errores.push(String(e)))
@@ -54,18 +59,13 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
     await page.getByRole('button', { name: /Servicios complementarios →/ }).click()
     await page.getByRole('radio', { name: /Prorrateo exacto por días/ }).check()
     await page.screenshot({ path: path.join(salida, 'cuestionario-servicios.png'), fullPage: true })
-    const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar Excel' }).click()])
-    const destino = path.join(salida, descarga.suggestedFilename())
-    await descarga.saveAs(destino)
-    const libro = new ExcelJS.Workbook()
-    await libro.xlsx.readFile(destino)
-    const filas = []
-    libro.getWorksheet('Respuestas').eachRow((r, n) => {
-      if (n > 1 && r.getCell(4).value) filas.push([r.getCell(1).value, r.getCell(4).value, r.getCell(6).value, r.getCell(10).value].join(' | '))
-    })
-    console.log(`Excel: ${descarga.suggestedFilename()}\n${filas.join('\n')}`)
-    console.log(`Efecto de lo elegido: ${libro.getWorksheet('Efecto de lo elegido').rowCount - 1} filas`)
-    if (filas.length !== 3) fallas++
+    await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
+    await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
+    const ultimo = enviados.at(-1)
+    const filas = JSON.parse(ultimo.filas).filter((f) => f[3]).map((f) => [f[0], f[3], f[5], f[9]].join(' | '))
+    console.log(`Guardados en la nube: ${enviados.length} (último final=${ultimo.final}, ${ultimo.completas} de ${ultimo.total})`)
+    console.log(filas.join('\n'))
+    if (filas.length !== 3 || !ultimo.final) fallas++
   }
   await contexto.close()
 }

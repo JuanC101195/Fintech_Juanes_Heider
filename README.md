@@ -13,7 +13,7 @@ La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](
 - **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma.
 - **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
 - **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
-- **Cuestionario para negocio** con solo las 25 preguntas abiertas; las 12 que Diego ya respondió quedan a la vista como respondidas.
+- **Cuestionario para negocio en línea** con solo las 25 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.
 
 ## Cómo funciona el motor
 
@@ -52,6 +52,7 @@ Detalle de cada respuesta y lo que falta: [docs/respuestas-diego-2026-10-16.md](
 | [`src/`](src/) | Motor (Java 21, Spring Boot 4, monolito modular con Spring Modulith) y sus pruebas |
 | [`cuestionario/`](cuestionario/) | Página para que negocio responda las reglas abiertas viendo el efecto calculado de cada opción; exporta las respuestas a Excel |
 | [`herramientas/`](herramientas/) | Exportador del Excel a CSV de prueba e importador de las respuestas del cuestionario |
+| [`nube/`](nube/) | Azure Function que recibe las respuestas del cuestionario y las guarda en Azure Table Storage |
 | [`config/`](config/) | Reglas de negocio vigentes |
 | [`docs/`](docs/) | Decisiones, ADR, reglas por caso, preguntas y respuestas de negocio, pendientes y diagrama |
 | [`backlog-financiera/`](backlog-financiera/) | Épicas, features e historias (Gherkin) del proyecto y su priorización por sprints |
@@ -77,8 +78,9 @@ docker run -d --name sonarqube-motor -p 9000:9000 sonarqube:community
 (cd cuestionario && npm run cobertura)
 ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar   -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<token> -Dsonar.organization= -Dsonar.projectKey=motor-cartera
 
-# Respuestas de negocio → motor
-python herramientas/importar_respuestas.py <excel-de-respuestas>.xlsx
+# Respuestas de negocio → motor (requiere az login)
+python herramientas/importar_respuestas.py --nube --ver   # quién respondió, cuándo y cuánto lleva
+python herramientas/importar_respuestas.py --nube         # carga lo último respondido a config/reglas-negocio.properties
 ./mvnw -q -B test    # ReglasNegocioConfiguradaTest corre los casos con esas reglas
 ```
 

@@ -1,9 +1,10 @@
 import ExcelJS from 'exceljs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { columnasDe } from './Comparador'
 import { previsualizacion } from './escenarios'
 import { ENCABEZADOS, construirLibro } from './exportar'
 import { cop } from './formato'
+import { envioDe, guardarEnLaNube } from './nube'
 import { BLOQUES, PREGUNTAS, RESPONDIDAS, TODAS } from './preguntas'
 import { ajustesDe, avance, estaCompleta, type Estado } from './respuestas'
 
@@ -71,6 +72,37 @@ describe('respuestas', () => {
     expect(avance({ PCOB: { codigo: 'siete-por-semana' }, PTOPE: { codigo: 'con-tope' } }).completas).toBe(1)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
+  })
+})
+
+describe('guardado en la nube', () => {
+  const estado: Estado = {
+    respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
+    respuestas: { PTOPE: { codigo: 'con-tope', valor: 20000 }, PCOB: { codigo: 'siete-por-semana', comentario: 'Así' } },
+  }
+
+  it('guarda las mismas filas que lee el importador', () => {
+    const e = envioDe(estado, true)
+    expect(e.sesion).toMatch(/^[A-Za-z0-9-]{8,64}$/)
+    expect(e).toMatchObject({ nombre: 'Diego González', final: true, completas: 2 })
+    expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
+    const filas: (string | number)[][] = JSON.parse(e.filas)
+    expect(filas).toHaveLength(PREGUNTAS.length)
+    expect(filas.find((f) => f[0] === 'PTOPE')).toContain('topeCobranzaPorPago=20000')
+    expect(filas.find((f) => f[0] === 'PCOB')).toContain('Así')
+  })
+
+  it('manda la fila a la tabla y avisa si falla', async () => {
+    const llamadas: [string, RequestInit][] = []
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      llamadas.push([url, init])
+      return new Response(null, { status: llamadas.length === 1 ? 204 : 403 })
+    })
+    await guardarEnLaNube(estado)
+    expect(llamadas[0][0]).toBe('https://fn-motor-cartera-respuestas.azurewebsites.net/api/respuestas')
+    expect(llamadas[0][1].method).toBe('POST')
+    await expect(guardarEnLaNube(estado)).rejects.toThrow('403')
+    vi.unstubAllGlobals()
   })
 })
 
