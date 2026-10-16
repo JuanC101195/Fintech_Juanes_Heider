@@ -41,7 +41,7 @@ public sealed interface Instruccion {
         }
     }
 
-    /** Después de la cuota de la semana, paga todo el saldo pendiente (caso 5). */
+    /** Después de la cuota de la semana, paga el saldo pendiente completo (caso 5). */
     record PrepagoTotal() implements Instruccion {
     }
 

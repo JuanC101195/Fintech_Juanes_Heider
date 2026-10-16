@@ -124,11 +124,11 @@ class Caso9CobranzaTest {
     private void validarDinero(int numero, String variable, String columnaCaso9, Function<Movimiento, BigDecimal> dato,
             String valorExcel) {
         Map<String, String> v = validacion(numero);
-        assertThat(v.get("Caso")).isEqualTo("Caso 9");
-        assertThat(v.get("Variable")).isEqualTo(variable);
+        assertThat(v).containsEntry("Caso", "Caso 9");
+        assertThat(v).containsEntry("Variable", variable);
         int n = Integer.parseInt(v.get("Periodo"));
         assertThat(n).isEqualTo(PERIODO_INICIO);
-        assertThat(v.get("Mes")).isEqualTo("10");
+        assertThat(v).containsEntry("Mes", "10");
         BigDecimal tolerancia = new BigDecimal(v.get("Tolerancia"));
         // El valor de la hoja del caso y el valor conocido del Excel (AF5:AF8) deben coincidir con el motor.
         assertThat(dato.apply(periodo(n))).isCloseTo(excel(n, columnaCaso9), within(tolerancia));
@@ -158,8 +158,8 @@ class Caso9CobranzaTest {
     @Test
     void validacion33EstadoAlHorizonteEnMoraExacto() {
         Map<String, String> v = validacion(33);
-        assertThat(v.get("Variable")).isEqualTo("Estado");
-        assertThat(v.get("Tipo")).isEqualTo("Exacto");
+        assertThat(v).containsEntry("Variable", "Estado");
+        assertThat(v).containsEntry("Tipo", "Exacto");
         String estadoExcel = hoja.filas().getLast().get("Estado");
         assertThat(estadoExcel).isEqualTo("En mora");
         assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.EN_MORA);

@@ -152,7 +152,7 @@ class Caso3DacionTest {
             if (numero < 10 || numero > 13) {
                 continue;
             }
-            assertThat(v.get("Caso")).isEqualTo("Caso 3");
+            assertThat(v).containsEntry("Caso", "Caso 3");
             int periodo = Integer.parseInt(v.get("Periodo"));
             String variable = v.get("Variable");
             BigDecimal tolerancia = new BigDecimal(v.get("Tolerancia"));

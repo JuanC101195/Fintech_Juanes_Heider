@@ -47,7 +47,7 @@ class Caso1InvariantesTest {
         creditos.add(new Credito(Calc.bd(1_000_000), 36, new BigDecimal("1.20")));
         creditos.add(new Credito(Calc.bd(40_000_000), 6, new BigDecimal("0.20")));
         while (creditos.size() < CREDITOS) {
-            BigDecimal monto = Calc.bd(1_000_000L + (long) (azar.nextDouble() * 39_000_000L));
+            BigDecimal monto = Calc.bd(1_000_000L + azar.nextLong(39_000_000L));
             int plazo = 6 + azar.nextInt(31);
             BigDecimal ea = Calc.dividir(Calc.bd(2000 + azar.nextInt(10_001)), Calc.bd(10_000)); // 0,2000 a 1,2000
             creditos.add(new Credito(monto, plazo, ea));

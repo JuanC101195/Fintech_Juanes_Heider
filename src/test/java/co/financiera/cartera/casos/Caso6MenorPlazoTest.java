@@ -159,7 +159,7 @@ class Caso6MenorPlazoTest {
         assertThat(ultimo.pagoTerceros().total()).isCloseTo(ultimo.serviciosCausados().total(), within(UN_PESO));
         // El mes 14 (semanas 57 a 60) se gira completo en la 60.
         assertThat(delPeriodo(motor, 60).pagoTerceros().fondoGarantias()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
-        // Todo lo cobrado por servicios se gira.
+        // Lo cobrado por servicios se gira.
         BigDecimal cobrado = motor.stream().map(m -> m.serviciosCausados().total()).reduce(BigDecimal.ZERO, Calc::sumar);
         BigDecimal girado = motor.stream().map(m -> m.pagoTerceros().total()).reduce(BigDecimal.ZERO, Calc::sumar);
         assertThat(girado).isCloseTo(cobrado, within(UN_PESO));
@@ -173,7 +173,9 @@ class Caso6MenorPlazoTest {
      */
     @Test
     void unAbonoMayorQueElSaldoSeRechaza() {
-        assertThatThrownBy(() -> new MotorCartera().ejecutar(escenario(Calc.bd("10000000"))))
+        MotorCartera motorCartera = new MotorCartera();
+        Escenario conAbonoExcesivo = escenario(Calc.bd("10000000"));
+        assertThatThrownBy(() -> motorCartera.ejecutar(conAbonoExcesivo))
                 .isInstanceOf(AbonoMayorQueElSaldoException.class)
                 .hasMessageContaining("Semana 43");
     }

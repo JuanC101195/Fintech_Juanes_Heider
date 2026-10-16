@@ -58,7 +58,7 @@ class Caso1CuotaInicialTest {
 
     @Test
     void ejemploDeDiegoSeisQuinientosMenosSetecientos() {
-        // Moto + alistamiento = 6.500.000; inicial de 700.000 → todo el crédito parte de 5.800.000.
+        // Moto + alistamiento = 6.500.000; inicial de 700.000 → el crédito parte de 5.800.000.
         Operacion op = new Operacion(new BigDecimal("6000000"), new BigDecimal("200000"), new BigDecimal("300000"),
                 BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("700000"));
         assertThat(op.valorTotal()).isEqualByComparingTo("6500000");
@@ -70,8 +70,10 @@ class Caso1CuotaInicialTest {
     @Test
     void elPagoInicialNoPuedeSerNegativoNiCubrirTodaLaOperacion() {
         Operacion op = Operacion.ejemploExcel();
-        assertThatThrownBy(() -> op.conPagoInicial(new BigDecimal("-1"))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> op.conPagoInicial(op.valorTotal())).isInstanceOf(IllegalArgumentException.class);
+        BigDecimal negativo = new BigDecimal("-1");
+        BigDecimal total = op.valorTotal();
+        assertThatThrownBy(() -> op.conPagoInicial(negativo)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> op.conPagoInicial(total)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

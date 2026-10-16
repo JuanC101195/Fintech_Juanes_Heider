@@ -42,8 +42,8 @@ class Caso1ValidacionesTest {
     /** Compara el motor con el valor esperado en el periodo y con la tolerancia que dice la validación. */
     private void validar(int numero, String variable, BigDecimal esperado, Function<Movimiento, BigDecimal> dato) {
         Map<String, String> v = validacion(numero);
-        assertThat(v.get("Caso")).isEqualTo("Caso 1");
-        assertThat(v.get("Variable")).isEqualTo(variable);
+        assertThat(v).containsEntry("Caso", "Caso 1");
+        assertThat(v).containsEntry("Variable", variable);
         int periodo = Integer.parseInt(v.get("Periodo"));
         BigDecimal tolerancia = new BigDecimal(v.get("Tolerancia"));
         BigDecimal esperadaPorTipo = switch (v.get("Tipo")) {

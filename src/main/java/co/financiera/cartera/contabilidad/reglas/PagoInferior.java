@@ -26,7 +26,7 @@ import java.util.Optional;
  * </ol>
  *
  * <p><b>Frontera con el recaudo normal ({@code RecaudoCuota}, caso 1):</b> esta regla es dueña de
- * todo el asiento de la semana del pago inferior, incluido el débito a Caja. La regla de recaudo
+ * el asiento completo de la semana del pago inferior, incluido el débito a Caja. La regla de recaudo
  * normal debe excluir los movimientos para los que {@link #aplica(Movimiento)} es verdadero; si no,
  * la Caja se contabiliza dos veces.
  */

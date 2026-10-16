@@ -18,11 +18,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Genera las previsualizaciones del cuestionario de negocio: para cada pregunta que cambia el
@@ -32,6 +35,9 @@ import java.util.function.Function;
  * <p>Uso: {@code java -cp target/classes co.financiera.cartera.simulaciones.GeneradorEscenarios <salida.json>}
  */
 public final class GeneradorEscenarios {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GeneradorEscenarios.class);
+    private static final ZoneId ZONA = ZoneId.of("America/Bogota");
 
     private record Opcion(String id, Escenario escenario) {
     }
@@ -43,7 +49,7 @@ public final class GeneradorEscenarios {
         Path salida = Path.of(args.length > 0 ? args[0] : "cuestionario/src/datos/escenarios.json");
         Files.createDirectories(salida.toAbsolutePath().getParent());
         Files.writeString(salida, generar(), StandardCharsets.UTF_8);
-        System.out.println("Escenarios escritos en " + salida.toAbsolutePath());
+        LOG.info("Escenarios escritos en {}", salida.toAbsolutePath());
     }
 
     static String generar() {
@@ -79,7 +85,7 @@ public final class GeneradorEscenarios {
 
         MotorCartera motor = new MotorCartera();
         StringBuilder json = new StringBuilder();
-        json.append("{\n  \"generado\": \"").append(LocalDate.now()).append("\",\n  \"preguntas\": {");
+        json.append("{\n  \"generado\": \"").append(LocalDate.now(ZONA)).append("\",\n  \"preguntas\": {");
         for (int i = 0; i < preguntas.size(); i++) {
             Pregunta pr = preguntas.get(i);
             json.append(i == 0 ? "\n" : ",\n").append("    \"").append(pr.id()).append("\": {\"caso\": ").append(texto(pr.caso()))

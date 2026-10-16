@@ -10,7 +10,7 @@ La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](
 - **147 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
 - **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma.
 - **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
-- **Calidad con Sonar**: cada push a `main` y cada PR corre las pruebas y el análisis en SonarCloud (Java, TypeScript y Python). Último análisis: Quality Gate aprobado, 0 bugs, 0 vulnerabilidades, 0 code smells.
+- **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
 - **Cuestionario para negocio** con solo las 25 preguntas abiertas; las 12 que Diego ya respondió quedan a la vista como respondidas.
 
 ## Cómo funciona el motor

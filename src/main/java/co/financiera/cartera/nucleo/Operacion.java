@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * (hoja Inputs, filas 4 a 11), menos el pago inicial que haga.
  *
  * <p>Regla de negocio (Diego, 2026-10-16, P-09): el pago inicial es <b>opcional</b>, lo digita el
- * asesor y se resta del valor a financiar; todo el crédito parte de ese monto. Ejemplo de Diego:
+ * asesor y se resta del valor a financiar; el crédito completo parte de ese monto. Ejemplo de Diego:
  * operación de 6.500.000 con inicial de 700.000 → se financian 5.800.000. Reemplaza la regla
  * anterior del 10 % fijo.
  *
