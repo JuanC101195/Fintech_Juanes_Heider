@@ -2,7 +2,11 @@
 
 Documento de Heider (8-oct, preguntas P-01 a P-27) respondido por Diego. Aquí se cruza cada respuesta con nuestras preguntas (`preguntas-diego.md`), con `ReglasNegocio` y con el Excel que usa el motor (`fuentes/casos-operaciones-v2.xlsx`, mismo archivo que "Casos Operaciones V2 mejorado.xlsx" del 7-oct).
 
-## Alerta: el Excel "mejorado" de Diego parece más nuevo que el nuestro
+## Actualización: llegó el Excel del 11 de octubre
+
+Diego envió "Casos Operaciones V2 mejorado2 oct11.xlsx" (12 casos, catálogo de líneas, prelación en Inputs ⑥). Es la nueva fuente de verdad (`fuentes/casos-operaciones-v2.xlsx`) y el motor lo reproduce celda por celda (decisiones D15 a D18). Lo de abajo describe la situación anterior.
+
+## Antes: el Excel "mejorado" de Diego parecía más nuevo que el nuestro
 
 Diego remite al "Excel mejorado" en P-01, P-02, P-03, P-07, P-10, P-12 y P-15, pero en nuestra copia **no está**:
 - No hay catálogo de tasas por línea de crédito ni varias líneas (Inputs tiene una sola tasa, 87,32 % EA).

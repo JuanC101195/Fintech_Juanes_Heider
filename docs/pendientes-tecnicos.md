@@ -1,14 +1,14 @@
 # Pendientes técnicos (internos)
 
-Estado al 2026-10-08, después de integrar los 9 casos: **124 pruebas, 0 fallas**. Los 9 casos del Excel se reproducen celda por celda.
+Estado al 2026-10-16, con el Excel de Diego del 11 de octubre: **156 pruebas, 0 fallas**. Los 12 casos se reproducen celda por celda.
 
 ## Contabilidad
-1. **Semanas sin asiento en el caso 8 (44 a 89):** pagos que recuperan vencidos y pagan mora sin cobranza. `RecaudoCuota` los excluye, `PagoInferior` solo toma la semana "Pago inferior" y `CobranzaYMora` exige cobranza. Falta una regla general de "recaudo con vencidos" (o generalizar `PagoInferior`) y su reclasificación vencida ↔ vigente semana a semana.
-2. `Movimiento` no guarda el tipo de recuperación (dación / retoma) ni el desglose de lo extinguido: las reglas lo infieren por el signo del residuo. Agregarlo si Diego unifica con la mora (P7).
+1. **Semanas sin asiento en los casos 8 y 12 (después del pago inferior):** pagos que recuperan vencidos y pagan mora sin cobranza. `RecaudoCuota` los excluye, `PagoInferior` solo toma la semana "Pago inferior" y `CobranzaYMora` exige cobranza. Falta una regla general de "recaudo con vencidos" (o generalizar `PagoInferior`) y su reclasificación vencida ↔ vigente semana a semana.
+2. `Movimiento` no guarda el tipo de recuperación (dación / retoma): las reglas lo infieren por el signo del residuo. El desglose de lo extinguido ya viene en `Movimiento.extinguido`.
 3. Nombres de cuenta: el Excel usa "CxC intereses corrientes" en unos paneles y "CxC interés corriente" en otros; "Servicios complementarios" se mapeó a `CXP_SERVICIOS_TERCEROS`.
 
 ## Motor
-4. `plazoLimiteSemanas` vale 120 por defecto: un crédito de más de 27 meses no alcanza su última cuota. Debería derivarse del plazo (cuotas pactadas + margen).
+4. `plazoLimitePeriodos` vale MAX(120, cuotas) por defecto. En el Excel el caso 8 tiene límite de 100 semanas con 104 cuotas: la tabla se corta en mora (pregunta X4 del cuestionario).
 5. `Movimiento.cuotaFinanciera` guarda la cuota pactada; el Excel muestra lo efectivamente cobrado en la última cuota (MIN(cuota, saldo + interés)). Exponer ambas si el CRM las necesita.
 6. Texto de eventos: "Pago normal - aplica vencidos" (caso 8) y "Periodo adicional con cobranza" (caso 9) no se distinguen; no se comparan en las pruebas.
 7. Combinación pago tardío + incompleto (P10) no está en el Excel: el motor la soporta (`PagoParcial(fraccion, dias)`) pero no hay caso de referencia.

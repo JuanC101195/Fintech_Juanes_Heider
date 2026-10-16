@@ -24,8 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Genera las previsualizaciones del cuestionario de negocio: para cada pregunta que cambia el
@@ -36,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class GeneradorEscenarios {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GeneradorEscenarios.class);
+    private static final System.Logger LOG = System.getLogger(GeneradorEscenarios.class.getName());
     private static final ZoneId ZONA = ZoneId.of("America/Bogota");
 
     private record Opcion(String id, Escenario escenario) {
@@ -49,7 +47,7 @@ public final class GeneradorEscenarios {
         Path salida = Path.of(args.length > 0 ? args[0] : "cuestionario/src/datos/escenarios.json");
         Files.createDirectories(salida.toAbsolutePath().getParent());
         Files.writeString(salida, generar(), StandardCharsets.UTF_8);
-        LOG.info("Escenarios escritos en {}", salida.toAbsolutePath());
+        LOG.log(System.Logger.Level.INFO, "Escenarios escritos en {0}", salida.toAbsolutePath());
     }
 
     static String generar() {

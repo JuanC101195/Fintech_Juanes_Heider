@@ -203,7 +203,7 @@ const BASE: Pregunta[] = [
     id: 'S3',
     bloque: SERVICIOS,
     titulo: 'Los servicios son mensuales pero se cobran por semana. ¿Cómo se reparten?',
-    contexto: 'Valor mensual ÷ 4,333 semanas: los meses con 5 cuotas cobran y giran 25 % más, y 86 cuotas equivalen a 19,85 meses (unos 32.400 menos de FCC en el ejemplo).',
+    contexto: 'Valor mensual ÷ 4,333 semanas: los meses con 5 cuotas cobran y giran 25 % más que los de 4.',
     excelHoy: 'Valor mensual ÷ 4,333 en cada cuota semanal.',
     opciones: [
       { codigo: 'mensual-entre-semanas', texto: 'Valor mensual ÷ 4,333 en cada cuota, como el Excel', esExcel: true },
@@ -507,15 +507,16 @@ const BASE: Pregunta[] = [
     ],
   },
   {
-    id: 'X2',
+    id: 'X4',
     bloque: EXCEL,
-    titulo: '¿Nos envía la última versión del Excel mejorado?',
+    titulo: 'En el caso 8 el plazo límite sigue en 100 semanas, pero ahora el crédito tiene 104 cuotas. ¿Cuál debe ser el límite?',
     contexto:
-      'Varias respuestas remiten al Excel mejorado (catálogo de tasas por línea, prelación del pago anticipado, servicios que no se cobran en mora, mora corregida). La versión que tenemos es del 7 de octubre y no trae esos cambios.',
-    excelHoy: 'Versión del 7 de octubre: una sola línea de crédito, fondo y asistencia se cobran también en mora.',
+      'Con el límite en 100 semanas (Inputs C65) la tabla se corta antes de la última cuota pactada: el crédito queda en mora con saldo y nunca hay periodos adicionales. En el caso 9 el límite es de 120 semanas.',
+    excelHoy: 'Caso 8: límite de 100 semanas con 104 cuotas; el crédito termina en mora en la semana 100.',
     opciones: [
-      { codigo: 'envio', texto: 'Sí, la envío por correo' },
-      { codigo: 'es-la-ultima', texto: 'La que tienen es la última versión' },
+      { codigo: 'ampliar', texto: 'Ampliarlo por encima de las 104 cuotas (por ejemplo, 120 semanas como el caso 9)' },
+      { codigo: 'dejar-100', texto: 'Dejarlo en 100: al llegar al límite el crédito pasa a dación o retoma' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
     ],
   },
   {
@@ -533,8 +534,8 @@ const BASE: Pregunta[] = [
 
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
-  P1: { referencia: 'P-02', respuesta: 'Se aplica la prelación de su Excel mejorado; se confirma al recibir la última versión.' },
-  P3: { referencia: 'P-03', respuesta: 'La tasa de mora es la misma corriente (la máxima permitida); el Excel mejorado corrige la fórmula.' },
+  P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
+  P3: { referencia: 'P-03', respuesta: 'Mora = capital vencido × tasa periódica (la misma corriente); en pagos tardíos se suman los días de atraso de la cuota (caso 9).' },
   PDOBLE: { referencia: 'P-03', respuesta: 'No: el interés corriente va sobre el capital vigente y el capital vencido paga solo mora.' },
   P7: { referencia: 'P-16', respuesta: 'Sí: en dación y retoma se cobran mora y cobranza.' },
   P2: { referencia: 'P-05', respuesta: 'Sin redondeo en el cálculo, como el Excel; solo el formato se muestra sin decimales.' },
@@ -545,6 +546,7 @@ const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   A2: { referencia: 'P-14', respuesta: 'No es posible: nunca se recibe más dinero que el saldo del crédito.' },
   T3: { referencia: 'P-01', respuesta: 'Tasa según el catálogo por línea de crédito: la máxima legal publicada cada mes, con actualización obligatoria por un autorizador.' },
   C4: { referencia: 'P-24', respuesta: 'No tener en cuenta la hoja Validaciones.' },
+  S5: { referencia: 'Excel 11 oct', respuesta: 'Se gira lo recaudado de cada servicio: el Pago FCC del mes es la suma de lo aplicado al fondo.' },
 }
 
 export const TODAS: Pregunta[] = BASE.map((p) =>

@@ -584,6 +584,21 @@
       ]
     },
     {
+      "id": "excel11",
+      "type": "frontend",
+      "label": "Excel de Diego · 11 oct",
+      "sublabel": "12 casos · prelación · 156 pruebas",
+      "tag": "16 oct",
+      "pos": [
+        1440,
+        738
+      ],
+      "size": [
+        230,
+        68
+      ]
+    },
+    {
       "id": "github",
       "type": "external",
       "label": "GitHub",
@@ -935,6 +950,15 @@
       "toSide": "top"
     },
     {
+      "id": "excel-nuevo",
+      "from": "respuestas",
+      "to": "excel11",
+      "label": "Excel nuevo",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
       "id": "entrega1-hecha",
       "from": "agente1",
       "to": "entrega1"
@@ -1153,7 +1177,7 @@
         "Pago inicial opcional que digita el asesor",
         "Abono sin elección → menor plazo; mayor que el saldo → rechazo",
         "Mora antes de dación y retoma; vencido paga solo mora",
-        "Falta su último Excel: tasas por línea y servicios en mora"
+        "Excel del 11 oct: 12 casos al centavo, 156 pruebas"
       ]
     },
     {
