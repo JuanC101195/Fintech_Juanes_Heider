@@ -31,8 +31,8 @@ class Caso1CuotaInicialTest {
 
     // Cálculo independiente en doble precisión (como lo haría una calculadora financiera).
     private static final double FINANCIADO = 5_313_960.0;
-    private static final double TASA_SEMANAL = Math.pow(1.8732, 1.0 / 52) - 1;
-    private static final int CUOTAS = 86;
+    private static final double TASA_SEMANAL = Math.pow(1.8762, 1.0 / 52) - 1;
+    private static final int CUOTAS = 104;
     private static final double CUOTA = FINANCIADO * TASA_SEMANAL / (1 - Math.pow(1 + TASA_SEMANAL, -CUOTAS));
     private static final double SEMANAS_MES = 52.0 / 12.0;
 
@@ -45,7 +45,7 @@ class Caso1CuotaInicialTest {
         assertThat(operacion.valorTotal()).isEqualByComparingTo("5904400");
         assertThat(operacion.pagoInicial()).isEqualByComparingTo("590440");
         assertThat(operacion.montoFinanciado()).isEqualByComparingTo("5313960");
-        assertThat(Calendario.numeroCuotas(producto)).isEqualTo(86);
+        assertThat(Calendario.numeroCuotas(producto)).isEqualTo(104);
         // Con la inicial el LTV sigue por encima de 100 %: 5.313.960 / 5.100.000.
         assertThat(operacion.ltv()).isCloseTo(new BigDecimal("1.041952941"), Offset.offset(new BigDecimal("0.000001")));
     }
@@ -85,11 +85,11 @@ class Caso1CuotaInicialTest {
 
     @Test
     void laCuotaFinancieraEsElPmtSobreElMontoFinanciado() {
-        assertThat(CUOTA).isBetween(99_900.0, 99_930.0);
+        assertThat(CUOTA).isBetween(90_360.0, 90_370.0);
         assertThat(motor.subList(1, motor.size()))
                 .allSatisfy(m -> assertThat(m.cuotaFinanciera()).isCloseTo(bd(CUOTA), UN_PESO));
         // La cuota es lineal en el monto: 90 % de la cuota del Excel (Inputs!B20).
-        assertThat(bd(CUOTA)).isCloseTo(new BigDecimal("111014.82187676849").multiply(new BigDecimal("0.9")), UN_PESO);
+        assertThat(bd(CUOTA)).isCloseTo(new BigDecimal("100406.2741819886").multiply(new BigDecimal("0.9")), UN_PESO);
     }
 
     @Test
@@ -109,9 +109,9 @@ class Caso1CuotaInicialTest {
     }
 
     @Test
-    void terminaEnLaCuota86ConSaldoCero() {
+    void terminaEnLaCuota104ConSaldoCero() {
         Movimiento ultimo = motor.getLast();
-        assertThat(ultimo.periodo()).isEqualTo(86);
+        assertThat(ultimo.periodo()).isEqualTo(104);
         assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
         assertThat(ultimo.saldoFinal()).isCloseTo(BigDecimal.ZERO, UN_PESO);
         BigDecimal capital = motor.stream().map(Movimiento::pagoCapital).reduce(BigDecimal.ZERO, BigDecimal::add);

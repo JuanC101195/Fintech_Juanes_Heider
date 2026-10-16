@@ -57,7 +57,7 @@ class Caso8PagoInferiorTest {
         ComparadorExcel comparador = new ComparadorExcel()
                 .dinero("Mes", m -> bd(m.mes()))
                 .dinero("Saldo inicial", Movimiento::saldoInicial)
-                .dinero("Interés corriente", Movimiento::interesCorriente)
+                .dinero("Interés corriente (s/ capital vigente)", Movimiento::interesCorriente)
                 .dinero("Interés mora", Movimiento::interesMora)
                 .dinero("Capital contractual", Movimiento::capitalContractual)
                 .dinero("Pago recibido (cuota total)", Movimiento::pagoRecibido)
@@ -77,7 +77,13 @@ class Caso8PagoInferiorTest {
                 .dinero("CxC servicios", Movimiento::cxcServicios)
                 .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
-                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
+                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro())
+                .dinero("Pago FCC+IVA (4)", m -> m.pagosServicios().fondoGarantias())
+                .dinero("Pago asistencia+IVA (5)", m -> m.pagosServicios().asistencia())
+                .dinero("Pago seguro (6)", m -> m.pagosServicios().seguro())
+                .dinero("CxC FCC+IVA", m -> m.cxcServiciosPorConcepto().fondoGarantias())
+                .dinero("CxC asistencia+IVA", m -> m.cxcServiciosPorConcepto().asistencia())
+                .dinero("CxC seguro", m -> m.cxcServiciosPorConcepto().seguro());
 
         assertThat(comparador.diferencias(hoja, motor)).isEmpty();
     }
@@ -103,27 +109,28 @@ class Caso8PagoInferiorTest {
     @Test
     void elPeriodo43QuedaEnMoraConElCapitalContractualVencido() {
         Movimiento m = periodo(PERIODO_EVENTO);
-        assertThat(m.pagoRecibido()).isCloseTo(bd("69619.59767378433"), UN_PESO);
-        assertThat(m.pagoInteresCorriente()).isCloseTo(bd("45741.932105863954"), UN_PESO);
-        assertThat(m.pagoServicios()).isCloseTo(bd("23877.665567920376"), UN_PESO);
-        assertThat(m.pagoCapital()).isCloseTo(BigDecimal.ZERO, UN_PESO);
-        assertThat(m.cxcServicios()).isCloseTo(bd("39156.50673977194"), UN_PESO);
-        assertThat(m.capitalVencido()).isCloseTo(bd("65272.88977090453"), UN_PESO);
+        // 40 % de la cuota total pactada (Inputs B36); esa semana solo se causa el seguro (Inputs ⑥).
+        assertThat(m.pagoRecibido()).isCloseTo(bd("65376.17859587236"), UN_PESO);
+        assertThat(m.pagoInteresCorriente()).isCloseTo(bd("52989.932797465175"), UN_PESO);
+        assertThat(m.pagoServicios()).isCloseTo(bd("3406.3846153846157"), UN_PESO);
+        assertThat(m.pagoCapital()).isCloseTo(bd("8979.861183022573"), UN_PESO);
+        assertThat(m.cxcServicios()).isCloseTo(BigDecimal.ZERO, UN_PESO);
+        assertThat(m.capitalVencido()).isCloseTo(bd("38436.48020150085"), UN_PESO);
         assertThat(m.estado()).isEqualTo(EstadoCredito.EN_MORA);
     }
 
     @Test
     void elPeriodo44CobraMoraYRecuperaVencidosPorPrelacion() {
         Movimiento m = periodo(PERIODO_EVENTO + 1);
-        assertThat(m.interesMora()).isCloseTo(bd("792.6280199954645"), UN_PESO);
-        assertThat(m.pagoMora()).isCloseTo(bd("792.6280199954645"), UN_PESO);
-        assertThat(m.pagoInteresCorriente()).isCloseTo(bd("45741.932105863954"), UN_PESO);
-        assertThat(m.pagoServicios()).isCloseTo(bd("102190.67904746425"), UN_PESO);
-        assertThat(m.pagoCapital()).isCloseTo(bd("25323.75501113714"), UN_PESO);
-        assertThat(m.capitalVencido()).isCloseTo(bd("106014.65255066738"), UN_PESO);
+        assertThat(m.interesMora()).isCloseTo(bd("467.9427881008084"), UN_PESO);
+        assertThat(m.pagoMora()).isCloseTo(bd("467.9427881008084"), UN_PESO);
+        assertThat(m.pagoInteresCorriente()).isCloseTo(bd("52412.66518938314"), UN_PESO);
+        assertThat(m.pagoServicios()).isCloseTo(bd("63034.172307692315"), UN_PESO);
+        assertThat(m.pagoCapital()).isCloseTo(bd("47525.66620450465"), UN_PESO);
+        assertThat(m.capitalVencido()).isCloseTo(bd("38904.422989601684"), UN_PESO);
     }
 
-    /** Panel "INDICADORES DEL CASO" (AB2:AC9). */
+    /** Panel "INDICADORES DEL CASO" (AH2:AI9). */
     @Test
     void reproduceLosIndicadoresDelPanel() {
         int ultimo = motor.getLast().periodo();
@@ -131,10 +138,10 @@ class Caso8PagoInferiorTest {
         assertThat(evento.pagoRecibido()).isCloseTo(excel(hoja, PERIODO_EVENTO, "Pago recibido (cuota total)"), UN_PESO); // AC3
         assertThat(evento.capitalVencido()).isCloseTo(excel(hoja, PERIODO_EVENTO, "Capital vencido"), UN_PESO); // AC4
         assertThat(evento.cxcInteresCorriente()).isCloseTo(BigDecimal.ZERO, UN_PESO); // AC5
-        assertThat(periodo(PERIODO_EVENTO + 1).interesMora()).isCloseTo(bd("792.6280199954645"), UN_PESO); // AC6
-        assertThat(ultimo).isEqualTo(89); // AC7
-        assertThat(evento.pagoServicios()).isCloseTo(bd("23877.665567920376"), UN_PESO); // AC8
-        assertThat(evento.cxcServicios()).isCloseTo(bd("39156.50673977194"), UN_PESO); // AC9
+        assertThat(periodo(PERIODO_EVENTO + 1).interesMora()).isCloseTo(bd("467.9427881008084"), UN_PESO); // AI6
+        assertThat(ultimo).isEqualTo(100); // AI7
+        assertThat(evento.pagoServicios()).isCloseTo(bd("3406.3846153846157"), UN_PESO); // AI8
+        assertThat(evento.cxcServicios()).isCloseTo(BigDecimal.ZERO, UN_PESO); // AI9
     }
 
     // ---- Validaciones 25 a 28 de la hoja Validaciones ----
@@ -156,21 +163,19 @@ class Caso8PagoInferiorTest {
     }
 
     /**
-     * La hoja Validaciones no trae fórmula para "Periodos adicionales"; se toma como último periodo
-     * con pago (panel AC7 = MAX(A4:A103) = 89) menos las cuotas pactadas (Inputs!B15 = 86) = 3.
+     * "Periodos adicionales" = último periodo con pago − cuotas pactadas. En el Excel del 11 de octubre
+     * el plazo límite del caso sigue en 100 semanas (Inputs C65) pero las cuotas subieron a 104: la
+     * tabla se corta en la 100 con el crédito en mora y no hay periodos adicionales (pregunta para Diego).
      */
     @Test
     void validacion28PeriodosAdicionalesExacto() {
         int pactadas = Calendario.numeroCuotas(escenario().parametros());
         int ultimoExcel = hoja.filas().stream().mapToInt(f -> Integer.parseInt(f.get("Periodo"))).max().orElseThrow();
         long adicionales = motor.stream().filter(m -> m.periodo() > pactadas).count();
-        assertThat(pactadas).isEqualTo(86);
-        assertThat(adicionales).isEqualTo(ultimoExcel - pactadas).isEqualTo(3);
-        assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
-        assertThat(motor.stream().filter(m -> m.periodo() > pactadas))
-                .allSatisfy(m -> {
-                    assertThat(m.serviciosCausados().total()).isZero();
-                    assertThat(m.capitalContractual()).isZero();
-                });
+        assertThat(pactadas).isEqualTo(104);
+        assertThat(ultimoExcel).isEqualTo(PLAZO_LIMITE);
+        assertThat(motor.getLast().periodo()).isEqualTo(ultimoExcel);
+        assertThat(adicionales).isZero();
+        assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.EN_MORA);
     }
 }

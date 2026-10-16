@@ -24,7 +24,7 @@ class Caso1NormalTest {
     void reproduceElCronogramaDelExcelCeldaPorCelda() {
         ComparadorExcel comparador = new ComparadorExcel()
                 .dinero("Saldo inicial", Movimiento::saldoInicial)
-                .tasa("Tasa semanal", Movimiento::tasaSemanal)
+                .tasa("Tasa periódica", Movimiento::tasaPeriodica)
                 .dinero("Interés corriente", Movimiento::interesCorriente)
                 .dinero("Capital pagado", Movimiento::pagoCapital)
                 .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
@@ -43,14 +43,14 @@ class Caso1NormalTest {
     @Test
     void laCuotaFinancieraDelExcelSeMantieneDuranteTodoElCredito() {
         assertThat(motor.subList(1, motor.size()))
-                .allSatisfy(m -> assertThat(m.cuotaFinanciera()).isCloseTo(new BigDecimal("111014.82187676849"),
+                .allSatisfy(m -> assertThat(m.cuotaFinanciera()).isCloseTo(new BigDecimal("100406.2741819886"),
                         org.assertj.core.data.Offset.offset(BigDecimal.ONE)));
     }
 
     @Test
-    void terminaEnLaCuota86ConSaldoCero() {
+    void terminaEnLaCuota104ConSaldoCero() {
         Movimiento ultimo = motor.getLast();
-        assertThat(ultimo.periodo()).isEqualTo(86);
+        assertThat(ultimo.periodo()).isEqualTo(104);
         assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
         assertThat(ultimo.saldoFinal()).isLessThan(BigDecimal.ONE);
     }

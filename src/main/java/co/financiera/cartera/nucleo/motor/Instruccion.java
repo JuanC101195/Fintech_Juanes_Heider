@@ -46,10 +46,22 @@ public sealed interface Instruccion {
     }
 
     /**
-     * Cambio de tasa EA desde esta semana: se recalcula la cuota conservando la fecha final
-     * (caso 2).
+     * Cambio de tasa EA desde esta semana (P-11): se conserva la fecha final y se recalcula la cuota
+     * (caso 2) o se conserva la cuota y cambia el número de cuotas (caso 10).
      */
-    record CambioTasa(BigDecimal nuevaTasaEA) implements Instruccion {
+    record CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) implements Instruccion {
+
+        /** Conserva la fecha final y recalcula la cuota (caso 2). */
+        public CambioTasa(BigDecimal nuevaTasaEA) {
+            this(nuevaTasaEA, ModalidadCambioTasa.MISMA_FECHA_FINAL);
+        }
+    }
+
+    /**
+     * Paga la cuota del periodo más todo lo atrasado (mora, interés, servicios pendientes y capital
+     * vencido) y deja el crédito al día (caso 12, normalización).
+     */
+    record PagoAlDia() implements Instruccion {
     }
 
     /** Recibe la moto y extingue la deuda (caso 3: dación con faltante; caso 4: retoma con excedente). */
@@ -64,6 +76,13 @@ public sealed interface Instruccion {
 
         /** Por ley el cliente elige; si no responde se aplica la reducción de plazo (P-13). */
         public static final ModalidadAbono POR_DEFECTO = MENOR_PLAZO;
+    }
+
+    enum ModalidadCambioTasa {
+        /** Se conserva la fecha final: nueva cuota = PMT(tasa nueva, cuotas restantes, saldo) (caso 2). */
+        MISMA_FECHA_FINAL,
+        /** Se conserva la cuota y se recalcula el número de cuotas hasta saldo cero (caso 10). */
+        MISMA_CUOTA
     }
 
     enum TipoRecuperacion {

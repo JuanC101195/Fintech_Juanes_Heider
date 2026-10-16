@@ -63,7 +63,7 @@ class Caso9CobranzaTest {
         ComparadorExcel comparador = new ComparadorExcel()
                 .dinero("Mes", m -> Calc.bd(m.mes()))
                 .dinero("Saldo inicial", Movimiento::saldoInicial)
-                .dinero("Interés corriente", Movimiento::interesCorriente)
+                .dinero("Interés corriente (s/ capital vigente)", Movimiento::interesCorriente)
                 .dinero("Interés mora", Movimiento::interesMora)
                 .dinero("Capital contractual", Movimiento::capitalContractual)
                 .dinero("Cobranza causada", Movimiento::cobranzaCausada)
@@ -86,7 +86,13 @@ class Caso9CobranzaTest {
                 .dinero("CxC servicios", Movimiento::cxcServicios)
                 .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
-                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
+                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro())
+                .dinero("Pago FCC+IVA (4)", m -> m.pagosServicios().fondoGarantias())
+                .dinero("Pago asistencia+IVA (5)", m -> m.pagosServicios().asistencia())
+                .dinero("Pago seguro (6)", m -> m.pagosServicios().seguro())
+                .dinero("CxC FCC+IVA", m -> m.cxcServiciosPorConcepto().fondoGarantias())
+                .dinero("CxC asistencia+IVA", m -> m.cxcServiciosPorConcepto().asistencia())
+                .dinero("CxC seguro", m -> m.cxcServiciosPorConcepto().seguro());
 
         assertThat(comparador.diferencias(hoja, motor)).isEmpty();
     }
@@ -142,17 +148,17 @@ class Caso9CobranzaTest {
 
     @Test
     void validacion30InteresMoraEnElPrimerAtraso() {
-        validarDinero(30, "Interés mora", "Interés mora", Movimiento::interesMora, "1590.4588122676764");
+        validarDinero(30, "Interés mora", "Interés mora", Movimiento::interesMora, "1158.3422056553013");
     }
 
     @Test
     void validacion31CapitalPagadoEnElPrimerAtraso() {
-        validarDinero(31, "Capital pagado", "Pago capital", Movimiento::pagoCapital, "21682.43095863687");
+        validarDinero(31, "Capital pagado", "Pago capital", Movimiento::pagoCapital, "4257.999178868116");
     }
 
     @Test
     void validacion32CapitalVencidoAlCierreDelPrimerAtraso() {
-        validarDinero(32, "Capital vencido", "Capital vencido", Movimiento::capitalVencido, "43590.45881226766");
+        validarDinero(32, "Capital vencido", "Capital vencido", Movimiento::capitalVencido, "43158.34220565531");
     }
 
     @Test
@@ -172,14 +178,14 @@ class Caso9CobranzaTest {
         Movimiento primer = periodo(PERIODO_INICIO);
         Movimiento ultimo = motor.getLast();
         assertThat(primer.cobranzaCausada()).isCloseTo(new BigDecimal("42000"), within(TOL)); // AF5
-        assertThat(primer.interesMora()).isCloseTo(new BigDecimal("1590.4588122676764"), within(TOL)); // AF6
-        assertThat(primer.pagoCapital()).isCloseTo(new BigDecimal("21682.43095863687"), within(TOL)); // AF7
-        assertThat(primer.capitalVencido()).isCloseTo(new BigDecimal("43590.45881226766"), within(TOL)); // AF8
-        assertThat(ultimo.saldoFinal()).isCloseTo(new BigDecimal("3319011.7496506763"), within(TOL)); // AF9
+        assertThat(primer.interesMora()).isCloseTo(new BigDecimal("1158.3422056553013"), within(TOL)); // AF6
+        assertThat(primer.pagoCapital()).isCloseTo(new BigDecimal("4257.999178868116"), within(TOL)); // AF7
+        assertThat(primer.capitalVencido()).isCloseTo(new BigDecimal("43158.34220565531"), within(TOL)); // AF8
+        assertThat(ultimo.saldoFinal()).isCloseTo(new BigDecimal("3836452.572058092"), within(TOL)); // AF9
         assertThat(ultimo.estado()).isEqualTo(EstadoCredito.EN_MORA); // AF10
-        assertThat(primer.pagoServicios()).isCloseTo(new BigDecimal("63034.172307692315"), within(TOL)); // AF11
+        assertThat(primer.pagoServicios()).isCloseTo(new BigDecimal("3406.3846153846157"), within(TOL)); // AL11: solo el seguro
         // AF12 es una fórmula matricial =LOOKUP(2,1/(A4:A123<>""),Z4:Z123): la CxC servicios de la última fila.
-        assertThat(ultimo.cxcServicios()).isCloseTo(new BigDecimal("70732.20002945513"), within(TOL));
+        assertThat(ultimo.cxcServicios()).isCloseTo(BigDecimal.ZERO, within(TOL)); // AL12
         assertThat(ultimo.cxcServicios()).isCloseTo(excel(PLAZO_LIMITE, "CxC servicios"), within(TOL));
     }
 
@@ -192,17 +198,17 @@ class Caso9CobranzaTest {
         assertThat(a.lineas()).hasSize(10);
         linea(a, 0, Cuenta.CXC_GASTOS_COBRANZA, "42000", "0");
         linea(a, 1, Cuenta.INGRESOS_COBRANZA, "0", "42000");
-        linea(a, 2, Cuenta.CXC_INTERES_MORA, "1590.4588122676764", "0");
-        linea(a, 3, Cuenta.INGRESOS_MORA, "0", "1590.4588122676764");
-        linea(a, 4, Cuenta.CAJA, "174048.9941844608", "0");
+        linea(a, 2, Cuenta.CXC_INTERES_MORA, "1158.3422056553013", "0");
+        linea(a, 3, Cuenta.INGRESOS_MORA, "0", "1158.3422056553013");
+        linea(a, 4, Cuenta.CAJA, "103812.65879737321", "0");
         linea(a, 5, Cuenta.CXC_GASTOS_COBRANZA, "0", "42000");
-        linea(a, 6, Cuenta.CXC_INTERES_MORA, "0", "1590.4588122676764");
-        linea(a, 7, Cuenta.CXC_INTERES_CORRIENTE, "0", "45741.932105863954");
-        linea(a, 8, Cuenta.CXP_SERVICIOS_TERCEROS, "0", "63034.172307692315");
-        linea(a, 9, Cuenta.CARTERA_VIGENTE, "0", "21682.43095863687");
+        linea(a, 6, Cuenta.CXC_INTERES_MORA, "0", "1158.3422056553013");
+        linea(a, 7, Cuenta.CXC_INTERES_CORRIENTE, "0", "52989.932797465175");
+        linea(a, 8, Cuenta.CXP_SERVICIOS_TERCEROS, "0", "3406.3846153846157");
+        linea(a, 9, Cuenta.CARTERA_VIGENTE, "0", "4257.999178868116");
         // Control AF25 = AG25 = 217.639,45
-        assertThat(a.totalDebitos()).isCloseTo(new BigDecimal("217639.45299672848"), within(TOL));
-        assertThat(a.totalCreditos()).isCloseTo(new BigDecimal("217639.4529967285"), within(TOL));
+        assertThat(a.totalDebitos()).isCloseTo(new BigDecimal("146971.0010030285"), within(TOL));
+        assertThat(a.totalCreditos()).isCloseTo(new BigDecimal("146971.0010030285"), within(TOL));
         assertThat(a.cuadra()).isTrue();
     }
 

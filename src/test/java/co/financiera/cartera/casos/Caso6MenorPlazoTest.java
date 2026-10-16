@@ -103,10 +103,10 @@ class Caso6MenorPlazoTest {
         assertThat(conAbono.periodo()).as("V2 Periodo abono").isEqualTo(43);
         assertThat(conAbono.abonoExtra()).as("V3 Abono extra").isCloseTo(ABONO, within(UN_PESO));
         assertThat(conAbono.saldoFinal()).as("V4 Saldo tras abono")
-                .isCloseTo(new BigDecimal("1701573.6220031078"), within(UN_PESO));
+                .isCloseTo(new BigDecimal("2305138.1901533296"), within(UN_PESO));
         assertThat(delPeriodo(motor, 44).cuotaFinanciera()).as("V5 Cuota posterior")
-                .isCloseTo(new BigDecimal("111014.82187676849"), within(UN_PESO));
-        assertThat(motor.getLast().periodo()).as("V6 Último periodo con pago").isEqualTo(61);
+                .isCloseTo(new BigDecimal("100406.2741819886"), within(UN_PESO));
+        assertThat(motor.getLast().periodo()).as("V6 Último periodo con pago").isEqualTo(71);
     }
 
     @Test
@@ -115,7 +115,7 @@ class Caso6MenorPlazoTest {
         assertThat(motor.subList(1, motor.size()))
                 .allSatisfy(m -> assertThat(m.cuotaFinanciera()).isCloseTo(cuotaPactada, within(UN_PESO)));
         // F64 = MIN(cuota, D64 + E64): la última semana solo paga lo que queda.
-        assertThat(cuotaFinancieraPagada(motor.getLast())).isCloseTo(new BigDecimal("6998.926719691869"), within(UN_PESO));
+        assertThat(cuotaFinancieraPagada(motor.getLast())).isCloseTo(new BigDecimal("9075.57690140178"), within(UN_PESO));
     }
 
     // ---------------------------------------------------------------- hoja Validaciones
@@ -128,16 +128,16 @@ class Caso6MenorPlazoTest {
     @Test
     void validacion20UltimoPeriodoConPago() {
         int ultimoExcel = hoja.filas().stream().mapToInt(f -> Integer.parseInt(f.get("Periodo"))).max().orElseThrow();
-        assertThat(ultimoExcel).isEqualTo(61);
-        assertThat(motor.getLast().periodo()).isEqualTo(61);
+        assertThat(ultimoExcel).isEqualTo(71);
+        assertThat(motor.getLast().periodo()).isEqualTo(71);
         assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
     }
 
-    /** No hay fórmula en el Excel: se define como cuotas pactadas (Inputs!B15 = 86) − último periodo con pago. */
+    /** No hay fórmula en el Excel: se define como cuotas pactadas (Inputs!B19 = 104) − último periodo con pago. */
     @Test
     void validacion21CuotasEliminadas() {
         int cuotasEliminadas = Calendario.numeroCuotas(parametros) - motor.getLast().periodo();
-        assertThat(cuotasEliminadas).isEqualTo(25);
+        assertThat(cuotasEliminadas).isEqualTo(33);
     }
 
     // ---------------------------------------------------------------- servicios y giro a terceros
@@ -147,18 +147,19 @@ class Caso6MenorPlazoTest {
         BigDecimal serviciosSemana = delPeriodo(motor, 1).serviciosCausados().total();
         assertThat(motor.subList(1, motor.size()))
                 .allSatisfy(m -> assertThat(m.serviciosCausados().total()).isCloseTo(serviciosSemana, within(UN_PESO)));
-        // Semana 61 (mes 15, que empieza en la 61): servicios completos aunque la cuota financiera sea solo el residuo.
-        assertThat(motor.getLast().pagoTotalCliente()).isCloseTo(new BigDecimal("70033.09902738419"), within(UN_PESO));
+        // Semana 71 (la última): servicios completos aunque la cuota financiera sea solo el residuo.
+        assertThat(motor.getLast().pagoTotalCliente()).isCloseTo(new BigDecimal("72109.7492090941"), within(UN_PESO));
     }
 
     @Test
     void elGiroATercerosDeLaUltimaSemanaSoloLlevaElMesIncompleto() {
         Movimiento ultimo = motor.getLast();
-        assertThat(ultimo.mes()).isEqualTo(15);
-        // Q64:S64: solo la semana 61, que es la única del mes 15.
-        assertThat(ultimo.pagoTerceros().total()).isCloseTo(ultimo.serviciosCausados().total(), within(UN_PESO));
-        // El mes 14 (semanas 57 a 60) se gira completo en la 60.
-        assertThat(delPeriodo(motor, 60).pagoTerceros().fondoGarantias()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
+        assertThat(ultimo.mes()).isEqualTo(17);
+        // Fila 74: el mes 17 queda incompleto (semanas 70 y 71) y se gira en la última.
+        assertThat(ultimo.pagoTerceros().total())
+                .isCloseTo(Calc.multiplicar(Calc.bd(2), ultimo.serviciosCausados().total()), within(UN_PESO));
+        // El mes 16 (semanas 66 a 69) se gira completo en la 69.
+        assertThat(delPeriodo(motor, 69).pagoTerceros().fondoGarantias()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
         // Lo cobrado por servicios se gira.
         BigDecimal cobrado = motor.stream().map(m -> m.serviciosCausados().total()).reduce(BigDecimal.ZERO, Calc::sumar);
         BigDecimal girado = motor.stream().map(m -> m.pagoTerceros().total()).reduce(BigDecimal.ZERO, Calc::sumar);
@@ -192,7 +193,7 @@ class Caso6MenorPlazoTest {
             assertThat(m.cuotasVencidas()).isZero();
         });
         // G47: primer capital ordinario después del abono.
-        assertThat(delPeriodo(motor, 44).capitalContractual()).isCloseTo(new BigDecimal("90352.10975204768"), within(UN_PESO));
+        assertThat(delPeriodo(motor, 44).capitalContractual()).isCloseTo(new BigDecimal("72342.49763421093"), within(UN_PESO));
     }
 
     /** Si después del abono el cliente deja de pagar, el vencido es el capital del plan nuevo, no el del original. */

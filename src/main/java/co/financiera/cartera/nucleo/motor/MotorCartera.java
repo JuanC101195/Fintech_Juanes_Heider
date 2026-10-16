@@ -19,6 +19,8 @@ import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.CierrePorRecuperacion;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
+import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadCambioTasa;
+import co.financiera.cartera.nucleo.motor.Instruccion.PagoAlDia;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoContractual;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
@@ -29,13 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Motor de reglas de cartera: recorre el crédito semana a semana y aplica las reglas de los 9
+ * Motor de reglas de cartera: recorre el crédito periodo a periodo y aplica las reglas de los 12
  * casos del Excel con un solo ciclo.
  *
- * <p>En cada semana: (1) eventos de tasa, (2) causación de interés corriente, mora, cobranza,
- * capital contractual y servicios, (3) pago aplicado por prelación: cobranza → mora → interés
- * corriente → servicios → capital (P1, según las fórmulas de los casos 8 y 9), (4) abonos
- * extraordinarios o prepago, (5) cierre por recuperación de la moto, (6) estado y giro a terceros.
+ * <p>En cada periodo: (1) eventos de tasa, (2) causación de interés corriente, mora, cobranza,
+ * capital contractual y servicios, (3) pago aplicado por prelación (Inputs ⑥): cobranza → mora →
+ * interés corriente → fondo de garantías → asistencia → seguro → capital, (4) abonos
+ * extraordinarios o prepago, (5) cierre por recuperación de la moto con la misma prelación, (6)
+ * estado y giro a terceros de lo recaudado.
  */
 public final class MotorCartera {
 
@@ -54,31 +57,34 @@ public final class MotorCartera {
         private Tasas tasas;
         private BigDecimal cuota;
         private BigDecimal saldo;
+        /** Cuotas del plan vigente: cambian cuando un cambio de tasa conserva la cuota (caso 10). */
+        private int cuotasVigentes;
         private BigDecimal capitalVencido = CERO;
         private BigDecimal cxcInteres = CERO;
         private BigDecimal cxcMora = CERO;
-        private BigDecimal cxcServicios = CERO;
+        private Servicios cxcServicios = Servicios.NINGUNO;
         private BigDecimal cxcCobranza = CERO;
         /** Saldo del plan vigente si el cliente pagara siempre a tiempo: de él sale el capital contractual. */
         private BigDecimal saldoPlan;
         private int cuotasVencidas;
-        private Servicios serviciosDelMes = Servicios.NINGUNO;
+        private Servicios recaudadoDelMes = Servicios.NINGUNO;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
             this.p = escenario.parametros();
             this.cuotasPactadas = Calendario.numeroCuotas(p);
+            this.cuotasVigentes = cuotasPactadas;
             BigDecimal monto = escenario.operacion().montoFinanciado();
             this.serviciosPorCuota = Servicios.porCuota(monto, p);
             this.tasas = Tasas.de(p);
-            this.cuota = Amortizacion.cuotaFija(tasas.semanal(), cuotasPactadas, monto);
+            this.cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasPactadas, monto);
             this.saldo = monto;
             this.saldoPlan = monto;
         }
 
         List<Movimiento> correr() {
             filas.add(desembolso());
-            for (int periodo = 1; periodo <= p.plazoLimiteSemanas(); periodo++) {
+            for (int periodo = 1; periodo <= p.plazoLimitePeriodos(); periodo++) {
                 Movimiento fila = semana(periodo, escenario.instruccionesDe(periodo));
                 filas.add(fila);
                 if (fila.estado() == EstadoCredito.CANCELADO || fila.estado() == EstadoCredito.CERRADO_POR_EVENTO) {
@@ -91,22 +97,21 @@ public final class MotorCartera {
         private Movimiento desembolso() {
             return new Movimiento(0, 0, "Desembolso", saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
                     CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, saldo, saldo, 0, CERO, CERO, CERO, CERO,
-                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO);
+                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA);
         }
 
         private Movimiento semana(int periodo, List<Instruccion> instrucciones) {
             Ordenes ordenes = leer(periodo, instrucciones);
             Instruccion pago = ordenes.pago;
-            BigDecimal tasa = tasas.semanal();
+            BigDecimal tasa = tasas.periodica();
             BigDecimal saldoInicial = saldo;
-            // P7 / P-16: con moraAntesDeRecuperacion toda semana sin pago causa mora y servicios, aunque
-            // el escenario la marque como en los casos 3 y 4 del Excel.
+            // P7 / P-16: con moraAntesDeRecuperacion (el Excel) toda semana sin pago causa mora y seguro.
             boolean sinPagoSinMora = pago instanceof SinPago(boolean causaMora) && !causaMora
                     && !escenario.reglas().moraAntesDeRecuperacion();
             int dias = diasAtraso(pago);
 
-            // 2. Causación de la semana.
-            Causacion causado = causar(periodo, saldoInicial, sinPagoSinMora, dias);
+            // 2. Causación del periodo.
+            Causacion causado = causar(periodo, saldoInicial, sinPagoSinMora, dias, alDia(pago, dias));
 
             // 3. Pago y prelación.
             BigDecimal cuotaTotal = sumar(cuota, causado.servicios().total());
@@ -115,42 +120,43 @@ public final class MotorCartera {
             actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
             boolean pagoCompleto = recibido.compareTo(restar(cuotaTotal, Calc.EPSILON_SALDO)) >= 0;
 
-            // La fila reporta la cuota que se cobró esta semana: un abono a menor cuota (caso 7) cambia
-            // la cuota solo desde la semana siguiente (Caso7 F46 = MIN(B20, D + E); F47 = PMT(...)).
-            BigDecimal cuotaDeLaSemana = cuota;
+            // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
+            // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)).
+            BigDecimal cuotaDelPeriodo = cuota;
 
-            // 4. Abono extraordinario o prepago, después de la cuota de la semana.
+            // 4. Abono extraordinario o prepago, después de la cuota del periodo.
             BigDecimal abonoAplicado = ordenes.abono == null ? CERO : aplicarAbono(periodo, ordenes.abono, tasa);
             BigDecimal prepagoCapital = ordenes.prepago ? prepagar() : CERO;
 
-            // 5. Cierre por recuperación de la moto: se extingue capital + lo pendiente.
+            // 5. Cierre por recuperación de la moto: su valor extingue lo pendiente por prelación. La fila
+            // del cierre reporta el capital vencido que se extinguió (Caso3 Z del evento).
+            BigDecimal vencidoReportado = capitalVencido;
             Cierre cierre = ordenes.cierre == null ? Cierre.NINGUNO : cerrar(ordenes.cierre);
 
-            // 6. Estado, cuotas vencidas y giro a terceros.
-            BigDecimal pendiente = sumar(capitalVencido, cxcCobranza, cxcMora, cxcInteres, cxcServicios);
+            // 6. Estado, cuotas vencidas y giro a terceros de lo recaudado.
+            BigDecimal pendiente = sumar(capitalVencido, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total());
             EstadoCredito estado = estado(ordenes.cierre != null, pendiente);
             contarCuotasVencidas(pagoCompleto, pago, pendiente);
-            Servicios giro = girar(periodo, causado.servicios(), estado);
+            Servicios recaudado = reparto.servicios().mas(cierre.servicios());
+            Servicios giro = girar(periodo, recaudado, estado);
 
             String evento = evento(ordenes, periodo, pagoCompleto, dias, recibido);
-            return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDeLaSemana,
+            return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), causado.servicios(),
-                    recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios(), reparto.capital(),
-                    abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios, capitalVencido,
-                    max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(), cierre.inventario(),
-                    cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado);
+                    recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),
+                    reparto.capital(), abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total(),
+                    vencidoReportado, max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(),
+                    cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
+                    cxcServicios, cierre.extinguido());
         }
 
-        /** 1. Lee las instrucciones de la semana; el cambio de tasa se aplica al leerlo (caso 2). */
+        /** 1. Lee las instrucciones del periodo; el cambio de tasa se aplica al leerlo (casos 2 y 10). */
         private Ordenes leer(int periodo, List<Instruccion> instrucciones) {
             Ordenes ordenes = new Ordenes();
             for (Instruccion i : instrucciones) {
                 switch (i) {
-                    case CambioTasa(BigDecimal nuevaTasaEA) -> {
-                        // Nueva cuota sobre el saldo, conservando la fecha final.
-                        tasas = Tasas.desdeEA(nuevaTasaEA, p.semanasPorAnio(), p.mesesPorAnio());
-                        cuota = Amortizacion.cuotaFija(tasas.semanal(), cuotasPactadas - periodo + 1, saldo);
-                        saldoPlan = restar(saldo, capitalVencido);
+                    case CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) -> {
+                        cambiarTasa(periodo, nuevaTasaEA, modalidad);
                         ordenes.cambioTasa = true;
                     }
                     case AbonoExtra a -> ordenes.abono = a;
@@ -163,14 +169,39 @@ public final class MotorCartera {
         }
 
         /**
-         * 2. Interés corriente, capital contractual, servicios, mora y cobranza de la semana. Las
+         * Caso 2: conserva la fecha final y recalcula la cuota. Caso 10: conserva la cuota y recalcula
+         * el número de cuotas hasta saldo cero, NPER = −ln(1 − r·S/C) / ln(1 + r); la última se ajusta.
+         */
+        private void cambiarTasa(int periodo, BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) {
+            tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
+            saldoPlan = restar(saldo, capitalVencido);
+            if (modalidad == ModalidadCambioTasa.MISMA_FECHA_FINAL) {
+                cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasVigentes - periodo + 1, saldo);
+                return;
+            }
+            double r = tasas.periodica().doubleValue();
+            double proporcion = r * saldoPlan.doubleValue() / cuota.doubleValue();
+            if (proporcion >= 1) {
+                throw new IllegalArgumentException("Con la tasa nueva la cuota no alcanza para cubrir el interés: no amortiza");
+            }
+            int restantes = (int) Math.ceil(-Math.log(1 - proporcion) / Math.log(1 + r) - 1e-9);
+            cuotasVigentes = periodo - 1 + restantes;
+        }
+
+        /** FCC y asistencia solo se causan en periodos pagados al día (Inputs ⑥, P-07). */
+        private boolean alDia(Instruccion pago, int dias) {
+            return (pago instanceof PagoContractual || pago instanceof PagoAlDia || pago instanceof PagoValor) && dias == 0;
+        }
+
+        /**
+         * 2. Interés corriente, capital contractual, servicios, mora y cobranza del periodo. Las
          * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
          * el Excel tal cual.
          */
-        private Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias) {
+        private Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
             ReglasNegocio reglas = escenario.reglas();
-            BigDecimal tasa = tasas.semanal();
-            boolean dentroDelPlazo = periodo <= cuotasPactadas;
+            BigDecimal tasa = tasas.periodica();
+            boolean dentroDelPlazo = periodo <= cuotasVigentes;
             BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
                     ? noNegativo(restar(saldoInicial, capitalVencido)) : saldoInicial;
             BigDecimal capitalContractual = CERO;
@@ -181,15 +212,16 @@ public final class MotorCartera {
                     && (dentroDelPlazo || (reglas.serviciosDespuesDelPlazo() && !esCero(saldoInicial)));
             Servicios servicios = Servicios.NINGUNO;
             if (causaServicios) {
-                servicios = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
+                Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
                         ? Servicios.porCuota(saldoInicial, p) : serviciosPorCuota;
+                servicios = alDia ? base : base.soloSeguro();
             }
             return new Causacion(multiplicar(baseInteres, tasa), capitalContractual, servicios, mora(capitalContractual, dias),
                     cobranza(saldoInicial, dias));
         }
 
         private BigDecimal mora(BigDecimal capitalContractual, int dias) {
-            BigDecimal mora = multiplicar(capitalVencido, tasas.semanal());
+            BigDecimal mora = multiplicar(capitalVencido, tasas.periodica());
             if (dias > 0 && escenario.reglas().formulaMora() == ReglasNegocio.FormulaMora.VENCIDO_MAS_DIAS) {
                 BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
                 mora = sumar(mora, multiplicar(capitalContractual, factorDias));
@@ -203,20 +235,27 @@ public final class MotorCartera {
             return tope == null ? cobranza : min(cobranza, tope);
         }
 
-        /** 3. Lo que entra esta semana, limitado a lo exigible. */
+        /** 3. Lo que entra este periodo, limitado a lo exigible. */
         private BigDecimal recibido(Instruccion pago, BigDecimal cuotaTotal, BigDecimal saldoInicial, Causacion c) {
-            BigDecimal exigible = sumar(saldoInicial, cxcCobranza, c.cobranza(), cxcMora, c.mora(), cxcInteres, c.interes(),
-                    cxcServicios, c.servicios().total());
+            BigDecimal pendienteSinCapital = sumar(cxcCobranza, c.cobranza(), cxcMora, c.mora(), cxcInteres, c.interes(),
+                    cxcServicios.total(), c.servicios().total());
+            BigDecimal exigible = sumar(saldoInicial, pendienteSinCapital);
             return switch (pago) {
                 case PagoContractual x -> min(cuotaTotal, exigible);
-                case PagoParcial x -> min(multiplicar(x.fraccion(), cuotaTotal), exigible);
+                // El pago parcial es una fracción de la cuota total pactada (Inputs B36: cuota + los tres servicios).
+                case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuota, serviciosPorCuota.total())), exigible);
                 case PagoValor x -> min(x.valor(), exigible);
+                case PagoAlDia x -> min(sumar(pendienteSinCapital, capitalVencido, c.capitalContractual()), exigible);
                 case SinPago x -> CERO;
                 default -> throw new IllegalStateException("Instrucción de pago no soportada: " + pago);
             };
         }
 
-        /** 3. Prelación: cobranza → mora → interés corriente → servicios y capital en el orden de ReglasNegocio. */
+        /**
+         * 3. Prelación (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías →
+         * asistencia → seguro → capital. Con CAPITAL_ANTES_DE_SERVICIOS el capital de la cuota va antes
+         * de los servicios.
+         */
         private Reparto repartir(BigDecimal recibido, BigDecimal saldoInicial, Causacion c) {
             BigDecimal restante = recibido;
             BigDecimal pagoCobranza = min(restante, sumar(cxcCobranza, c.cobranza()));
@@ -225,32 +264,35 @@ public final class MotorCartera {
             restante = restar(restante, pagoMora);
             BigDecimal pagoInteres = min(restante, sumar(cxcInteres, c.interes()));
             restante = restar(restante, pagoInteres);
-            BigDecimal servicios = sumar(cxcServicios, c.servicios().total());
-            BigDecimal pagoServicios;
-            BigDecimal pagoCapital;
+            Servicios porCobrar = cxcServicios.mas(c.servicios());
+            BigDecimal pagoCapital = CERO;
             if (escenario.reglas().prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS) {
                 // Solo se adelanta el capital de la cuota (contractual + vencido); el excedente pasa a servicios.
                 pagoCapital = min(restante, min(saldoInicial, sumar(capitalVencido, c.capitalContractual())));
                 restante = restar(restante, pagoCapital);
-                pagoServicios = min(restante, servicios);
-                restante = restar(restante, pagoServicios);
-                pagoCapital = sumar(pagoCapital, min(restante, restar(saldoInicial, pagoCapital)));
-            } else {
-                pagoServicios = min(restante, servicios);
-                restante = restar(restante, pagoServicios);
-                pagoCapital = min(restante, saldoInicial);
             }
-            return new Reparto(pagoCobranza, pagoMora, pagoInteres, pagoServicios, pagoCapital);
+            BigDecimal pagoFondo = min(restante, porCobrar.fondoGarantias());
+            restante = restar(restante, pagoFondo);
+            BigDecimal pagoAsistencia = min(restante, porCobrar.asistencia());
+            restante = restar(restante, pagoAsistencia);
+            BigDecimal pagoSeguro = min(restante, porCobrar.seguro());
+            restante = restar(restante, pagoSeguro);
+            pagoCapital = sumar(pagoCapital, min(restante, restar(saldoInicial, pagoCapital)));
+            return new Reparto(pagoCobranza, pagoMora, pagoInteres, new Servicios(pagoFondo, pagoAsistencia, pagoSeguro),
+                    pagoCapital);
         }
 
         private void actualizarSaldos(BigDecimal saldoInicial, Causacion c, Reparto r, boolean sinPagoSinMora) {
             cxcCobranza = noNegativo(restar(sumar(cxcCobranza, c.cobranza()), r.cobranza()));
             cxcMora = noNegativo(restar(sumar(cxcMora, c.mora()), r.mora()));
             cxcInteres = noNegativo(restar(sumar(cxcInteres, c.interes()), r.interes()));
-            cxcServicios = noNegativo(restar(sumar(cxcServicios, c.servicios().total()), r.servicios()));
+            cxcServicios = cxcServicios.mas(c.servicios()).menos(r.servicios()).noNegativo();
             saldo = noNegativo(restar(saldoInicial, r.capital()));
             if (!sinPagoSinMora) {
                 capitalVencido = noNegativo(restar(sumar(capitalVencido, c.capitalContractual()), r.capital()));
+                if (esCero(capitalVencido)) {
+                    capitalVencido = CERO;
+                }
             }
             saldoPlan = noNegativo(restar(saldoPlan, c.capitalContractual()));
         }
@@ -263,8 +305,8 @@ public final class MotorCartera {
             }
             BigDecimal aplicado = min(abono.valor(), saldo);
             saldo = restar(saldo, aplicado);
-            if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasPactadas - periodo > 0 && !esCero(saldo)) {
-                cuota = Amortizacion.cuotaFija(tasa, cuotasPactadas - periodo, saldo);
+            if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasVigentes - periodo > 0 && !esCero(saldo)) {
+                cuota = Amortizacion.cuotaFija(tasa, cuotasVigentes - periodo, saldo);
             }
             saldoPlan = restar(saldo, capitalVencido);
             return aplicado;
@@ -278,18 +320,29 @@ public final class MotorCartera {
             return prepagado;
         }
 
-        /** 5. Recibe la moto y extingue capital + lo pendiente contra su valor. */
+        /**
+         * 5. Recibe la moto: su valor se aplica por prelación a lo pendiente (cobranza, mora, interés,
+         * fondo, asistencia, seguro, capital). Lo no cubierto es CxC al fondo de garantías; lo que
+         * sobra, CxP al deudor (casos 3, 4 y 11).
+         */
         private Cierre cerrar(CierrePorRecuperacion orden) {
-            BigDecimal deuda = sumar(saldo, cxcInteres, cxcMora, cxcServicios, cxcCobranza);
             BigDecimal inventario = orden.valorMoto();
+            BigDecimal deuda = sumar(saldo, cxcInteres, cxcMora, cxcServicios.total(), cxcCobranza);
+            BigDecimal restante = restar(inventario, min(inventario, sumar(cxcCobranza, cxcMora, cxcInteres)));
+            BigDecimal fondo = min(restante, cxcServicios.fondoGarantias());
+            restante = restar(restante, fondo);
+            BigDecimal asistencia = min(restante, cxcServicios.asistencia());
+            restante = restar(restante, asistencia);
+            BigDecimal seguro = min(restante, cxcServicios.seguro());
             Cierre cierre = new Cierre(deuda, inventario, noNegativo(restar(deuda, inventario)),
-                    noNegativo(restar(inventario, deuda)));
+                    noNegativo(restar(inventario, deuda)), new Servicios(fondo, asistencia, seguro),
+                    new DeudaExtinguida(cxcCobranza, cxcMora, cxcInteres, cxcServicios, saldo));
             saldo = CERO;
             saldoPlan = CERO;
             capitalVencido = CERO;
             cxcInteres = CERO;
             cxcMora = CERO;
-            cxcServicios = CERO;
+            cxcServicios = Servicios.NINGUNO;
             cxcCobranza = CERO;
             return cierre;
         }
@@ -312,20 +365,24 @@ public final class MotorCartera {
             }
         }
 
-        /** 6. Los servicios se giran a terceros al cerrar el mes, en la última cuota o al terminar el crédito. */
-        private Servicios girar(int periodo, Servicios causados, EstadoCredito estado) {
-            serviciosDelMes = serviciosDelMes.mas(causados);
+        /**
+         * 6. Lo recaudado de cada servicio se gira al tercero al cerrar el mes o en el último periodo
+         * del crédito (Caso8 AD = SUMIF del mes de "Pago FCC+IVA (4)").
+         */
+        private Servicios girar(int periodo, Servicios recaudado, EstadoCredito estado) {
+            recaudadoDelMes = recaudadoDelMes.mas(recaudado);
             boolean terminaMes = Calendario.mes(periodo + 1, p) > Calendario.mes(periodo, p);
-            boolean termina = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO;
-            if (periodo != cuotasPactadas && !terminaMes && !termina) {
+            boolean termina = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO
+                    || periodo == p.plazoLimitePeriodos();
+            if (!terminaMes && !termina) {
                 return Servicios.NINGUNO;
             }
-            Servicios giro = serviciosDelMes;
-            serviciosDelMes = Servicios.NINGUNO;
+            Servicios giro = recaudadoDelMes;
+            recaudadoDelMes = Servicios.NINGUNO;
             return giro;
         }
 
-        /** El evento de mayor jerarquía de la semana: cierre, prepago, abono, cambio de tasa o el pago. */
+        /** El evento de mayor jerarquía del periodo: cierre, prepago, abono, cambio de tasa o el pago. */
         private String evento(Ordenes o, int periodo, boolean pagoCompleto, int dias, BigDecimal recibido) {
             if (o.cierre != null) {
                 return "Evento de cierre";
@@ -352,7 +409,10 @@ public final class MotorCartera {
             if (pago instanceof SinPago) {
                 return "Mora - sin pago";
             }
-            if (periodo > cuotasPactadas) {
+            if (pago instanceof PagoAlDia) {
+                return "Normalización - paga mes + atrasado";
+            }
+            if (periodo > cuotasVigentes) {
                 return "Periodo adicional";
             }
             if (dias > 0) {
@@ -361,10 +421,10 @@ public final class MotorCartera {
             if (!completo && recibido.signum() > 0) {
                 return "Pago inferior";
             }
-            return periodo == cuotasPactadas ? "Pago final" : "Pago normal";
+            return periodo == cuotasVigentes ? "Pago final" : "Pago normal";
         }
 
-        /** Lo que piden las instrucciones de una semana. */
+        /** Lo que piden las instrucciones de un periodo. */
         private static final class Ordenes {
             private Instruccion pago = PagoContractual.A_TIEMPO;
             private AbonoExtra abono;
@@ -373,19 +433,20 @@ public final class MotorCartera {
             private CierrePorRecuperacion cierre;
         }
 
-        /** Lo causado en una semana. */
+        /** Lo causado en un periodo. */
         private record Causacion(BigDecimal interes, BigDecimal capitalContractual, Servicios servicios, BigDecimal mora,
                 BigDecimal cobranza) {
         }
 
         /** Cómo se repartió el pago por prelación. */
-        private record Reparto(BigDecimal cobranza, BigDecimal mora, BigDecimal interes, BigDecimal servicios,
+        private record Reparto(BigDecimal cobranza, BigDecimal mora, BigDecimal interes, Servicios servicios,
                 BigDecimal capital) {
         }
 
         /** Resultado de un cierre por recuperación de la moto. */
-        private record Cierre(BigDecimal deuda, BigDecimal inventario, BigDecimal cxcFondoGarantias, BigDecimal cxpDeudor) {
-            private static final Cierre NINGUNO = new Cierre(CERO, CERO, CERO, CERO);
+        private record Cierre(BigDecimal deuda, BigDecimal inventario, BigDecimal cxcFondoGarantias, BigDecimal cxpDeudor,
+                Servicios servicios, DeudaExtinguida extinguido) {
+            private static final Cierre NINGUNO = new Cierre(CERO, CERO, CERO, CERO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA);
         }
     }
 }

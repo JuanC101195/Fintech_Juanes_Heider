@@ -38,11 +38,11 @@ class Caso5PrepagoTest {
     private static final int PERIODO_PREPAGO = Calendario.periodoDelMes(MES_PREPAGO, PARAMETROS);
 
     // Indicadores del caso (Caso5_Prepago!U2:U8), valores calculados por Excel.
-    private static final BigDecimal SALDO_ANTES_CUOTA = new BigDecimal("3766846.5117740124"); // U3
-    private static final BigDecimal CUOTA_ORDINARIA = new BigDecimal("111014.82187676849"); // U4
-    private static final BigDecimal PREPAGO_CAPITAL = new BigDecimal("3701573.622003108"); // U5
-    private static final BigDecimal PAGO_FINANCIERO_EVENTO = new BigDecimal("3812588.4438798763"); // U6
-    private static final BigDecimal INTERESES_EVITADOS = new BigDecimal("1072063.7186979419"); // U7
+    private static final BigDecimal SALDO_ANTES_CUOTA = new BigDecimal("4352554.531537853"); // U3
+    private static final BigDecimal CUOTA_ORDINARIA = new BigDecimal("100406.2741819886"); // U4
+    private static final BigDecimal PREPAGO_CAPITAL = new BigDecimal("4305138.19015333"); // U5
+    private static final BigDecimal PAGO_FINANCIERO_EVENTO = new BigDecimal("4405544.464335319"); // U6
+    private static final BigDecimal INTERESES_EVITADOS = new BigDecimal("1819644.5349479774"); // U7
     private static final BigDecimal SALDO_POSTERIOR = BigDecimal.ZERO; // U8
 
     private static final BigDecimal TOLERANCIA = ComparadorExcel.TOLERANCIA_DINERO;
@@ -108,11 +108,11 @@ class Caso5PrepagoTest {
         assertThat(Calc.sumar(evento.cuotaFinanciera(), evento.prepagoCapital()))
                 .isCloseTo(PAGO_FINANCIERO_EVENTO, within(TOLERANCIA));
         assertThat(evento.saldoFinal()).isCloseTo(SALDO_POSTERIOR, within(TOLERANCIA));
-        // Cuota ordinaria del evento: interés 45.741,93 y capital 65.272,89.
-        assertThat(evento.interesCorriente()).isCloseTo(new BigDecimal("45741.93210586396"), within(TOLERANCIA));
-        assertThat(evento.pagoCapital()).isCloseTo(new BigDecimal("65272.88977090453"), within(TOLERANCIA));
+        // Cuota ordinaria del evento: interés 52.989,93 y capital 47.416,34.
+        assertThat(evento.interesCorriente()).isCloseTo(new BigDecimal("52989.932797465175"), within(TOLERANCIA));
+        assertThat(evento.pagoCapital()).isCloseTo(new BigDecimal("47416.341384523424"), within(TOLERANCIA));
         // Pago total del cliente = cuota + prepago + servicios (O46).
-        assertThat(evento.pagoTotalCliente()).isCloseTo(new BigDecimal("3875622.6161875688"), within(TOLERANCIA));
+        assertThat(evento.pagoTotalCliente()).isCloseTo(new BigDecimal("4468578.636643011"), within(TOLERANCIA));
     }
 
     @Test

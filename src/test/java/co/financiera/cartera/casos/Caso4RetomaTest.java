@@ -55,7 +55,7 @@ class Caso4RetomaTest {
         ComparadorExcel comparador = new ComparadorExcel()
                 .dinero("Mes", m -> Calc.bd(m.mes()))
                 .dinero("Saldo inicial", Movimiento::saldoInicial)
-                .dinero("Interés corriente", Movimiento::interesCorriente)
+                .dinero("Interés corriente (s/ capital vigente)", Movimiento::interesCorriente)
                 .dinero("Pago financiero", m -> Calc.restar(m.pagoRecibido(), m.pagoServicios()))
                 .dinero("Interés pagado", Movimiento::pagoInteresCorriente)
                 .dinero("Capital pagado", Movimiento::pagoCapital)
@@ -73,7 +73,17 @@ class Caso4RetomaTest {
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
                 .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
-                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
+                .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro())
+                .dinero("Capital contractual", Movimiento::capitalContractual)
+                .dinero("Capital vencido", Movimiento::capitalVencido)
+                .dinero("Interés mora causado", Movimiento::interesMora)
+                .dinero("CxC interés mora", Movimiento::cxcMora)
+                .dinero("Pago FCC+IVA aplicado", m -> m.pagosServicios().fondoGarantias())
+                .dinero("Pago asistencia+IVA aplicado", m -> m.pagosServicios().asistencia())
+                .dinero("Pago seguro aplicado", m -> m.pagosServicios().seguro())
+                .dinero("CxC FCC+IVA cliente", m -> m.cxcServiciosPorConcepto().fondoGarantias())
+                .dinero("CxC asistencia+IVA", m -> m.cxcServiciosPorConcepto().asistencia())
+                .dinero("CxC seguro", m -> m.cxcServiciosPorConcepto().seguro());
 
         assertThat(comparador.diferencias(hoja, motor)).isEmpty();
     }
@@ -100,9 +110,9 @@ class Caso4RetomaTest {
         assertThat(motor.get(ULTIMO_PERIODO_PAGADO + 1).evento()).isEqualTo("Mora - sin pago");
         assertThat(retoma.periodo()).isEqualTo(PERIODO_RETOMA);
         assertThat(retoma.cuotasVencidas()).isEqualTo(4);
-        assertThat(retoma.deudaAExtinguir()).isCloseTo(new BigDecimal("5614421.543517285"), UN_PESO);
+        assertThat(retoma.deudaAExtinguir()).isCloseTo(new BigDecimal("5786981.423229206"), UN_PESO);
         assertThat(retoma.inventario()).isCloseTo(new BigDecimal("6800000"), UN_PESO);
-        assertThat(retoma.cxpDeudor()).isCloseTo(new BigDecimal("1185578.456482715"), UN_PESO);
+        assertThat(retoma.cxpDeudor()).isCloseTo(new BigDecimal("1013018.5767707936"), UN_PESO);
         assertThat(retoma.saldoFinal()).isCloseTo(BigDecimal.ZERO, UN_PESO);
         assertThat(retoma.cxcFondoGarantias()).isZero();
         assertThat(retoma.estado()).isEqualTo(EstadoCredito.CERRADO_POR_EVENTO);
@@ -133,18 +143,21 @@ class Caso4RetomaTest {
         }
     }
 
-    /** Panel "Movimiento contable clave del evento" (Z12:AC18). */
+    /** Panel "Movimiento contable clave del evento" (AJ13:AM22): fondo y asistencia del cliente valen 0 y no generan línea. */
     @Test
     void laReglaContableReproduceElPanelDelExcel() {
         Asiento asiento = new Retoma().contabilizar(motor.get(PERIODO_RETOMA)).orElseThrow();
 
         assertThat(asiento.periodo()).isEqualTo(PERIODO_RETOMA);
-        assertThat(asiento.lineas()).hasSize(4);
+        assertThat(asiento.lineas()).hasSize(6);
         assertThat(linea(asiento, Cuenta.INVENTARIO_MOTOS).debito()).isCloseTo(new BigDecimal("6800000"), UN_PESO);
-        assertThat(linea(asiento, Cuenta.CARTERA_VIGENTE).credito()).isCloseTo(new BigDecimal("5354344.00726897"), UN_PESO);
+        // AL15:AL21: un crédito por concepto extinguido según la prelación, y el excedente al deudor.
+        assertThat(linea(asiento, Cuenta.CARTERA_VIGENTE).credito()).isCloseTo(new BigDecimal("5505261.868413894"), UN_PESO);
         assertThat(linea(asiento, Cuenta.CXC_INTERES_CORRIENTE).credito())
-                .isCloseTo(new BigDecimal("260077.53624831513"), UN_PESO);
-        assertThat(linea(asiento, Cuenta.CXP_DEUDOR).credito()).isCloseTo(new BigDecimal("1185578.456482715"), UN_PESO);
+                .isCloseTo(new BigDecimal("265635.6644724451"), UN_PESO);
+        assertThat(linea(asiento, Cuenta.CXC_INTERES_MORA).credito()).isCloseTo(new BigDecimal("2458.351881328221"), UN_PESO);
+        assertThat(linea(asiento, Cuenta.CXC_SEGUROS).credito()).isCloseTo(new BigDecimal("13625.538461538463"), UN_PESO);
+        assertThat(linea(asiento, Cuenta.CXP_DEUDOR).credito()).isCloseTo(new BigDecimal("1013018.5767707936"), UN_PESO);
         // Control AC18: débitos − créditos = 0.
         assertThat(asiento.totalDebitos()).isCloseTo(new BigDecimal("6800000"), UN_PESO);
         assertThat(asiento.totalCreditos()).isCloseTo(new BigDecimal("6800000"), UN_PESO);

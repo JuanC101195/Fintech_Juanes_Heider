@@ -50,27 +50,30 @@ class ReglasNegocioTest {
 
     @Test
     void laMoraSoloSobreVencidoNoCobraLosDiasDeLaCuota() {
-        assertThat(caso9(ReglasNegocio.EXCEL).get(43).interesMora()).isCloseTo(new BigDecimal("1590.46"), offset(UN_PESO));
+        assertThat(caso9(ReglasNegocio.EXCEL).get(43).interesMora()).isCloseTo(new BigDecimal("1158.34"), offset(UN_PESO));
         assertThat(caso9(ReglasNegocio.EXCEL.conFormulaMora(FormulaMora.SOLO_VENCIDO)).get(43).interesMora()).isZero();
     }
 
     @Test
-    void elInteresSobreSaldoVigenteNoCobraInteresAlCapitalVencido() {
+    void elExcelNoCobraInteresCorrienteAlCapitalVencidoYLaVarianteSi() {
+        // P-03: el Excel causa el interés corriente solo sobre el capital vigente (Caso8 E = (D − N anterior) × tasa).
         Movimiento excel = caso8(ReglasNegocio.EXCEL).get(44);
-        Movimiento vigente = caso8(ReglasNegocio.EXCEL.conBaseInteres(BaseInteres.SALDO_VIGENTE)).get(44);
-        BigDecimal tasa = excel.tasaSemanal();
-        assertThat(vigente.interesCorriente())
-                .isCloseTo(excel.saldoInicial().subtract(new BigDecimal("65272.89")).multiply(tasa), offset(UN_PESO));
-        assertThat(vigente.interesCorriente()).isLessThan(excel.interesCorriente());
+        Movimiento total = caso8(ReglasNegocio.EXCEL.conBaseInteres(BaseInteres.SALDO_TOTAL)).get(44);
+        BigDecimal tasa = excel.tasaPeriodica();
+        assertThat(excel.interesCorriente())
+                .isCloseTo(excel.saldoInicial().subtract(new BigDecimal("38436.48")).multiply(tasa), offset(UN_PESO));
+        assertThat(total.interesCorriente()).isGreaterThan(excel.interesCorriente());
     }
 
     @Test
     void conCapitalAntesDeServiciosElPagoInferiorAbonaACapital() {
         Movimiento excel = caso8(ReglasNegocio.EXCEL).get(43);
         Movimiento capitalPrimero = caso8(ReglasNegocio.EXCEL.conPrelacion(OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS)).get(43);
-        assertThat(excel.pagoCapital()).isZero();
-        assertThat(capitalPrimero.pagoInteresCorriente()).isCloseTo(new BigDecimal("45741.93"), offset(UN_PESO));
-        assertThat(capitalPrimero.pagoCapital()).isCloseTo(new BigDecimal("23877.67"), offset(UN_PESO));
+        // Excel (Inputs ⑥): del 65.376,18 van 52.989,93 a interés, 3.406,38 al seguro y 8.979,86 a capital.
+        assertThat(excel.pagoServicios()).isCloseTo(new BigDecimal("3406.38"), offset(UN_PESO));
+        assertThat(excel.pagoCapital()).isCloseTo(new BigDecimal("8979.86"), offset(UN_PESO));
+        assertThat(capitalPrimero.pagoInteresCorriente()).isCloseTo(new BigDecimal("52989.93"), offset(UN_PESO));
+        assertThat(capitalPrimero.pagoCapital()).isCloseTo(new BigDecimal("12386.25"), offset(UN_PESO));
         assertThat(capitalPrimero.pagoServicios()).isZero();
     }
 
@@ -96,7 +99,8 @@ class ReglasNegocioTest {
 
     @Test
     void losServiciosDespuesDelPlazoSeCausanMientrasHayaSaldo() {
-        assertThat(caso8(ReglasNegocio.EXCEL).get(87).serviciosCausados().total()).isZero();
-        assertThat(caso8(ReglasNegocio.EXCEL.conServiciosDespuesDelPlazo(true)).get(87).serviciosCausados().total()).isPositive();
+        // El caso 9 sigue con saldo después de la cuota 104 (horizonte de 120 periodos).
+        assertThat(caso9(ReglasNegocio.EXCEL).get(105).serviciosCausados().total()).isZero();
+        assertThat(caso9(ReglasNegocio.EXCEL.conServiciosDespuesDelPlazo(true)).get(105).serviciosCausados().total()).isPositive();
     }
 }
