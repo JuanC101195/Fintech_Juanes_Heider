@@ -31,7 +31,7 @@ const ajusteEntrega = (n) => (n <= 3 ? 3 - n : 0);
 
 const components = [
   { id: 'juan', type: 'external', label: 'Juan Esteban', sublabel: 'pide el motor', pos: [20, CY - 30], size: [130, 60] },
-  { id: 'orquestador', type: 'frontend', label: 'Orquestador', sublabel: 'Opus 5.5 · Claude Code', tag: 'sesión principal', pos: [230, CY - 34], size: [150, 68] },
+  { id: 'orquestador', type: 'frontend', label: 'Orquestador', sublabel: 'arma y coordina', tag: 'sesión principal', pos: [230, CY - 34], size: [150, 68] },
   { id: 'base', type: 'frontend', label: 'Base común', sublabel: 'núcleo + caso 1', tag: '8e24c4a', pos: [440, CY - 65], size: [170, 130] },
   { id: 'excel', type: 'database', label: 'Excel de Diego', sublabel: '9 hojas → 9 CSV', pos: [230, CY + 150], size: [150, 60] },
   { id: 'integracion', type: 'frontend', label: 'Integración', sublabel: '9 merges · 124 pruebas', tag: 'e815f82', pos: [1240, CY - 65], size: [170, 130] },
@@ -51,7 +51,7 @@ const connections = [
 ];
 for (const [n, nombre, seg, her, pruebas, commit, entrega] of agentes) {
   const y = Y0 + (n - 1) * PASO;
-  components.push({ id: `agente${n}`, type: 'backend', label: `Caso ${n} · ${nombre}`, sublabel: `Opus 5.5 · ${seg} s · ${her} herram.`, pos: [690 + ajusteAgente(n), y], size: [220, H] });
+  components.push({ id: `agente${n}`, type: 'backend', label: `Caso ${n} · ${nombre}`, sublabel: `agente IA · ${seg} s · ${her} herram.`, pos: [690 + ajusteAgente(n), y], size: [220, H] });
   components.push({ id: `entrega${n}`, type: 'database', label: `${pruebas} pruebas · ${commit}`, sublabel: entrega, pos: [960 + ajusteEntrega(n), y], size: [200, H] });
   connections.push({ id: `entrega${n}-hecha`, from: `agente${n}`, to: `entrega${n}` });
 }
@@ -67,7 +67,7 @@ const doc = {
   diagram_type: 'architecture',
   meta: {
     title: 'Motor de cartera · 9 agentes',
-    subtitle: 'Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 al 16 oct 2026',
+    subtitle: 'Orquestador + 9 agentes de IA en git worktrees · 8 al 16 oct 2026',
     locale: 'es',
     translations: es,
     output: 'docs/diagrama/agentes-motor-cartera.html',
@@ -76,7 +76,7 @@ const doc = {
       mode: 'auto',
       entries: {
         frontend: { label: 'Orquestador (sesión principal)' },
-        backend: { label: 'Agente · Claude Opus 5.5' },
+        backend: { label: 'Agente de IA' },
         database: { label: 'Datos y entregas' },
         external: { label: 'Personas y externos' },
       },
@@ -101,7 +101,7 @@ const doc = {
       'Mora antes de dación y retoma; vencido paga solo mora',
       'Falta su último Excel: tasas por línea y servicios en mora',
     ] },
-    { dot: 'slate', title: 'Cómo se lanzaron', items: ['Herramienta Agent de Claude Code, tipo general-purpose', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
+    { dot: 'slate', title: 'Cómo se lanzaron', items: ['Subagentes de propósito general del asistente de programación', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
   ],
 };
 writeFileSync(new URL('./agentes.architecture.json', import.meta.url), JSON.stringify(doc, null, 2) + '\n');

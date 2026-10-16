@@ -6,24 +6,24 @@ El 8 de octubre de 2026 el motor se construyó con **una sesión principal (orqu
 
 | Pieza | Valor |
 |---|---|
-| Modelo de lenguaje (LLM) | **Claude Opus 5.5** (`claude-opus-5-5`), de Anthropic |
+| Modelo de lenguaje (LLM) | El mismo modelo para el orquestador y los 9 agentes |
 | Quién lo usó | El orquestador y los 9 agentes. Al lanzar los agentes no se fijó otro modelo, así que heredaron el de la sesión principal. |
-| Herramienta | **Claude Code** (extensión de VS Code), herramienta `Agent` |
+| Herramienta | Asistente de programación en VS Code con soporte para subagentes |
 | Tipo de agente | `general-purpose`: puede leer, buscar, editar archivos y correr comandos (Bash, Maven, Python) |
-| Aislamiento | `isolation: worktree`: cada agente recibió una copia del repo (`git worktree`) en `.claude/worktrees/agent-…`, con su rama propia creada desde el commit base |
+| Aislamiento | `isolation: worktree`: cada agente recibió una copia del repo (`git worktree`) en una carpeta propia, con su rama propia creada desde el commit base |
 | Ejecución | `run_in_background: true`: los 9 al mismo tiempo; cada uno avisó al terminar con su reporte |
 
 ## Las 4 fases
 
 ```mermaid
 flowchart LR
-    O["Orquestador<br/>Claude Opus 5.5"] --> B["Base común<br/>commit 8e24c4a"]
+    O["Orquestador<br/>sesión principal"] --> B["Base común<br/>commit 8e24c4a"]
     B --> A1["Caso 1"] & A2["Caso 2"] & A3["Caso 3"] & A4["Caso 4"] & A5["Caso 5"] & A6["Caso 6"] & A7["Caso 7"] & A8["Caso 8"] & A9["Caso 9"]
     A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9 --> I["Integración<br/>9 merges · 124 pruebas"]
     I --> C["Cuestionario<br/>para negocio"]
 ```
 
-1. **Base común (orquestador).** Antes de lanzar agentes se construyó lo que todos comparten, para que no salieran 9 motores distintos: proyecto Java 21 + Spring Boot 4 + Spring Modulith, exportador del Excel a CSV, núcleo (`ParametrosProducto`, `Tasas`, `Calendario`, `Amortizacion`, `Servicios`), un solo ciclo semanal (`MotorCartera`), base contable y el caso 1 reproducido celda por celda. `CLAUDE.md` con las reglas de trabajo en paralelo. Commit `8e24c4a`.
+1. **Base común (orquestador).** Antes de lanzar agentes se construyó lo que todos comparten, para que no salieran 9 motores distintos: proyecto Java 21 + Spring Boot 4 + Spring Modulith, exportador del Excel a CSV, núcleo (`ParametrosProducto`, `Tasas`, `Calendario`, `Amortizacion`, `Servicios`), un solo ciclo semanal (`MotorCartera`), base contable y el caso 1 reproducido celda por celda. Una guía con las reglas de trabajo en paralelo. Commit `8e24c4a`.
 2. **9 agentes en paralelo.** Cada uno: prueba celda por celda de su hoja, validaciones de la hoja Validaciones, regla contable si aplica, documento de reglas y preguntas, commit en su rama y reporte.
 3. **Integración (orquestador).** Merge de las 9 ramas en orden; los únicos choques (4) fueron en el registro de reglas de `Contabilizador` y se resolvieron uniendo líneas. Se verificó que ningún pago se contabilizara dos veces y se corrigió el ruido decimal (1e-27) que reportaron tres agentes. Suite: **124 pruebas, 0 fallas** (commit `e815f82`).
 4. **Cuestionario (orquestador).** Las preguntas de los agentes se volvieron opciones configurables (`ReglasNegocio`), un cuestionario para Diego con cifras del motor y un importador de sus respuestas. Suite: **139 pruebas, 0 fallas** (commit `73756ea`).
@@ -63,7 +63,7 @@ Reglas clave para que 9 agentes no se pisaran:
 
 ## Reproducir el método
 
-Desde Claude Code, con el repo base en un commit limpio:
+Desde el asistente de programación, con el repo base en un commit limpio:
 
 ```text
 Agent(

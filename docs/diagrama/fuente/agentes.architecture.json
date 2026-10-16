@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Motor de cartera · 9 agentes",
-    "subtitle": "Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 al 16 oct 2026",
+    "subtitle": "Orquestador + 9 agentes de IA en git worktrees · 8 al 16 oct 2026",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -454,7 +454,7 @@
           "label": "Orquestador (sesión principal)"
         },
         "backend": {
-          "label": "Agente · Claude Opus 5.5"
+          "label": "Agente de IA"
         },
         "database": {
           "label": "Datos y entregas"
@@ -484,7 +484,7 @@
       "id": "orquestador",
       "type": "frontend",
       "label": "Orquestador",
-      "sublabel": "Opus 5.5 · Claude Code",
+      "sublabel": "arma y coordina",
       "tag": "sesión principal",
       "pos": [
         230,
@@ -601,7 +601,7 @@
       "id": "agente1",
       "type": "backend",
       "label": "Caso 1 · Normal",
-      "sublabel": "Opus 5.5 · 434 s · 34 herram.",
+      "sublabel": "agente IA · 434 s · 34 herram.",
       "pos": [
         690,
         40
@@ -629,7 +629,7 @@
       "id": "agente2",
       "type": "backend",
       "label": "Caso 2 · Cambio de tasa",
-      "sublabel": "Opus 5.5 · 280 s · 24 herram.",
+      "sublabel": "agente IA · 280 s · 24 herram.",
       "pos": [
         690,
         112
@@ -657,7 +657,7 @@
       "id": "agente3",
       "type": "backend",
       "label": "Caso 3 · Dación en pago",
-      "sublabel": "Opus 5.5 · 323 s · 32 herram.",
+      "sublabel": "agente IA · 323 s · 32 herram.",
       "pos": [
         690,
         184
@@ -685,7 +685,7 @@
       "id": "agente4",
       "type": "backend",
       "label": "Caso 4 · Retoma",
-      "sublabel": "Opus 5.5 · 247 s · 19 herram.",
+      "sublabel": "agente IA · 247 s · 19 herram.",
       "pos": [
         690,
         256
@@ -713,7 +713,7 @@
       "id": "agente5",
       "type": "backend",
       "label": "Caso 5 · Prepago total",
-      "sublabel": "Opus 5.5 · 266 s · 25 herram.",
+      "sublabel": "agente IA · 266 s · 25 herram.",
       "pos": [
         690,
         328
@@ -741,7 +741,7 @@
       "id": "agente6",
       "type": "backend",
       "label": "Caso 6 · Menor plazo",
-      "sublabel": "Opus 5.5 · 260 s · 21 herram.",
+      "sublabel": "agente IA · 260 s · 21 herram.",
       "pos": [
         690,
         400
@@ -769,7 +769,7 @@
       "id": "agente7",
       "type": "backend",
       "label": "Caso 7 · Menor cuota",
-      "sublabel": "Opus 5.5 · 307 s · 29 herram.",
+      "sublabel": "agente IA · 307 s · 29 herram.",
       "pos": [
         692,
         472
@@ -797,7 +797,7 @@
       "id": "agente8",
       "type": "backend",
       "label": "Caso 8 · Pago inferior",
-      "sublabel": "Opus 5.5 · 382 s · 30 herram.",
+      "sublabel": "agente IA · 382 s · 30 herram.",
       "pos": [
         691,
         544
@@ -825,7 +825,7 @@
       "id": "agente9",
       "type": "backend",
       "label": "Caso 9 · Cobranza",
-      "sublabel": "Opus 5.5 · 301 s · 23 herram.",
+      "sublabel": "agente IA · 301 s · 23 herram.",
       "pos": [
         690,
         616
@@ -1160,7 +1160,7 @@
       "dot": "slate",
       "title": "Cómo se lanzaron",
       "items": [
-        "Herramienta Agent de Claude Code, tipo general-purpose",
+        "Subagentes de propósito general del asistente de programación",
         "isolation: worktree, en segundo plano y en paralelo",
         "Prompts en docs/agentes/prompts/ · commits sin atribución"
       ]
