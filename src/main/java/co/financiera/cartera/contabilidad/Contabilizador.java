@@ -4,6 +4,7 @@ import co.financiera.cartera.contabilidad.reglas.AbonoExtraordinario;
 import co.financiera.cartera.contabilidad.reglas.CobranzaYMora;
 import co.financiera.cartera.contabilidad.reglas.DacionEnPago;
 import co.financiera.cartera.contabilidad.reglas.PagoInferior;
+import co.financiera.cartera.contabilidad.reglas.RecaudoConVencidos;
 import co.financiera.cartera.contabilidad.reglas.RecaudoCuota;
 import co.financiera.cartera.contabilidad.reglas.Retoma;
 import co.financiera.cartera.nucleo.motor.Movimiento;
@@ -31,6 +32,7 @@ public final class Contabilizador {
         reglas.add(new AbonoExtraordinario()); // casos 5, 6 y 7: prepago y abono extra
         reglas.add(new PagoInferior());        // caso 8: pago incompleto y reclasificación a vencida
         reglas.add(new CobranzaYMora());       // caso 9: pago tardío con cobranza y mora
+        reglas.add(new RecaudoConVencidos());  // casos 8 y 12: semanas que recuperan vencidos
         reglas.add(new DacionEnPago());        // caso 3: moto recibida por menos que la deuda
         reglas.add(new Retoma());              // caso 4: moto recibida por más que la deuda
         return new Contabilizador(reglas);

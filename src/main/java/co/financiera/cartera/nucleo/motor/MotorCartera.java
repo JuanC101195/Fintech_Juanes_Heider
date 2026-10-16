@@ -97,7 +97,8 @@ public final class MotorCartera {
         private Movimiento desembolso() {
             return new Movimiento(0, 0, "Desembolso", saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
                     CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, saldo, saldo, 0, CERO, CERO, CERO, CERO,
-                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA);
+                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
+                    CERO);
         }
 
         private Movimiento semana(int periodo, List<Instruccion> instrucciones) {
@@ -105,6 +106,7 @@ public final class MotorCartera {
             Instruccion pago = ordenes.pago;
             BigDecimal tasa = tasas.periodica();
             BigDecimal saldoInicial = saldo;
+            BigDecimal vencidoInicial = capitalVencido;
             // P7 / P-16: con moraAntesDeRecuperacion (el Excel) toda semana sin pago causa mora y seguro.
             boolean sinPagoSinMora = pago instanceof SinPago(boolean causaMora) && !causaMora
                     && !escenario.reglas().moraAntesDeRecuperacion();
@@ -147,7 +149,7 @@ public final class MotorCartera {
                     reparto.capital(), abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total(),
                     vencidoReportado, max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(),
                     cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
-                    cxcServicios, cierre.extinguido());
+                    cxcServicios, cierre.extinguido(), vencidoInicial);
         }
 
         /** 1. Lee las instrucciones del periodo; el cambio de tasa se aplica al leerlo (casos 2 y 10). */
@@ -418,7 +420,8 @@ public final class MotorCartera {
             if (dias > 0) {
                 return "Pago tardío + cobranza";
             }
-            if (!completo && recibido.signum() > 0) {
+            // La última cuota contractual puede ser menor porque liquida el saldo: eso no es un pago inferior.
+            if (!completo && recibido.signum() > 0 && !(pago instanceof PagoContractual)) {
                 return "Pago inferior";
             }
             return periodo == cuotasVigentes ? "Pago final" : "Pago normal";

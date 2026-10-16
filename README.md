@@ -10,8 +10,8 @@ La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](
 
 - **Los 12 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa (con fecha final fija o con cuota fija), dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora, pago tardío con cobranza, pago inferior seguido de dación y pago inferior con normalización.
 - **Producto parametrizable**: catálogo de líneas de crédito (CPPU 87,62 % EA, CPPR, Bajo monto y Ordinario, cada una con su plazo máximo), periodicidad diaria, semanal o mensual y número de cuotas (104 en el ejemplo).
-- **156 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
-- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma (cada concepto extinguido con la moto en su propia cuenta).
+- **167 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
+- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, recaudo con vencidos y su reclasificación, dación y retoma (cada concepto extinguido con la moto en su propia cuenta).
 - **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
 - **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
 - **Cuestionario para negocio en línea** con solo las 24 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.

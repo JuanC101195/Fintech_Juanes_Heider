@@ -22,6 +22,7 @@ Registro de lo decidido. Lo marcado **provisional** se tomó para avanzar y debe
 | D16 | 2026-10-16 | Prelación oficial (Inputs ⑥): cobranza → mora → interés corriente → fondo → asistencia → seguro → capital, con CxC y pagos por servicio. Se aplica igual al valor de la moto en dación y retoma. Cierra P1. | Tomada (Diego) |
 | D17 | 2026-10-16 | En periodos de atraso o impago (sin pago, pago inferior, pago tardío) solo se causa el seguro; fondo y asistencia no. A terceros se gira lo recaudado. | Tomada (Diego) |
 | D18 | 2026-10-16 | Casos nuevos: 10 (cambio de tasa conservando la cuota: `ModalidadCambioTasa.MISMA_CUOTA`, NPER), 11 (pago inferior + dación) y 12 (normalización: `Instruccion.PagoAlDia`). | Tomada (Diego) |
+| D19 | 2026-10-16 | Semanas que recuperan vencidos (casos 8 y 12): asiento propio (`RecaudoConVencidos`) con causación de mora, recaudo por prelación y reclasificación del cambio de capital vencido. La última cuota residual no es un pago inferior. | Tomada |
 
 ## Preguntas abiertas (P)
 
