@@ -50,7 +50,9 @@ public record Movimiento(
         Servicios pagosServicios,
         Servicios cxcServiciosPorConcepto,
         // Lo extinguido con la moto en una dación o retoma, por concepto
-        DeudaExtinguida extinguido) {
+        DeudaExtinguida extinguido,
+        // Capital vencido al inicio del periodo: con capitalVencido da la reclasificación contable
+        BigDecimal capitalVencidoInicial) {
 
     /** Pago total del cliente en la semana: pago recibido + abonos extraordinarios. */
     public BigDecimal pagoTotalCliente() {
