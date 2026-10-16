@@ -11,9 +11,12 @@ import java.math.BigDecimal;
  * @param formulaMora              cómo se causa el interés de mora (P3)
  * @param baseInteres              sobre qué saldo se causa el interés corriente (doble cobro con la mora)
  * @param topeCobranzaPorPago      máximo de gastos de cobranza por pago; {@code null} = sin tope
- * @param baseServicios            sobre qué se calculan FCC y seguro (P6)
+ * @param baseServicios            sobre qué se calculan fondo de garantías y seguro (P6)
  * @param serviciosDespuesDelPlazo si se siguen causando servicios después de la última cuota pactada
  *                                 mientras haya saldo
+ * @param moraAntesDeRecuperacion  si las semanas sin pago antes de una dación o retoma causan mora
+ *                                 y servicios como cualquier atraso (P7). Diego (2026-10-16, P-16):
+ *                                 sí. El Excel (casos 3 y 4) solo acumula interés corriente.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -21,10 +24,11 @@ public record ReglasNegocio(
         BaseInteres baseInteres,
         BigDecimal topeCobranzaPorPago,
         BaseServicios baseServicios,
-        boolean serviciosDespuesDelPlazo) {
+        boolean serviciosDespuesDelPlazo,
+        boolean moraAntesDeRecuperacion) {
 
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
-            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_TOTAL, null, BaseServicios.MONTO_INICIAL, false);
+            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_TOTAL, null, BaseServicios.MONTO_INICIAL, false, false);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -48,15 +52,15 @@ public record ReglasNegocio(
     }
 
     public enum BaseServicios {
-        /** FCC y seguro fijos sobre el monto financiado inicial. */
+        /** Fondo de garantías y seguro fijos sobre el monto financiado inicial (Diego, P-07). */
         MONTO_INICIAL,
-        /** FCC y seguro sobre el saldo de capital de cada semana. */
+        /** Fondo de garantías y seguro sobre el saldo de capital de cada semana. */
         SALDO
     }
 
     /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
     public static final java.util.Set<String> CLAVES = java.util.Set.of("prelacion", "formulaMora", "baseInteres",
-            "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo");
+            "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion");
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -83,30 +87,44 @@ public record ReglasNegocio(
         if ((v = config.get("serviciosDespuesDelPlazo")) != null) {
             r = r.conServiciosDespuesDelPlazo(Boolean.parseBoolean(v.trim()));
         }
+        if ((v = config.get("moraAntesDeRecuperacion")) != null) {
+            r = r.conMoraAntesDeRecuperacion(Boolean.parseBoolean(v.trim()));
+        }
         return r;
     }
 
     public ReglasNegocio conPrelacion(OrdenPrelacion valor) {
-        return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo);
+        return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion);
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
-        return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo);
+        return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion);
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
-        return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo);
+        return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion);
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo);
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion);
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo);
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion);
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor);
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
+                moraAntesDeRecuperacion);
+    }
+
+    public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                valor);
     }
 }

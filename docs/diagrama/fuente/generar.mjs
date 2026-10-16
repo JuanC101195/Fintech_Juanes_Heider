@@ -36,7 +36,8 @@ const components = [
   { id: 'excel', type: 'database', label: 'Excel de Diego', sublabel: '9 hojas → 9 CSV', pos: [230, CY + 150], size: [150, 60] },
   { id: 'integracion', type: 'frontend', label: 'Integración', sublabel: '9 merges · 124 pruebas', tag: 'e815f82', pos: [1240, CY - 65], size: [170, 130] },
   { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'ReglasNegocio · 139 pruebas', tag: '73756ea', pos: [1470, CY - 34], size: [170, 68] },
-  { id: 'diego', type: 'external', label: 'Diego', sublabel: 'responde · exporta Excel', pos: [1470, CY + 130], size: [170, 60] },
+  { id: 'diego', type: 'external', label: 'Diego', sublabel: 'respondió P-01 a P-27', pos: [1470, CY + 130], size: [170, 60] },
+  { id: 'respuestas', type: 'frontend', label: 'Reglas de Diego', sublabel: 'inicial · abonos · mora · 147 pruebas', tag: '16 oct', pos: [1440, CY + 250], size: [230, 68] },
   { id: 'github', type: 'external', label: 'GitHub', sublabel: 'Fintech_Juanes_Heider', pos: [1470, CY - 190], size: [170, 60] },
 ];
 const connections = [
@@ -46,6 +47,7 @@ const connections = [
   { id: 'dudas', from: 'integracion', to: 'cuestionario', label: 'dudas', variant: 'emphasis' },
   { id: 'envia', from: 'cuestionario', to: 'diego', label: 'envía', variant: 'dashed', fromSide: 'bottom', toSide: 'top' },
   { id: 'respaldo', from: 'cuestionario', to: 'github', label: 'push', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
+  { id: 'aplica', from: 'diego', to: 'respuestas', label: 'aplica', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
 ];
 for (const [n, nombre, seg, her, pruebas, commit, entrega] of agentes) {
   const y = Y0 + (n - 1) * PASO;
@@ -65,7 +67,7 @@ const doc = {
   diagram_type: 'architecture',
   meta: {
     title: 'Motor de cartera · 9 agentes',
-    subtitle: 'Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 oct 2026',
+    subtitle: 'Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 al 16 oct 2026',
     locale: 'es',
     translations: es,
     output: 'docs/diagrama/agentes-motor-cartera.html',
@@ -86,13 +88,18 @@ const doc = {
   cards: [
     { dot: 'cyan', title: '9 casos, 9 carriles separados', items: ['Un agente por hoja del Excel, cada uno en su git worktree', 'Solo tocó su prueba, su regla contable y su documento', '1.032.778 tokens y 237 llamadas a herramientas en total'] },
     { dot: 'emerald', title: 'Un solo motor compartido', items: ['La base común se hizo antes de lanzarlos (8e24c4a)', '8 de 9 agentes no tuvieron que cambiar MotorCartera', 'Los 9 casos se reproducen celda por celda (1 COP)'] },
-    { dot: 'violet', title: 'La integración es el punto de encuentro', items: ['9 merges, 4 choques en Contabilizador unidos a mano', '124 pruebas en verde; el cuestionario lleva la suite a 139', 'Respuestas de Diego → importador → ReglasNegocio'] },
+    { dot: 'violet', title: 'La integración es el punto de encuentro', items: ['9 merges, 4 choques en Contabilizador unidos a mano', '124 pruebas en verde; el cuestionario lleva la suite a 139', 'Las respuestas de Diego la llevan a 147'] },
     { dot: 'amber', title: 'Hallazgos de los agentes', items: [
-      'Caso 1: con inicial del 10 % la cuota baja a 99.913,34',
-      'Caso 3: faltante para el FCC de 1.709.819,75',
+      'Caso 3: faltante para el fondo de garantías de 1.709.819,75',
       'Caso 4: excedente para el cliente de 1.185.578,46',
       'Caso 8: el capital vencido paga interés y mora a la vez',
       'Caso 9: el crédito nunca termina con 14 días de atraso',
+    ] },
+    { dot: 'rose', title: 'Respuestas de Diego (16 oct)', items: [
+      'Pago inicial opcional que digita el asesor',
+      'Abono sin elección → menor plazo; mayor que el saldo → rechazo',
+      'Mora antes de dación y retoma; vencido paga solo mora',
+      'Falta su último Excel: tasas por línea y servicios en mora',
     ] },
     { dot: 'slate', title: 'Cómo se lanzaron', items: ['Herramienta Agent de Claude Code, tipo general-purpose', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
   ],

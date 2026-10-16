@@ -29,8 +29,16 @@ public sealed interface Instruccion {
     record SinPago(boolean causaMoraYServicios) implements Instruccion {
     }
 
-    /** Después de la cuota de la semana, abono extraordinario 100 % a capital (casos 6 y 7). */
+    /**
+     * Después de la cuota de la semana, abono extraordinario 100 % a capital (casos 6 y 7). No puede
+     * superar el saldo (P-14).
+     */
     record AbonoExtra(BigDecimal valor, ModalidadAbono modalidad) implements Instruccion {
+
+        /** Si el cliente no elige, se reduce el plazo (P-13, Diego 2026-10-16). */
+        public AbonoExtra(BigDecimal valor) {
+            this(valor, ModalidadAbono.POR_DEFECTO);
+        }
     }
 
     /** Después de la cuota de la semana, paga todo el saldo pendiente (caso 5). */
@@ -52,7 +60,10 @@ public sealed interface Instruccion {
         /** Mantiene la cuota y reduce el número de cuotas (caso 6). */
         MENOR_PLAZO,
         /** Mantiene el plazo y recalcula una cuota menor (caso 7). */
-        MENOR_CUOTA
+        MENOR_CUOTA;
+
+        /** Por ley el cliente elige; si no responde se aplica la reducción de plazo (P-13). */
+        public static final ModalidadAbono POR_DEFECTO = MENOR_PLAZO;
     }
 
     enum TipoRecuperacion {

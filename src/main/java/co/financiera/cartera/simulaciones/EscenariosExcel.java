@@ -31,6 +31,11 @@ public final class EscenariosExcel {
         return base(p);
     }
 
+    /** Caso 1 con un pago inicial digitado por el asesor (P-09). */
+    public static Escenario caso1ConInicial(ParametrosProducto p, java.math.BigDecimal pagoInicial) {
+        return new Escenario(Operacion.ejemploExcel().conPagoInicial(pagoInicial), p);
+    }
+
     /** Pago normal hasta el mes 7, sin pago hasta el siniestro del mes 8 y dación por 3.000.000. */
     public static Escenario caso3(ParametrosProducto p, boolean causaMoraYServicios) {
         int ultimoPagado = Calendario.periodoDelMes(7, p);

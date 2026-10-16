@@ -1,6 +1,7 @@
 package co.financiera.cartera.casos;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 import co.financiera.cartera.excel.ComparadorExcel;
@@ -11,6 +12,7 @@ import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.EstadoCredito;
 import co.financiera.cartera.nucleo.motor.Escenario;
+import co.financiera.cartera.nucleo.motor.AbonoMayorQueElSaldoException;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
@@ -63,12 +65,12 @@ class Caso6MenorPlazoTest {
                 .dinero("Abono extra", Movimiento::abonoExtra)
                 .dinero("Pago financiero total", m -> Calc.sumar(cuotaFinancieraPagada(m), m.abonoExtra()))
                 .dinero("Saldo final", Movimiento::saldoFinal)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 
@@ -156,7 +158,7 @@ class Caso6MenorPlazoTest {
         // Q64:S64: solo la semana 61, que es la única del mes 15.
         assertThat(ultimo.pagoTerceros().total()).isCloseTo(ultimo.serviciosCausados().total(), within(UN_PESO));
         // El mes 14 (semanas 57 a 60) se gira completo en la 60.
-        assertThat(delPeriodo(motor, 60).pagoTerceros().fcc()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
+        assertThat(delPeriodo(motor, 60).pagoTerceros().fondoGarantias()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
         // Todo lo cobrado por servicios se gira.
         BigDecimal cobrado = motor.stream().map(m -> m.serviciosCausados().total()).reduce(BigDecimal.ZERO, Calc::sumar);
         BigDecimal girado = motor.stream().map(m -> m.pagoTerceros().total()).reduce(BigDecimal.ZERO, Calc::sumar);
@@ -165,22 +167,15 @@ class Caso6MenorPlazoTest {
 
     // ---------------------------------------------------------------- casos borde
 
-    /** H46 = MIN(abono, D46 − G46): el abono no puede superar el saldo después del capital ordinario. */
+    /**
+     * H46 = MIN(abono, D46 − G46) recortaba el abono al saldo. Diego (P-14, 2026-10-16): un abono
+     * mayor que el saldo no es posible, así que el motor lo rechaza en vez de recortarlo.
+     */
     @Test
-    void unAbonoMayorQueElSaldoSeTopaYCancelaElCredito() {
-        List<Movimiento> movimientos = new MotorCartera().ejecutar(escenario(Calc.bd("10000000")));
-        Movimiento m = movimientos.getLast();
-        BigDecimal saldoTrasCuota = Calc.restar(m.saldoInicial(), m.pagoCapital());
-
-        assertThat(m.periodo()).isEqualTo(43);
-        assertThat(m.abonoExtra()).isCloseTo(saldoTrasCuota, within(UN_PESO));
-        assertThat(m.abonoExtra()).isCloseTo(new BigDecimal("3701573.6220031078"), within(UN_PESO));
-        assertThat(m.saldoFinal()).isZero();
-        assertThat(m.estado()).isEqualTo(EstadoCredito.CANCELADO);
-        // Solo se registra lo aplicado; el excedente (6.298.426,38) no entra al crédito (pregunta para Diego).
-        assertThat(m.pagoTotalCliente()).isCloseTo(Calc.sumar(m.pagoRecibido(), saldoTrasCuota), within(UN_PESO));
-        // Al cancelar se gira lo cobrado del mes 10.
-        assertThat(m.pagoTerceros().fcc()).isCloseTo(new BigDecimal("194572.68923076926"), within(UN_PESO));
+    void unAbonoMayorQueElSaldoSeRechaza() {
+        assertThatThrownBy(() -> new MotorCartera().ejecutar(escenario(Calc.bd("10000000"))))
+                .isInstanceOf(AbonoMayorQueElSaldoException.class)
+                .hasMessageContaining("Semana 43");
     }
 
     /** El capital contractual sigue al plan nuevo: con la misma cuota y saldo menor no aparece capital vencido. */

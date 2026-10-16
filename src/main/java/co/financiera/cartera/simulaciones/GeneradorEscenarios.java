@@ -75,7 +75,7 @@ public final class GeneradorEscenarios {
                                 new Opcion("si", EscenariosExcel.caso8(excel).conReglas(r.conServiciosDespuesDelPlazo(true))))),
                 new Pregunta("INICIAL", "Caso 1 · operación de 5.904.400 pagada a tiempo", List.of(1),
                         List.of(new Opcion("sin-inicial", EscenariosExcel.caso1(excel)),
-                                new Opcion("inicial-10", EscenariosExcel.caso1(ParametrosProducto.motoEstandar())))));
+                                new Opcion("inicial-10", EscenariosExcel.caso1ConInicial(excel, bd(590_440))))));
 
         MotorCartera motor = new MotorCartera();
         StringBuilder json = new StringBuilder();
@@ -89,8 +89,8 @@ public final class GeneradorEscenarios {
                 Escenario e = op.escenario();
                 List<Movimiento> m = motor.ejecutar(e);
                 json.append(j == 0 ? "\n" : ",\n").append("      \"").append(op.id()).append("\": ")
-                        .append(resultado(m, pr.semanasClave(), e.operacion().cuotaInicial(e.parametros()),
-                                e.operacion().montoFinanciado(e.parametros())));
+                        .append(resultado(m, pr.semanasClave(), e.operacion().pagoInicial(),
+                                e.operacion().montoFinanciado()));
             }
             json.append("\n    }}");
         }
@@ -116,7 +116,7 @@ public final class GeneradorEscenarios {
         kpis.put("capitalVencidoMaximo", m.stream().map(Movimiento::capitalVencido).max(BigDecimal::compareTo).orElse(BigDecimal.ZERO));
         kpis.put("semanasEnMora", m.stream().filter(x -> x.estado().name().equals("EN_MORA")).count());
         kpis.put("deudaAExtinguir", ultimo.deudaAExtinguir());
-        kpis.put("faltanteFcc", ultimo.cxcFcc());
+        kpis.put("faltanteFondoGarantias", ultimo.cxcFondoGarantias());
         kpis.put("excedenteDeudor", ultimo.cxpDeudor());
 
         List<String> semanas = new ArrayList<>();

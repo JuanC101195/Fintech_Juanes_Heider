@@ -64,14 +64,14 @@ class Caso4RetomaTest {
                 .dinero("Cuotas vencidas", m -> Calc.bd(m.cuotasVencidas()))
                 .dinero("Deuda a extinguir", Movimiento::deudaAExtinguir)
                 .dinero("Inventario", Movimiento::inventario)
-                .dinero("CxC FCC", Movimiento::cxcFcc)
+                .dinero("CxC FCC", Movimiento::cxcFondoGarantias)
                 .dinero("CxP deudor", Movimiento::cxpDeudor)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 
@@ -104,7 +104,7 @@ class Caso4RetomaTest {
         assertThat(retoma.inventario()).isCloseTo(new BigDecimal("6800000"), UN_PESO);
         assertThat(retoma.cxpDeudor()).isCloseTo(new BigDecimal("1185578.456482715"), UN_PESO);
         assertThat(retoma.saldoFinal()).isCloseTo(BigDecimal.ZERO, UN_PESO);
-        assertThat(retoma.cxcFcc()).isZero();
+        assertThat(retoma.cxcFondoGarantias()).isZero();
         assertThat(retoma.estado()).isEqualTo(EstadoCredito.CERRADO_POR_EVENTO);
     }
 

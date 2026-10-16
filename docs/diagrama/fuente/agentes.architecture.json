@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Motor de cartera · 9 agentes",
-    "subtitle": "Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 oct 2026",
+    "subtitle": "Claude Opus 5.5 (claude-opus-5-5) en Claude Code · orquestador + 9 agentes en git worktrees · 8 al 16 oct 2026",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -558,7 +558,7 @@
       "id": "diego",
       "type": "external",
       "label": "Diego",
-      "sublabel": "responde · exporta Excel",
+      "sublabel": "respondió P-01 a P-27",
       "pos": [
         1470,
         488
@@ -566,6 +566,21 @@
       "size": [
         170,
         60
+      ]
+    },
+    {
+      "id": "respuestas",
+      "type": "frontend",
+      "label": "Reglas de Diego",
+      "sublabel": "inicial · abonos · mora · 147 pruebas",
+      "tag": "16 oct",
+      "pos": [
+        1440,
+        608
+      ],
+      "size": [
+        230,
+        68
       ]
     },
     {
@@ -911,6 +926,15 @@
       "toSide": "bottom"
     },
     {
+      "id": "aplica",
+      "from": "diego",
+      "to": "respuestas",
+      "label": "aplica",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
       "id": "entrega1-hecha",
       "from": "agente1",
       "to": "entrega1"
@@ -1109,18 +1133,27 @@
       "items": [
         "9 merges, 4 choques en Contabilizador unidos a mano",
         "124 pruebas en verde; el cuestionario lleva la suite a 139",
-        "Respuestas de Diego → importador → ReglasNegocio"
+        "Las respuestas de Diego la llevan a 147"
       ]
     },
     {
       "dot": "amber",
       "title": "Hallazgos de los agentes",
       "items": [
-        "Caso 1: con inicial del 10 % la cuota baja a 99.913,34",
-        "Caso 3: faltante para el FCC de 1.709.819,75",
+        "Caso 3: faltante para el fondo de garantías de 1.709.819,75",
         "Caso 4: excedente para el cliente de 1.185.578,46",
         "Caso 8: el capital vencido paga interés y mora a la vez",
         "Caso 9: el crédito nunca termina con 14 días de atraso"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Respuestas de Diego (16 oct)",
+      "items": [
+        "Pago inicial opcional que digita el asesor",
+        "Abono sin elección → menor plazo; mayor que el saldo → rechazo",
+        "Mora antes de dación y retoma; vencido paga solo mora",
+        "Falta su último Excel: tasas por línea y servicios en mora"
       ]
     },
     {

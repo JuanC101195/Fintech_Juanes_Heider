@@ -72,9 +72,10 @@ public final class Calc {
 
     /**
      * Potencia con exponente fraccionario, por ejemplo (1 + EA)^(1/52). BigDecimal no la tiene;
-     * se calcula en doble precisión, igual que Excel, y el resultado se pasa a BigDecimal exacto.
+     * se calcula en doble precisión, igual que Excel. El double se convierte por su texto (los
+     * dígitos que Excel muestra) y no por su expansión binaria exacta, que arrastra ruido.
      */
     public static BigDecimal potencia(BigDecimal base, double exponente) {
-        return new BigDecimal(Math.pow(base.doubleValue(), exponente), MC);
+        return new BigDecimal(Double.toString(Math.pow(base.doubleValue(), exponente)), MC);
     }
 }

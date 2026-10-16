@@ -29,6 +29,20 @@
 	<properties>
 		<java.version>21</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<jacoco.version>0.8.13</jacoco.version>
+		<!-- SonarCloud (organización y proyecto creados al importar el repo de GitHub) -->
+		<sonar.organization>juanc101195</sonar.organization>
+		<sonar.projectKey>JuanC101195_Fintech_Juanes_Heider</sonar.projectKey>
+		<sonar.projectName>Motor de cartera</sonar.projectName>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<!-- Motor (Java), cuestionario (TypeScript) y herramientas (Python) en un solo análisis -->
+		<sonar.sources>src/main/java,cuestionario/src,herramientas</sonar.sources>
+		<sonar.tests>src/test/java,cuestionario/src</sonar.tests>
+		<sonar.exclusions>cuestionario/src/**/*.test.ts,cuestionario/src/datos/**</sonar.exclusions>
+		<sonar.test.inclusions>src/test/java/**/*,cuestionario/src/**/*.test.ts</sonar.test.inclusions>
+		<sonar.python.version>3.12</sonar.python.version>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.javascript.lcov.reportPaths>cuestionario/coverage/lcov.info</sonar.javascript.lcov.reportPaths>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -100,6 +114,27 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- Cobertura de pruebas para Sonar: target/site/jacoco/jacoco.xml al terminar las pruebas -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<executions>
+					<execution>
+						<id>preparar-agente</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>reporte</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

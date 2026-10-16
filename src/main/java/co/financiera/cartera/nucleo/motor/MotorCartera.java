@@ -68,7 +68,7 @@ public final class MotorCartera {
             this.escenario = escenario;
             this.p = escenario.parametros();
             this.cuotasPactadas = Calendario.numeroCuotas(p);
-            BigDecimal monto = escenario.operacion().montoFinanciado(p);
+            BigDecimal monto = escenario.operacion().montoFinanciado();
             this.serviciosPorCuota = Servicios.porCuota(monto, p);
             this.tasas = Tasas.de(p);
             this.cuota = Amortizacion.cuotaFija(tasas.semanal(), cuotasPactadas, monto);
@@ -117,15 +117,17 @@ public final class MotorCartera {
                 }
             }
 
+            ReglasNegocio reglas = escenario.reglas();
             BigDecimal tasa = tasas.semanal();
             BigDecimal saldoInicial = saldo;
-            boolean sinPagoSinMora = pago instanceof SinPago s && !s.causaMoraYServicios();
+            // P7 / P-16: con moraAntesDeRecuperacion toda semana sin pago causa mora y servicios, aunque
+            // el escenario la marque como en los casos 3 y 4 del Excel.
+            boolean sinPagoSinMora = pago instanceof SinPago s && !s.causaMoraYServicios() && !reglas.moraAntesDeRecuperacion();
             int dias = diasAtraso(pago);
             boolean dentroDelPlazo = periodo <= cuotasPactadas;
 
             // 2. Causación de la semana. Las variantes de ReglasNegocio son las opciones que se le
             // preguntan a negocio; EXCEL reproduce el Excel tal cual.
-            ReglasNegocio reglas = escenario.reglas();
             BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
                     ? noNegativo(restar(saldoInicial, capitalVencido)) : saldoInicial;
             BigDecimal interes = multiplicar(baseInteres, tasa);
@@ -202,6 +204,10 @@ public final class MotorCartera {
             // 4. Abono extraordinario o prepago, después de la cuota de la semana.
             BigDecimal abonoAplicado = CERO;
             if (abono != null) {
+                // P-14: Diego (2026-10-16) no acepta abonos mayores que el saldo; el Excel los recortaba.
+                if (abono.valor().compareTo(sumar(saldo, Calc.EPSILON_SALDO)) > 0) {
+                    throw new AbonoMayorQueElSaldoException(periodo, abono.valor(), saldo);
+                }
                 abonoAplicado = min(abono.valor(), saldo);
                 saldo = restar(saldo, abonoAplicado);
                 if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasPactadas - periodo > 0 && !esCero(saldo)) {
@@ -221,12 +227,12 @@ public final class MotorCartera {
             // 5. Cierre por recuperación de la moto: se extingue capital + todo lo pendiente.
             BigDecimal deuda = CERO;
             BigDecimal inventario = CERO;
-            BigDecimal cxcFcc = CERO;
+            BigDecimal cxcFondoGarantias = CERO;
             BigDecimal cxpDeudor = CERO;
             if (cierre != null) {
                 deuda = sumar(saldo, cxcInteres, cxcMora, cxcServicios, cxcCobranza);
                 inventario = cierre.valorMoto();
-                cxcFcc = noNegativo(restar(deuda, inventario));
+                cxcFondoGarantias = noNegativo(restar(deuda, inventario));
                 cxpDeudor = noNegativo(restar(inventario, deuda));
                 saldo = CERO;
                 saldoPlan = CERO;
@@ -271,7 +277,7 @@ public final class MotorCartera {
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDeLaSemana, interes, mora,
                     capitalContractual, cobranza, servicios, recibido, pagoCobranza, pagoMora, pagoInteres, pagoServicios,
                     pagoCapital, abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios, capitalVencido,
-                    max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, deuda, inventario, cxcFcc, cxpDeudor, giro,
+                    max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, deuda, inventario, cxcFondoGarantias, cxpDeudor, giro,
                     estado);
         }
 

@@ -39,7 +39,7 @@ public final class DacionEnPago implements ReglaContable {
 
     @Override
     public Optional<Asiento> contabilizar(Movimiento m) {
-        if (m.estado() != EstadoCredito.CERRADO_POR_EVENTO || m.cxcFcc().signum() <= 0) {
+        if (m.estado() != EstadoCredito.CERRADO_POR_EVENTO || m.cxcFondoGarantias().signum() <= 0) {
             return Optional.empty();
         }
         // Capital que se extingue: el saldo que quedaba después del pago de la semana (en el Excel,
@@ -49,7 +49,7 @@ public final class DacionEnPago implements ReglaContable {
         return ReglaContable.asiento(m, List.of(
                 Linea.debito(Cuenta.INVENTARIO_MOTOS, m.inventario(),
                         "Ingreso de la moto por el valor definido para el evento"),
-                Linea.debito(Cuenta.CXC_FCC, m.cxcFcc(), "Residual de la deuda no cubierto por la moto"),
+                Linea.debito(Cuenta.CXC_FONDO_GARANTIAS, m.cxcFondoGarantias(), "Residual de la deuda no cubierto por la moto"),
                 Linea.credito(Cuenta.CARTERA_VIGENTE, capital, "Extinción del capital"),
                 Linea.credito(Cuenta.CXC_INTERES_CORRIENTE, intereses,
                         "Extinción de intereses corrientes pendientes")));
