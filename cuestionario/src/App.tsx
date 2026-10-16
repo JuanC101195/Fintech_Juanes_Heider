@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FECHA_ESCENARIOS } from './escenarios'
-import { descargarExcel } from './exportar'
+import { guardarEnLaNube } from './nube'
 import { PreguntaTarjeta } from './PreguntaTarjeta'
 import { BLOQUES, PREGUNTAS, RESPONDIDAS } from './preguntas'
 import { avance, estaCompleta, useEstado } from './respuestas'
@@ -8,7 +8,8 @@ import { avance, estaCompleta, useEstado } from './respuestas'
 export default function App() {
   const [estado, setEstado] = useEstado()
   const [bloque, setBloque] = useState<string>(BLOQUES[0])
-  const [exportando, setExportando] = useState(false)
+  const [guardado, setGuardado] = useState<Guardado>({ tipo: 'nada' })
+  const primeraVez = useRef(true)
   const { completas, total } = avance(estado.respuestas)
   const delBloque = PREGUNTAS.filter((p) => p.bloque === bloque)
   const indice = BLOQUES.indexOf(bloque as (typeof BLOQUES)[number])
@@ -18,12 +19,28 @@ export default function App() {
     window.scrollTo({ top: 0 })
   }
 
-  const exportar = async () => {
-    setExportando(true)
+  // Autoguardado: dos segundos después del último cambio se guarda una foto en la nube.
+  useEffect(() => {
+    if (primeraVez.current) {
+      primeraVez.current = false
+      return
+    }
+    const espera = window.setTimeout(() => {
+      setGuardado({ tipo: 'guardando' })
+      guardarEnLaNube(estado)
+        .then(() => setGuardado({ tipo: 'guardado', hora: horaActual() }))
+        .catch(() => setGuardado({ tipo: 'error' }))
+    }, 2000)
+    return () => window.clearTimeout(espera)
+  }, [estado])
+
+  const enviar = async () => {
+    setGuardado({ tipo: 'guardando' })
     try {
-      await descargarExcel(estado)
-    } finally {
-      setExportando(false)
+      await guardarEnLaNube(estado, true)
+      setGuardado({ tipo: 'enviado', hora: horaActual() })
+    } catch {
+      setGuardado({ tipo: 'error' })
     }
   }
 
@@ -52,14 +69,17 @@ export default function App() {
             </div>
             <button
               type="button"
-              onClick={exportar}
-              disabled={exportando}
+              onClick={enviar}
+              disabled={guardado.tipo === 'guardando'}
               className="min-h-10 rounded-xl bg-primary px-space-lg text-label-lg font-bold text-on-primary shadow-sm transition hover:brightness-110 disabled:opacity-60"
             >
-              {exportando ? 'Generando…' : 'Descargar Excel'}
+              Enviar respuestas
             </button>
           </div>
         </div>
+        <p role="status" aria-live="polite" className={`mx-auto max-w-6xl px-margin pb-space-xs text-label-md md:px-margin-desktop ${guardado.tipo === 'error' ? 'text-error' : 'text-on-surface-variant'}`}>
+          {textoGuardado(guardado)}
+        </p>
         <nav aria-label="Bloques de preguntas" className="mx-auto max-w-6xl overflow-x-auto px-margin pb-space-sm md:px-margin-desktop">
           <ol className="flex gap-space-xs">
             {BLOQUES.map((b) => {
@@ -90,12 +110,13 @@ export default function App() {
             <p className="mt-space-xs text-body-lg text-on-surface-variant">
               Al replicar el Excel de casos operativos en el motor aparecieron decisiones que el Excel no resuelve o resuelve de dos formas. Aquí
               quedan <strong className="text-on-surface">solo las {total} que siguen abiertas</strong>. Para cada una verá lo que hace hoy el Excel y, cuando
-              cambia el cálculo, <strong className="text-on-surface">las cifras que da el motor con cada opción</strong>. Sus respuestas se guardan en este
-              navegador; al terminar descargue el Excel y envíelo de vuelta.
+              cambia el cálculo, <strong className="text-on-surface">las cifras que da el motor con cada opción</strong>. Sus respuestas{' '}
+              <strong className="text-on-surface">se guardan solas</strong> mientras responde, así que puede hacerlo por partes; al terminar presione{' '}
+              <strong className="text-on-surface">Enviar respuestas</strong>. No hace falta enviar ningún archivo.
             </p>
             <details className="mt-space-lg rounded-xl bg-surface-container-low p-space-md">
               <summary className="min-h-9 cursor-pointer text-label-lg font-semibold text-on-surface">
-                Ya respondidas: {RESPONDIDAS.length} (16 oct 2026) · gracias
+                Ya respondidas: {RESPONDIDAS.length} · gracias
               </summary>
               <ul className="mt-space-sm flex flex-col gap-space-sm">
                 {RESPONDIDAS.map((p) => (
@@ -152,8 +173,8 @@ export default function App() {
               {BLOQUES[indice + 1]} →
             </button>
           ) : (
-            <button type="button" onClick={exportar} disabled={exportando} className="min-h-11 rounded-xl bg-primary px-space-lg text-label-lg font-bold text-on-primary hover:brightness-110">
-              {completas === total ? 'Terminé: descargar Excel' : `Descargar Excel (${completas} de ${total} respondidas)`}
+            <button type="button" onClick={enviar} disabled={guardado.tipo === 'guardando'} className="min-h-11 rounded-xl bg-primary px-space-lg text-label-lg font-bold text-on-primary hover:brightness-110 disabled:opacity-60">
+              {completas === total ? 'Terminé: enviar respuestas' : `Enviar respuestas (${completas} de ${total})`}
             </button>
           )}
         </nav>
@@ -164,4 +185,25 @@ export default function App() {
       </main>
     </div>
   )
+}
+
+type Guardado = { tipo: 'nada' } | { tipo: 'guardando' } | { tipo: 'error' } | { tipo: 'guardado' | 'enviado'; hora: string }
+
+function horaActual(): string {
+  return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+}
+
+function textoGuardado(g: Guardado): string {
+  switch (g.tipo) {
+    case 'guardando':
+      return 'Guardando…'
+    case 'guardado':
+      return `Respuestas guardadas a las ${g.hora}.`
+    case 'enviado':
+      return `¡Recibidas! Sus respuestas se enviaron a las ${g.hora}. Gracias.`
+    case 'error':
+      return 'No se pudo guardar: revise la conexión a internet. Sus respuestas siguen en este navegador.'
+    default:
+      return 'Sus respuestas se guardan solas mientras responde.'
+  }
 }

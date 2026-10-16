@@ -1,0 +1,14 @@
+{
+  "name": "respuestas-cuestionario",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Function que guarda las respuestas del cuestionario de reglas en Azure Table Storage",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test src/validar.test.js"
+  },
+  "dependencies": {
+    "@azure/data-tables": "^13.3.0",
+    "@azure/functions": "^4.6.0"
+  }
+}

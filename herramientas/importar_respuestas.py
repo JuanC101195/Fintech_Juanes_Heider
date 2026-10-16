@@ -1,19 +1,25 @@
-"""Importa el Excel de respuestas del cuestionario de reglas al motor.
+"""Importa al motor las respuestas del cuestionario de reglas.
 
 Uso (desde la raíz del repo):
+    python herramientas/importar_respuestas.py --nube        # lo último que respondió negocio en línea
+    python herramientas/importar_respuestas.py --nube --ver  # solo muestra quién respondió y cuánto, sin escribir
     python herramientas/importar_respuestas.py ruta/al/excel-de-respuestas.xlsx
 
-Lee la hoja "Respuestas" (la genera el cuestionario en cuestionario/) y escribe:
+Con --nube lee la tabla "respuestas" de Azure Storage (cuenta motorcarterarespuestas), donde el
+cuestionario publicado guarda cada avance; toma el guardado más reciente. Necesita la CLI de Azure
+con sesión iniciada (az login). Con un Excel lee su hoja "Respuestas". En ambos casos escribe:
   - config/reglas-negocio.properties: los ajustes que el motor ya sabe aplicar
     (ReglasNegocio.CLAVES). ReglasNegocioConfiguradaTest corre los 9 casos con ellos.
   - docs/respuestas-negocio.md: todas las respuestas, con lo que queda por desarrollar.
 Después: ./mvnw -q -B test y revisar las pruebas que cambien frente al Excel.
 """
+import json
+import shutil
+import subprocess
 import sys
-from datetime import datetime
+import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
-import openpyxl
 
 RAIZ = Path(__file__).resolve().parent.parent
 # Debe coincidir con ReglasNegocio.CLAVES.
@@ -22,7 +28,63 @@ ENCABEZADOS = ['ID', 'Bloque', 'Pregunta', 'Código', 'Respuesta', 'Valor', 'Uni
                'Ajustes al motor', 'Completa']
 
 
+CUENTA_NUBE = 'motorcarterarespuestas'
+TABLA_NUBE = 'respuestas'
+GRUPO_NUBE = 'rg-motor-cartera'
+
+
+def _az(*args):
+    az = shutil.which('az') or shutil.which('az.cmd')
+    if not az:
+        sys.exit('Falta la CLI de Azure (az) con sesión iniciada: az login')
+    salida = subprocess.run([az, *args], capture_output=True)
+    if salida.returncode != 0:
+        sys.exit(f'Azure CLI falló: {salida.stderr.decode("utf-8", "replace").strip()}')
+    return salida.stdout.decode('ascii').strip()
+
+
+def leer_nube():
+    """Guardados del cuestionario en línea, del más reciente al más antiguo (sin las pruebas técnicas).
+
+    La CLI de Azure solo firma un permiso de lectura de una hora; la tabla se lee por HTTPS, donde las
+    respuestas llegan en UTF-8 sin pasar por la consola de Windows.
+    """
+    vence = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%dT%H:%MZ')
+    clave = _az('storage', 'account', 'keys', 'list', '--account-name', CUENTA_NUBE, '--resource-group', GRUPO_NUBE,
+                '--query', '[0].value', '-o', 'tsv')
+    permiso = _az('storage', 'table', 'generate-sas', '--name', TABLA_NUBE, '--account-name', CUENTA_NUBE,
+                  '--account-key', clave, '--permission', 'r', '--expiry', vence, '--https-only', '-o', 'tsv')
+    base = f'https://{CUENTA_NUBE}.table.core.windows.net/{TABLA_NUBE}()?{permiso}'
+    guardados, continuacion = [], ''
+    while True:
+        solicitud = urllib.request.Request(base + continuacion, headers={
+            'Accept': 'application/json;odata=nometadata', 'x-ms-version': '2019-02-02'})
+        with urllib.request.urlopen(solicitud) as respuesta:
+            guardados += json.loads(respuesta.read().decode('utf-8'))['value']
+            particion = respuesta.headers.get('x-ms-continuation-NextPartitionKey')
+            fila = respuesta.headers.get('x-ms-continuation-NextRowKey')
+        if not particion:
+            break
+        continuacion = f'&NextPartitionKey={particion}&NextRowKey={fila or ""}'
+    guardados = [e for e in guardados
+                 if e.get('PartitionKey') == 'respuestas' and not str(e.get('sesion', '')).startswith('prueba-')]
+    return sorted(guardados, key=lambda e: int(str(e['RowKey']).split('-', 1)[0]), reverse=True)
+
+
+def filas_de_guardado(guardado):
+    encabezados = json.loads(guardado['encabezados'])
+    if encabezados[:len(ENCABEZADOS)] != ENCABEZADOS:
+        sys.exit(f'Encabezados inesperados en la nube: {encabezados}')
+    filas = [dict(zip(ENCABEZADOS, ['' if v is None else v for v in fila])) for fila in json.loads(guardado['filas'])]
+    fecha = datetime.fromtimestamp(int(str(guardado['RowKey']).split('-', 1)[0]) / 1000)
+    resumen = {'Respondió': guardado.get('nombre', ''), 'Cargo': guardado.get('cargo', ''),
+               'Fecha': f'{fecha:%Y-%m-%d %H:%M}' + (' (enviado)' if guardado.get('final') else ' (en progreso)')}
+    return filas, resumen
+
+
 def leer(ruta):
+    import openpyxl
+
     libro = openpyxl.load_workbook(ruta, data_only=True)
     if 'Respuestas' not in libro.sheetnames:
         sys.exit('El archivo no tiene la hoja "Respuestas": ¿es el Excel que genera el cuestionario?')
@@ -51,19 +113,48 @@ def ajustes(fila):
     return resultado
 
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    ruta = Path(sys.argv[1])
-    filas, resumen = leer(ruta)
+def config_actual():
+    """Reglas ya configuradas: las respuestas nuevas se suman a ellas, no las borran."""
+    archivo = RAIZ / 'config' / 'reglas-negocio.properties'
+    actuales = {}
+    if archivo.exists():
+        for linea in archivo.read_text(encoding='utf-8').splitlines():
+            if '=' in linea and not linea.lstrip().startswith('#'):
+                clave, valor = linea.split('=', 1)
+                actuales[clave.strip()] = (valor.strip(), 'anterior')
+    return actuales
 
-    aplicables, por_desarrollar = {}, {}
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+    args = sys.argv[1:]
+    if not args:
+        sys.exit(__doc__)
+    if args[0] == '--nube':
+        guardados = leer_nube()
+        if not guardados:
+            print('Todavía no hay respuestas en la nube.')
+            return
+        ultimo = guardados[0]
+        filas, resumen = filas_de_guardado(ultimo)
+        print(f'{len(guardados)} guardados en la nube. Último: {resumen["Respondió"]} ({resumen["Cargo"]}) · '
+              f'{resumen["Fecha"]} · {ultimo.get("completas")} de {ultimo.get("total")} respondidas.')
+        if '--ver' in args:
+            return
+        fuente = f'la nube ({resumen["Fecha"]})'
+    else:
+        ruta = Path(args[0])
+        filas, resumen = leer(ruta)
+        fuente = ruta.name
+
+    aplicables, por_desarrollar = config_actual(), {}
     for f in filas:
         for clave, valor in ajustes(f).items():
             (aplicables if clave in CLAVES_MOTOR else por_desarrollar)[clave] = (valor, f['ID'])
 
     (RAIZ / 'config').mkdir(exist_ok=True)
-    props = [f'# Generado desde {ruta.name} el {datetime.now():%Y-%m-%d %H:%M}',
+    props = [f'# Generado desde {fuente} el {datetime.now():%Y-%m-%d %H:%M}',
              f'# Respondió: {resumen.get("Respondió", "")} ({resumen.get("Cargo", "")})']
     props += [f'{clave}={valor}' for clave, (valor, _) in sorted(aplicables.items())]
     (RAIZ / 'config' / 'reglas-negocio.properties').write_text('\n'.join(props) + '\n', encoding='utf-8')
@@ -72,7 +163,7 @@ def main():
     md = [
         '# Respuestas de negocio al cuestionario de reglas',
         '',
-        f'Fuente: `{ruta.name}` · Respondió: {resumen.get("Respondió", "")} ({resumen.get("Cargo", "")}) · '
+        f'Fuente: {fuente} · Respondió: {resumen.get("Respondió", "")} ({resumen.get("Cargo", "")}) · '
         f'{resumen.get("Fecha", "")} · {completas} de {len(filas)} completas.',
         '',
         '## Aplicado al motor (`config/reglas-negocio.properties`)',
