@@ -67,12 +67,12 @@ class Caso5PrepagoTest {
                 .dinero("Capital ordinario", Movimiento::pagoCapital)
                 .dinero("Prepago capital", Movimiento::prepagoCapital)
                 .dinero("Saldo final", Movimiento::saldoFinal)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 
@@ -198,7 +198,7 @@ class Caso5PrepagoTest {
         assertThat(Calendario.mes(PERIODO_PREPAGO + 1, PARAMETROS)).isEqualTo(11);
         assertThat(Calendario.mes(39, PARAMETROS)).isEqualTo(9);
         Servicios giro = motor.get(PERIODO_PREPAGO).pagoTerceros();
-        assertThat(giro.fcc()).isCloseTo(new BigDecimal("194572.68923076926"), within(TOLERANCIA));
+        assertThat(giro.fondoGarantias()).isCloseTo(new BigDecimal("194572.68923076926"), within(TOLERANCIA));
         assertThat(giro.asistencia()).isCloseTo(new BigDecimal("43938.461538461546"), within(TOLERANCIA));
         assertThat(giro.seguro()).isCloseTo(new BigDecimal("13625.538461538463"), within(TOLERANCIA));
     }
@@ -213,7 +213,7 @@ class Caso5PrepagoTest {
         assertThat(ultimo.periodo()).isEqualTo(41);
         assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
         Servicios semanal = corrida.get(1).serviciosCausados();
-        assertThat(ultimo.pagoTerceros().fcc()).isCloseTo(Calc.multiplicar(semanal.fcc(), Calc.bd(2)), within(TOLERANCIA));
+        assertThat(ultimo.pagoTerceros().fondoGarantias()).isCloseTo(Calc.multiplicar(semanal.fondoGarantias(), Calc.bd(2)), within(TOLERANCIA));
         assertThat(ultimo.pagoTerceros().total()).isCloseTo(Calc.multiplicar(semanal.total(), Calc.bd(2)),
                 within(TOLERANCIA));
     }

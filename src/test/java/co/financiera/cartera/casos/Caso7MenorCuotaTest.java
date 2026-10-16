@@ -1,7 +1,7 @@
 package co.financiera.cartera.casos;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 import co.financiera.cartera.excel.ComparadorExcel;
@@ -14,6 +14,7 @@ import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.motor.EstadoCredito;
 import co.financiera.cartera.nucleo.motor.Escenario;
+import co.financiera.cartera.nucleo.motor.AbonoMayorQueElSaldoException;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
@@ -72,12 +73,12 @@ class Caso7MenorCuotaTest {
                 .dinero("Pago financiero total",
                         m -> Calc.sumar(m.pagoInteresCorriente(), m.pagoCapital(), m.abonoExtra()))
                 .dinero("Saldo final", Movimiento::saldoFinal)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 
@@ -187,16 +188,11 @@ class Caso7MenorCuotaTest {
 
         /** (b) Abono en la última cuota: no hay cuotas restantes para el PMT; no debe fallar. */
         @Test
-        void abonoEnLaUltimaCuotaNoRompeElPmt() {
+        void abonoEnLaUltimaCuotaSeRechazaPorqueYaNoHaySaldo() {
+            // Tras la cuota 86 el saldo es 0: el abono supera el saldo y se rechaza (P-14).
             Escenario e = new Escenario(Operacion.ejemploExcel(), P)
                     .en(86, new AbonoExtra(ABONO, ModalidadAbono.MENOR_CUOTA));
-            assertThatCode(() -> correr(e)).doesNotThrowAnyException();
-            List<Movimiento> movs = correr(e);
-            Movimiento ultimo = movs.getLast();
-            assertThat(ultimo.periodo()).isEqualTo(86);
-            assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
-            // Tras la cuota 86 ya no queda saldo: el abono aplicado es ~0 (el excedente no se aplica).
-            assertThat(ultimo.abonoExtra()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
+            assertThatThrownBy(() -> correr(e)).isInstanceOf(AbonoMayorQueElSaldoException.class);
         }
 
         /** (b) Abono en la penúltima cuota: PMT con 1 periodo; la cuota 86 liquida el saldo. */
@@ -212,17 +208,12 @@ class Caso7MenorCuotaTest {
             assertThat(p86.estado()).isEqualTo(EstadoCredito.CANCELADO);
         }
 
-        /** (b) Abono mayor que el saldo: se limita al saldo (H = MIN(C56, D − G)) y el crédito se cancela. */
+        /** (b) Abono mayor que el saldo: el Excel lo limitaba (H = MIN(C56, D − G)); Diego (P-14) lo descarta. */
         @Test
-        void abonoMayorQueElSaldoCancelaElCreditoSinRecalcularCuota() {
-            List<Movimiento> movs = correr(new Escenario(Operacion.ejemploExcel(), P)
-                    .en(PERIODO_ABONO, new AbonoExtra(new BigDecimal("10000000"), ModalidadAbono.MENOR_CUOTA)));
-            Movimiento abono = movs.getLast();
-            assertThat(abono.periodo()).isEqualTo(PERIODO_ABONO);
-            assertThat(abono.abonoExtra()).isCloseTo(excel(PERIODO_ABONO, "Saldo inicial")
-                    .subtract(excel(PERIODO_ABONO, "Capital ordinario")), within(UN_PESO));
-            assertThat(abono.saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
-            assertThat(abono.estado()).isEqualTo(EstadoCredito.CANCELADO);
+        void abonoMayorQueElSaldoSeRechaza() {
+            Escenario e = new Escenario(Operacion.ejemploExcel(), P)
+                    .en(PERIODO_ABONO, new AbonoExtra(new BigDecimal("10000000"), ModalidadAbono.MENOR_CUOTA));
+            assertThatThrownBy(() -> correr(e)).isInstanceOf(AbonoMayorQueElSaldoException.class);
         }
 
         /** (c) Dos abonos en meses distintos: cada uno recalcula la cuota con las cuotas que quedan. */

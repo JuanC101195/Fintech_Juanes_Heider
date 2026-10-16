@@ -58,7 +58,7 @@ class Caso1InvariantesTest {
     private static ParametrosProducto parametros(Credito c) {
         ParametrosProducto base = ParametrosProducto.replicaExcel().conTasaEA(c.ea());
         ParametrosProducto conPlazo = new ParametrosProducto(c.plazoMeses(), base.semanasPorAnio(), base.mesesPorAnio(),
-                base.tasaEA(), base.porcentajeInicial(), base.fccPorcentajeMensual(), base.asistenciaMensual(),
+                base.tasaEA(), base.fondoGarantiasPorcentajeMensual(), base.asistenciaMensual(),
                 base.seguroPorcentajeMensual(), base.iva(), base.cobranzaDiaria(), base.plazoLimiteSemanas());
         // El horizonte debe alcanzar la última cuota (36 meses = 156 semanas > 120 por defecto).
         return conPlazo.conPlazoLimite(Calendario.numeroCuotas(conPlazo) + 10);

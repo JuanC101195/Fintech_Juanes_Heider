@@ -41,7 +41,7 @@ public record Movimiento(
         // Cierre por recuperación de la moto (casos 3 y 4)
         BigDecimal deudaAExtinguir,
         BigDecimal inventario,
-        BigDecimal cxcFcc,
+        BigDecimal cxcFondoGarantias,
         BigDecimal cxpDeudor,
         // Giro a terceros al cerrar cada mes
         Servicios pagoTerceros,

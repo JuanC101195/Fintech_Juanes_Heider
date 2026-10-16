@@ -9,5 +9,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), viteSingleFile()],
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
+    // lcov para Sonar: coverage/lcov.info
+    coverage: { provider: 'v8', reporter: ['text-summary', 'lcov'], include: ['src/**/*.{ts,tsx}'] },
   },
 })

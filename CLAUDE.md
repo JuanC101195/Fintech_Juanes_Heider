@@ -12,6 +12,8 @@ export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot"
 python herramientas/exportar_excel.py               # regenera los CSV de src/test/resources/excel desde el Excel
 ```
 
+Calidad: `.github/workflows/sonarcloud.yml` corre pruebas + SonarCloud en cada push a `main` y en cada PR (secreto `SONAR_TOKEN`). La configuración de Sonar está en las `<properties>` del `pom.xml`; la cobertura sale de JaCoCo (`target/site/jacoco/jacoco.xml`) y de `npm run cobertura` en el cuestionario (`coverage/lcov.info`). Revisar Sonar antes de mergear.
+
 `-q` no imprime el resumen: los resultados están en `target/surefire-reports/TEST-*.xml` (atributos `tests`, `failures`, `errors`).
 
 ## Arquitectura: monolito modular (Spring Modulith)
@@ -60,7 +62,8 @@ Flujo: Diego responde → descarga el Excel → `python herramientas/importar_re
 ## Decisiones vigentes
 
 Ver `docs/decisiones.md`. Las más importantes:
-- **Cuota inicial = 10 % del valor total de la operación** (moto + alistamiento + GPS + gastos comerciales). `ParametrosProducto.motoEstandar()` la trae; `replicaExcel()` la pone en 0 porque el Excel no tiene inicial.
+- **Pago inicial opcional** que digita el asesor (`Operacion.pagoInicial`, 0 por defecto) y se resta del valor total (Diego, P-09). Ya no es un porcentaje del producto.
+- Respuestas de negocio del 2026-10-16 en `docs/respuestas-diego-2026-10-16.md`; las que el motor aplica están en `config/reglas-negocio.properties`.
 - Sin redondeo: `BigDecimal` con `Calc.MC` (DECIMAL128). Tolerancia de las pruebas: 1 COP en dinero, 0,000001 en tasas.
 - Las potencias fraccionarias ((1+EA)^(1/52)) se calculan en `double` como Excel (`Calc.potencia`).
 

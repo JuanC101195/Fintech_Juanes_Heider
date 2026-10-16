@@ -40,6 +40,15 @@ export interface Pregunta {
   valor?: CampoValor
   /** Pregunta del archivo de escenarios que muestra el efecto de cada opción. */
   previsualizacion?: string
+  /** Ya la respondió negocio: sale del cuestionario y se muestra como respondida. */
+  respondida?: Respondida
+}
+
+export interface Respondida {
+  fecha: string
+  /** Código de la pregunta en el documento de preguntas para el PO (P-01 a P-27). */
+  referencia: string
+  respuesta: string
 }
 
 export interface Respuesta {

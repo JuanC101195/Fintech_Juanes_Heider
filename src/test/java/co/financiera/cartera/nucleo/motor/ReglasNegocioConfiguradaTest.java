@@ -3,6 +3,7 @@ package co.financiera.cartera.nucleo.motor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import co.financiera.cartera.contabilidad.Contabilizador;
+import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.simulaciones.EscenariosExcel;
 import java.io.IOException;
@@ -61,7 +62,7 @@ class ReglasNegocioConfiguradaTest {
                 "caso 6", EscenariosExcel.caso6(p),
                 "caso 8", EscenariosExcel.caso8(p),
                 "caso 9", EscenariosExcel.caso9(p),
-                "caso 1 con inicial del 10 %", EscenariosExcel.caso1(ParametrosProducto.motoEstandar()));
+                "caso 1 con pago inicial", EscenariosExcel.caso1ConInicial(p, Calc.bd(590_440)));
         return casos.entrySet().stream().map(e -> DynamicTest.dynamicTest(e.getKey(), () -> {
             List<Movimiento> m = new MotorCartera().ejecutar(e.getValue().conReglas(reglas));
             for (Movimiento x : m) {

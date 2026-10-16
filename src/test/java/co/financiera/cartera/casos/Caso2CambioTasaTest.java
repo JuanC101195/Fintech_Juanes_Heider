@@ -50,13 +50,13 @@ class Caso2CambioTasaTest {
                 .dinero("Interés", Movimiento::interesCorriente)
                 .dinero("Cuota financiera", Movimiento::cuotaFinanciera)
                 .dinero("Capital", Movimiento::pagoCapital)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total", Movimiento::pagoTotalCliente)
                 .dinero("Saldo final", Movimiento::saldoFinal)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 

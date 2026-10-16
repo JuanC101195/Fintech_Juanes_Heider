@@ -72,14 +72,14 @@ class Caso3DacionTest {
                 .dinero("Cuotas vencidas", m -> BigDecimal.valueOf(m.cuotasVencidas()))
                 .dinero("Deuda a extinguir", Movimiento::deudaAExtinguir)
                 .dinero("Inventario", Movimiento::inventario)
-                .dinero("CxC FCC", Movimiento::cxcFcc)
+                .dinero("CxC FCC", Movimiento::cxcFondoGarantias)
                 .dinero("CxP deudor", Movimiento::cxpDeudor)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios", m -> m.serviciosCausados().total())
                 .dinero("Pago total cliente", Movimiento::pagoTotalCliente)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 
@@ -133,12 +133,12 @@ class Caso3DacionTest {
         Map<String, String> excel = HojaExcel.cargar(HOJA).filaDelPeriodo(periodoSiniestro);
         Movimiento m = delPeriodo(periodoSiniestro);
         assertThat(m.inventario()).as("AA2 Inventario reconocido").isCloseTo(numero(excel, "Inventario"), dinero());
-        assertThat(m.cxcFcc()).as("AA3 CxC FCC").isCloseTo(numero(excel, "CxC FCC"), dinero());
+        assertThat(m.cxcFondoGarantias()).as("AA3 CxC FCC").isCloseTo(numero(excel, "CxC FCC"), dinero());
         assertThat(m.cxpDeudor()).as("AA4 CxP deudor").isCloseTo(numero(excel, "CxP deudor"), dinero());
         assertThat(m.saldoFinal()).as("AA5 Saldo capital posterior").isCloseTo(numero(excel, "Saldo capital final"), dinero());
         // Valores calculados del Excel (data_only), por si cambia la hoja sin regenerar el CSV.
         assertThat(m.deudaAExtinguir()).isCloseTo(new BigDecimal("4709819.753416771"), dinero());
-        assertThat(m.cxcFcc()).isCloseTo(new BigDecimal("1709819.753416771"), dinero());
+        assertThat(m.cxcFondoGarantias()).isCloseTo(new BigDecimal("1709819.753416771"), dinero());
     }
 
     /** Validaciones 10 a 13: la variable de la hoja Caso3 en el periodo y mes indicados, con su tolerancia. */
@@ -163,7 +163,7 @@ class Caso3DacionTest {
                 case "Cuotas vencidas" -> BigDecimal.valueOf(m.cuotasVencidas());
                 case "Deuda a extinguir" -> m.deudaAExtinguir();
                 case "Inventario" -> m.inventario();
-                case "CxC FCC" -> m.cxcFcc();
+                case "CxC FCC" -> m.cxcFondoGarantias();
                 default -> throw new IllegalStateException("Variable no esperada: " + variable);
             };
             assertThat(obtenido.subtract(esperado).abs())
@@ -190,7 +190,7 @@ class Caso3DacionTest {
         assertThat(asientos).contains(asiento);
 
         assertThat(debito(asiento, Cuenta.INVENTARIO_MOTOS)).as("AA10").isCloseTo(numero(excel, "Inventario"), dinero());
-        assertThat(debito(asiento, Cuenta.CXC_FCC)).as("AA11").isCloseTo(numero(excel, "CxC FCC"), dinero());
+        assertThat(debito(asiento, Cuenta.CXC_FONDO_GARANTIAS)).as("AA11").isCloseTo(numero(excel, "CxC FCC"), dinero());
         assertThat(credito(asiento, Cuenta.CARTERA_VIGENTE)).as("AB12").isCloseTo(numero(excel, "Saldo inicial"), dinero());
         assertThat(credito(asiento, Cuenta.CXC_INTERES_CORRIENTE)).as("AB13")
                 .isCloseTo(numero(excel, "Deuda a extinguir").subtract(numero(excel, "Saldo inicial")), dinero());
@@ -201,7 +201,7 @@ class Caso3DacionTest {
         assertThat(asiento.totalDebitos()).isCloseTo(new BigDecimal("4709819.753416771"), dinero());
         assertThat(asiento.cuadra()).isTrue();
         assertThat(asiento.lineas()).extracting(Asiento.Linea::cuenta).containsExactly(Cuenta.INVENTARIO_MOTOS,
-                Cuenta.CXC_FCC, Cuenta.CARTERA_VIGENTE, Cuenta.CXC_INTERES_CORRIENTE);
+                Cuenta.CXC_FONDO_GARANTIAS, Cuenta.CARTERA_VIGENTE, Cuenta.CXC_INTERES_CORRIENTE);
     }
 
     @Test

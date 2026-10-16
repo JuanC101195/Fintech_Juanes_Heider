@@ -90,7 +90,7 @@ class ReglasNegocioTest {
     void losServiciosSobreSaldoBajanConElCapitalYLaAsistenciaNo() {
         List<Movimiento> m = new MotorCartera().ejecutar(new Escenario(Operacion.ejemploExcel(), ParametrosProducto.replicaExcel())
                 .conReglas(ReglasNegocio.EXCEL.conBaseServicios(BaseServicios.SALDO)));
-        assertThat(m.get(86).serviciosCausados().fcc()).isLessThan(m.get(1).serviciosCausados().fcc());
+        assertThat(m.get(86).serviciosCausados().fondoGarantias()).isLessThan(m.get(1).serviciosCausados().fondoGarantias());
         assertThat(m.get(86).serviciosCausados().asistencia()).isEqualByComparingTo(m.get(1).serviciosCausados().asistencia());
     }
 

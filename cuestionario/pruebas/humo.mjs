@@ -42,7 +42,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   page.on('pageerror', (e) => errores.push(String(e)))
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
-  await page.getByRole('radio', { name: /capital de la cuota → servicios/ }).check()
+  await page.getByRole('radio', { name: /7 días por cada semana sin pago/ }).check()
   await page.getByRole('radio', { name: /Con tope por pago/ }).check()
   await page.getByRole('button', { name: '$20.000' }).click()
   const p = await problemas(page)
@@ -52,7 +52,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
 
   if (nombre === 'escritorio') {
     await page.getByRole('button', { name: /Servicios complementarios →/ }).click()
-    await page.getByRole('radio', { name: /Sobre el saldo de capital/ }).check()
+    await page.getByRole('radio', { name: /Prorrateo exacto por días/ }).check()
     await page.screenshot({ path: path.join(salida, 'cuestionario-servicios.png'), fullPage: true })
     const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar Excel' }).click()])
     const destino = path.join(salida, descarga.suggestedFilename())

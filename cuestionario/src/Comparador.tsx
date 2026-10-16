@@ -22,7 +22,7 @@ const ETIQUETAS: Record<ClaveKpi, string> = {
   capitalVencidoMaximo: 'Capital vencido máximo',
   semanasEnMora: 'Semanas en mora',
   deudaAExtinguir: 'Deuda que se extingue',
-  faltanteFcc: 'Faltante que cubre el FCC',
+  faltanteFondoGarantias: 'Faltante que cubre el fondo de garantías',
   excedenteDeudor: 'Excedente para el cliente',
 }
 
@@ -31,7 +31,7 @@ const KPIS_POR_PREGUNTA: Record<string, ClaveKpi[]> = {
   P3: ['estadoFinal', 'semanaFinal', 'saldoPendiente', 'moraPagada', 'totalPagado'],
   PDOBLE: ['semanaFinal', 'totalPagado', 'interesPagado', 'moraPagada'],
   PTOPE: ['estadoFinal', 'semanaFinal', 'saldoPendiente', 'totalPagado', 'cobranzaPagada', 'moraPagada'],
-  P7: ['deudaAExtinguir', 'faltanteFcc', 'excedenteDeudor'],
+  P7: ['deudaAExtinguir', 'faltanteFondoGarantias', 'excedenteDeudor'],
   S1: ['serviciosPagados', 'totalPagado', 'semanaFinal'],
   S4: ['serviciosPagados', 'totalPagado', 'semanaFinal'],
   INICIAL: ['cuotaInicial', 'montoFinanciado', 'cuotaSemanal', 'serviciosPagados', 'totalPagado'],

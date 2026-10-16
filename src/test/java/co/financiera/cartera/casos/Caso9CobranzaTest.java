@@ -78,13 +78,13 @@ class Caso9CobranzaTest {
                 .dinero("Capital vencido", Movimiento::capitalVencido)
                 .dinero("Capital vigente", Movimiento::capitalVigente)
                 .dinero("Saldo capital final", Movimiento::saldoFinal)
-                .dinero("FCC+IVA", m -> m.serviciosCausados().fcc())
+                .dinero("FCC+IVA", m -> m.serviciosCausados().fondoGarantias())
                 .dinero("Asistencia+IVA", m -> m.serviciosCausados().asistencia())
                 .dinero("Seguro vida", m -> m.serviciosCausados().seguro())
                 .dinero("Servicios causados", m -> m.serviciosCausados().total())
                 .dinero("Pago servicios", Movimiento::pagoServicios)
                 .dinero("CxC servicios", Movimiento::cxcServicios)
-                .dinero("Pago FCC", m -> m.pagoTerceros().fcc())
+                .dinero("Pago FCC", m -> m.pagoTerceros().fondoGarantias())
                 .dinero("Pago asistencia", m -> m.pagoTerceros().asistencia())
                 .dinero("Pago aseguradora", m -> m.pagoTerceros().seguro());
 

@@ -1,28 +1,17 @@
-# Fintech · Motor de reglas de cartera de motos
+# Motor de reglas de cartera · créditos de moto
 
-Respaldo del trabajo de **Juan Esteban Cardozo** para la plataforma de crédito de motos (proyecto Financiera, con Heider Galvis y Diego González). Contiene el **motor de reglas de cartera** que reproduce el Excel de casos operativos de Diego, un **cuestionario** para que negocio defina las reglas abiertas, el **backlog** del proyecto y la documentación de **cómo se construyó con agentes de IA**.
+Motor de reglas para la plataforma de crédito de motos del proyecto **Financiera** (Juan Esteban Cardozo, Heider Galvis y Diego González). Cada semana del crédito decide qué pasa con el pago del cliente: lo reparte por prelación, causa interés, mora, cobranza y servicios, aplica abonos, prepagos, daciones y retomas, y genera el asiento contable en partida doble.
 
-> Construido con **Claude Code** y el modelo **Claude Opus 5.5** (`claude-opus-5-5`) de Anthropic: una sesión orquestadora y 9 agentes en paralelo. Detalle en [docs/agentes/](docs/agentes/README.md).
+La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](docs/fuentes/)): el motor reproduce sus 9 casos celda por celda.
 
-## Qué hay aquí
+## Estado (16 oct 2026)
 
-| Carpeta | Qué es |
-|---|---|
-| [`src/`](src/) | Motor de reglas (Java 21 + Spring Boot 4 + Spring Modulith, monolito modular) |
-| [`cuestionario/`](cuestionario/) | Front (React + Vite + Tailwind con el diseño de Prestaya) para que Diego responda las reglas viendo el efecto de cada opción; exporta a Excel |
-| [`herramientas/`](herramientas/) | Exportador del Excel a CSV de prueba e importador de las respuestas del cuestionario |
-| [`docs/`](docs/) | Decisiones, ADR, reglas por caso, preguntas para Diego, pendientes y documentación de los agentes |
-| [`docs/diagrama/`](docs/diagrama/agentes-motor-cartera.html) | Diagrama interactivo de cómo operaron los 9 agentes, generado con [archify](https://github.com/tt-a1i/archify) (fuente en `docs/diagrama/fuente/`) |
-| [`backlog-financiera/`](backlog-financiera/) | Épicas, features e historias (Gherkin) del proyecto en Azure DevOps, priorización por sprints en LaTeX |
-| [`docs/fuentes/`](docs/fuentes/) | Excel de casos operativos de Diego (fuente de verdad de las reglas) |
-
-## Estado
-
-- **Los 9 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa, dación en pago, retoma, prepago total, abono extra (menor plazo y menor cuota), pago inferior con mora y pago tardío con cobranza.
-- **139 pruebas automáticas, 0 fallas**, incluidas las 33 validaciones de la hoja Validaciones y reglas que nunca se pueden romper (saldo nunca negativo, asientos siempre cuadrados).
-- **Asientos contables** de cada evento en partida doble (recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación, retoma).
-- **Cuota inicial = 10 % del valor total de la operación** (decisión de Juan Esteban).
-- **Reglas configurables** (`ReglasNegocio`) para lo que negocio aún no define; por defecto reproducen el Excel.
+- **Los 9 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa, dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora y pago tardío con cobranza.
+- **147 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
+- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, dación y retoma.
+- **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
+- **Calidad con Sonar**: cada push a `main` y cada PR corre las pruebas y el análisis en SonarCloud (Java, TypeScript y Python). Último análisis: Quality Gate aprobado, 0 bugs, 0 vulnerabilidades, 0 code smells.
+- **Cuestionario para negocio** con solo las 25 preguntas abiertas; las 12 que Diego ya respondió quedan a la vista como respondidas.
 
 ## Cómo funciona el motor
 
@@ -36,64 +25,73 @@ flowchart LR
     MV --> K["Contabilizador<br/>asientos en partida doble"]
 ```
 
-Cada caso del Excel es un `Escenario` con instrucciones por semana (pago completo, parcial, tardío, sin pago, abono, prepago, cambio de tasa, dación/retoma). Un solo ciclo los cubre todos.
+Cada caso del Excel es un `Escenario` con instrucciones por semana: pago completo, parcial, tardío, sin pago, abono, prepago, cambio de tasa, dación o retoma. Un solo ciclo los cubre todos.
 
-## Cómo se construyó: orquestador + 9 agentes
+## Reglas de negocio
 
-```mermaid
-flowchart LR
-    O["Orquestador<br/>Claude Opus 5.5"] --> B["Base común<br/>núcleo + caso 1"]
-    B --> A1["Caso 1"] & A2["Caso 2"] & A3["Caso 3"] & A4["Caso 4"] & A5["Caso 5"] & A6["Caso 6"] & A7["Caso 7"] & A8["Caso 8"] & A9["Caso 9"]
-    A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9 --> I["Integración<br/>9 merges · 124 pruebas"]
-    I --> Q["Cuestionario para negocio<br/>139 pruebas"]
-```
+Lo que el Excel no define se configura en `ReglasNegocio`. Por defecto reproduce el Excel; las respuestas de negocio se cargan desde [`config/reglas-negocio.properties`](config/reglas-negocio.properties).
 
-| | |
+| Regla | Decisión | Fuente |
+|---|---|---|
+| Pago inicial | Opcional: lo digita el asesor y se resta del valor total de la operación | Diego, P-09 |
+| Abono extra sin elección del cliente | Reduce el plazo | Diego, P-13 |
+| Abono mayor que el saldo | Se rechaza | Diego, P-14 |
+| Mora antes de dación o retoma | Se causa como en cualquier atraso | Diego, P-16 |
+| Interés sobre capital vencido | El vencido paga solo mora | Diego, P-03 |
+| Fondo de garantías y seguro | Sobre el monto financiado inicial | Diego, P-07 |
+| Redondeo | Ninguno en el cálculo; solo en la presentación | Diego, P-05 |
+
+Detalle de cada respuesta y lo que falta: [docs/respuestas-diego-2026-10-16.md](docs/respuestas-diego-2026-10-16.md). Historial de decisiones: [docs/decisiones.md](docs/decisiones.md).
+
+## Estructura
+
+| Carpeta | Contenido |
 |---|---|
-| **LLM** | Claude Opus 5.5 (`claude-opus-5-5`), orquestador y los 9 agentes (los agentes heredan el modelo de la sesión) |
-| **Herramienta** | Claude Code, herramienta `Agent`, tipo `general-purpose` |
-| **Aislamiento** | Un `git worktree` por agente, con su rama |
-| **Ejecución** | En paralelo y en segundo plano: 7 min 14 s en total, 1.032.778 tokens, 237 llamadas a herramientas |
-| **Resultado** | 9 de 9 casos al centavo, 122 pruebas de los agentes, 1 solo cambio al motor compartido |
+| [`src/`](src/) | Motor (Java 21, Spring Boot 4, monolito modular con Spring Modulith) y sus pruebas |
+| [`cuestionario/`](cuestionario/) | Página para que negocio responda las reglas abiertas viendo el efecto calculado de cada opción; exporta las respuestas a Excel |
+| [`herramientas/`](herramientas/) | Exportador del Excel a CSV de prueba e importador de las respuestas del cuestionario |
+| [`config/`](config/) | Reglas de negocio vigentes |
+| [`docs/`](docs/) | Decisiones, ADR, reglas por caso, preguntas y respuestas de negocio, pendientes y diagrama |
+| [`backlog-financiera/`](backlog-financiera/) | Épicas, features e historias (Gherkin) del proyecto y su priorización por sprints |
 
-Prompts, métricas por agente, reglas para que no se pisaran y cómo repetir el método: [docs/agentes/README.md](docs/agentes/README.md). Diagrama interactivo: abrir [`docs/diagrama/agentes-motor-cartera.html`](docs/diagrama/agentes-motor-cartera.html) en el navegador (tema claro/oscuro, estilos, modo presentación, exportar a PNG/SVG, ruta entre nodos, lente y búsqueda).
+## Cómo correrlo
 
-El diagrama se genera con [archify](https://github.com/tt-a1i/archify) 3.0.1, que valida composición, rutas y lectura en navegador antes de entregar:
-
-```bash
-git clone https://github.com/tt-a1i/archify ../archify
-node docs/diagrama/fuente/generar.mjs ../archify    # escribe docs/diagrama/fuente/agentes.architecture.json
-node ../archify/archify/bin/archify.mjs finalize architecture docs/diagrama/fuente/agentes.architecture.json docs/diagrama/agentes-motor-cartera.html --quality showcase --json
-```
-
-## Comandos
+Requisitos: JDK 21, Node 20+ y Python 3.
 
 ```bash
-# Motor (JDK 21)
+# Motor
 export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot"
-./mvnw -q -B test                              # 139 pruebas
-python herramientas/exportar_excel.py          # regenera los CSV desde el Excel
+./mvnw -q -B test                              # 147 pruebas
+python herramientas/exportar_excel.py          # regenera los CSV de prueba desde el Excel
 
-# Cuestionario
+# Cuestionario para negocio
 cd cuestionario && npm install
-npm run escenarios   # cifras de cada opción calculadas por el motor
-npm test && npm run build   # dist/index.html: un solo archivo para enviar a Diego
+npm run escenarios   # calcula con el motor las cifras de cada opción
+npm run dev          # lo abre en el navegador
+npm run build        # dist/index.html: un solo archivo para enviar por correo
 
-# Respuestas de Diego → motor
+# Análisis de calidad local (SonarQube en Docker)
+docker run -d --name sonarqube-motor -p 9000:9000 sonarqube:community
+(cd cuestionario && npm run cobertura)
+./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar   -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<token> -Dsonar.organization= -Dsonar.projectKey=motor-cartera
+
+# Respuestas de negocio → motor
 python herramientas/importar_respuestas.py <excel-de-respuestas>.xlsx
-./mvnw -q -B test    # ReglasNegocioConfiguradaTest corre los casos con sus reglas
+./mvnw -q -B test    # ReglasNegocioConfiguradaTest corre los casos con esas reglas
 ```
+
+## Cómo se construyó
+
+Una sesión orquestadora armó el núcleo y el caso 1. Después, 9 agentes de IA en paralelo, uno por caso del Excel y cada uno en su propia rama, reprodujeron los demás. La integración unió sus 9 entregas y el cuestionario llevó las preguntas a negocio. Con las respuestas de Diego llegaron las reglas del 16 de octubre.
+
+[![Diagrama del motor de cartera](docs/diagrama/agentes-motor-cartera.png)](docs/diagrama/agentes-motor-cartera.png)
+
+La versión interactiva (tema claro u oscuro, modo presentación, exportar y búsqueda) es [`docs/diagrama/agentes-motor-cartera.html`](docs/diagrama/agentes-motor-cartera.html): se descarga y se abre en el navegador. Prompts, métricas por agente y método: [docs/agentes/](docs/agentes/README.md).
 
 ## Documentos clave
 
 - [Decisiones](docs/decisiones.md) y [ADR del monolito modular](docs/adr/0001-monolito-modular.md)
-- [Preguntas para Diego](docs/preguntas-diego.md) (consolidado de los 9 casos)
+- [Preguntas para Diego](docs/preguntas-diego.md) y [sus respuestas del 16 de octubre](docs/respuestas-diego-2026-10-16.md)
 - Reglas por caso: [`docs/reglas/caso-1.md`](docs/reglas/caso-1.md) a [`caso-9.md`](docs/reglas/caso-9.md)
 - [Pendientes técnicos](docs/pendientes-tecnicos.md)
-- [Backlog y priorización](backlog-financiera/) (`priorizacion_hu.tex` se abre en Overleaf)
-
-## Origen
-
-- Parte del proyecto Prestaya (front de asesores de concesionario): el cuestionario reutiliza su diseño (tokens de color y tipografía). Repo original: `JuanDavidGarciaGarcia/Fintech`.
-- Reglas: Excel *Casos Operaciones V2 mejorado* de Diego González.
-- Referencia de arquitectura revisada: [Apache Fineract](https://github.com/apache/fineract) (se usó como referencia de diseño; ver el ADR para por qué no como núcleo).
+- [Backlog y priorización](backlog-financiera/)

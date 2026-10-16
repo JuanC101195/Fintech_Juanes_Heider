@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FECHA_ESCENARIOS } from './escenarios'
 import { descargarExcel } from './exportar'
 import { PreguntaTarjeta } from './PreguntaTarjeta'
-import { BLOQUES, PREGUNTAS } from './preguntas'
+import { BLOQUES, PREGUNTAS, RESPONDIDAS } from './preguntas'
 import { avance, estaCompleta, useEstado } from './respuestas'
 
 export default function App() {
@@ -88,10 +88,26 @@ export default function App() {
           <section className="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm sm:p-space-xl">
             <h2 className="text-headline-md text-on-surface">Antes de empezar</h2>
             <p className="mt-space-xs text-body-lg text-on-surface-variant">
-              Al replicar el Excel de casos operativos en el motor aparecieron decisiones que el Excel no resuelve o resuelve de dos formas. Para
-              cada pregunta verá lo que hace hoy el Excel y, cuando cambia el cálculo, <strong className="text-on-surface">las cifras que da el motor con cada opción</strong>.
-              Sus respuestas se guardan en este navegador; al terminar descargue el Excel y envíelo de vuelta.
+              Al replicar el Excel de casos operativos en el motor aparecieron decisiones que el Excel no resuelve o resuelve de dos formas. Aquí
+              quedan <strong className="text-on-surface">solo las {total} que siguen abiertas</strong>. Para cada una verá lo que hace hoy el Excel y, cuando
+              cambia el cálculo, <strong className="text-on-surface">las cifras que da el motor con cada opción</strong>. Sus respuestas se guardan en este
+              navegador; al terminar descargue el Excel y envíelo de vuelta.
             </p>
+            <details className="mt-space-lg rounded-xl bg-surface-container-low p-space-md">
+              <summary className="min-h-9 cursor-pointer text-label-lg font-semibold text-on-surface">
+                Ya respondidas: {RESPONDIDAS.length} (16 oct 2026) · gracias
+              </summary>
+              <ul className="mt-space-sm flex flex-col gap-space-sm">
+                {RESPONDIDAS.map((p) => (
+                  <li key={p.id} className="rounded-lg bg-surface-container-lowest p-space-sm">
+                    <p className="text-label-md font-semibold text-on-surface">
+                      <span className="text-primary">{p.respondida!.referencia}</span> · {p.titulo}
+                    </p>
+                    <p className="text-body-md text-on-surface-variant">{p.respondida!.respuesta}</p>
+                  </li>
+                ))}
+              </ul>
+            </details>
             <div className="mt-space-lg grid gap-space-md sm:grid-cols-2">
               {(
                 [

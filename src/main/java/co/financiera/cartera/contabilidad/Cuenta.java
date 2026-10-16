@@ -17,7 +17,7 @@ public enum Cuenta {
     CXP_SERVICIOS_TERCEROS("CxP servicios a terceros"),
     CXC_SERVICIOS("CxC servicios complementarios"),
     INVENTARIO_MOTOS("Inventario de motos"),
-    CXC_FCC("CxC FCC"),
+    CXC_FONDO_GARANTIAS("CxC Fondo de garantías"),
     CXP_DEUDOR("CxP deudor");
 
     private final String nombreExcel;

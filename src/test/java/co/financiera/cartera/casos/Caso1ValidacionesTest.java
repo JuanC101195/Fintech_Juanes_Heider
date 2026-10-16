@@ -97,6 +97,6 @@ class Caso1ValidacionesTest {
         // Caso1_Normal!O7 (periodo 4 = ROUNDDOWN(Inputs!B14)) = W9; es 4 × Inputs!B28.
         BigDecimal esperado = enCaso1(4, "Pago FCC");
         assertThat(esperado).isCloseTo(Calc.multiplicar(Calc.bd(4), input("B28")), Offset.offset(BigDecimal.ONE));
-        validar(5, "Pago FCC", esperado, m -> m.pagoTerceros().fcc());
+        validar(5, "Pago FCC", esperado, m -> m.pagoTerceros().fondoGarantias());
     }
 }

@@ -18,7 +18,7 @@ export interface Kpis {
   capitalVencidoMaximo: number
   semanasEnMora: number
   deudaAExtinguir: number
-  faltanteFcc: number
+  faltanteFondoGarantias: number
   excedenteDeudor: number
 }
 

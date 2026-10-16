@@ -1,4 +1,4 @@
-import type { Pregunta } from './tipos'
+import type { Pregunta, Respondida } from './tipos'
 
 // Preguntas que salieron de reproducir el Excel "Casos Operaciones V2" celda por celda en el motor.
 // Los códigos de opción y las claves de "ajustes" los lee el importador del motor: no cambiarlos
@@ -16,7 +16,7 @@ export const BLOQUES = [
 
 const [PAGOS, SERVICIOS, ABONOS, TASA, RECUPERACION, CONTABILIDAD, EXCEL] = BLOQUES
 
-export const PREGUNTAS: Pregunta[] = [
+const BASE: Pregunta[] = [
   // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
   {
     id: 'P1',
@@ -145,6 +145,20 @@ export const PREGUNTAS: Pregunta[] = [
       { codigo: 'cuota-al-peso', texto: 'Solo la cuota total al peso; el desglose interno con centavos', ajustes: { redondeo: 'CUOTA_AL_PESO' } },
       { codigo: 'cuota-a-la-centena', texto: 'Cuota total a la centena superior (más fácil de pagar en efectivo)', ajustes: { redondeo: 'CUOTA_A_LA_CENTENA' } },
       { codigo: 'sin-redondeo', texto: 'Sin redondeo, como el Excel', esExcel: true, ajustes: { redondeo: 'NINGUNO' } },
+    ],
+  },
+  {
+    id: 'PCOB',
+    bloque: PAGOS,
+    titulo: 'Antes de una dación o retoma, ¿cómo se cuentan los días de cobranza si el cliente no paga?',
+    contexto:
+      'Usted respondió que en dación y retoma sí se cobran mora y cobranza. La mora ya se causa cada semana sin pago, pero la cobranza se calcula por los días de atraso de un pago recibido, y en esas semanas no llega ningún pago.',
+    excelHoy: 'Casos 3 y 4: sin cobranza. Caso 9: 3.000 por día de atraso de cada pago.',
+    opciones: [
+      { codigo: 'siete-por-semana', texto: '7 días por cada semana sin pago (21.000 por semana)' },
+      { codigo: 'desde-primer-atraso', texto: 'Los días desde la primera cuota vencida hasta el evento, una sola vez' },
+      { codigo: 'no-cobranza', texto: 'Solo mora; la cobranza no aplica sin pago' },
+      { codigo: 'otra', texto: 'Otra forma', pideTexto: true },
     ],
   },
   {
@@ -444,12 +458,25 @@ export const PREGUNTAS: Pregunta[] = [
   {
     id: 'C3',
     bloque: CONTABILIDAD,
-    titulo: '¿Cómo se maneja la cuota inicial del 10 %?',
-    contexto: 'Define quién la recauda y cómo se registra.',
+    titulo: '¿Quién recauda el pago inicial y cómo se registra?',
+    contexto: 'Usted respondió que el pago inicial es opcional y lo digita el asesor. Falta definir quién lo recibe y cómo se contabiliza.',
     excelHoy: 'El Excel no tiene cuota inicial.',
     opciones: [
       { codigo: 'concesionario', texto: 'La recauda el concesionario y se descuenta del desembolso' },
       { codigo: 'financiera', texto: 'La recauda la financiera antes del desembolso' },
+      { codigo: 'otra', texto: 'Otra forma', pideTexto: true },
+    ],
+  },
+  {
+    id: 'C5',
+    bloque: CONTABILIDAD,
+    titulo: 'El pago inicial, ¿se resta del valor total de la operación o solo de la moto más el alistamiento?',
+    contexto:
+      'En su ejemplo la inicial se resta de "monto de la moto + gastos de alistamiento" (6.500.000 − 700.000). El valor total del Excel incluye además GPS y plataforma (80.000) y gastos comerciales (60.000). Hoy el motor la resta del valor total.',
+    excelHoy: 'El Excel no tiene pago inicial.',
+    opciones: [
+      { codigo: 'valor-total', texto: 'Del valor total: moto + alistamiento + GPS + gastos comerciales' },
+      { codigo: 'moto-alistamiento', texto: 'Solo de moto + alistamiento; GPS y gastos comerciales se financian siempre' },
       { codigo: 'otra', texto: 'Otra forma', pideTexto: true },
     ],
   },
@@ -479,4 +506,52 @@ export const PREGUNTAS: Pregunta[] = [
       { codigo: 'no', texto: 'No, se quedan como están' },
     ],
   },
+  {
+    id: 'X2',
+    bloque: EXCEL,
+    titulo: '¿Nos envía la última versión del Excel mejorado?',
+    contexto:
+      'Varias respuestas remiten al Excel mejorado (catálogo de tasas por línea, prelación del pago anticipado, servicios que no se cobran en mora, mora corregida). La versión que tenemos es del 7 de octubre y no trae esos cambios.',
+    excelHoy: 'Versión del 7 de octubre: una sola línea de crédito, fondo y asistencia se cobran también en mora.',
+    opciones: [
+      { codigo: 'envio', texto: 'Sí, la envío por correo' },
+      { codigo: 'es-la-ultima', texto: 'La que tienen es la última versión' },
+    ],
+  },
+  {
+    id: 'X3',
+    bloque: EXCEL,
+    titulo: 'En su respuesta sobre el plazo límite habla de los casos 4 o 5 como dación o retoma. ¿Se refiere a los casos 3 y 4?',
+    contexto: 'En el Excel la dación en pago es el caso 3, la retoma el caso 4 y el prepago total el caso 5.',
+    excelHoy: 'Caso 3 = dación, caso 4 = retoma, caso 5 = prepago total.',
+    opciones: [
+      { codigo: 'casos-3-y-4', texto: 'Sí, dación (caso 3) o retoma (caso 4)' },
+      { codigo: 'otra', texto: 'Me refería a otra cosa', pideTexto: true },
+    ],
+  },
 ]
+
+// Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
+const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
+  P1: { referencia: 'P-02', respuesta: 'Se aplica la prelación de su Excel mejorado; se confirma al recibir la última versión.' },
+  P3: { referencia: 'P-03', respuesta: 'La tasa de mora es la misma corriente (la máxima permitida); el Excel mejorado corrige la fórmula.' },
+  PDOBLE: { referencia: 'P-03', respuesta: 'No: el interés corriente va sobre el capital vigente y el capital vencido paga solo mora.' },
+  P7: { referencia: 'P-16', respuesta: 'Sí: en dación y retoma se cobran mora y cobranza.' },
+  P2: { referencia: 'P-05', respuesta: 'Sin redondeo en el cálculo, como el Excel; solo el formato se muestra sin decimales.' },
+  S1: { referencia: 'P-07', respuesta: 'Sobre el monto financiado inicial. En mora o no pago el fondo y la asistencia no se cobran; solo el seguro.' },
+  S2: { referencia: 'P-07 · P-09', respuesta: 'Sobre el monto financiado, que ya descuenta el pago inicial. La inicial es opcional y la digita el asesor.' },
+  S4: { referencia: 'P-17', respuesta: 'No aplica: antes del plazo límite el crédito termina en dación o retoma.' },
+  A1: { referencia: 'P-13', respuesta: 'El cliente elige; si no responde, se reduce el plazo.' },
+  A2: { referencia: 'P-14', respuesta: 'No es posible: nunca se recibe más dinero que el saldo del crédito.' },
+  T3: { referencia: 'P-01', respuesta: 'Tasa según el catálogo por línea de crédito: la máxima legal publicada cada mes, con actualización obligatoria por un autorizador.' },
+  C4: { referencia: 'P-24', respuesta: 'No tener en cuenta la hoja Validaciones.' },
+}
+
+export const TODAS: Pregunta[] = BASE.map((p) =>
+  RESPONDIDAS_16_OCT[p.id] ? { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } } : p,
+)
+
+/** Las que siguen abiertas: son las que se le preguntan a negocio. */
+export const PREGUNTAS = TODAS.filter((p) => !p.respondida)
+
+export const RESPONDIDAS = TODAS.filter((p) => p.respondida)

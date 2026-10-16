@@ -17,7 +17,7 @@ import openpyxl
 
 RAIZ = Path(__file__).resolve().parent.parent
 # Debe coincidir con ReglasNegocio.CLAVES.
-CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago', 'baseServicios', 'serviciosDespuesDelPlazo'}
+CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago', 'baseServicios', 'serviciosDespuesDelPlazo', 'moraAntesDeRecuperacion'}
 ENCABEZADOS = ['ID', 'Bloque', 'Pregunta', 'Código', 'Respuesta', 'Valor', 'Unidad', 'Detalle', 'Comentario',
                'Ajustes al motor', 'Completa']
 

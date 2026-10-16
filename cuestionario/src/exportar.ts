@@ -93,7 +93,7 @@ export async function construirLibro(estado: Estado, ahora = new Date()): Promis
     { header: 'ID', width: 9 }, { header: 'Opción', width: 22 }, { header: 'Caso de prueba', width: 60 },
     { header: 'Semana final', width: 13 }, { header: 'Estado final', width: 20 }, { header: 'Total pagado', width: 16 },
     { header: 'Saldo pendiente', width: 16 }, { header: 'Mora pagada', width: 14 }, { header: 'Cobranza pagada', width: 16 },
-    { header: 'Servicios pagados', width: 17 }, { header: 'Deuda a extinguir', width: 17 }, { header: 'Faltante FCC', width: 14 },
+    { header: 'Servicios pagados', width: 17 }, { header: 'Deuda a extinguir', width: 17 }, { header: 'Faltante fondo de garantías', width: 22 },
   ]
   for (const p of PREGUNTAS) {
     const r = estado.respuestas[p.id]
@@ -106,7 +106,7 @@ export async function construirLibro(estado: Estado, ahora = new Date()): Promis
     if (!res) continue
     const k = res.kpis
     vistas.addRow([p.id, r.codigo, prev.caso, k.semanaFinal, k.estadoFinal, k.totalPagado, k.saldoPendiente, k.moraPagada,
-      k.cobranzaPagada, k.serviciosPagados, k.deudaAExtinguir, k.faltanteFcc])
+      k.cobranzaPagada, k.serviciosPagados, k.deudaAExtinguir, k.faltanteFondoGarantias])
   }
   encabezar(vistas)
   for (const c of [6, 7, 8, 9, 10, 11, 12]) vistas.getColumn(c).numFmt = '#,##0.00'
