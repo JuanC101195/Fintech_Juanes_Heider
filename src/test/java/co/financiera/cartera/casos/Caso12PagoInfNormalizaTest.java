@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Caso 12 · Pago inferior con normalización: en el periodo 43 paga el 40 % de la cuota y queda en mora;
- * en el periodo 60 (mes 14) paga la cuota más todo lo atrasado y vuelve a estar al día hasta la cuota
+ * en el periodo 60 (mes 14) paga la cuota más lo atrasado y vuelve a estar al día hasta la cuota
  * 104. Hoja Caso12_PagoInfNormaliza.
  */
 class Caso12PagoInfNormalizaTest {
@@ -88,6 +88,6 @@ class Caso12PagoInfNormalizaTest {
                 .allSatisfy(m -> assertThat(m.estado()).isIn(EstadoCredito.VIGENTE_AL_DIA, EstadoCredito.CANCELADO));
         assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
         assertThat(bd(motor.getLast().periodo())).isEqualByComparingTo("104");
-        assertThat(Contabilizador.estandar().contabilizar(motor)).allSatisfy(a -> assertThat(a.cuadra()).isTrue());
+        assertThat(Contabilizador.estandar().contabilizar(motor)).isNotEmpty().allSatisfy(a -> assertThat(a.cuadra()).isTrue());
     }
 }

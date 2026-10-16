@@ -58,7 +58,7 @@ public sealed interface Instruccion {
     }
 
     /**
-     * Paga la cuota del periodo más todo lo atrasado (mora, interés, servicios pendientes y capital
+     * Paga la cuota del periodo más lo atrasado (mora, interés, servicios pendientes y capital
      * vencido) y deja el crédito al día (caso 12, normalización).
      */
     record PagoAlDia() implements Instruccion {
