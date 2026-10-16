@@ -52,9 +52,14 @@ class Caso2UsuraTest {
 
     @Test
     void rechazaTasasNoPositivas() {
-        assertThatThrownBy(() -> Usura.ajustar(bd("0"), bd("0.80"))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Usura.ajustar(bd("0.8732"), bd("-0.1"))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Usura.tasaAjustada(bd("0.01"))).isInstanceOf(IllegalArgumentException.class);
+        BigDecimal cero = bd("0");
+        BigDecimal usura = bd("0.80");
+        BigDecimal pactada = bd("0.8732");
+        BigDecimal negativa = bd("-0.1");
+        BigDecimal minima = bd("0.01");
+        assertThatThrownBy(() -> Usura.ajustar(cero, usura)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> Usura.ajustar(pactada, negativa)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> Usura.tasaAjustada(minima)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

@@ -25,7 +25,7 @@ import java.util.Optional;
  * </pre>
  *
  * <p>Solo aplica a cierres por recuperación con excedente (CxP deudor &gt; 0). El cierre con
- * faltante (dación, caso 3) lo contabiliza otra regla. Como en el Excel, todo lo que se extingue
+ * faltante (dación, caso 3) lo contabiliza otra regla. Como en el Excel, lo que se extingue
  * aparte del capital se lleva a CxC intereses corrientes (en el caso 4 no hay mora, servicios ni
  * cobranza pendientes: D8 / P7).
  */

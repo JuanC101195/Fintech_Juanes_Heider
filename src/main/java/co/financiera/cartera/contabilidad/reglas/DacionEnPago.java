@@ -31,7 +31,7 @@ import java.util.Optional;
  * si algún día hay retomas con faltante o daciones con excedente, hay que agregarlo (ver
  * docs/reglas/caso-3.md, P3.3).
  *
- * <p>Como en el Excel, todo lo que no es capital se acredita a CxC intereses corrientes: en el
+ * <p>Como en el Excel, lo que no es capital se acredita a CxC intereses corrientes: en el
  * caso 3 no hay mora, servicios ni cobranza pendientes (D8 / P7). Si se causan, el movimiento debe
  * traer su desglose antes del cierre para repartir el crédito (P3.2).
  */

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 
 /**
- * Aritmética del motor. Todo el dinero va en {@link BigDecimal} con 34 dígitos significativos
+ * Aritmética del motor. El dinero va siempre en {@link BigDecimal} con 34 dígitos significativos
  * (DECIMAL128) y sin redondear: el Excel de Diego tampoco redondea y la tolerancia de las
  * validaciones es 1 COP. El redondeo a pesos se hará en un solo punto cuando se decida P2.
  */

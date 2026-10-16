@@ -21,7 +21,7 @@ import java.util.Optional;
  *       corriente (L) → servicios (Y) → Cartera de créditos (M).
  * </ol>
  *
- * <p><b>Frontera</b> (docs/reglas/caso-9.md, R-9.10): esta regla es dueña de todo el asiento de
+ * <p><b>Frontera</b> (docs/reglas/caso-9.md, R-9.10): esta regla es dueña del asiento completo de
  * los movimientos con cobranza causada ({@link #aplica}). {@code RecaudoCuota} (caso 1) y
  * {@code PagoInferior} (caso 8) deben ignorar esos movimientos para no debitar la caja dos veces.
  * Abonos extraordinarios y prepagos no se tocan aquí ({@code AbonoExtraordinario}).

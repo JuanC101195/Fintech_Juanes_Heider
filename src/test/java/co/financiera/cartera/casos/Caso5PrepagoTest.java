@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Caso 5 · Pago anticipado total: en la semana del mes 10 (cuota 43) el cliente paga la cuota
- * ordinaria y, después, todo el saldo de capital. Hoja Caso5_Prepago. Reglas en docs/reglas/caso-5.md.
+ * ordinaria y, después, el saldo de capital completo. Hoja Caso5_Prepago. Reglas en docs/reglas/caso-5.md.
  */
 class Caso5PrepagoTest {
 
@@ -137,7 +137,7 @@ class Caso5PrepagoTest {
                     .filter(f -> f.get("#").equals(String.valueOf(n)))
                     .findFirst()
                     .orElseThrow();
-            assertThat(fila.get("Caso")).isEqualTo("Caso 5");
+            assertThat(fila).containsEntry("Caso", "Caso 5");
             assertThat(Integer.parseInt(fila.get("Periodo"))).isEqualTo(PERIODO_PREPAGO);
             assertThat(Integer.parseInt(fila.get("Mes"))).isEqualTo(evento.mes());
             BigDecimal tolerancia = HojaExcel.numero(fila, "Tolerancia").orElseThrow();

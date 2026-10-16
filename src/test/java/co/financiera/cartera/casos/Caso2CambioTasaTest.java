@@ -66,7 +66,7 @@ class Caso2CambioTasaTest {
     @Test
     void elEventoDeCambioDeTasaQuedaEnElPeriodoDelExcel() {
         HojaExcel hoja = HojaExcel.cargar("Caso2_CambioTasa");
-        assertThat(hoja.filaDelPeriodo(PERIODO_CAMBIO).get("Evento")).isEqualTo("Cambio de tasa");
+        assertThat(hoja.filaDelPeriodo(PERIODO_CAMBIO)).containsEntry("Evento", "Cambio de tasa");
         assertThat(fila(PERIODO_CAMBIO).evento()).isEqualTo("Cambio de tasa");
         assertThat(motor).filteredOn(m -> m.evento().equals("Cambio de tasa")).hasSize(1);
     }
@@ -180,7 +180,7 @@ class Caso2CambioTasaTest {
 
     private static Map<String, String> validacion(int numero) {
         Map<String, String> v = VALIDACIONES.filaDelPeriodo(numero);
-        assertThat(v.get("Caso")).isEqualTo("Caso 2");
+        assertThat(v).containsEntry("Caso", "Caso 2");
         return v;
     }
 
