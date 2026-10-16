@@ -1,0 +1,54 @@
+name: Sitio
+
+# Publica en GitHub Pages (rama gh-pages) la página de inicio, el diagrama interactivo y el
+# cuestionario de reglas compilado, cada vez que cambia main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sitio
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    name: Publicar sitio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cuestionario/package-lock.json
+
+      - name: Compilar el cuestionario
+        working-directory: cuestionario
+        run: |
+          npm ci
+          npm run build
+
+      - name: Armar el sitio
+        run: |
+          mkdir -p sitio
+          cp docs/sitio/index.html sitio/index.html
+          cp docs/diagrama/agentes-motor-cartera.html sitio/diagrama.html
+          cp cuestionario/dist/index.html sitio/cuestionario.html
+          touch sitio/.nojekyll
+
+      - name: Publicar en gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./sitio
+          publish_branch: gh-pages
+          user_name: Juan Esteban Cardozo Rivera
+          user_email: juan.cardozor@udea.edu.co
+          commit_message: Sitio publicado desde
