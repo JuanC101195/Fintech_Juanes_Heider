@@ -4,6 +4,8 @@ Motor de reglas para la plataforma de crédito de motos del proyecto **Financier
 
 La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](docs/fuentes/)): el motor reproduce sus 9 casos celda por celda.
 
+**En línea:** [diagrama interactivo](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html) · [cuestionario de reglas para negocio](https://juanc101195.github.io/Fintech_Juanes_Heider/cuestionario.html) · [inicio](https://juanc101195.github.io/Fintech_Juanes_Heider/)
+
 ## Estado (16 oct 2026)
 
 - **Los 9 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa, dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora y pago tardío con cobranza.
@@ -84,9 +86,9 @@ python herramientas/importar_respuestas.py <excel-de-respuestas>.xlsx
 
 Una sesión orquestadora armó el núcleo y el caso 1. Después, 9 agentes de IA en paralelo, uno por caso del Excel y cada uno en su propia rama, reprodujeron los demás. La integración unió sus 9 entregas y el cuestionario llevó las preguntas a negocio. Con las respuestas de Diego llegaron las reglas del 16 de octubre.
 
-[![Diagrama del motor de cartera](docs/diagrama/agentes-motor-cartera.png)](docs/diagrama/agentes-motor-cartera.png)
+**[Abrir el diagrama interactivo →](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html)** (tema claro u oscuro, modo presentación, exportar, ruta entre nodos y búsqueda)
 
-La versión interactiva (tema claro u oscuro, modo presentación, exportar y búsqueda) es [`docs/diagrama/agentes-motor-cartera.html`](docs/diagrama/agentes-motor-cartera.html): se descarga y se abre en el navegador. Prompts, métricas por agente y método: [docs/agentes/](docs/agentes/README.md).
+Prompts, métricas por agente y método: [docs/agentes/](docs/agentes/README.md). El sitio se publica solo desde `main` con [`.github/workflows/sitio.yml`](.github/workflows/sitio.yml).
 
 ## Documentos clave
 

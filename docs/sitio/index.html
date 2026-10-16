@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Motor de cartera</title>
+  <style>
+    :root { --fondo: #f4f7f6; --tarjeta: #ffffff; --texto: #13201d; --suave: #4d5f5a; --primario: #0f6b5c; --borde: #dbe4e1; }
+    @media (prefers-color-scheme: dark) {
+      :root { --fondo: #0e1513; --tarjeta: #17211e; --texto: #e6efec; --suave: #a3b5b0; --primario: #5fd0b8; --borde: #26332f; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 16px; }
+    .marca { color: var(--primario); font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+    h1 { margin: 4px 0 8px; font-size: 32px; line-height: 1.2; }
+    .intro { color: var(--suave); margin: 0 0 32px; max-width: 640px; }
+    .tarjetas { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    a.tarjeta { display: block; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 24px; color: inherit; text-decoration: none; transition: border-color .15s, transform .15s; }
+    a.tarjeta:hover, a.tarjeta:focus-visible { border-color: var(--primario); transform: translateY(-2px); outline: none; }
+    .tarjeta h2 { margin: 0 0 8px; font-size: 20px; }
+    .tarjeta p { margin: 0 0 16px; color: var(--suave); }
+    .ir { color: var(--primario); font-weight: 600; }
+    footer { margin-top: 40px; color: var(--suave); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="marca">Proyecto Financiera</p>
+    <h1>Motor de reglas de cartera</h1>
+    <p class="intro">Créditos de moto con cuotas semanales: el motor reproduce los casos operativos del Excel de negocio y genera los asientos contables.</p>
+    <div class="tarjetas">
+      <a class="tarjeta" href="cuestionario.html">
+        <h2>Cuestionario de reglas</h2>
+        <p>Preguntas abiertas para negocio, con el efecto que calcula el motor en cada opción. Al terminar se descarga un Excel con las respuestas.</p>
+        <span class="ir">Responder →</span>
+      </a>
+      <a class="tarjeta" href="diagrama.html">
+        <h2>Diagrama del proyecto</h2>
+        <p>Cómo se construyó el motor: base común, los 9 casos en paralelo, la integración y las respuestas de negocio.</p>
+        <span class="ir">Ver diagrama →</span>
+      </a>
+    </div>
+    <footer><a class="ir" href="https://github.com/JuanC101195/Fintech_Juanes_Heider">Código en GitHub</a></footer>
+  </main>
+</body>
+</html>
