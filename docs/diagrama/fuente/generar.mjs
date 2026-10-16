@@ -38,7 +38,7 @@ const components = [
   { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'ReglasNegocio · 139 pruebas', tag: '73756ea', pos: [1470, CY - 34], size: [170, 68] },
   { id: 'diego', type: 'external', label: 'Diego', sublabel: 'respondió P-01 a P-27', pos: [1470, CY + 130], size: [170, 60] },
   { id: 'respuestas', type: 'frontend', label: 'Reglas de Diego', sublabel: 'inicial · abonos · mora · 147 pruebas', tag: '16 oct', pos: [1440, CY + 250], size: [230, 68] },
-  { id: 'excel11', type: 'frontend', label: 'Excel de Diego · 11 oct', sublabel: '12 casos · prelación · 156 pruebas', tag: '16 oct', pos: [1440, CY + 380], size: [230, 68] },
+  { id: 'excel11', type: 'frontend', label: 'Excel de Diego · 11 oct', sublabel: 'casos 10-12 · sesión principal · 167 pruebas', tag: '16 oct', pos: [1440, CY + 380], size: [230, 68] },
   { id: 'github', type: 'external', label: 'GitHub', sublabel: 'Fintech_Juanes_Heider', pos: [1470, CY - 190], size: [170, 60] },
 ];
 const connections = [
@@ -68,8 +68,8 @@ const doc = {
   schema_version: 1,
   diagram_type: 'architecture',
   meta: {
-    title: 'Motor de cartera · 9 agentes',
-    subtitle: 'Orquestador + 9 agentes de IA en git worktrees · 8 al 16 oct 2026',
+    title: 'Motor de cartera · 9 agentes y 3 casos nuevos',
+    subtitle: 'Casos 1 a 9: orquestador + 9 agentes de IA en git worktrees (8 oct) · casos 10 a 12: sesión principal (16 oct)',
     locale: 'es',
     translations: es,
     output: 'docs/diagrama/agentes-motor-cartera.html',
@@ -101,7 +101,8 @@ const doc = {
       'Pago inicial opcional que digita el asesor',
       'Abono sin elección → menor plazo; mayor que el saldo → rechazo',
       'Mora antes de dación y retoma; vencido paga solo mora',
-      'Excel del 11 oct: 12 casos al centavo, 156 pruebas',
+      'Excel del 11 oct: casos 10, 11 y 12 hechos por la sesión principal (cambiaban el motor compartido)',
+      '12 casos al centavo y recaudo con vencidos: 167 pruebas',
     ] },
     { dot: 'slate', title: 'Cómo se lanzaron', items: ['Subagentes de propósito general del asistente de programación', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
   ],
