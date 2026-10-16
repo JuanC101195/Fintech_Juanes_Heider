@@ -164,8 +164,7 @@ class Caso9CobranzaTest {
     @Test
     void validacion33EstadoAlHorizonteEnMoraExacto() {
         Map<String, String> v = validacion(33);
-        assertThat(v).containsEntry("Variable", "Estado");
-        assertThat(v).containsEntry("Tipo", "Exacto");
+        assertThat(v).containsEntry("Variable", "Estado").containsEntry("Tipo", "Exacto");
         String estadoExcel = hoja.filas().getLast().get("Estado");
         assertThat(estadoExcel).isEqualTo("En mora");
         assertThat(motor.getLast().estado()).isEqualTo(EstadoCredito.EN_MORA);

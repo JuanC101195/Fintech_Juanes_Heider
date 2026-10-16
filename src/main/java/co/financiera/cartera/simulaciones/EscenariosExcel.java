@@ -83,12 +83,12 @@ public final class EscenariosExcel {
     }
 
     /**
-     * Caso 12: pago del 40 % de la cuota en el mes 10; en el mes 14 paga la cuota del periodo más todo lo
-     * atrasado y vuelve a estar al día (Inputs C89 = MIN(cuotas, MAX(inferior + 1, ROUNDDOWN(14 × 52/12)))).
+     * Caso 12: pago del 40 % de la cuota en el mes 10; en el mes 14 paga la cuota del periodo más lo atrasado
+     * y vuelve a estar al día (Inputs C89 = MIN(cuotas, MAX(inferior + 1, ROUNDDOWN(14 × 52/12)))).
      */
     public static Escenario caso12(ParametrosProducto p) {
         int inferior = Calendario.periodoDelMes(10, p);
-        int normalizacion = Math.min(p.numeroCuotas(), Math.max(inferior + 1, Calendario.periodoDelMes(14, p)));
+        int normalizacion = Math.clamp(Calendario.periodoDelMes(14, p), inferior + 1, p.numeroCuotas());
         return base(p).en(inferior, new PagoParcial(bd("0.4"), 0)).en(normalizacion, new PagoAlDia());
     }
 }
