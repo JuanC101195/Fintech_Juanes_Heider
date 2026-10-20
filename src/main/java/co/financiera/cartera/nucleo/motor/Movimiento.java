@@ -50,10 +50,26 @@ public record Movimiento(
         Servicios pagosServicios,
         Servicios cxcServiciosPorConcepto,
         // Lo extinguido con la moto en una dación o retoma, por concepto
-        DeudaExtinguida extinguido) {
+        DeudaExtinguida extinguido,
+        // Capital vencido al inicio del periodo: con capitalVencido da la reclasificación contable
+        BigDecimal capitalVencidoInicial,
+        // Lo que un abono extra o un prepago pagó de pendientes de semanas anteriores, por prelación
+        // (A4, aplicacionAbono = PRIMERO_PENDIENTES); el capital es el capital vencido recuperado. No
+        // está incluido en abonoExtra ni en prepagoCapital, que son solo capital vigente.
+        DeudaExtinguida pendientesPagadosExtra,
+        // Interés corriente de los días entre la última cuota y el prepago (A6, interesPrepagoPorDias)
+        BigDecimal interesPrepago) {
 
-    /** Pago total del cliente en la semana: pago recibido + abonos extraordinarios. */
+    /**
+     * Pago total del cliente en la semana: pago recibido + abonos extraordinarios (lo que fue a capital
+     * vigente, a pendientes y al interés por días del prepago).
+     */
     public BigDecimal pagoTotalCliente() {
-        return pagoRecibido.add(abonoExtra).add(prepagoCapital);
+        return pagoRecibido.add(abonoExtra).add(prepagoCapital).add(pendientesPagadosExtra.total()).add(interesPrepago);
+    }
+
+    /** Lo que el cliente entregó por fuera de la cuota: abono extra o prepago, con lo que pagó de pendientes. */
+    public BigDecimal pagoExtraordinario() {
+        return abonoExtra.add(prepagoCapital).add(pendientesPagadosExtra.total()).add(interesPrepago);
     }
 }

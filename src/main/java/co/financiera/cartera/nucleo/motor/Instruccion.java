@@ -41,8 +41,40 @@ public sealed interface Instruccion {
         }
     }
 
-    /** Después de la cuota de la semana, paga el saldo pendiente completo (caso 5). */
-    record PrepagoTotal() implements Instruccion {
+    /**
+     * Después de la cuota de la semana, paga el saldo pendiente completo (caso 5). En el Excel el
+     * prepago se hace el mismo día de la cuota; {@code diasDesdeUltimaCuota} son los días transcurridos
+     * desde esa cuota hasta el prepago, por los que se cobra interés corriente si la regla
+     * {@code interesPrepagoPorDias} lo pide (Diego, A6, 2026-10-20).
+     */
+    record PrepagoTotal(int diasDesdeUltimaCuota) implements Instruccion {
+
+        public PrepagoTotal {
+            if (diasDesdeUltimaCuota < 0) {
+                throw new IllegalArgumentException("Los días desde la última cuota no pueden ser negativos");
+            }
+        }
+
+        /** Prepago el mismo día de la cuota, como el Excel. */
+        public PrepagoTotal() {
+            this(0);
+        }
+    }
+
+    /**
+     * Se publica una tasa de usura nueva (EA en fracción) durante esta semana (T2/T4, Diego
+     * 2026-10-20). Si la EA vigente del crédito la supera, baja a usura − {@code margenUsura} desde la
+     * cuota siguiente (T1) y la cuota se recalcula como en el caso 2; si no la supera, nada cambia (la
+     * tasa nunca sube). Ver {@link co.financiera.cartera.nucleo.Usura#tasaAjustada}.
+     */
+    record UsuraVigente(BigDecimal usuraEA) implements Instruccion {
+
+        public UsuraVigente {
+            java.util.Objects.requireNonNull(usuraEA, "usuraEA");
+            if (usuraEA.signum() <= 0) {
+                throw new IllegalArgumentException("La usura debe ser positiva");
+            }
+        }
     }
 
     /**

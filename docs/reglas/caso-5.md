@@ -21,6 +21,8 @@ El cliente paga normalmente hasta la cuota 42. En la cuota 43 paga la cuota ordi
 | R-5.11 | Giro a terceros al cierre del mes o del crédito | `SUMIF` de los servicios del mes cuando la fila siguiente está vacía o cambia de mes | `P46:R46` | Sí (`MotorCartera`, paso 6) | celda por celda + `giroATercerosEnLaSemana43EsElMesCompleto` |
 | R-5.12 | Asiento del prepago: débito Caja / crédito Cartera de créditos por el prepago (la cuota va por el asiento de recaudo) | 3.701.573,62 / 3.701.573,62 | `T13:W15` | Sí (`contabilidad/reglas/AbonoExtraordinario`) | `asientoDelPrepagoIgualAlPanelContable` |
 | R-5.13 | El mismo asiento cubre el abono extra de los casos 6 y 7 | débito Caja / crédito Cartera 2.000.000 | `Caso6_MenorPlazo!U11:X13`, `Caso7_MenorCuota!U14:X16` | Sí (`AbonoExtraordinario`) | `asientoDelAbonoExtraDeLosCasos6y7` |
+| R-5.14 | Prepago entre cuotas: se cobra el interés corriente de los días transcurridos desde la última cuota, con la tasa diaria equivalente (el mismo prorrateo de la mora). **Fuente: respuesta de Diego 2026-10-20, pregunta A6.** | `interés = capital vigente × ((1 + tasa diaria)^días − 1)`, tasa diaria = `(1 + EA)^(1/365) − 1` | — (el Excel prepaga el día de la cuota: solo capital, `H46`) | Detrás de `ReglasNegocio.interesPrepagoPorDias = true` con `Instruccion.PrepagoTotal(días)`; `EXCEL` = `false`. Va en `Movimiento.interesPrepago` y en el asiento como Caja / Ingresos por intereses | `RespuestasDiego20OctTest.A6PrepagoConInteresPorDias` |
+| R-5.15 | Prepago con pendientes: paga primero todo lo pendiente por prelación y luego el capital; el crédito queda cancelado. **Fuente: respuesta de Diego 2026-10-20, pregunta A4.** | igual que R-6.12 | — | Detrás de `aplicacionAbono = PRIMERO_PENDIENTES`; con `EXCEL` el prepago solo toma el saldo de capital y lo pendiente sigue (el crédito queda en mora) | `elPrepagoConPendientesLosPagaYCancelaElCredito` |
 
 ## Giro a terceros cuando el crédito termina en la semana 43
 
@@ -31,7 +33,7 @@ El cliente paga normalmente hasta la cuota 42. En la cuota 43 paga la cuota ordi
 
 ## Discrepancias y observaciones del Excel
 
-1. **El prepago no incluye intereses entre cuotas.** El Excel trabaja por semanas completas: el prepago se hace el mismo día de la cuota 43, después de pagarla, así que no hay interés causado pendiente. En la operación real el cliente puede prepagar cualquier día; el motor hoy tampoco causa interés por días.
+1. **El prepago no incluye intereses entre cuotas.** El Excel trabaja por semanas completas: el prepago se hace el mismo día de la cuota 43, después de pagarla, así que no hay interés causado pendiente. En la operación real el cliente puede prepagar cualquier día. Diego (A6, 2026-10-20) pide cobrar el interés de esos días: queda detrás de `interesPrepagoPorDias` (R-5.14) y `EXCEL` lo deja apagado.
 2. **El panel contable solo muestra el prepago** (`T13:W14`). La cuota ordinaria de la semana 43 (con sus servicios) va por el asiento de recaudo normal (caso 1). El asiento del prepago no lleva intereses ni servicios.
 3. **Los "intereses futuros evitados" (U7) solo cuentan el interés corriente.** No incluyen los servicios futuros que tampoco se cobran (43 semanas × 63.034,17 ≈ 2.710.469 de FCC, asistencia y seguro). Es un indicador informativo, no afecta saldos.
 4. **`U6` (pago financiero total del evento) no incluye servicios**, pero `O46` (pago total cliente) sí. Las dos cifras son correctas, pero conviene nombrarlas distinto en el CRM.
@@ -40,8 +42,8 @@ El cliente paga normalmente hasta la cuota 42. En la cuota 43 paga la cuota ordi
 
 ## Preguntas para Diego
 
-- **P5.1** Si el cliente prepaga entre dos cuotas (por ejemplo, el miércoles), ¿el prepago incluye los intereses causados por días desde la última cuota hasta la fecha del pago? ¿Con qué tasa diaria: `(1+EA)^(1/365) − 1`?
-- **P5.2** ¿El prepago exige estar al día? Si hay capital vencido, mora o cobranza, ¿se aplica primero la prelación (cobranza → mora → interés → servicios → capital) y luego el prepago?
+- **P5.1** (Respondida, A6 2026-10-20: sí, con la tasa diaria; R-5.14.) Si el cliente prepaga entre dos cuotas (por ejemplo, el miércoles), ¿el prepago incluye los intereses causados por días desde la última cuota hasta la fecha del pago? ¿Con qué tasa diaria: `(1+EA)^(1/365) − 1`?
+- **P5.2** (Respondida, A4 2026-10-20: se aplica primero la prelación; R-5.15.) ¿El prepago exige estar al día? Si hay capital vencido, mora o cobranza, ¿se aplica primero la prelación (cobranza → mora → interés → servicios → capital) y luego el prepago?
 - **P5.3** ¿Hay algún costo por prepago (comisión, estudio de paz y salvo)? Entendemos que no (Ley 1555 de 2012).
 - **P5.4** Servicios ya facturados del mes: el FCC, la asistencia y el seguro se giran por las semanas causadas. ¿Se debe girar el mes completo al tercero aunque el crédito termine a mitad de mes? ¿Hay devolución al cliente de algo pagado por adelantado?
 - **P5.5** El FCC es una garantía calculada sobre el plazo completo. Al terminar antes, ¿el fondo cobra algo adicional o se deja de causar como en el Excel?

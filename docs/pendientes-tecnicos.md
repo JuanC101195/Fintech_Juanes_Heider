@@ -1,9 +1,9 @@
 # Pendientes técnicos (internos)
 
-Estado al 2026-10-16, con el Excel de Diego del 11 de octubre: **156 pruebas, 0 fallas**. Los 12 casos se reproducen celda por celda.
+Estado al 2026-10-16, con el Excel de Diego del 11 de octubre: **167 pruebas, 0 fallas**. Los 12 casos se reproducen celda por celda.
 
 ## Contabilidad
-1. **Semanas sin asiento en los casos 8 y 12 (después del pago inferior):** pagos que recuperan vencidos y pagan mora sin cobranza. `RecaudoCuota` los excluye, `PagoInferior` solo toma la semana "Pago inferior" y `CobranzaYMora` exige cobranza. Falta una regla general de "recaudo con vencidos" (o generalizar `PagoInferior`) y su reclasificación vencida ↔ vigente semana a semana.
+1. ~~Semanas sin asiento en los casos 8 y 12~~ **Resuelto (2026-10-16):** regla `RecaudoConVencidos` con causación de mora, aplicación por prelación y reclasificación vencida ↔ vigente. Pendiente menor: el caso 9 (`CobranzaYMora`) sigue el panel del Excel, que no reclasifica el capital vencido.
 2. `Movimiento` no guarda el tipo de recuperación (dación / retoma): las reglas lo infieren por el signo del residuo. El desglose de lo extinguido ya viene en `Movimiento.extinguido`.
 3. Nombres de cuenta: el Excel usa "CxC intereses corrientes" en unos paneles y "CxC interés corriente" en otros; "Servicios complementarios" se mapeó a `CXP_SERVICIOS_TERCEROS`.
 

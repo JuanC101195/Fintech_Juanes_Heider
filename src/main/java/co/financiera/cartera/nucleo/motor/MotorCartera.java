@@ -15,6 +15,7 @@ import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.Tasas;
+import co.financiera.cartera.nucleo.Usura;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.CierrePorRecuperacion;
@@ -26,6 +27,8 @@ import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
 import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
+import co.financiera.cartera.nucleo.motor.Instruccion.UsuraVigente;
+import co.financiera.cartera.nucleo.motor.ReglasNegocio.AplicacionAbono;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +71,11 @@ public final class MotorCartera {
         private BigDecimal saldoPlan;
         private int cuotasVencidas;
         private Servicios recaudadoDelMes = Servicios.NINGUNO;
+        /** Usura publicada la semana anterior: rige desde esta cuota (T1, Diego 2026-10-20). */
+        private BigDecimal usuraPorAplicar;
+        /** Lo que el abono extra o el prepago de la semana pagó de pendientes (A4). */
+        private DeudaExtinguida pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
+        private BigDecimal interesPrepago = CERO;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
@@ -97,7 +105,8 @@ public final class MotorCartera {
         private Movimiento desembolso() {
             return new Movimiento(0, 0, "Desembolso", saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
                     CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, saldo, saldo, 0, CERO, CERO, CERO, CERO,
-                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA);
+                    Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
+                    CERO, DeudaExtinguida.NINGUNA, CERO);
         }
 
         private Movimiento semana(int periodo, List<Instruccion> instrucciones) {
@@ -105,6 +114,7 @@ public final class MotorCartera {
             Instruccion pago = ordenes.pago;
             BigDecimal tasa = tasas.periodica();
             BigDecimal saldoInicial = saldo;
+            BigDecimal vencidoInicial = capitalVencido;
             // P7 / P-16: con moraAntesDeRecuperacion (el Excel) toda semana sin pago causa mora y seguro.
             boolean sinPagoSinMora = pago instanceof SinPago(boolean causaMora) && !causaMora
                     && !escenario.reglas().moraAntesDeRecuperacion();
@@ -124,9 +134,12 @@ public final class MotorCartera {
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)).
             BigDecimal cuotaDelPeriodo = cuota;
 
-            // 4. Abono extraordinario o prepago, después de la cuota del periodo.
+            // 4. Abono extraordinario o prepago, después de la cuota del periodo. Con PRIMERO_PENDIENTES (A4)
+            // pagan antes lo pendiente de semanas anteriores; nunca adelantan intereses ni servicios futuros.
+            pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
+            interesPrepago = CERO;
             BigDecimal abonoAplicado = ordenes.abono == null ? CERO : aplicarAbono(periodo, ordenes.abono, tasa);
-            BigDecimal prepagoCapital = ordenes.prepago ? prepagar() : CERO;
+            BigDecimal prepagoCapital = ordenes.prepago == null ? CERO : prepagar(ordenes.prepago);
 
             // 5. Cierre por recuperación de la moto: su valor extingue lo pendiente por prelación. La fila
             // del cierre reporta el capital vencido que se extinguió (Caso3 Z del evento).
@@ -137,8 +150,12 @@ public final class MotorCartera {
             BigDecimal pendiente = sumar(capitalVencido, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total());
             EstadoCredito estado = estado(ordenes.cierre != null, pendiente);
             contarCuotasVencidas(pagoCompleto, pago, pendiente);
+            // A4: un abono o prepago que pagó todo lo pendiente deja al cliente al día.
+            if (pendientesPagadosExtra.total().signum() > 0 && esCero(pendiente)) {
+                cuotasVencidas = 0;
+            }
             Servicios recaudado = reparto.servicios().mas(cierre.servicios());
-            Servicios giro = girar(periodo, recaudado, estado);
+            Servicios giro = girar(periodo, recaudado.mas(pendientesPagadosExtra.servicios()), estado);
 
             String evento = evento(ordenes, periodo, pagoCompleto, dias, recibido);
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
@@ -147,25 +164,46 @@ public final class MotorCartera {
                     reparto.capital(), abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total(),
                     vencidoReportado, max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(),
                     cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
-                    cxcServicios, cierre.extinguido());
+                    cxcServicios, cierre.extinguido(), vencidoInicial, pendientesPagadosExtra, interesPrepago);
         }
 
         /** 1. Lee las instrucciones del periodo; el cambio de tasa se aplica al leerlo (casos 2 y 10). */
         private Ordenes leer(int periodo, List<Instruccion> instrucciones) {
             Ordenes ordenes = new Ordenes();
+            // T1/T2/T4 (Diego 2026-10-20): la usura publicada la semana anterior rige desde esta cuota.
+            if (usuraPorAplicar != null) {
+                ordenes.cambioTasa = ajustarPorUsura(periodo, usuraPorAplicar);
+                usuraPorAplicar = null;
+            }
             for (Instruccion i : instrucciones) {
                 switch (i) {
                     case CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) -> {
                         cambiarTasa(periodo, nuevaTasaEA, modalidad);
                         ordenes.cambioTasa = true;
                     }
+                    case UsuraVigente(BigDecimal usuraEA) -> usuraPorAplicar = usuraEA;
                     case AbonoExtra a -> ordenes.abono = a;
-                    case PrepagoTotal t -> ordenes.prepago = true;
+                    case PrepagoTotal t -> ordenes.prepago = t;
                     case CierrePorRecuperacion c -> ordenes.cierre = c;
                     default -> ordenes.pago = i;
                 }
             }
             return ordenes;
+        }
+
+        /**
+         * Ajuste por usura como evento de tasa: la EA vigente baja a usura − margen solo si la supera
+         * ({@link Usura#tasaAjustada(BigDecimal, BigDecimal, BigDecimal)}) y la cuota se recalcula como en el
+         * caso 2 (PMT con las cuotas restantes y el saldo). Devuelve si la tasa cambió.
+         */
+        private boolean ajustarPorUsura(int periodo, BigDecimal usuraEA) {
+            BigDecimal actual = tasas.efectivaAnual();
+            BigDecimal nueva = Usura.tasaAjustada(actual, usuraEA, escenario.reglas().margenUsura());
+            if (nueva.compareTo(actual) == 0) {
+                return false;
+            }
+            cambiarTasa(periodo, nueva, ModalidadCambioTasa.MISMA_FECHA_FINAL);
+            return true;
         }
 
         /**
@@ -297,23 +335,102 @@ public final class MotorCartera {
             saldoPlan = noNegativo(restar(saldoPlan, c.capitalContractual()));
         }
 
-        /** 4. Abono extraordinario 100 % a capital; devuelve lo aplicado. */
-        private BigDecimal aplicarAbono(int periodo, AbonoExtra abono, BigDecimal tasa) {
-            // P-14: Diego (2026-10-16) no acepta abonos mayores que el saldo; el Excel los recortaba.
-            if (abono.valor().compareTo(sumar(saldo, Calc.EPSILON_SALDO)) > 0) {
-                throw new AbonoMayorQueElSaldoException(periodo, abono.valor(), saldo);
+        /**
+         * 4. Abono extraordinario; devuelve lo aplicado a capital vigente. Con SOLO_CAPITAL (Excel) va
+         * 100 % a capital. Con PRIMERO_PENDIENTES (A4, Diego 2026-10-20) paga antes los pendientes de
+         * semanas anteriores por prelación y el resto va a capital: como la cuota del periodo ya se
+         * aplicó, solo quedan CxC ya causadas y nunca se adelantan intereses ni servicios futuros.
+         */
+        private BigDecimal aplicarAbono(int periodo, AbonoExtra abono, BigDecimal tasaVigente) {
+            boolean primeroPendientes = escenario.reglas().aplicacionAbono() == AplicacionAbono.PRIMERO_PENDIENTES;
+            // P-14: Diego (2026-10-16) no acepta abonos mayores que el saldo; el Excel los recortaba. Con
+            // pendientes, el saldo del crédito incluye lo que se debe de semanas anteriores.
+            BigDecimal maximo = primeroPendientes ? sumar(saldo, pendientesSinCapital()) : saldo;
+            if (abono.valor().compareTo(sumar(maximo, Calc.EPSILON_SALDO)) > 0) {
+                throw new AbonoMayorQueElSaldoException(periodo, abono.valor(), maximo);
             }
-            BigDecimal aplicado = min(abono.valor(), saldo);
+            BigDecimal restante = abono.valor();
+            if (primeroPendientes) {
+                pendientesPagadosExtra = pagarPendientes(restante);
+                restante = noNegativo(restar(restante, pendientesPagadosExtra.total()));
+            }
+            BigDecimal aplicado = min(restante, saldo);
             saldo = restar(saldo, aplicado);
             if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasVigentes - periodo > 0 && !esCero(saldo)) {
-                cuota = Amortizacion.cuotaFija(tasa, cuotasVigentes - periodo, saldo);
+                // A5 (Diego 2026-10-20): la cuota nueva usa la tasa vigente; el abono no cambia la tasa (D-7.1).
+                // Con PRIMERO_PENDIENTES la cuota nueva amortiza solo el capital vigente: el vencido que el
+                // abono no alcanzó a cubrir sigue cobrándose aparte.
+                BigDecimal base = primeroPendientes ? noNegativo(restar(saldo, capitalVencido)) : saldo;
+                cuota = Amortizacion.cuotaFija(tasaVigente, cuotasVigentes - periodo, base);
             }
             saldoPlan = restar(saldo, capitalVencido);
             return aplicado;
         }
 
-        /** 4. Prepago total; devuelve el capital prepagado. */
-        private BigDecimal prepagar() {
+        /** Pendientes de semanas anteriores distintos del capital: cobranza, mora, interés y servicios. */
+        private BigDecimal pendientesSinCapital() {
+            return sumar(cxcCobranza, cxcMora, cxcInteres, cxcServicios.total());
+        }
+
+        /**
+         * A4: aplica {@code disponible} a lo pendiente por la prelación de Inputs ⑥: cobranza → mora →
+         * interés corriente → fondo → asistencia → seguro → capital vencido (con CAPITAL_ANTES_DE_SERVICIOS
+         * el capital vencido va antes de los servicios, como en el reparto de la cuota). Devuelve lo pagado.
+         */
+        private DeudaExtinguida pagarPendientes(BigDecimal disponible) {
+            BigDecimal restante = disponible;
+            BigDecimal cobranza = min(restante, cxcCobranza);
+            restante = restar(restante, cobranza);
+            BigDecimal mora = min(restante, cxcMora);
+            restante = restar(restante, mora);
+            BigDecimal interes = min(restante, cxcInteres);
+            restante = restar(restante, interes);
+            BigDecimal vencido = CERO;
+            boolean capitalAntes = escenario.reglas().prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS;
+            if (capitalAntes) {
+                vencido = min(restante, capitalVencido);
+                restante = restar(restante, vencido);
+            }
+            BigDecimal fondo = min(restante, cxcServicios.fondoGarantias());
+            restante = restar(restante, fondo);
+            BigDecimal asistencia = min(restante, cxcServicios.asistencia());
+            restante = restar(restante, asistencia);
+            BigDecimal seguro = min(restante, cxcServicios.seguro());
+            restante = restar(restante, seguro);
+            if (!capitalAntes) {
+                vencido = min(restante, capitalVencido);
+            }
+            Servicios servicios = new Servicios(fondo, asistencia, seguro);
+            cxcCobranza = noNegativo(restar(cxcCobranza, cobranza));
+            cxcMora = noNegativo(restar(cxcMora, mora));
+            cxcInteres = noNegativo(restar(cxcInteres, interes));
+            cxcServicios = cxcServicios.menos(servicios).noNegativo();
+            capitalVencido = noNegativo(restar(capitalVencido, vencido));
+            if (esCero(capitalVencido)) {
+                capitalVencido = CERO;
+            }
+            saldo = noNegativo(restar(saldo, vencido));
+            return new DeudaExtinguida(cobranza, mora, interes, servicios, vencido);
+        }
+
+        /**
+         * 4. Prepago total; devuelve el capital prepagado. A6: con interesPrepagoPorDias se cobra además
+         * el interés corriente de los días desde la última cuota, saldo × ((1 + tasa diaria)^días − 1),
+         * el mismo prorrateo diario de la mora; el Excel prepaga el día de la cuota y no lo cobra. Con
+         * PRIMERO_PENDIENTES (A4) el prepago paga primero todo lo pendiente.
+         */
+        private BigDecimal prepagar(PrepagoTotal prepago) {
+            ReglasNegocio reglas = escenario.reglas();
+            int dias = prepago.diasDesdeUltimaCuota();
+            if (reglas.interesPrepagoPorDias() && dias > 0) {
+                BigDecimal base = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
+                        ? noNegativo(restar(saldo, capitalVencido)) : saldo;
+                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
+                interesPrepago = multiplicar(base, factorDias);
+            }
+            if (reglas.aplicacionAbono() == AplicacionAbono.PRIMERO_PENDIENTES) {
+                pendientesPagadosExtra = pendientesPagadosExtra.mas(pagarPendientes(sumar(saldo, pendientesSinCapital())));
+            }
             BigDecimal prepagado = saldo;
             saldo = CERO;
             saldoPlan = CERO;
@@ -387,7 +504,7 @@ public final class MotorCartera {
             if (o.cierre != null) {
                 return "Evento de cierre";
             }
-            if (o.prepago) {
+            if (o.prepago != null) {
                 return "Cuota + prepago total";
             }
             if (o.abono != null) {
@@ -418,7 +535,8 @@ public final class MotorCartera {
             if (dias > 0) {
                 return "Pago tardío + cobranza";
             }
-            if (!completo && recibido.signum() > 0) {
+            // La última cuota contractual puede ser menor porque liquida el saldo: eso no es un pago inferior.
+            if (!completo && recibido.signum() > 0 && !(pago instanceof PagoContractual)) {
                 return "Pago inferior";
             }
             return periodo == cuotasVigentes ? "Pago final" : "Pago normal";
@@ -428,7 +546,7 @@ public final class MotorCartera {
         private static final class Ordenes {
             private Instruccion pago = PagoContractual.A_TIEMPO;
             private AbonoExtra abono;
-            private boolean prepago;
+            private PrepagoTotal prepago;
             private boolean cambioTasa;
             private CierrePorRecuperacion cierre;
         }

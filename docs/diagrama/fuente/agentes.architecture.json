@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "Motor de cartera · 9 agentes",
-    "subtitle": "Orquestador + 9 agentes de IA en git worktrees · 8 al 16 oct 2026",
+    "title": "Motor de cartera · 9 agentes y 3 casos nuevos",
+    "subtitle": "Casos 1 a 9: orquestador + 9 agentes de IA en git worktrees (8 oct) · casos 10 a 12: sesión principal (16 oct)",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -587,7 +587,7 @@
       "id": "excel11",
       "type": "frontend",
       "label": "Excel de Diego · 11 oct",
-      "sublabel": "12 casos · prelación · 156 pruebas",
+      "sublabel": "casos 10-12 · sesión principal · 167 pruebas",
       "tag": "16 oct",
       "pos": [
         1440,
@@ -1177,7 +1177,8 @@
         "Pago inicial opcional que digita el asesor",
         "Abono sin elección → menor plazo; mayor que el saldo → rechazo",
         "Mora antes de dación y retoma; vencido paga solo mora",
-        "Excel del 11 oct: 12 casos al centavo, 156 pruebas"
+        "Excel del 11 oct: casos 10, 11 y 12 hechos por la sesión principal (cambiaban el motor compartido)",
+        "12 casos al centavo y recaudo con vencidos: 167 pruebas"
       ]
     },
     {
