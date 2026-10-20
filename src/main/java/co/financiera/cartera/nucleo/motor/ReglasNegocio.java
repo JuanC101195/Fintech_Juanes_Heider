@@ -17,6 +17,12 @@ import java.math.BigDecimal;
  * @param moraAntesDeRecuperacion  si las semanas sin pago antes de una dación o retoma causan mora
  *                                 y servicios como cualquier atraso (P7). Diego (2026-10-16, P-16):
  *                                 sí. El Excel (casos 3 y 4) solo acumula interés corriente.
+ * @param aplicacionAbono          cómo se aplica un abono extra o un prepago cuando hay pendientes de
+ *                                 semanas anteriores (A4). El Excel solo modela clientes al día.
+ * @param interesPrepagoPorDias    si el prepago total cobra el interés corriente de los días desde la
+ *                                 última cuota (A6). El Excel prepaga el mismo día de la cuota.
+ * @param margenUsura              puntos porcentuales de EA por debajo de la usura a los que se lleva
+ *                                 un crédito que la supera (T2): 1 = 100 pb = 0,01 de EA
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -25,14 +31,23 @@ public record ReglasNegocio(
         BigDecimal topeCobranzaPorPago,
         BaseServicios baseServicios,
         boolean serviciosDespuesDelPlazo,
-        boolean moraAntesDeRecuperacion) {
+        boolean moraAntesDeRecuperacion,
+        AplicacionAbono aplicacionAbono,
+        boolean interesPrepagoPorDias,
+        BigDecimal margenUsura) {
+
+    /** Margen bajo la usura acordado con negocio y confirmado por Diego (T2, 2026-10-20): 1 punto de EA. */
+    public static final BigDecimal MARGEN_USURA_POR_DEFECTO = BigDecimal.ONE;
 
     /**
      * Comportamiento del Excel de Diego (versión del 11 de octubre): interés corriente sobre el capital
-     * vigente (P-03) y mora y servicios en las semanas sin pago antes de una dación o retoma (P-16).
+     * vigente (P-03) y mora y servicios en las semanas sin pago antes de una dación o retoma (P-16). El
+     * abono extra va 100 % a capital (en el Excel nadie abona con pendientes) y el prepago se hace el día
+     * de la cuota (sin días).
      */
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
-            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true);
+            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true,
+            AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -62,9 +77,21 @@ public record ReglasNegocio(
         SALDO
     }
 
+    public enum AplicacionAbono {
+        /** Todo el abono va a capital; lo pendiente sigue pendiente (el motor con el Excel, que no tiene el caso). */
+        SOLO_CAPITAL,
+        /**
+         * Diego (A4, 2026-10-20): primero los pendientes de semanas anteriores por la prelación de Inputs ⑥
+         * (cobranza → mora → interés corriente → fondo → asistencia → seguro → capital vencido) y el resto a
+         * capital vigente. Nunca se adelantan intereses ni servicios de cuotas futuras.
+         */
+        PRIMERO_PENDIENTES
+    }
+
     /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
     public static final java.util.Set<String> CLAVES = java.util.Set.of("prelacion", "formulaMora", "baseInteres",
-            "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion");
+            "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
+            "aplicacionAbono", "interesPrepagoPorDias", "margenUsura");
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -94,41 +121,69 @@ public record ReglasNegocio(
         if ((v = config.get("moraAntesDeRecuperacion")) != null) {
             r = r.conMoraAntesDeRecuperacion(Boolean.parseBoolean(v.trim()));
         }
+        if ((v = config.get("aplicacionAbono")) != null) {
+            r = r.conAplicacionAbono(AplicacionAbono.valueOf(v.trim()));
+        }
+        if ((v = config.get("interesPrepagoPorDias")) != null) {
+            r = r.conInteresPrepagoPorDias(Boolean.parseBoolean(v.trim()));
+        }
+        if ((v = config.get("margenUsura")) != null && !v.isBlank()) {
+            r = r.conMargenUsura(new BigDecimal(v.trim()));
+        }
         return r;
     }
 
     public ReglasNegocio conPrelacion(OrdenPrelacion valor) {
         return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
         return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
         return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
-                moraAntesDeRecuperacion);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
     }
 
     public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                valor);
+                valor, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+    }
+
+    public ReglasNegocio conAplicacionAbono(AplicacionAbono valor) {
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura);
+    }
+
+    public ReglasNegocio conInteresPrepagoPorDias(boolean valor) {
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura);
+    }
+
+    /** Margen bajo la usura en puntos porcentuales de EA (1 = 100 pb); no puede ser negativo. */
+    public ReglasNegocio conMargenUsura(BigDecimal valor) {
+        if (valor == null || valor.signum() < 0) {
+            throw new IllegalArgumentException("El margen bajo la usura debe ser cero o positivo: " + valor);
+        }
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor);
     }
 }

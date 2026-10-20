@@ -22,6 +22,17 @@ import java.util.Optional;
  *
  * Los dos conceptos van en líneas separadas para conservar la explicación del Excel; si una semana
  * no tiene ninguno, la regla no genera asiento.
+ *
+ * <p>Fuera del Excel (Diego, 2026-10-20):
+ * <ul>
+ *   <li>A4 · con {@code aplicacionAbono = PRIMERO_PENDIENTES} el abono o el prepago paga antes lo
+ *       pendiente de semanas anteriores ({@link Movimiento#pendientesPagadosExtra()}): débito Caja
+ *       contra cada CxC por prelación (cobranza, mora, interés corriente), CxP servicios a terceros por
+ *       los servicios recaudados (como el recaudo con vencidos) y Cartera capital vencida por el capital
+ *       vencido recuperado.</li>
+ *   <li>A6 · el interés corriente de los días del prepago ({@link Movimiento#interesPrepago()}): débito
+ *       Caja / crédito Ingresos por intereses.</li>
+ * </ul>
  */
 public final class AbonoExtraordinario implements ReglaContable {
 
@@ -32,6 +43,16 @@ public final class AbonoExtraordinario implements ReglaContable {
                 Linea.credito(Cuenta.CARTERA_VIGENTE, m.prepagoCapital(),
                         "Extinción del saldo de capital después de la cuota ordinaria"),
                 Linea.debito(Cuenta.CAJA, m.abonoExtra(), "Abono extraordinario recibido"),
-                Linea.credito(Cuenta.CARTERA_VIGENTE, m.abonoExtra(), "Aplicación 100% a capital")));
+                Linea.credito(Cuenta.CARTERA_VIGENTE, m.abonoExtra(), "Aplicación 100% a capital"),
+                Linea.debito(Cuenta.CAJA, m.pendientesPagadosExtra().total(), "Recaudo extraordinario aplicado a pendientes"),
+                Linea.credito(Cuenta.CXC_GASTOS_COBRANZA, m.pendientesPagadosExtra().cobranza(), "Pendiente de cobranza (prelación 1)"),
+                Linea.credito(Cuenta.CXC_INTERES_MORA, m.pendientesPagadosExtra().mora(), "Pendiente de mora (prelación 2)"),
+                Linea.credito(Cuenta.CXC_INTERES_CORRIENTE, m.pendientesPagadosExtra().interesCorriente(),
+                        "Pendiente de interés corriente (prelación 3)"),
+                Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS, m.pendientesPagadosExtra().servicios().total(),
+                        "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"),
+                Linea.credito(Cuenta.CARTERA_VENCIDA, m.pendientesPagadosExtra().capital(), "Capital vencido recuperado (prelación 7)"),
+                Linea.debito(Cuenta.CAJA, m.interesPrepago(), "Interés corriente de los días hasta el prepago"),
+                Linea.credito(Cuenta.INGRESOS_INTERESES, m.interesPrepago(), "Interés corriente causado por días")));
     }
 }
