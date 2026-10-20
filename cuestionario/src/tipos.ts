@@ -14,6 +14,8 @@ export interface Opcion {
   pideValor?: boolean
   /** Si la opción necesita explicación en texto. */
   pideTexto?: boolean
+  /** Si la opción exige escribir la respuesta en el comentario (opción PENDIENTE). */
+  pideComentario?: boolean
   /** Opción del archivo de escenarios con que se previsualiza. */
   escenario?: string
 }
@@ -49,6 +51,8 @@ export interface Respondida {
   /** Código de la pregunta en el documento de preguntas para el PO (P-01 a P-27). */
   referencia: string
   respuesta: string
+  /** Salvedad que sigue vigente aunque ya se contestó (por ejemplo, una política aún pendiente). */
+  nota?: string
 }
 
 export interface Respuesta {

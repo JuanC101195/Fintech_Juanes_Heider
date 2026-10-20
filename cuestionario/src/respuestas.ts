@@ -33,11 +33,18 @@ export function useEstado() {
   return [estado, setEstado] as const
 }
 
-/** Una pregunta está completa si tiene opción y, cuando la opción lo pide, valor o texto. */
+/**
+ * Una pregunta está completa si tiene opción y, cuando la opción lo pide, valor o texto.
+ * También lo está si solo tiene comentario escrito (la respuesta real va ahí), y la opción
+ * PENDIENTE ("respondo en el comentario") exige ese comentario o el detalle.
+ */
 export function estaCompleta(p: Pregunta, r: Respuesta | undefined): boolean {
-  if (!r?.codigo) return false
+  if (!r) return false
+  const hayComentario = Boolean(r.comentario?.trim())
+  if (!r.codigo) return hayComentario
   const opcion = p.opciones.find((o) => o.codigo === r.codigo)
   if (!opcion) return false
+  if (opcion.pideComentario) return hayComentario || Boolean(r.texto?.trim())
   if (opcion.pideValor && (r.valor === undefined || Number.isNaN(r.valor))) return false
   if (opcion.pideTexto && !r.texto?.trim()) return false
   return true

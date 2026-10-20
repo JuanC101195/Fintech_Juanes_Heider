@@ -17,6 +17,7 @@ export function PreguntaTarjeta({ pregunta: p, respuesta, onCambio }: Props) {
   const elegida = p.opciones.find((o) => o.codigo === r.codigo)
   const prev = previsualizacion(p.previsualizacion)
   const completa = estaCompleta(p, respuesta)
+  const pendiente = Boolean(elegida?.pideComentario)
   const poner = (cambios: Partial<Respuesta>) => onCambio({ ...r, ...cambios })
 
   return (
@@ -127,8 +128,9 @@ export function PreguntaTarjeta({ pregunta: p, respuesta, onCambio }: Props) {
         </div>
       )}
 
-      <details open={Boolean(r.comentario)}>
-        <summary className="cursor-pointer text-label-md font-semibold text-primary">Agregar un comentario</summary>
+      <details open={Boolean(r.comentario) || pendiente}>
+        <summary className="cursor-pointer text-label-md font-semibold text-primary">{pendiente ? 'Escriba aquí su respuesta' : 'Agregar un comentario'}</summary>
+        {pendiente && !r.comentario?.trim() && <p className="mt-space-xs text-label-md text-on-surface-variant">Esta pregunta cuenta como respondida cuando escriba su respuesta en el comentario.</p>}
         <textarea
           aria-label={`Comentario de la pregunta ${p.id}`}
           rows={2}

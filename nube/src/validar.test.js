@@ -22,6 +22,16 @@ test('acepta un envío del cuestionario y arma la clave de la fila', () => {
   assert.strictEqual(entidad.nombre, 'Diego González')
 })
 
+test('acepta el código PENDIENTE y envíos sin opción pero con comentario', () => {
+  const filas = JSON.stringify([
+    ['A3', 'Abonos y prepago', 'Mínimo', 'PENDIENTE', 'Respondo en el comentario / queda pendiente', '', '', '', 'Mínimo de 50.000', '', 'Sí'],
+    ['T5', 'Cambio de tasa y usura', 'Saldo', '', '', '', '', '', 'Depende de la cláusula', '', 'Sí'],
+  ])
+  const { entidad, error } = validar({ ...valido, completas: 2, total: 5, filas }, 1000)
+  assert.strictEqual(error, undefined)
+  assert.strictEqual(entidad.filas, filas)
+})
+
 test('rechaza sesiones con caracteres raros, avances imposibles y respuestas que no son tabla', () => {
   assert.ok(validar({ ...valido, sesion: '../x' }).error)
   assert.ok(validar({ ...valido, completas: 30 }).error)

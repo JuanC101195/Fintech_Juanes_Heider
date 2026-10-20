@@ -1,4 +1,4 @@
-import type { Pregunta, Respondida } from './tipos'
+import type { Opcion, Pregunta, Respondida } from './tipos'
 
 // Preguntas que salieron de reproducir el Excel "Casos Operaciones V2" celda por celda en el motor.
 // Los códigos de opción y las claves de "ajustes" los lee el importador del motor: no cambiarlos
@@ -13,6 +13,16 @@ export const BLOQUES = [
   'Contabilidad',
   'Ajustes al Excel',
 ] as const
+
+/** Código estable de la opción común a todas las preguntas: la respuesta real va en el comentario. */
+export const CODIGO_PENDIENTE = 'PENDIENTE'
+
+const OPCION_PENDIENTE: Opcion = {
+  codigo: CODIGO_PENDIENTE,
+  texto: 'Respondo en el comentario / queda pendiente',
+  detalle: 'No cambia nada en el motor. Escriba su respuesta en el comentario para que cuente como completa.',
+  pideComentario: true,
+}
 
 const [PAGOS, SERVICIOS, ABONOS, TASA, RECUPERACION, CONTABILIDAD, EXCEL] = BLOQUES
 
@@ -95,6 +105,140 @@ const BASE: Pregunta[] = [
         escenario: 'saldo-vigente',
         ajustes: { baseInteres: 'SALDO_VIGENTE' },
       },
+    ],
+  },
+  {
+    id: 'PPER',
+    bloque: PAGOS,
+    titulo: '¿Con qué periodicidades se ofrecen los créditos y cómo se calculan?',
+    contexto:
+      'Usted dijo que los créditos pueden ser semanales, quincenales o mensuales según la negociación. Esta pregunta cubre: qué periodicidades se ofrecen, cómo se convierte la tasa E.A. a la tasa del periodo y si los servicios mensuales (fondo de garantías, asistencia, seguro) se prorratean al periodo. Escriba esas respuestas en el detalle o en el comentario. Las demás decisiones (vencimientos, plazo, redondeo, mora, prepago…) están en las preguntas PPER-1 a PPER-10. No hace falta un Excel nuevo: el motor generará un plan quincenal y uno mensual de ejemplo para que usted los revise.',
+    excelHoy: 'Solo cuotas semanales; el Excel no modela cuotas quincenales ni mensuales.',
+    opciones: [
+      { codigo: 'solo-semanal', texto: 'Solo semanal, como el Excel', esExcel: true },
+      { codigo: 'semanal-quincenal-mensual', texto: 'Semanal, quincenal y mensual según la negociación', detalle: 'Indique en el detalle las periodicidades, la conversión de la tasa y el prorrateo de servicios.', pideTexto: true },
+      { codigo: 'otra', texto: 'Otra combinación de periodicidades', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-1',
+    bloque: PAGOS,
+    titulo: '¿En qué día vencen las cuotas quincenales y las mensuales?',
+    contexto: 'Define el calendario de vencimientos y desde cuándo corre el atraso.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'quincenal-15-y-ultimo', texto: 'Quincenal: el 15 y el último día del mes; mensual: el mismo día del desembolso' },
+      { codigo: 'cada-15-dias', texto: 'Quincenal: cada 15 días desde el desembolso; mensual: el mismo día de cada mes' },
+      { codigo: 'cada-2-martes', texto: 'Quincenal: cada 2 martes (o el día fijo de la semana); mensual: un día fijo del mes' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-2',
+    bloque: PAGOS,
+    titulo: '¿El plazo se pacta en meses o en número de cuotas?',
+    contexto: 'Con cuotas semanales el plazo es un número de cuotas (104). Con quincenal o mensual hay que saber cuál es el dato que se digita.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'meses', texto: 'En meses; el número de cuotas se calcula' },
+      { codigo: 'cuotas', texto: 'En número de cuotas' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-3',
+    bloque: PAGOS,
+    titulo: '¿Cómo se redondea el número de cuotas cuando el plazo se pacta en meses?',
+    contexto: 'Hoy el Excel calcula ROUNDDOWN(meses × periodos/12): siempre hacia abajo.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'hacia-abajo', texto: 'Hacia abajo, como el Excel: ROUNDDOWN(meses × periodos/12)' },
+      { codigo: 'hacia-arriba', texto: 'Hacia arriba' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-4',
+    bloque: PAGOS,
+    titulo: '¿La periodicidad quincenal entra al catálogo de Inputs? ¿La diaria sigue siendo una opción real?',
+    contexto: 'El catálogo de Inputs define qué periodicidades se pueden escoger en B13.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'quincenal-si-diaria-si', texto: 'Quincenal entra y la diaria se mantiene' },
+      { codigo: 'quincenal-si-diaria-no', texto: 'Quincenal entra y la diaria se retira' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-5',
+    bloque: PAGOS,
+    titulo: 'En mensual, ¿la mora de un periodo se cuenta por el periodo nominal o por los días reales del mes (28 a 31)? ¿Desde qué día corre el atraso?',
+    contexto: 'Cambia el valor de la mora de cada cuota mensual vencida.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'periodo-nominal', texto: 'Por el periodo nominal (30 días)' },
+      { codigo: 'dias-reales', texto: 'Por los días reales del mes (28 a 31)' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-6',
+    bloque: PAGOS,
+    titulo: '¿Cómo se expresa el plazo límite de recuperación: en periodos, en meses o en semanas?',
+    contexto: 'Hoy el plazo límite se da en semanas (por ejemplo, 120). Con otras periodicidades debe tener una sola unidad.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'periodos', texto: 'En periodos de la periodicidad del crédito' },
+      { codigo: 'meses', texto: 'En meses' },
+      { codigo: 'semanas', texto: 'En semanas, para todas las periodicidades' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-7',
+    bloque: PAGOS,
+    titulo: 'En un prepago a mitad de periodo, ¿se cobran los días transcurridos?',
+    contexto: 'Define si el interés corre hasta la fecha del prepago o hasta el cierre del periodo.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'si-dias-transcurridos', texto: 'Sí, se cobra el interés de los días transcurridos' },
+      { codigo: 'no', texto: 'No, solo se liquida la cuota del periodo' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-8',
+    bloque: PAGOS,
+    titulo: 'En mensual, ¿cuándo cuenta una cuota como vencida y cómo se cobra la cobranza?',
+    contexto: 'Hoy la cobranza es de 3.000 por cada día de atraso en cuotas semanales.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'dia-siguiente-3000', texto: 'Vencida desde el día siguiente al vencimiento; cobranza de 3.000 por día' },
+      { codigo: 'otra', texto: 'Otra regla (vencimiento y cobranza)', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-9',
+    bloque: PAGOS,
+    titulo: 'Los "4 periodos de espera" del caso 11, ¿se cuentan en periodos o en días?',
+    contexto: 'Con cuotas semanales 4 periodos son 28 días; con mensuales serían 4 meses.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'periodos', texto: 'En periodos de la periodicidad del crédito' },
+      { codigo: 'dias', texto: 'En días (28), sea cual sea la periodicidad' },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'PPER-10',
+    bloque: PAGOS,
+    titulo: '¿La periodicidad puede cambiar durante la vida del crédito?',
+    contexto: 'Si puede cambiar, hay que recalcular el plan restante con la nueva periodicidad.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'no', texto: 'No, queda fija desde el desembolso' },
+      { codigo: 'si', texto: 'Sí, por acuerdo con el cliente', pideTexto: true },
+      { codigo: 'otra', texto: 'Otra regla', pideTexto: true },
     ],
   },
   {
@@ -278,7 +422,8 @@ const BASE: Pregunta[] = [
     id: 'A3',
     bloque: ABONOS,
     titulo: '¿Hay un monto mínimo para un abono extra?',
-    contexto: 'Evita recalcular el plan por abonos de muy bajo valor.',
+    contexto:
+      'Evita recalcular el plan por abonos de muy bajo valor. Su comentario del 20 de octubre cubre en qué orden se aplica el abono (prelación), pero no dice cuál es el monto mínimo: ¿lo hay o no, y de cuánto?',
     excelHoy: 'No lo define.',
     opciones: [
       { codigo: 'sin-minimo', texto: 'Sin mínimo', ajustes: { abonoMinimo: '0' } },
@@ -375,7 +520,8 @@ const BASE: Pregunta[] = [
     id: 'T5',
     bloque: TASA,
     titulo: 'Si el cliente está en mora cuando cambia la tasa, ¿sobre qué saldo se recalcula la cuota?',
-    contexto: 'El Excel solo modela el cambio de tasa con el cliente al día.',
+    contexto:
+      'El Excel solo modela el cambio de tasa con el cliente al día. Usted indicó que hay que investigar las cláusulas aceleratorias: cuando se sepa qué dicen, ¿la cuota se recalcula sobre todo el saldo o solo sobre el capital vigente?',
     excelHoy: 'No lo define.',
     opciones: [
       { codigo: 'saldo-total', texto: 'Sobre el saldo total (vigente + vencido)' },
@@ -400,7 +546,8 @@ const BASE: Pregunta[] = [
     id: 'R2',
     bloque: RECUPERACION,
     titulo: '¿Se descuentan costos de la recuperación (grúa, bodegaje, avalúo, trámites)?',
-    contexto: 'Hoy el valor de la moto se aplica completo a la deuda.',
+    contexto:
+      'Hoy el valor de la moto se aplica completo a la deuda. Usted dijo que estos costos van dentro de la política de gastos de cobranza, que sigue pendiente: mientras tanto, ¿se descuentan o no del valor de la moto, y de cuánto?',
     excelHoy: 'No se descuenta nada.',
     opciones: [
       { codigo: 'no', texto: 'No', esExcel: true },
@@ -470,13 +617,13 @@ const BASE: Pregunta[] = [
   {
     id: 'C5',
     bloque: CONTABILIDAD,
-    titulo: 'El pago inicial, ¿se resta del valor total de la operación o solo de la moto más el alistamiento?',
+    titulo: 'El pago inicial se resta del total de la operación (moto + alistamiento): ¿el GPS y los gastos comerciales hacen parte del alistamiento?',
     contexto:
-      'En su ejemplo la inicial se resta de "monto de la moto + gastos de alistamiento" (6.500.000 − 700.000). El valor total del Excel incluye además GPS y plataforma (80.000) y gastos comerciales (60.000). Hoy el motor la resta del valor total.',
+      'Usted dijo que "el total de la operación es moto + alistamiento". En su ejemplo la inicial se resta de 6.500.000 + 700.000. El valor total del Excel incluye además GPS y plataforma (80.000) y gastos comerciales (60.000). ¿Esos dos conceptos hacen parte del alistamiento, o quedan fuera del total sobre el que se resta el pago inicial? Hoy el motor la resta del valor total con todo incluido.',
     excelHoy: 'El Excel no tiene pago inicial.',
     opciones: [
-      { codigo: 'valor-total', texto: 'Del valor total: moto + alistamiento + GPS + gastos comerciales' },
-      { codigo: 'moto-alistamiento', texto: 'Solo de moto + alistamiento; GPS y gastos comerciales se financian siempre' },
+      { codigo: 'valor-total', texto: 'GPS y gastos comerciales hacen parte del alistamiento: se resta del valor total (moto + alistamiento + GPS + gastos comerciales)' },
+      { codigo: 'moto-alistamiento', texto: 'GPS y gastos comerciales quedan fuera: la inicial se resta solo de moto + alistamiento y ellos se financian siempre' },
       { codigo: 'otra', texto: 'Otra forma', pideTexto: true },
     ],
   },
@@ -549,11 +696,49 @@ const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   S5: { referencia: 'Excel 11 oct', respuesta: 'Se gira lo recaudado de cada servicio: el Pago FCC del mes es la suma de lo aplicado al fondo.' },
 }
 
-export const TODAS: Pregunta[] = BASE.map((p) =>
-  RESPONDIDAS_16_OCT[p.id] ? { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } } : p,
-)
+// Respondidas el 20 de octubre de 2026 con respuestas consistentes. El detalle de cada una está en
+// el documento de respuestas de Diego. PTOPE, PCOB y PDIAS dependen de la política de gastos de
+// cobranza: se contestaron, pero la política sigue pendiente.
+const NOTA_COBRANZA = 'Pendiente: política de gastos de cobranza.'
+const REF_20_OCT = 'Respuestas 20 oct'
+const RESPONDIDAS_20_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
+  PTOPE: { referencia: REF_20_OCT, nota: NOTA_COBRANZA, respuesta: 'Los gastos de cobranza dependen de una política que enviará Diego; el valor (3.000 por día) es un ejemplo, debe ser configurable y solo lo puede tocar un administrador.' },
+  PCOB: { referencia: REF_20_OCT, nota: NOTA_COBRANZA, respuesta: 'Cómo se cuentan los días de cobranza sin pago va dentro de la política de cobranza que enviará Diego.' },
+  PDIAS: { referencia: REF_20_OCT, nota: NOTA_COBRANZA, respuesta: 'Todo depende de la periodicidad (semanal, quincenal o mensual) y se negocia por crédito: no se encaja en un solo periodo.' },
+  S3: { referencia: REF_20_OCT, respuesta: 'Los servicios no se cobran por semana: se cobran según la configuración (periodicidad) del crédito; el ejemplo semanal es solo eso.' },
+  S6: { referencia: REF_20_OCT, respuesta: 'Se maneja como ingreso recibido para terceros: una cuenta por pagar contra el banco, porque la financiera recauda el dinero. Código del PUC por confirmar.' },
+  A4: { referencia: REF_20_OCT, respuesta: 'Siempre se respeta la prelación de Inputs; los ítems 1 a 6 (cobranza, mora, interés, fondo, asistencia, seguro) no se cobran por adelantado y el excedente va solo a capital.' },
+  A5: { referencia: REF_20_OCT, respuesta: 'Un abono extra recalcula la cuota o el plazo, pero no altera la tasa del crédito.' },
+  A6: { referencia: REF_20_OCT, respuesta: 'El prepago total cobra interés corriente por los días transcurridos desde la última cuota (sin comentario; por confirmar).' },
+  T1: { referencia: REF_20_OCT, respuesta: 'El cambio de tasa aplica desde la cuota siguiente, respetando la periodicidad del crédito.' },
+  T2: { referencia: REF_20_OCT, respuesta: 'El margen de usura se da en puntos porcentuales de la E.A.: 1 % equivale a 100 puntos básicos.' },
+  T4: { referencia: REF_20_OCT, respuesta: 'La tasa no vuelve a la pactada: si la usura baja, la tasa sigue bajando respetando el margen; si sube, se queda como está.' },
+  R1: { referencia: REF_20_OCT, respuesta: 'Es un tema de terminología: dación es cuando el avalúo es menor al saldo (el diferencial se cobra al fondo de garantías); retoma, cuando es mayor y se devuelve dinero.' },
+  R3: { referencia: REF_20_OCT, respuesta: 'La moto entra al inventario por el avalúo y la diferencia se ajusta después (sin comentario; por confirmar).' },
+  R4: { referencia: REF_20_OCT, respuesta: 'Interés completo en la semana del evento, como el Excel (sin comentario; por confirmar).' },
+  C1: { referencia: REF_20_OCT, respuesta: 'La causación sigue el plan normal (caso 1), respetando la periodicidad pactada.' },
+  C2: { referencia: REF_20_OCT, respuesta: 'Los códigos del PUC los enviará por correo; quedan pendientes.' },
+  C3: { referencia: REF_20_OCT, respuesta: 'El pago inicial lo recauda el concesionario y no afecta a la fábrica de crédito; se guarda para auditoría y para la simulación de la oferta comercial.' },
+  X1: { referencia: REF_20_OCT, respuesta: 'Enviará una versión corregida del Excel (sin comentario).' },
+  X3: { referencia: REF_20_OCT, respuesta: 'Se refería a dación (caso 3) o retoma (caso 4).' },
+  X4: { referencia: REF_20_OCT, respuesta: 'El plazo límite del caso 8 llega según el Excel que adjuntará.' },
+}
+
+/** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
+function conPendiente(p: Pregunta): Pregunta {
+  return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
+}
+
+export const TODAS: Pregunta[] = BASE.map((p) => {
+  if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
+  if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }
+  return p
+}).map(conPendiente)
 
 /** Las que siguen abiertas: son las que se le preguntan a negocio. */
 export const PREGUNTAS = TODAS.filter((p) => !p.respondida)
 
 export const RESPONDIDAS = TODAS.filter((p) => p.respondida)
+
+/** Bloques que aún tienen preguntas abiertas: los demás ya quedaron respondidos. */
+export const BLOQUES_ABIERTOS: string[] = BLOQUES.filter((b) => PREGUNTAS.some((p) => p.bloque === b))

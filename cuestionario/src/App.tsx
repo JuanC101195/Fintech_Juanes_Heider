@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FECHA_ESCENARIOS } from './escenarios'
 import { guardarEnLaNube } from './nube'
 import { PreguntaTarjeta } from './PreguntaTarjeta'
-import { BLOQUES, PREGUNTAS, RESPONDIDAS } from './preguntas'
+import { BLOQUES_ABIERTOS as BLOQUES, PREGUNTAS, RESPONDIDAS } from './preguntas'
 import { avance, estaCompleta, useEstado } from './respuestas'
 
 export default function App() {
@@ -12,7 +12,7 @@ export default function App() {
   const primeraVez = useRef(true)
   const { completas, total } = avance(estado.respuestas)
   const delBloque = PREGUNTAS.filter((p) => p.bloque === bloque)
-  const indice = BLOQUES.indexOf(bloque as (typeof BLOQUES)[number])
+  const indice = BLOQUES.indexOf(bloque)
 
   const irA = (b: string) => {
     setBloque(b)
@@ -112,7 +112,8 @@ export default function App() {
               quedan <strong className="text-on-surface">solo las {total} que siguen abiertas</strong>. Para cada una verá lo que hace hoy el Excel y, cuando
               cambia el cálculo, <strong className="text-on-surface">las cifras que da el motor con cada opción</strong>. Sus respuestas{' '}
               <strong className="text-on-surface">se guardan solas</strong> mientras responde, así que puede hacerlo por partes; al terminar presione{' '}
-              <strong className="text-on-surface">Enviar respuestas</strong>. No hace falta enviar ningún archivo.
+              <strong className="text-on-surface">Enviar respuestas</strong>. No hace falta enviar ningún archivo. Si prefiere contestar con sus propias palabras, elija{' '}
+              <strong className="text-on-surface">«Respondo en el comentario / queda pendiente»</strong> y escriba la respuesta en el comentario; también cuenta como respondida.
             </p>
             <details className="mt-space-lg rounded-xl bg-surface-container-low p-space-md">
               <summary className="min-h-9 cursor-pointer text-label-lg font-semibold text-on-surface">
@@ -125,6 +126,7 @@ export default function App() {
                       <span className="text-primary">{p.respondida!.referencia}</span> · {p.titulo}
                     </p>
                     <p className="text-body-md text-on-surface-variant">{p.respondida!.respuesta}</p>
+                    {p.respondida!.nota && <p className="text-label-md font-semibold text-on-surface">{p.respondida!.nota}</p>}
                   </li>
                 ))}
               </ul>
