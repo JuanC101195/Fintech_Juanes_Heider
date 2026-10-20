@@ -47,25 +47,29 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   page.on('pageerror', (e) => errores.push(String(e)))
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
-  await page.getByRole('radio', { name: /7 días por cada semana sin pago/ }).check()
-  await page.getByRole('radio', { name: /Con tope por pago/ }).check()
-  await page.getByRole('button', { name: '$20.000' }).click()
+  await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
+  await page.getByLabel('Comentario de la pregunta PPER', { exact: true }).fill('Semanal, quincenal y mensual según la negociación')
+  await page.getByRole('button', { name: /Abonos y prepago →/ }).click()
+  await page.getByRole('radio', { name: /Con mínimo/ }).check()
+  await page.getByRole('button', { name: '$50.000' }).click()
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
   await page.screenshot({ path: path.join(salida, `cuestionario-${nombre}.png`), fullPage: true })
 
   if (nombre === 'escritorio') {
-    await page.getByRole('button', { name: /Servicios complementarios →/ }).click()
-    await page.getByRole('radio', { name: /Prorrateo exacto por días/ }).check()
-    await page.screenshot({ path: path.join(salida, 'cuestionario-servicios.png'), fullPage: true })
+    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa.
+    await page.getByRole('button', { name: /Cambio de tasa y usura →/ }).click()
+    await page.getByText('Agregar un comentario').first().click()
+    await page.getByLabel('Comentario de la pregunta T5').fill('Depende de lo que digan las cláusulas aceleratorias')
+    await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
     const ultimo = enviados.at(-1)
     const filas = JSON.parse(ultimo.filas).filter((f) => f[3]).map((f) => [f[0], f[3], f[5], f[9]].join(' | '))
     console.log(`Guardados en la nube: ${enviados.length} (último final=${ultimo.final}, ${ultimo.completas} de ${ultimo.total})`)
     console.log(filas.join('\n'))
-    if (filas.length !== 3 || !ultimo.final) fallas++
+    if (filas.length !== 2 || ultimo.completas !== 3 || !ultimo.final) fallas++
   }
   await contexto.close()
 }
