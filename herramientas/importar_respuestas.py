@@ -23,7 +23,17 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 # Debe coincidir con ReglasNegocio.CLAVES.
-CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago', 'baseServicios', 'serviciosDespuesDelPlazo', 'moraAntesDeRecuperacion'}
+CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago', 'baseServicios', 'serviciosDespuesDelPlazo', 'moraAntesDeRecuperacion',
+                'aplicacionAbono', 'interesPrepagoPorDias', 'margenUsura'}
+# Preguntas cuyos ajustes NO se aplican porque el comentario de negocio contradice la opción marcada
+# (la opción era de relleno: el formulario no guardaba sin elegir una). Se versiona aquí; para
+# descartar otra pregunta basta agregar su ID. Aparecen en el md como "Opción contradicha por el comentario".
+DESCARTADOS = {
+    'A3': 'abonoMinimo=0: Diego no dio un mínimo; el abono sigue la prelación de Inputs (pregunta abierta)',
+    'R2': 'costoRecuperacion=0: los costos de recuperación van dentro de los gastos de cobranza, aún sin definir',
+}
+# Código de la opción que marca una pregunta aún sin opción real; sus ajustes tampoco se aplican.
+CODIGO_PENDIENTE = 'PENDIENTE'
 ENCABEZADOS = ['ID', 'Bloque', 'Pregunta', 'Código', 'Respuesta', 'Valor', 'Unidad', 'Detalle', 'Comentario',
                'Ajustes al motor', 'Completa']
 
@@ -113,6 +123,18 @@ def ajustes(fila):
     return resultado
 
 
+def descartada(fila):
+    """Motivo por el que los ajustes de la fila no se aplican, o None si sí se aplican."""
+    if fila['ID'] in DESCARTADOS:
+        return DESCARTADOS[fila['ID']]
+    codigo = str(fila['Código']).strip()
+    if not codigo:
+        return 'fila sin opción'
+    if codigo.upper() == CODIGO_PENDIENTE:
+        return 'opción PENDIENTE'
+    return None
+
+
 def config_actual():
     """Reglas ya configuradas: las respuestas nuevas se suman a ellas, no las borran."""
     archivo = RAIZ / 'config' / 'reglas-negocio.properties'
@@ -148,8 +170,13 @@ def main():
         filas, resumen = leer(ruta)
         fuente = ruta.name
 
-    aplicables, por_desarrollar = config_actual(), {}
+    aplicables, por_desarrollar, contradichas = config_actual(), {}, []
     for f in filas:
+        motivo = descartada(f)
+        if motivo:
+            if f['ID'] in DESCARTADOS:
+                contradichas.append((f['ID'], motivo))
+            continue
         for clave, valor in ajustes(f).items():
             (aplicables if clave in CLAVES_MOTOR else por_desarrollar)[clave] = (valor, f['ID'])
 
@@ -172,6 +199,8 @@ def main():
     md += [f'- `{c}={v}` (pregunta {p})' for c, (v, p) in sorted(aplicables.items())] or ['- Ninguno.']
     md += ['', '## Decidido pero pendiente de desarrollo en el motor', '']
     md += [f'- `{c}={v}` (pregunta {p})' for c, (v, p) in sorted(por_desarrollar.items())] or ['- Ninguno.']
+    md += ['', '## Opción contradicha por el comentario: no se aplica', '']
+    md += [f'- {p}: {m}' for p, m in contradichas] or ['- Ninguna.']
     md += ['', '## Todas las respuestas', '', '| ID | Pregunta | Respuesta | Valor | Detalle | Comentario |', '|---|---|---|---|---|---|']
     for f in filas:
         valor = f'{f["Valor"]} {f["Unidad"]}'.strip()
