@@ -20,6 +20,7 @@ En el mes 10 (periodo 43), después de pagar la cuota ordinaria, el cliente abon
 | R-7.10 | Servicios constantes y giro mensual a terceros, sin cambios por el abono | `L:N = Inputs B28:B30`; `Q:S` = suma del mes | Caso7 L:S | `Servicios.porCuota`, giro del paso 6 | celda por celda |
 | R-7.11 | Pago total del cliente en la semana del abono = cuota + servicios + abono | `P = I + O` = 2.174.048,99 | Caso7 P46 | `Movimiento.pagoTotalCliente()` | celda por celda |
 | R-7.12 | Asiento del abono: débito Caja / crédito Cartera de créditos por el valor del abono; control débito − crédito = 0 | `V14 = W15 = C56` | Caso7 U12:X16 | `contabilidad/reglas/AbonoExtraordinario` (agente del caso 5) | pendiente de esa regla |
+| R-7.13 | La nueva cuota del abono a menor cuota se calcula con la **tasa vigente** (después de cualquier cambio de tasa); el abono no altera la tasa. **Fuente: respuesta de Diego 2026-10-20, pregunta A5.** | `PMT(tasa vigente, cuotas restantes, saldo tras abono)` | Caso7 F47 usa la tasa de Inputs (ver D-7.1) | `MotorCartera.aplicarAbono` (ya usaba la vigente; no hace falta clave nueva porque en el caso 7 del Excel no hay cambio de tasa y las dos dan lo mismo) | `RespuestasDiego20OctTest.A5TasaDelRecalculo`, `conCambioDeTasaPrevioLaNuevaCuotaUsaLaTasaVigente` |
 
 Columnas comparadas celda por celda (tolerancia 1 COP, Inputs B71): Saldo inicial, Interés, Cuota financiera, Capital ordinario, Abono extra, Pago financiero total, Saldo final, FCC+IVA, Asistencia+IVA, Seguro vida, Servicios, Pago total cliente, Pago FCC, Pago asistencia, Pago aseguradora. Además Estado y Evento texto por texto, y el panel V2:V8.
 
@@ -49,9 +50,9 @@ El panel U12:X16 registra un solo asiento por el abono: Caja (débito) 2.000.000
 
 ## Preguntas para Diego
 
-1. **(D-7.1)** Si el cliente tuvo un cambio de tasa y luego abona a menor cuota, ¿la nueva cuota se calcula con la tasa vigente? El motor asume que sí.
+1. **(D-7.1)** Si el cliente tuvo un cambio de tasa y luego abona a menor cuota, ¿la nueva cuota se calcula con la tasa vigente? **Respondida (A5, 2026-10-20): sí, la vigente** (R-7.13).
 2. **(D-7.3)** Si el abono supera el saldo, ¿el excedente se devuelve al cliente (CxP deudor) o se rechaza el abono? ¿Debería tratarse como prepago total (caso 5)?
-3. Si el cliente tiene capital vencido o cuentas por cobrar (mora, cobranza, servicios) el día del abono, ¿el abono paga primero eso por prelación y solo el resto va a capital? Hoy el motor aplica todo el abono al saldo y recalcula la cuota sobre el saldo total (incluido el vencido), mientras que el plan vigente excluye el vencido. No hay prueba para este caso porque falta la regla.
+3. **Respondida (A4, 2026-10-20): sí, ver R-6.12.** Si el cliente tiene capital vencido o cuentas por cobrar (mora, cobranza, servicios) el día del abono, ¿el abono paga primero eso por prelación y solo el resto va a capital? Hoy el motor aplica todo el abono al saldo y recalcula la cuota sobre el saldo total (incluido el vencido), mientras que el plan vigente excluye el vencido. No hay prueba para este caso porque falta la regla.
 4. Con varios abonos a menor cuota, ¿cada uno recalcula la cuota sobre las cuotas restantes hasta la 86? El motor asume que sí.
 5. ¿FCC, asistencia y seguro siguen igual después del abono (calculados sobre el monto inicial) o bajan con el saldo? Se relaciona con P6. El Excel los deja constantes.
 6. ¿Hay un monto mínimo de abono extra, o un número máximo de abonos por mes, para aplicar la modalidad de menor cuota?
