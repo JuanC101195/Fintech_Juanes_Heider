@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import ExcelJS from 'exceljs'
 import { describe, expect, it, vi } from 'vitest'
 import { columnasDe } from './Comparador'
@@ -5,7 +6,7 @@ import { previsualizacion } from './escenarios'
 import { ENCABEZADOS, construirLibro } from './exportar'
 import { cop } from './formato'
 import { envioDe, guardarEnLaNube } from './nube'
-import { BLOQUES, BLOQUES_ABIERTOS, CODIGO_PENDIENTE, PREGUNTAS, RESPONDIDAS, TODAS } from './preguntas'
+import { BLOQUES, BLOQUES_ABIERTOS, CODIGO_PENDIENTE, completitudPorBloque, PREGUNTAS, RESPONDIDAS, TODAS } from './preguntas'
 import { ajustesDe, avance, estaCompleta, type Estado } from './respuestas'
 
 describe('preguntas', () => {
@@ -24,8 +25,12 @@ describe('preguntas', () => {
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
 
-  it('quedan abiertas las que Diego dejó indefinidas el 20 de octubre', () => {
-    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'PPER', ...Array.from({ length: 10 }, (_, i) => `PPER-${i + 1}`), 'R2', 'T5'].sort())
+  it('quedan abiertas las que Diego dejó indefinidas el 20 de octubre y las de la ronda 3', () => {
+    const ronda3 = PREGUNTAS.filter((p) => /^(COB|CAL|SRV|ABN|USU|REC|CON|ROL)-\d+$/.test(p.id))
+    expect(ronda3).toHaveLength(44)
+    expect(PREGUNTAS.filter((p) => !ronda3.includes(p)).map((p) => p.id).sort()).toEqual(['A3', 'C5', 'PPER', ...Array.from({ length: 10 }, (_, i) => `PPER-${i + 1}`), 'R2', 'T5'].sort())
+    // Ninguna pregunta nueva obliga a escoger una opción de relleno: todas ofrecen al menos 2 opciones reales.
+    for (const p of ronda3) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
     for (const id of ['PTOPE', 'PCOB', 'PDIAS']) {
       expect(RESPONDIDAS.find((p) => p.id === id)!.respondida!.nota).toMatch(/política de gastos de cobranza/)
     }
@@ -71,6 +76,22 @@ describe('preguntas', () => {
   })
 })
 
+describe('completitud', () => {
+  it('cuenta las cerradas sobre el total inventariado por bloque, sin las respondidas con salvedad', () => {
+    const filas = completitudPorBloque()
+    expect(filas.map((f) => f.bloque)).toEqual([...BLOQUES])
+    expect(filas.reduce((s, f) => s + f.total, 0)).toBe(TODAS.length)
+    const cerradas = filas.reduce((s, f) => s + f.cerradas, 0)
+    expect(cerradas).toBe(RESPONDIDAS.filter((p) => !p.respondida!.nota).length)
+    expect(cerradas).toBeLessThan(RESPONDIDAS.length)
+  })
+
+  it('docs/completitud-reglas.md menciona cada pregunta del cuestionario', () => {
+    const doc = readFileSync(new URL('../../docs/completitud-reglas.md', import.meta.url), 'utf8')
+    for (const p of TODAS) expect(doc, p.id).toMatch(new RegExp(String.raw`\b${p.id}\b`))
+  })
+})
+
 describe('respuestas', () => {
   const minimo = PREGUNTAS.find((p) => p.id === 'A3')!
   const inicial = PREGUNTAS.find((p) => p.id === 'C5')!
@@ -99,7 +120,7 @@ describe('respuestas', () => {
 
   it('cuenta el avance', () => {
     expect(avance({ A3: { codigo: 'sin-minimo' }, R2: { codigo: 'si' }, T5: { comentario: 'Depende de la cláusula' } }).completas).toBe(2)
-    expect(avance({}).total).toBe(15)
+    expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
   })

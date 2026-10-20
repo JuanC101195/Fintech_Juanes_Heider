@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { FECHA_ESCENARIOS } from './escenarios'
 import { guardarEnLaNube } from './nube'
 import { PreguntaTarjeta } from './PreguntaTarjeta'
-import { BLOQUES_ABIERTOS as BLOQUES, PREGUNTAS, RESPONDIDAS } from './preguntas'
+import { BLOQUES_ABIERTOS as BLOQUES, completitudPorBloque, PREGUNTAS, RESPONDIDAS } from './preguntas'
 import { avance, estaCompleta, useEstado } from './respuestas'
 
 export default function App() {
@@ -115,6 +115,7 @@ export default function App() {
               <strong className="text-on-surface">Enviar respuestas</strong>. No hace falta enviar ningún archivo. Si prefiere contestar con sus propias palabras, elija{' '}
               <strong className="text-on-surface">«Respondo en el comentario / queda pendiente»</strong> y escriba la respuesta en el comentario; también cuenta como respondida.
             </p>
+            <Completitud />
             <details className="mt-space-lg rounded-xl bg-surface-container-low p-space-md">
               <summary className="min-h-9 cursor-pointer text-label-lg font-semibold text-on-surface">
                 Ya respondidas: {RESPONDIDAS.length} · gracias
@@ -189,7 +190,38 @@ export default function App() {
   )
 }
 
-type Guardado = { tipo: 'nada' } | { tipo: 'guardando' } | { tipo: 'error' } | { tipo: 'guardado' | 'enviado'; hora: string }
+/** Reglas cerradas sobre las inventariadas (respondidas + abiertas), por bloque. */
+function Completitud() {
+  const filas = completitudPorBloque()
+  const cerradas = filas.reduce((s, f) => s + f.cerradas, 0)
+  const total = filas.reduce((s, f) => s + f.total, 0)
+  const porcentaje = (c: number, t: number) => (t ? Math.round((c / t) * 100) : 0)
+  return (
+    <section aria-label="Completitud de las reglas" className="mt-space-lg rounded-xl bg-surface-container-low p-space-md">
+      <p className="text-label-lg font-semibold text-on-surface">
+        Reglas cerradas: <span className="cifra">{cerradas}</span> de <span className="cifra">{total}</span> ({porcentaje(cerradas, total)} %)
+      </p>
+      <p className="text-label-md text-on-surface-variant">Cerrada = ya respondida sin salvedad pendiente. Las demás siguen abiertas en este cuestionario.</p>
+      <ul className="mt-space-sm grid gap-space-sm sm:grid-cols-2">
+        {filas.map((f) => (
+          <li key={f.bloque}>
+            <p className="flex justify-between gap-space-sm text-label-md text-on-surface-variant">
+              <span>{f.bloque}</span>
+              <span className="cifra shrink-0">
+                {f.cerradas}/{f.total}
+              </span>
+            </p>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-container-high" aria-hidden="true">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${porcentaje(f.cerradas, f.total)}%` }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+type Guardado ={ tipo: 'nada' } | { tipo: 'guardando' } | { tipo: 'error' } | { tipo: 'guardado' | 'enviado'; hora: string }
 
 function horaActual(): string {
   return new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
