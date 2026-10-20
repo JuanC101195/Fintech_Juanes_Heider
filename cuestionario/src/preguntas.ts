@@ -11,6 +11,7 @@ export const BLOQUES = [
   'Cambio de tasa y usura',
   'Dación y retoma',
   'Contabilidad',
+  'Roles y parámetros',
   'Ajustes al Excel',
 ] as const
 
@@ -24,7 +25,7 @@ const OPCION_PENDIENTE: Opcion = {
   pideComentario: true,
 }
 
-const [PAGOS, SERVICIOS, ABONOS, TASA, RECUPERACION, CONTABILIDAD, EXCEL] = BLOQUES
+const [PAGOS, SERVICIOS, ABONOS, TASA, RECUPERACION, CONTABILIDAD, ROLES, EXCEL] = BLOQUES
 
 const BASE: Pregunta[] = [
   // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
@@ -679,6 +680,598 @@ const BASE: Pregunta[] = [
   },
 ]
 
+// ── Ronda 3 (20 de octubre de 2026): reglas que el motor necesita y siguen sin decidir ─────────
+// Salen del inventario de docs/completitud-reglas.md. Son preguntas abiertas sin previsualización ni
+// ajustes: lo que Diego conteste se anota y después se decide el cambio en el motor. Ids nuevos
+// (COB, CAL, SRV, ABN, USU, REC, CON, ROL) para no chocar con los anteriores.
+const RONDA_3: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'COB-1',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (1 de 6): ¿cuándo se activa el cobro?',
+    contexto:
+      'Usted dijo que los gastos de cobranza van en una política que enviará. Para que el motor los pueda causar necesita saber desde qué momento corre el cobro. Si prefiere enviar la política completa, elija «Respondo en el comentario» y adjúntela por correo.',
+    excelHoy: 'Se cobran desde el primer día de atraso de un pago recibido tarde (caso 9). En semanas sin pago no se causan.',
+    opciones: [
+      { codigo: 'primer-dia', texto: 'Desde el primer día de atraso', esExcel: true },
+      { codigo: 'dias-gracia', texto: 'Después de unos días de gracia', detalle: 'Indique cuántos días.', pideTexto: true },
+      { codigo: 'cartera-vencida', texto: 'Solo cuando la cuota pasa a cartera vencida (cuota no pagada en su periodo)' },
+      { codigo: 'con-gestion', texto: 'Solo cuando hay una gestión de cobro registrada (llamada, carta, visita)' },
+    ],
+  },
+  {
+    id: 'COB-2',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (2 de 6): ¿se cobran por día o por evento?',
+    contexto:
+      'Define la fórmula. Por día crece con el atraso; por evento (por gestión realizada) no depende de cuánto tarde el cliente. En el caso 9, con 14 días de atraso en cada cuota, el Excel cobra 42.000 por pago.',
+    excelHoy: '3.000 por cada día de atraso (días × 3.000), por pago.',
+    opciones: [
+      { codigo: 'por-dia', texto: 'Un valor fijo por cada día de atraso', detalle: 'Indique el valor (el 3.000 es un ejemplo).', pideTexto: true, esExcel: true },
+      { codigo: 'por-evento', texto: 'Un valor fijo por cada gestión de cobro realizada', detalle: 'Indique el valor por gestión.', pideTexto: true },
+      { codigo: 'porcentaje', texto: 'Un porcentaje de la cuota vencida o del saldo vencido', detalle: 'Indique el porcentaje y la base.', pideTexto: true },
+      { codigo: 'por-tramos', texto: 'Una tabla por tramos de mora (1-30, 31-60, más de 60 días)', detalle: 'Indique el valor de cada tramo.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'COB-3',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (3 de 6): ¿cuál es el tope y sobre qué se mide?',
+    contexto:
+      'Sin tope, un cliente que siempre paga con atraso acumula cobranza sin límite (en el caso 9 el crédito no termina). Aquí interesa la forma del tope; el valor lo puede escribir en el detalle.',
+    excelHoy: 'Sin tope.',
+    opciones: [
+      { codigo: 'sin-tope', texto: 'Sin tope', esExcel: true },
+      { codigo: 'tope-por-pago', texto: 'Un tope por pago', detalle: 'Indique el valor.', pideTexto: true },
+      { codigo: 'tope-por-mes', texto: 'Un tope por mes', detalle: 'Indique el valor.', pideTexto: true },
+      { codigo: 'tope-por-credito', texto: 'Un tope acumulado por crédito', detalle: 'Indique el valor.', pideTexto: true },
+      { codigo: 'tope-porcentaje', texto: 'Un porcentaje del capital vencido', detalle: 'Indique el porcentaje.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'COB-4',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (4 de 6): ¿se siguen cobrando después de la última cuota pactada?',
+    contexto:
+      'Si el crédito pasa de la cuota 104 con saldo en mora, hay periodos adicionales. ¿La cobranza sigue corriendo en esos periodos y hasta cuándo?',
+    excelHoy: 'Sí: en el caso 9 se cobra hasta el plazo límite (120 semanas).',
+    opciones: [
+      { codigo: 'hasta-limite', texto: 'Sí, hasta el plazo límite de recuperación', esExcel: true },
+      { codigo: 'hasta-ultima-cuota', texto: 'No: se cobra solo hasta la última cuota pactada' },
+      { codigo: 'hasta-tope', texto: 'Sí, pero hasta alcanzar el tope acumulado de la pregunta COB-3' },
+    ],
+  },
+  {
+    id: 'COB-5',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (5 de 6): ¿quién autoriza que se exonere o se condone un cobro a un cliente?',
+    contexto:
+      'El valor y el tope los configura solo un administrador (D25). Esta pregunta es aparte: si un cliente concreto pide que no se le cobre, ¿quién puede decidirlo?',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'nadie', texto: 'Nadie: se cobra siempre lo que dice la política' },
+      { codigo: 'asesor-con-tope', texto: 'El asesor, hasta un valor máximo', detalle: 'Indique el valor.', pideTexto: true },
+      { codigo: 'gerente', texto: 'Solo el gerente, dejando constancia del motivo' },
+      { codigo: 'comite', texto: 'Un comité de cartera' },
+    ],
+  },
+  {
+    id: 'COB-6',
+    bloque: PAGOS,
+    titulo: 'Política de gastos de cobranza (6 de 6): ¿el cobro de 3.000 por día es legal en el contrato?',
+    contexto:
+      'En el documento del equipo quedó en blanco si este cobro está permitido (P-18). El motor puede dejarlo activo, limitado a lo que diga la norma o bloqueado hasta tener el concepto.',
+    excelHoy: 'Se cobra sin validación legal.',
+    opciones: [
+      { codigo: 'legal-confirmado', texto: 'Está permitido: lo respalda el contrato y el concepto jurídico' },
+      { codigo: 'limitar-a-norma', texto: 'Se limita al máximo que diga la norma o el jurídico' },
+      { codigo: 'bloquear-hasta-concepto', texto: 'Queda desactivado hasta tener el concepto jurídico' },
+    ],
+  },
+  {
+    id: 'CAL-1',
+    bloque: PAGOS,
+    titulo: 'Vencimiento los martes (1 de 3): ¿hasta qué momento del martes se paga a tiempo?',
+    contexto:
+      'Usted dijo que las cuotas vencen los martes. El motor necesita saber cuándo empieza el atraso: un pago el martes a las 11 p. m., ¿es a tiempo? ¿y el miércoles?',
+    excelHoy: 'El Excel no tiene fechas: los días de atraso se digitan.',
+    opciones: [
+      { codigo: 'martes-fin-de-dia', texto: 'Es a tiempo hasta el fin del martes; el atraso empieza el miércoles (día 1)' },
+      { codigo: 'martes-hora-corte', texto: 'Es a tiempo hasta una hora de corte del martes', detalle: 'Indique la hora de corte.', pideTexto: true },
+      { codigo: 'dias-de-gracia', texto: 'Hay unos días de gracia sin mora ni cobranza después del martes', detalle: 'Indique cuántos días.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'CAL-2',
+    bloque: PAGOS,
+    titulo: 'Vencimiento los martes (2 de 3): si el martes es festivo, ¿cuándo vence la cuota?',
+    contexto: 'Dijo que por ahora no hay manejo de festivos. Confirmar qué hace el motor el día que cae festivo.',
+    excelHoy: 'Sin festivos.',
+    opciones: [
+      { codigo: 'sin-festivos', texto: 'Sin manejo de festivos: vence el martes aunque sea festivo', esExcel: true },
+      { codigo: 'siguiente-habil', texto: 'Vence el siguiente día hábil, sin mora por ese día' },
+      { codigo: 'anterior-habil', texto: 'Vence el día hábil anterior' },
+    ],
+  },
+  {
+    id: 'CAL-3',
+    bloque: PAGOS,
+    titulo: 'Vencimiento los martes (3 de 3): ¿cuándo vence la primera cuota y el martes es igual para todos los créditos?',
+    contexto:
+      'Para armar el plan de pagos con fechas hace falta saber cuál es la primera cuota y si el día de pago lo escoge el cliente o es fijo.',
+    excelHoy: 'El Excel cuenta periodos, no fechas.',
+    opciones: [
+      { codigo: 'primer-martes-tras-desembolso', texto: 'El primer martes después del desembolso' },
+      { codigo: 'primer-martes-7-dias', texto: 'El primer martes que quede al menos 7 días después del desembolso' },
+      { codigo: 'martes-fijo-fecha-pactada', texto: 'El martes es fijo para todos, pero la fecha de la primera cuota se pacta en la oferta' },
+      { codigo: 'dia-por-cliente', texto: 'El día de la semana lo escoge cada cliente al firmar' },
+    ],
+  },
+
+  // ── Servicios complementarios ─────────────────────────────────────────────────
+  {
+    id: 'SRV-1',
+    bloque: SERVICIOS,
+    titulo: 'Si el crédito termina a mitad de mes por un prepago, ¿se giran los servicios del mes completo al tercero?',
+    contexto:
+      'Los servicios se pactan por mes y se cobran por periodo. Cuando el crédito se cancela antes, hay que decidir si se cobra lo causado hasta el día o el mes entero, y si el cliente recupera algo.',
+    excelHoy: 'Se cobran los periodos causados hasta la cuota del prepago (caso 5); no hay devolución.',
+    opciones: [
+      { codigo: 'periodos-causados', texto: 'Solo los periodos causados hasta el prepago, sin devolución', esExcel: true },
+      { codigo: 'mes-completo', texto: 'El mes completo de cada servicio' },
+      { codigo: 'proporcional-a-dias', texto: 'Proporcional a los días del mes transcurridos' },
+      { codigo: 'devolver-anticipado', texto: 'Lo causado hasta el prepago y se devuelve al cliente lo pagado por adelantado, si lo hay' },
+    ],
+  },
+  {
+    id: 'SRV-2',
+    bloque: SERVICIOS,
+    titulo: 'Si un abono acorta el plazo, ¿qué pasa con la cobertura del seguro y del fondo de garantías en las cuotas eliminadas?',
+    contexto:
+      'En el caso 6 el abono elimina 25 semanas y deja de cobrarse 1.575.854 de servicios. ¿La aseguradora y el fondo aceptan que la cobertura termine antes, o hay que cobrar o devolver algo?',
+    excelHoy: 'Se dejan de cobrar los servicios de las cuotas eliminadas.',
+    opciones: [
+      { codigo: 'termina-con-el-plazo', texto: 'La cobertura termina con el nuevo plazo y no se cobra más', esExcel: true },
+      { codigo: 'cobertura-hasta-fecha-original', texto: 'La cobertura sigue hasta la fecha original y la financiera asume el costo' },
+      { codigo: 'cobrar-hasta-fecha-original', texto: 'Se siguen cobrando los servicios hasta la fecha original' },
+    ],
+  },
+  {
+    id: 'SRV-3',
+    bloque: SERVICIOS,
+    titulo: 'En la última cuota, ¿se cobran los servicios completos del periodo o se prorratean?',
+    contexto:
+      'En la última semana del caso 6 el cliente paga la cuota residual de 6.998,93 más los servicios completos de la semana (63.034,17): los servicios son más de nueve veces la cuota.',
+    excelHoy: 'Servicios completos del periodo.',
+    opciones: [
+      { codigo: 'completos', texto: 'Servicios completos del periodo', esExcel: true },
+      { codigo: 'prorrateados', texto: 'Prorrateados por los días que realmente cubre el crédito' },
+      { codigo: 'sin-servicios-ultima', texto: 'No se cobran servicios en una cuota residual' },
+    ],
+  },
+  {
+    id: 'SRV-4',
+    bloque: SERVICIOS,
+    titulo: '¿La cuenta por pagar de servicios se separa por tercero y por IVA?',
+    contexto:
+      'Los servicios son ingreso recibido para terceros (2815). Para girarlos y declarar IVA hay que saber si se llevan en una sola cuenta o por tercero (fondo de garantías, asistencia, aseguradora) y si el IVA del 19 % en fondo y asistencia se registra aparte.',
+    excelHoy: 'Una sola cuenta «Servicios complementarios» sin separar tercero ni IVA.',
+    opciones: [
+      { codigo: 'una-cuenta', texto: 'Una sola cuenta para todos los servicios', esExcel: true },
+      { codigo: 'auxiliar-por-tercero', texto: 'Una cuenta con auxiliar por tercero (fondo, asistencia, aseguradora)' },
+      { codigo: 'cuenta-por-tercero-e-iva', texto: 'Una cuenta distinta por tercero y el IVA generado en su propia cuenta' },
+    ],
+  },
+
+  // ── Abonos y prepago ──────────────────────────────────────────────────────────
+  {
+    id: 'ABN-1',
+    bloque: ABONOS,
+    titulo: 'Caso de validación: abono extra con pendientes. ¿Qué resultado espera?',
+    contexto:
+      'Ninguno de los 12 casos del Excel tiene un abono extra con pendientes, así que no hay con qué validar la regla A4. Propuesta del equipo (caso 13): crédito de 104 cuotas con el pago inferior del caso 8 en la semana 43; en la semana 47 el cliente aún debe capital vencido, mora y servicios y hace un abono extra de 2.000.000 con modalidad menor plazo. Esperamos que primero se paguen cobranza, mora, interés, fondo, asistencia y seguro causados (sin cobrar adelantado), el excedente baje el capital y se recalcule el plazo con la misma tasa. Necesitamos los valores esperados por usted para comparar.',
+    excelHoy: 'No hay caso: el abono extra solo se prueba con el cliente al día (casos 6 y 7).',
+    opciones: [
+      { codigo: 'caso-propuesto-ok', texto: 'El caso propuesto sirve: el equipo lo arma y yo valido los valores' },
+      { codigo: 'enviare-caso-resuelto', texto: 'Enviaré el caso resuelto en el Excel corregido' },
+      { codigo: 'otro-caso', texto: 'El caso debe ser otro', detalle: 'Describa el escenario en el detalle.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'ABN-2',
+    bloque: ABONOS,
+    titulo: 'Con capital vencido, ¿el excedente del abono cubre primero el capital vencido y luego el vigente?',
+    contexto:
+      'Después de pagar los pendientes por prelación, el resto va a capital. Hay dos capitales: el vencido (cuotas atrasadas) y el vigente. De esa elección depende cuánta mora sigue corriendo y qué se recalcula.',
+    excelHoy: 'No lo define: aplica el abono al saldo total y recalcula sobre el saldo incluido el vencido.',
+    opciones: [
+      { codigo: 'vencido-primero', texto: 'Primero el capital vencido (el más antiguo) y después el vigente' },
+      { codigo: 'vigente-primero', texto: 'Directo al capital vigente; el vencido sigue vencido hasta pagarse' },
+      { codigo: 'solo-si-al-dia', texto: 'El abono extra solo se acepta si el cliente queda sin capital vencido' },
+    ],
+  },
+  {
+    id: 'ABN-3',
+    bloque: ABONOS,
+    titulo: '¿Hay un máximo de abonos extra por mes o por crédito?',
+    contexto: 'Cada abono recalcula el plan. Un límite evita recálculos constantes y simplifica el historial.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'sin-limite', texto: 'Sin límite' },
+      { codigo: 'uno-por-mes', texto: 'Uno por mes' },
+      { codigo: 'maximo-por-credito', texto: 'Un máximo por crédito', detalle: 'Indique cuántos.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'ABN-4',
+    bloque: ABONOS,
+    titulo: 'Un abono extra recibido entre cuotas, ¿se aplica de una vez o junto con la siguiente cuota?',
+    contexto:
+      'El CRM puede recibir un abono un jueves, lejos del martes de vencimiento. Aplicarlo de una vez exige cobrar interés por los días; esperar a la cuota lo deja en un saldo transitorio.',
+    excelHoy: 'El abono extra siempre va después de la cuota ordinaria de la misma semana.',
+    opciones: [
+      { codigo: 'despues-de-la-cuota', texto: 'Se guarda y se aplica después de la siguiente cuota ordinaria', esExcel: true },
+      { codigo: 'de-una-vez-con-dias', texto: 'Se aplica de una vez, cobrando el interés de los días transcurridos' },
+      { codigo: 'de-una-vez-sin-dias', texto: 'Se aplica de una vez y el interés se ajusta en la siguiente cuota' },
+    ],
+  },
+  {
+    id: 'ABN-5',
+    bloque: ABONOS,
+    titulo: 'Con varios abonos a menor cuota, ¿cada uno recalcula la cuota hasta la cuota pactada?',
+    contexto: 'Si cada abono recalcula, la cuota baja varias veces durante la vida del crédito; el historial debe guardar cada versión.',
+    excelHoy: 'El caso 7 tiene un solo abono; el motor supone que cada uno recalcula.',
+    opciones: [
+      { codigo: 'cada-abono', texto: 'Sí, cada abono recalcula la cuota sobre las cuotas restantes' },
+      { codigo: 'acumulado-mensual', texto: 'Los abonos de un mes se acumulan y se recalcula una vez al cierre del mes' },
+    ],
+  },
+  {
+    id: 'ABN-6',
+    bloque: ABONOS,
+    titulo: 'En un prepago total, ¿hay algún costo y cuándo se entrega el paz y salvo?',
+    contexto:
+      'La Ley 1555 de 2012 impide cobrar penalidad por prepago en los casos que cubre. Falta la regla operativa: costo del trámite, plazo del paz y salvo y liberación de la prenda.',
+    excelHoy: 'Sin costo; no modela paz y salvo ni prenda.',
+    opciones: [
+      { codigo: 'sin-costo-inmediato', texto: 'Sin costo; paz y salvo y liberación de la prenda el mismo día del pago' },
+      { codigo: 'sin-costo-con-plazo', texto: 'Sin costo; paz y salvo y liberación de la prenda dentro de un plazo', detalle: 'Indique el plazo en días.', pideTexto: true },
+      { codigo: 'con-costo-tramite', texto: 'Con un costo por el trámite del paz y salvo', detalle: 'Indique el valor.', pideTexto: true },
+    ],
+  },
+
+  // ── Cambio de tasa y usura ────────────────────────────────────────────────────
+  {
+    id: 'USU-1',
+    bloque: TASA,
+    titulo: 'Usura: ¿confirma que el cambio rige desde la cuota siguiente a la publicación, no desde la primera cuota del mes?',
+    contexto:
+      'Usted respondió que el cambio aplica desde la cuota siguiente (T1). El Excel del caso 2 lo aplica desde la primera cuota del mes (cuota 44), así que las cifras del motor y las del Excel no coincidirán en las cuotas intermedias. Necesitamos saber cuál vale.',
+    excelHoy: 'Desde la primera cuota del mes en que cambia la tasa (cuota 44 en el caso 2).',
+    opciones: [
+      { codigo: 'cuota-siguiente', texto: 'Desde la cuota siguiente a la publicación (el motor se queda así y el Excel se corrige)' },
+      { codigo: 'primera-cuota-del-mes', texto: 'Desde la primera cuota del mes, como el Excel', esExcel: true },
+      { codigo: 'desde-fecha-prorrateada', texto: 'Desde la fecha de vigencia de la usura, prorrateando el interés de esa cuota' },
+    ],
+  },
+  {
+    id: 'USU-2',
+    bloque: TASA,
+    titulo: 'Alerta mensual de usura (1 de 3): ¿quién es el autorizador que actualiza la usura?',
+    contexto:
+      'Usted dijo que la alerta mensual para actualizar la usura es obligatoria y la hace un autorizador. Hay que definir quién es y si necesita un segundo firmante.',
+    excelHoy: 'La usura es un dato digitado a mano en el escenario.',
+    opciones: [
+      { codigo: 'gerente', texto: 'El gerente (dueño de producto)' },
+      { codigo: 'riesgos-financiera', texto: 'La persona de riesgos o de la dirección financiera' },
+      { codigo: 'administrador-del-sistema', texto: 'El administrador del sistema' },
+      { codigo: 'dos-firmantes', texto: 'Dos personas: una la carga y otra la aprueba' },
+    ],
+  },
+  {
+    id: 'USU-3',
+    bloque: TASA,
+    titulo: 'Alerta mensual de usura (2 de 3): si nadie autoriza a tiempo, ¿qué hace el sistema?',
+    contexto:
+      'Si la usura baja y no se actualiza, los créditos seguirían con una tasa por encima del máximo legal. Hay que definir qué pasa a falta de autorizador (y, en el detalle, hasta qué día del mes vence el plazo).',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'seguir-con-la-anterior', texto: 'Sigue con la usura anterior y repite la alerta cada día hasta que se autorice' },
+      { codigo: 'bloquear-desembolsos', texto: 'Sigue con la anterior, pero se bloquean los desembolsos nuevos hasta autorizar' },
+      { codigo: 'aplicar-publicada', texto: 'Aplica automáticamente la usura publicada y avisa al autorizador para que la revise' },
+    ],
+  },
+  {
+    id: 'USU-4',
+    bloque: TASA,
+    titulo: 'Alerta mensual de usura (3 de 3): ¿qué usura aplica a cada línea de crédito?',
+    contexto:
+      'La Superfinanciera publica varias tasas máximas: consumo ordinario, consumo de bajo monto, microcrédito. El catálogo por línea debe decir cuál usa cada una (la línea CPPU está en 87,62 % E.A.).',
+    excelHoy: 'Una sola usura para todas las líneas.',
+    opciones: [
+      { codigo: 'consumo-ordinario', texto: 'Todas las líneas con la usura de consumo y ordinario' },
+      { codigo: 'bajo-monto-microcredito', texto: 'Todas con la de consumo de bajo monto o microcrédito' },
+      { codigo: 'por-linea', texto: 'Una modalidad distinta por línea de crédito', detalle: 'Indique cuál usa cada línea.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'USU-5',
+    bloque: TASA,
+    titulo: '¿Cuando la usura baja se recalculan todos los créditos vigentes o solo los nuevos?',
+    contexto:
+      'Usted dijo que si la usura baja la tasa sigue bajando con el margen. El documento del equipo dejó en blanco si eso alcanza a todos los créditos ya desembolsados (P-19).',
+    excelHoy: 'El caso 2 ajusta un solo crédito en un evento digitado.',
+    opciones: [
+      { codigo: 'todos-automatico', texto: 'Todos los vigentes, automáticamente en la cuota siguiente' },
+      { codigo: 'todos-con-aprobacion', texto: 'Todos los vigentes, después de que el autorizador apruebe el lote' },
+      { codigo: 'solo-nuevos', texto: 'Solo los créditos nuevos' },
+    ],
+  },
+  {
+    id: 'USU-6',
+    bloque: TASA,
+    titulo: 'Cambio de tasa en sus dos modalidades: ¿cuál se aplica cuando la tasa baja?',
+    contexto:
+      'Usted dijo que al cambiar la tasa se recalcula con igual plazo y menor cuota, o con igual cuota y menor plazo. El motor ya tiene las dos (casos 2 y 10); falta saber cuál se usa y quién decide.',
+    excelHoy: 'Caso 2: igual plazo, menor cuota. Caso 10: misma cuota, menor plazo.',
+    opciones: [
+      { codigo: 'siempre-menor-cuota', texto: 'Siempre igual plazo y menor cuota' },
+      { codigo: 'siempre-menor-plazo', texto: 'Siempre misma cuota y menor plazo' },
+      { codigo: 'cliente-elige', texto: 'El cliente elige; si no responde, igual plazo y menor cuota' },
+      { codigo: 'segun-causa', texto: 'Depende de la causa: por usura una modalidad y por otra causa externa la otra', detalle: 'Indique cuál para cada causa.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'USU-7',
+    bloque: TASA,
+    titulo: '¿Qué otras causas externas, además de la usura, pueden cambiar la tasa de un crédito?',
+    contexto:
+      'Usted dijo que la tasa solo cambia por causas externas. El motor hoy solo conoce el cambio de la hoja del caso 2 y el ajuste por usura.',
+    excelHoy: 'Solo el evento de cambio de tasa del caso 2.',
+    opciones: [
+      { codigo: 'solo-usura', texto: 'Solo la usura' },
+      { codigo: 'usura-y-regulacion', texto: 'La usura y cambios de ley o regulación' },
+      { codigo: 'usura-e-indice', texto: 'La usura y una tasa de referencia (por ejemplo, DTF o IBR) en líneas futuras' },
+    ],
+  },
+  {
+    id: 'USU-8',
+    bloque: TASA,
+    titulo: 'Tras un cambio de tasa, ¿cambian el fondo de garantías, la asistencia y el seguro? ¿Se avisa al cliente?',
+    contexto:
+      'Los servicios se calculan sobre el monto financiado inicial. Un cambio de tasa recalcula la cuota; ¿afecta también los servicios? Además, el cambio es una novedad sin asiento contable que conviene registrar.',
+    excelHoy: 'Los servicios quedan constantes; no se registra la novedad.',
+    opciones: [
+      { codigo: 'servicios-constantes-con-aviso', texto: 'Los servicios no cambian y se registra una novedad con aviso al cliente de la nueva cuota' },
+      { codigo: 'servicios-constantes-sin-aviso', texto: 'Los servicios no cambian y no se avisa al cliente', esExcel: true },
+      { codigo: 'servicios-recalculados', texto: 'Los servicios se recalculan con el nuevo saldo y se avisa al cliente' },
+    ],
+  },
+
+  // ── Dación y retoma ───────────────────────────────────────────────────────────
+  {
+    id: 'REC-1',
+    bloque: RECUPERACION,
+    titulo: 'Dación (1 de 3): ¿cuánto cubre el fondo de garantías del faltante?',
+    contexto:
+      'Usted dijo que en la dación el diferencial entre el avalúo y el saldo se cobra al fondo de garantías. Hace falta saber hasta cuánto responde el fondo.',
+    excelHoy: 'El faltante completo va a «CxC fondo de garantías» sin límite.',
+    opciones: [
+      { codigo: 'faltante-completo', texto: 'El fondo cubre todo el faltante', esExcel: true },
+      { codigo: 'tope-porcentaje-monto', texto: 'Hasta un porcentaje del monto financiado', detalle: 'Indique el porcentaje.', pideTexto: true },
+      { codigo: 'lo-aportado-por-el-cliente', texto: 'Hasta lo que ese crédito ha aportado al fondo' },
+      { codigo: 'tope-del-fondo-comun', texto: 'Hasta un tope fijado por el fondo común', detalle: 'Indique el tope.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'REC-2',
+    bloque: RECUPERACION,
+    titulo: 'Dación (2 de 3): ¿qué conceptos cubre el fondo: solo capital e intereses, o también mora, servicios y cobranza?',
+    contexto:
+      'Al recibir la moto hay capital, intereses, mora, servicios y cobranza pendientes. El avalúo se reparte por la prelación; lo que no alcance es el faltante que se cobra al fondo.',
+    excelHoy: 'Todo el faltante, sin distinguir conceptos.',
+    opciones: [
+      { codigo: 'capital-e-intereses', texto: 'Solo capital e intereses corrientes' },
+      { codigo: 'capital-intereses-y-mora', texto: 'Capital, intereses corrientes y mora' },
+      { codigo: 'todos-los-conceptos', texto: 'Todos: capital, intereses, mora, servicios y cobranza', esExcel: true },
+    ],
+  },
+  {
+    id: 'REC-3',
+    bloque: RECUPERACION,
+    titulo: 'Dación (3 de 3): si el fondo no alcanza, ¿qué pasa con lo que falta?',
+    contexto:
+      'Hoy el motor supone que el fondo siempre alcanza y cierra el crédito. Si no alcanza, el crédito no puede quedar cerrado sin decidir quién asume el resto.',
+    excelHoy: 'El crédito se cierra siempre; no hay caso de fondo insuficiente.',
+    opciones: [
+      { codigo: 'cobro-al-cliente', texto: 'Queda como cuenta por cobrar al cliente y pasa a cobro jurídico' },
+      { codigo: 'perdida-financiera', texto: 'La financiera lo asume como pérdida contra provisión y cierra el crédito' },
+      { codigo: 'nuevo-acuerdo', texto: 'Se negocia un nuevo acuerdo de pago con el cliente por el saldo' },
+    ],
+  },
+  {
+    id: 'REC-4',
+    bloque: RECUPERACION,
+    titulo: 'Retoma (1 de 2): ¿cuándo se le devuelve al cliente el excedente?',
+    contexto:
+      'En la retoma el avalúo es mayor que el saldo y se debe devolver dinero (en el caso 4, 1.185.578). Hay que definir el momento: antes de vender la moto o después.',
+    excelHoy: 'Se reconoce como cuenta por pagar al deudor; no dice cuándo se paga.',
+    opciones: [
+      { codigo: 'plazo-fijo-desde-retoma', texto: 'En un plazo fijo desde la retoma, sin esperar la venta', detalle: 'Indique el plazo en días.', pideTexto: true },
+      { codigo: 'tras-la-venta', texto: 'Después de vender la moto, por el menor entre el avalúo y el precio de venta' },
+      { codigo: 'compensar-primero', texto: 'Primero se compensa con cualquier otra obligación del cliente y se devuelve el resto' },
+    ],
+  },
+  {
+    id: 'REC-5',
+    bloque: RECUPERACION,
+    titulo: 'Retoma (2 de 2): ¿cómo se paga el excedente y de dónde sale el dinero?',
+    contexto:
+      'Define el asiento de la devolución y el flujo de caja: si sale de la caja de la financiera o de la venta de la moto, y si se pueden descontar costos (grúa, bodegaje, avalúo, trámites).',
+    excelHoy: 'No lo define; los costos no se descuentan (ver R2).',
+    opciones: [
+      { codigo: 'transferencia-caja-propia', texto: 'Transferencia a la cuenta del cliente, con dinero de la caja de la financiera' },
+      { codigo: 'transferencia-con-producto-de-venta', texto: 'Transferencia al cliente con el producto de la venta de la moto' },
+      { codigo: 'transferencia-menos-costos', texto: 'Transferencia a la cuenta del cliente descontando los costos de la retoma con soporte' },
+    ],
+  },
+  {
+    id: 'REC-6',
+    bloque: RECUPERACION,
+    titulo: '¿Quién fija el valor de la dación o la retoma?',
+    contexto:
+      'El avalúo es la base de todo el cierre. Cambia si lo hace un perito externo, una tabla de referencia o un comité interno, y quién responde si luego la moto se vende por menos.',
+    excelHoy: 'El valor viene como dato (avalúo) sin fuente.',
+    opciones: [
+      { codigo: 'perito-externo', texto: 'Un perito externo' },
+      { codigo: 'tabla-referencia', texto: 'Una tabla de referencia de mercado, ajustada por estado de la moto' },
+      { codigo: 'comite-interno', texto: 'Un comité interno de la financiera' },
+    ],
+  },
+  {
+    id: 'REC-7',
+    bloque: RECUPERACION,
+    titulo: 'Si el cliente nunca se pone al día y llega al plazo límite con saldo, ¿qué ocurre?',
+    contexto:
+      'En el caso 9 el crédito llega a la semana 120 debiendo 3,3 millones. Usted dijo que el crédito termina antes en dación o retoma; falta el criterio que fuerza ese cierre.',
+    excelHoy: 'El crédito queda «En mora» al llegar al límite.',
+    opciones: [
+      { codigo: 'dacion-o-retoma-obligatoria', texto: 'Se recupera la moto por dación o retoma al llegar al plazo límite' },
+      { codigo: 'cobro-juridico', texto: 'Pasa a cobro jurídico manteniendo la moto' },
+      { codigo: 'castigo-de-cartera', texto: 'Se castiga la cartera contra provisión' },
+    ],
+  },
+  {
+    id: 'REC-8',
+    bloque: RECUPERACION,
+    titulo: 'La semana del siniestro o de la recuperación, ¿cuenta como cuota vencida?',
+    contexto: 'En el caso 3 la dación es en la semana 43 y el Excel cuenta 4 cuotas vencidas (incluye esa semana). Si no cuenta, serían 3.',
+    excelHoy: 'La semana del evento cuenta como vencida (4).',
+    opciones: [
+      { codigo: 'cuenta-como-vencida', texto: 'Sí, cuenta como vencida', esExcel: true },
+      { codigo: 'hasta-semana-anterior', texto: 'No: se cuentan las cuotas vencidas hasta la semana anterior' },
+    ],
+  },
+
+  // ── Contabilidad ──────────────────────────────────────────────────────────────
+  {
+    id: 'CON-1',
+    bloque: CONTABILIDAD,
+    titulo: 'Plan de cuentas (PUC): ¿cómo nos entrega los códigos de cada cuenta?',
+    contexto:
+      'Faltan los códigos de: caja y bancos, cartera vigente, cartera vencida, CxC interés corriente, CxC mora, CxC servicios, CxC cobranza, CxC fondo de garantías, ingresos recibidos para terceros (¿2815?), inventario de motos, cuenta por pagar al deudor, ingresos por intereses, por mora y por cobranza, e IVA generado. Puede adjuntar el PUC en un Excel por correo, escribirlo en el comentario o aceptar una propuesta del equipo para revisión de su contador.',
+    excelHoy: 'Las cuentas se identifican por nombre, sin código.',
+    opciones: [
+      { codigo: 'adjunto-puc-por-correo', texto: 'Envío el PUC completo en un archivo adjunto por correo' },
+      { codigo: 'codigos-en-comentario', texto: 'Escribo los códigos cuenta por cuenta en el comentario' },
+      { codigo: 'propuesta-del-equipo', texto: 'Que el equipo proponga los códigos del PUC colombiano y los revise mi contador' },
+    ],
+  },
+  {
+    id: 'CON-2',
+    bloque: CONTABILIDAD,
+    titulo: '¿El PUC cambia según la línea de crédito?',
+    contexto: 'El documento del equipo preguntó el plan de cuentas «por línea» (P-04). Define si hay un juego de cuentas único o uno por línea.',
+    excelHoy: 'Un solo juego de cuentas.',
+    opciones: [
+      { codigo: 'igual-para-todas', texto: 'Igual para todas las líneas', esExcel: true },
+      { codigo: 'auxiliar-por-linea', texto: 'Las mismas cuentas con un auxiliar por línea' },
+      { codigo: 'cuentas-distintas-por-linea', texto: 'Cuentas distintas por línea' },
+    ],
+  },
+  {
+    id: 'CON-3',
+    bloque: CONTABILIDAD,
+    titulo: '¿Por cuáles canales llegan los pagos y cómo se sabe a qué crédito pertenecen?',
+    contexto: 'Define cómo entra el abono al motor: el documento del equipo dejó en blanco el origen de los pagos (P-22).',
+    excelHoy: 'Los pagos son instrucciones por semana, sin canal ni conciliación.',
+    opciones: [
+      { codigo: 'extracto-bancario-referencia', texto: 'Del extracto bancario, identificando el crédito por la referencia de pago' },
+      { codigo: 'crm-clasifica', texto: 'El CRM entrega cada pago ya asociado al crédito' },
+      { codigo: 'varios-canales', texto: 'Varios canales (banco, corresponsal, efectivo) con conciliación diaria', detalle: 'Liste los canales.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'CON-4',
+    bloque: CONTABILIDAD,
+    titulo: 'Los gastos de cobranza, ¿son ingreso de la financiera o se giran a un tercero?',
+    contexto:
+      'Si la cobranza la hace una firma externa, lo recaudado por ese concepto es de un tercero (cuenta por pagar) y no ingreso, con otro asiento y posiblemente IVA.',
+    excelHoy: 'Se acredita a la cuenta de cobranza como ingreso propio.',
+    opciones: [
+      { codigo: 'ingreso-propio', texto: 'Ingreso propio de la financiera', esExcel: true },
+      { codigo: 'cuenta-por-pagar-tercero', texto: 'Se gira a un tercero que hace la cobranza' },
+      { codigo: 'mixto', texto: 'Una parte es ingreso y otra se gira al tercero', detalle: 'Indique la proporción.', pideTexto: true },
+    ],
+  },
+
+  // ── Roles y parámetros ────────────────────────────────────────────────────────
+  {
+    id: 'ROL-1',
+    bloque: ROLES,
+    titulo: '¿Quién es el «administrador» que puede cambiar la tasa y los gastos de cobranza?',
+    contexto:
+      'Usted dijo que solo una persona (el administrador) puede cambiar esos parámetros. Para configurar el acceso hace falta definir el rol y si hay suplente.',
+    excelHoy: 'No hay roles: los parámetros son celdas de la hoja Inputs.',
+    opciones: [
+      { codigo: 'una-persona', texto: 'Una sola persona, sin suplente' },
+      { codigo: 'una-persona-y-suplente', texto: 'Una persona con un suplente para ausencias' },
+      { codigo: 'cargo-con-dos-personas', texto: 'Un cargo que ocupan dos personas con el mismo permiso' },
+    ],
+  },
+  {
+    id: 'ROL-2',
+    bloque: ROLES,
+    titulo: '¿Qué parámetros son sensibles y solo toca el administrador?',
+    contexto:
+      'Usted ya dijo dos: la tasa y los gastos de cobranza. Podrían serlo también el margen de usura, las tarifas de servicios y el plazo límite.',
+    excelHoy: 'Cualquiera que abra el Excel puede cambiarlos.',
+    opciones: [
+      { codigo: 'tasa-y-cobranza', texto: 'Solo la tasa y los gastos de cobranza (valor, tope y activación)' },
+      { codigo: 'tasa-cobranza-usura-servicios', texto: 'Tasa, cobranza, margen de usura y tarifas de los servicios' },
+      { codigo: 'todos-los-del-producto', texto: 'Todos los parámetros del producto (incluidos plazo límite y periodicidades)' },
+    ],
+  },
+  {
+    id: 'ROL-3',
+    bloque: ROLES,
+    titulo: 'Cuando el administrador cambia un parámetro, ¿rige para los créditos vigentes o solo para los nuevos?',
+    contexto:
+      'Usted dijo que el crédito conserva sus condiciones salvo la tasa por causas externas. Falta decidir si un cambio de política de cobranza alcanza a los créditos ya firmados y desde cuándo.',
+    excelHoy: 'No hay versionado de parámetros.',
+    opciones: [
+      { codigo: 'solo-nuevos', texto: 'Solo los créditos nuevos; los vigentes conservan lo firmado' },
+      { codigo: 'vigentes-desde-fecha', texto: 'También los vigentes, desde una fecha de vigencia futura que fija el administrador' },
+      { codigo: 'segun-parametro', texto: 'Depende del parámetro', detalle: 'Indique cuáles alcanzan a los vigentes.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'ROL-4',
+    bloque: ROLES,
+    titulo: '¿Un cambio de parámetro sensible necesita segundo aprobador y queda en bitácora?',
+    contexto: 'Es el control sobre el administrador: quién cambió qué y cuándo, y si otra persona debe aprobarlo antes de que rija.',
+    excelHoy: 'Sin control ni historial de cambios.',
+    opciones: [
+      { codigo: 'bitacora-sola', texto: 'Cambio inmediato del administrador, con bitácora de quién, qué y cuándo' },
+      { codigo: 'segundo-aprobador', texto: 'El cambio rige solo cuando un segundo aprobador lo confirma, con bitácora' },
+    ],
+  },
+  {
+    id: 'ROL-5',
+    bloque: ROLES,
+    titulo: 'Después del simulador y el motor de abonos, ¿cuál es el siguiente alcance?',
+    contexto:
+      'El documento del equipo dejó en blanco el alcance posterior al simulador (P-27). Define el orden de los próximos módulos: desembolso y plan con fechas, cierre diario y contabilidad, e integración con el CRM.',
+    excelHoy: 'No aplica.',
+    opciones: [
+      { codigo: 'plan-con-fechas-y-desembolso', texto: 'Primero el desembolso y el plan de pagos con fechas' },
+      { codigo: 'cierre-diario-contabilidad', texto: 'Primero el cierre diario y la contabilidad' },
+      { codigo: 'integracion-crm', texto: 'Primero la integración con el CRM y el registro de abonos' },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -717,11 +1310,11 @@ const RESPONDIDAS_20_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   R3: { referencia: REF_20_OCT, respuesta: 'La moto entra al inventario por el avalúo y la diferencia se ajusta después (sin comentario; por confirmar).' },
   R4: { referencia: REF_20_OCT, respuesta: 'Interés completo en la semana del evento, como el Excel (sin comentario; por confirmar).' },
   C1: { referencia: REF_20_OCT, respuesta: 'La causación sigue el plan normal (caso 1), respetando la periodicidad pactada.' },
-  C2: { referencia: REF_20_OCT, respuesta: 'Los códigos del PUC los enviará por correo; quedan pendientes.' },
+  C2: { referencia: REF_20_OCT, nota: 'Pendiente: PUC que enviará por correo (ver CON-1).', respuesta: 'Los códigos del PUC los enviará por correo; quedan pendientes.' },
   C3: { referencia: REF_20_OCT, respuesta: 'El pago inicial lo recauda el concesionario y no afecta a la fábrica de crédito; se guarda para auditoría y para la simulación de la oferta comercial.' },
-  X1: { referencia: REF_20_OCT, respuesta: 'Enviará una versión corregida del Excel (sin comentario).' },
+  X1: { referencia: REF_20_OCT, nota: 'Pendiente: Excel corregido.', respuesta: 'Enviará una versión corregida del Excel (sin comentario).' },
   X3: { referencia: REF_20_OCT, respuesta: 'Se refería a dación (caso 3) o retoma (caso 4).' },
-  X4: { referencia: REF_20_OCT, respuesta: 'El plazo límite del caso 8 llega según el Excel que adjuntará.' },
+  X4: { referencia: REF_20_OCT, nota: 'Pendiente: Excel corregido.', respuesta: 'El plazo límite del caso 8 llega según el Excel que adjuntará.' },
 }
 
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
@@ -729,7 +1322,7 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = BASE.map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3].map((p) => {
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
   if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }
   return p
@@ -742,3 +1335,15 @@ export const RESPONDIDAS = TODAS.filter((p) => p.respondida)
 
 /** Bloques que aún tienen preguntas abiertas: los demás ya quedaron respondidos. */
 export const BLOQUES_ABIERTOS: string[] = BLOQUES.filter((b) => PREGUNTAS.some((p) => p.bloque === b))
+
+/**
+ * Completitud de reglas: cerradas sobre el total inventariado (respondidas + abiertas), por bloque.
+ * Una respondida con salvedad vigente (`nota`, p. ej. la política de cobranza) aún no cuenta como cerrada.
+ * El detalle regla por regla está en docs/completitud-reglas.md.
+ */
+export function completitudPorBloque(): { bloque: string; cerradas: number; total: number }[] {
+  return BLOQUES.map((bloque) => {
+    const delBloque = TODAS.filter((p) => p.bloque === bloque)
+    return { bloque, total: delBloque.length, cerradas: delBloque.filter((p) => p.respondida && !p.respondida.nota).length }
+  })
+}

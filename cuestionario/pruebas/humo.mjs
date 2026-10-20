@@ -49,6 +49,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
   await page.getByLabel('Comentario de la pregunta PPER', { exact: true }).fill('Semanal, quincenal y mensual según la negociación')
+  await page.getByRole('button', { name: /Servicios complementarios →/ }).click()
   await page.getByRole('button', { name: /Abonos y prepago →/ }).click()
   await page.getByRole('radio', { name: /Con mínimo/ }).check()
   await page.getByRole('button', { name: '$50.000' }).click()
