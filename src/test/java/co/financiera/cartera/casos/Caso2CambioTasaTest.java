@@ -10,6 +10,7 @@ import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
+import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.motor.EstadoCredito;
 import co.financiera.cartera.nucleo.motor.Escenario;
@@ -135,7 +136,7 @@ class Caso2CambioTasaTest {
         Map<String, String> v = validacion(7);
         BigDecimal esperada = input("C42"); // (1 + C41)^(1/52) − 1
         assertThat(fila(periodo(v)).tasaPeriodica()).isCloseTo(esperada, offset(tolerancia(v)));
-        assertThat(Tasas.desdeEA(EA_NUEVA, 52, 12).periodica()).isCloseTo(esperada, offset(tolerancia(v)));
+        assertThat(Tasas.desdeEA(EA_NUEVA, Periodicidad.SEMANAL).periodica()).isCloseTo(esperada, offset(tolerancia(v)));
         // Antes del cambio rige la tasa original (Inputs!B17).
         assertThat(fila(PERIODO_CAMBIO - 1).tasaPeriodica()).isCloseTo(input("B21"), offset(tolerancia(v)));
     }

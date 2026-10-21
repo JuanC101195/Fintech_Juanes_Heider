@@ -7,8 +7,10 @@ import co.financiera.cartera.contabilidad.Contabilizador;
 import co.financiera.cartera.contabilidad.Cuenta;
 import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.Calendario;
+import co.financiera.cartera.nucleo.LineaCredito;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
+import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.motor.EstadoCredito;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.MotorCartera;
@@ -19,11 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 /**
  * HT-02 · Invariantes del motor con pagos contractuales a tiempo, sobre créditos aleatorios
- * (semilla fija, reproducible): monto 1–40 millones, plazo 6–36 meses, EA 20 %–120 %.
+ * (semilla fija, reproducible): monto 1–40 millones, plazo 6–36 meses, EA 20 %–120 %, en cada
+ * periodicidad del catálogo: semanal, quincenal y mensual (ADR 0002, paso 5).
  */
 class Caso1InvariantesTest {
 
@@ -55,16 +59,21 @@ class Caso1InvariantesTest {
         return creditos;
     }
 
-    private static ParametrosProducto parametros(Credito c) {
-        ParametrosProducto base = ParametrosProducto.replicaExcel().conTasaEA(c.ea());
-        int cuotas = c.plazoMeses() * base.periodosPorAnio() / base.mesesPorAnio();
+    /**
+     * ADR 0002 paso 5: los mismos créditos en cada periodicidad. Las cuotas = ROUNDDOWN(meses × ppa / 12)
+     * (PPER-3). Se arma con conNumeroCuotas para probar plazos de hasta 36 meses, más allá del máximo
+     * comercial de 24 (PPER-2): son invariantes del cálculo, no del producto.
+     */
+    private static ParametrosProducto parametros(Credito c, Periodicidad per) {
+        ParametrosProducto base = ParametrosProducto.de(LineaCredito.CPPU, per, 1).conTasaEA(c.ea());
+        int cuotas = per.cuotasEnMeses(c.plazoMeses());
         // El horizonte debe alcanzar la última cuota (36 meses = 156 semanas > 120 por defecto).
         return base.conNumeroCuotas(cuotas).conPlazoLimite(cuotas + 10);
     }
 
-    private static List<Movimiento> correr(Credito c) {
+    private static List<Movimiento> correr(Credito c, Periodicidad per) {
         Operacion op = new Operacion(c.monto(), Calc.CERO, Calc.CERO, Calc.CERO, Calc.CERO, Calc.CERO);
-        return new MotorCartera().ejecutar(new Escenario(op, parametros(c)));
+        return new MotorCartera().ejecutar(new Escenario(op, parametros(c, per)));
     }
 
     private static final Map<String, Function<Movimiento, BigDecimal>> SALDOS = Map.of(
@@ -77,14 +86,15 @@ class Caso1InvariantesTest {
             "CxC interés corriente", Movimiento::cxcInteresCorriente,
             "CxC servicios", Movimiento::cxcServicios);
 
-    @Test
-    void ningunSaldoEsNegativo() {
+    @ParameterizedTest
+    @EnumSource(Periodicidad.class)
+    void ningunSaldoEsNegativo(Periodicidad per) {
         List<String> errores = new ArrayList<>();
         for (Credito c : creditosAleatorios()) {
-            for (Movimiento m : correr(c)) {
+            for (Movimiento m : correr(c, per)) {
                 SALDOS.forEach((nombre, saldo) -> {
                     if (saldo.apply(m).signum() < 0) {
-                        errores.add(c + " · periodo " + m.periodo() + " · " + nombre + " = " + saldo.apply(m));
+                        errores.add(per + " · " + c + " · periodo " + m.periodo() + " · " + nombre + " = " + saldo.apply(m));
                     }
                 });
             }
@@ -92,35 +102,37 @@ class Caso1InvariantesTest {
         assertThat(errores).isEmpty();
     }
 
-    @Test
-    void elCronogramaCierraEnCeroEnLaCuotaPactada() {
+    @ParameterizedTest
+    @EnumSource(Periodicidad.class)
+    void elCronogramaCierraEnCeroEnLaCuotaPactada(Periodicidad per) {
         List<String> errores = new ArrayList<>();
         for (Credito c : creditosAleatorios()) {
-            List<Movimiento> movs = correr(c);
+            List<Movimiento> movs = correr(c, per);
             Movimiento ultimo = movs.getLast();
-            int pactadas = Calendario.numeroCuotas(parametros(c));
+            int pactadas = Calendario.numeroCuotas(parametros(c, per));
             if (ultimo.periodo() != pactadas || ultimo.estado() != EstadoCredito.CANCELADO
                     || ultimo.saldoFinal().abs().compareTo(UN_PESO) > 0) {
-                errores.add(c + " · termina en el periodo " + ultimo.periodo() + " de " + pactadas + " con saldo "
+                errores.add(per + " · " + c + " · termina en el periodo " + ultimo.periodo() + " de " + pactadas + " con saldo "
                         + ultimo.saldoFinal().toPlainString() + " y estado " + ultimo.estado());
             }
             // Antes de la última cuota el crédito no se cancela.
             if (movs.get(movs.size() - 2).estado() == EstadoCredito.CANCELADO) {
-                errores.add(c + " · se canceló antes de la cuota pactada");
+                errores.add(per + " · " + c + " · se canceló antes de la cuota pactada");
             }
         }
         assertThat(errores).isEmpty();
     }
 
-    @Test
-    void elPagoRecibidoEsLaSumaDeSuAplicacionPorPrelacion() {
+    @ParameterizedTest
+    @EnumSource(Periodicidad.class)
+    void elPagoRecibidoEsLaSumaDeSuAplicacionPorPrelacion(Periodicidad per) {
         List<String> errores = new ArrayList<>();
         for (Credito c : creditosAleatorios()) {
-            for (Movimiento m : correr(c)) {
+            for (Movimiento m : correr(c, per)) {
                 BigDecimal aplicado = Calc.sumar(m.pagoCobranza(), m.pagoMora(), m.pagoInteresCorriente(), m.pagoServicios(),
                         m.pagoCapital());
                 if (Calc.restar(m.pagoRecibido(), aplicado).abs().compareTo(UN_PESO) > 0) {
-                    errores.add(c + " · periodo " + m.periodo() + ": recibido " + m.pagoRecibido().toPlainString()
+                    errores.add(per + " · " + c + " · periodo " + m.periodo() + ": recibido " + m.pagoRecibido().toPlainString()
                             + ", aplicado " + aplicado.toPlainString());
                 }
             }
@@ -128,12 +140,13 @@ class Caso1InvariantesTest {
         assertThat(errores).isEmpty();
     }
 
-    @Test
-    void cadaCuotaContractualSeContabilizaComoRecaudoNormalYLaCarteraQuedaEnCero() {
+    @ParameterizedTest
+    @EnumSource(Periodicidad.class)
+    void cadaCuotaContractualSeContabilizaComoRecaudoNormalYLaCarteraQuedaEnCero(Periodicidad per) {
         Contabilizador contabilizador = Contabilizador.estandar();
         List<String> errores = new ArrayList<>();
         for (Credito c : creditosAleatorios()) {
-            List<Movimiento> movs = correr(c);
+            List<Movimiento> movs = correr(c, per);
             List<Asiento> asientos = contabilizador.contabilizar(movs); // lanza si alguno descuadra (HT-06)
             BigDecimal caja = Calc.CERO;
             BigDecimal cartera = Calc.CERO;
@@ -151,7 +164,7 @@ class Caso1InvariantesTest {
             if (asientos.size() != movs.size() - 1
                     || Calc.restar(caja, recaudado).abs().compareTo(UN_PESO) > 0
                     || Calc.restar(cartera, c.monto()).abs().compareTo(UN_PESO) > 0) {
-                errores.add(c + " · asientos " + asientos.size() + ", caja " + caja.toPlainString() + " vs "
+                errores.add(per + " · " + c + " · asientos " + asientos.size() + ", caja " + caja.toPlainString() + " vs "
                         + recaudado.toPlainString() + ", cartera " + cartera.toPlainString());
             }
         }

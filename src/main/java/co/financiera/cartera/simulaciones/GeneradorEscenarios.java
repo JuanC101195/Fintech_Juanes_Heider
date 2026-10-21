@@ -2,6 +2,7 @@ package co.financiera.cartera.simulaciones;
 
 import static co.financiera.cartera.nucleo.Calc.bd;
 
+import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.MotorCartera;
@@ -53,28 +54,38 @@ public final class GeneradorEscenarios {
     static String generar() {
         ParametrosProducto excel = ParametrosProducto.replicaExcel();
         ReglasNegocio r = ReglasNegocio.EXCEL;
+        // ADR 0002 paso 4: las cuotas clave salen del Calendario (en semanal dan 43, 44, 31 y 34 como antes).
+        int mes10 = Calendario.periodoDelMes(10, excel);
+        int mes11 = Calendario.primerPeriodoDelMes(11, excel);
+        int dejaDePagar = Calendario.periodoDelMes(7, excel) + 1;
+        int siniestro = Calendario.periodoDelMes(8, excel);
+        // Por revisar con cuestionario/: 86 y 87 vienen del Excel viejo de 86 cuotas; hoy son 104 y el caso 8
+        // se proyecta solo hasta la 100. No se cambian aquí para no mover las previsualizaciones publicadas.
+        int cuota86 = 86;
+        int cuota61 = 61;
         List<Pregunta> preguntas = List.of(
-                new Pregunta("P1", "Caso 8 · el cliente paga el 40 % de la cuota 43 y luego vuelve a pagar la cuota pactada", List.of(43, 44),
+                new Pregunta("P1", "Caso 8 · el cliente paga el 40 % de la cuota " + mes10 + " y luego vuelve a pagar la cuota pactada", List.of(mes10, mes11),
                         List.of(new Opcion("servicios-antes", EscenariosExcel.caso8(excel).conReglas(r)),
                                 new Opcion("capital-antes", EscenariosExcel.caso8(excel).conReglas(r.conPrelacion(OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS))))),
-                new Pregunta("P3", "Caso 9 · desde la cuota 43 todas se pagan con 14 días de atraso", List.of(43, 44),
+                new Pregunta("P3", "Caso 9 · desde la cuota " + mes10 + " todas se pagan con 14 días de atraso", List.of(mes10, mes11),
                         List.of(new Opcion("vencido-mas-dias", EscenariosExcel.caso9(excel).conReglas(r)),
                                 new Opcion("solo-vencido", EscenariosExcel.caso9(excel).conReglas(r.conFormulaMora(FormulaMora.SOLO_VENCIDO))))),
-                new Pregunta("P7", "Caso 3 · el cliente deja de pagar en la cuota 31 y entrega la moto (vale 3.000.000) en la 34", List.of(31, 34),
+                new Pregunta("P7", "Caso 3 · el cliente deja de pagar en la cuota " + dejaDePagar + " y entrega la moto (vale 3.000.000) en la " + siniestro,
+                        List.of(dejaDePagar, siniestro),
                         List.of(new Opcion("sin-mora", EscenariosExcel.caso3(excel, false).conReglas(r)),
                                 new Opcion("con-mora", EscenariosExcel.caso3(excel, true).conReglas(r)))),
-                new Pregunta("PDOBLE", "Caso 8 · pago del 40 % en la cuota 43", List.of(44, 86),
+                new Pregunta("PDOBLE", "Caso 8 · pago del 40 % en la cuota " + mes10, List.of(mes11, cuota86),
                         List.of(new Opcion("saldo-total", EscenariosExcel.caso8(excel).conReglas(r)),
                                 new Opcion("saldo-vigente", EscenariosExcel.caso8(excel).conReglas(r.conBaseInteres(BaseInteres.SALDO_VIGENTE))))),
-                new Pregunta("PTOPE", "Caso 9 · desde la cuota 43 todas se pagan con 14 días de atraso", List.of(43, 86),
+                new Pregunta("PTOPE", "Caso 9 · desde la cuota " + mes10 + " todas se pagan con 14 días de atraso", List.of(mes10, cuota86),
                         List.of(new Opcion("sin-tope", EscenariosExcel.caso9(excel).conReglas(r)),
                                 new Opcion("tope-20000", EscenariosExcel.caso9(excel).conReglas(r.conTopeCobranza(bd(20_000)))),
                                 new Opcion("tope-10000", EscenariosExcel.caso9(excel).conReglas(r.conTopeCobranza(bd(10_000)))),
                                 new Opcion("tope-0", EscenariosExcel.caso9(excel).conReglas(r.conTopeCobranza(BigDecimal.ZERO))))),
-                new Pregunta("S1", "Caso 6 · abono extra de 2.000.000 en la cuota 43 como menor plazo", List.of(1, 61),
+                new Pregunta("S1", "Caso 6 · abono extra de 2.000.000 en la cuota " + mes10 + " como menor plazo", List.of(1, cuota61),
                         List.of(new Opcion("monto-inicial", EscenariosExcel.caso6(excel).conReglas(r)),
                                 new Opcion("saldo", EscenariosExcel.caso6(excel).conReglas(r.conBaseServicios(BaseServicios.SALDO))))),
-                new Pregunta("S4", "Caso 8 · el crédito sigue con saldo después de la cuota 86", List.of(86, 87),
+                new Pregunta("S4", "Caso 8 · el crédito sigue con saldo después de la cuota " + cuota86, List.of(cuota86, cuota86 + 1),
                         List.of(new Opcion("no", EscenariosExcel.caso8(excel).conReglas(r)),
                                 new Opcion("si", EscenariosExcel.caso8(excel).conReglas(r.conServiciosDespuesDelPlazo(true))))),
                 new Pregunta("INICIAL", "Caso 1 · operación de 5.904.400 pagada a tiempo", List.of(1),

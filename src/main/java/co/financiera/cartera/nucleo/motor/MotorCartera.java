@@ -93,7 +93,7 @@ public final class MotorCartera {
         List<Movimiento> correr() {
             filas.add(desembolso());
             for (int periodo = 1; periodo <= p.plazoLimitePeriodos(); periodo++) {
-                Movimiento fila = semana(periodo, escenario.instruccionesDe(periodo));
+                Movimiento fila = procesarPeriodo(periodo, escenario.instruccionesDe(periodo));
                 filas.add(fila);
                 if (fila.estado() == EstadoCredito.CANCELADO || fila.estado() == EstadoCredito.CERRADO_POR_EVENTO) {
                     break;
@@ -109,7 +109,8 @@ public final class MotorCartera {
                     CERO, DeudaExtinguida.NINGUNA, CERO);
         }
 
-        private Movimiento semana(int periodo, List<Instruccion> instrucciones) {
+        // ADR 0002 paso 4: antes "semana"; el ciclo es por periodo de la periodicidad pactada.
+        private Movimiento procesarPeriodo(int periodo, List<Instruccion> instrucciones) {
             Ordenes ordenes = leer(periodo, instrucciones);
             Instruccion pago = ordenes.pago;
             BigDecimal tasa = tasas.periodica();
