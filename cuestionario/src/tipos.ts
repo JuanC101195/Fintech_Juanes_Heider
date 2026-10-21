@@ -22,7 +22,7 @@ export interface Opcion {
 
 export interface CampoValor {
   etiqueta: string
-  unidad: 'COP' | '%' | 'pp' | 'días' | 'semanas'
+  unidad: 'COP' | '%' | 'pp' | 'días' | 'semanas' | 'meses'
   ayuda?: string
   /** Valores sugeridos; si tienen escenario, se previsualizan con el motor. */
   sugeridos?: { valor: number; escenario?: string }[]
@@ -53,6 +53,8 @@ export interface Respondida {
   respuesta: string
   /** Salvedad que sigue vigente aunque ya se contestó (por ejemplo, una política aún pendiente). */
   nota?: string
+  /** Id de la pregunta de la ronda 4 que la reemplaza: ya no cuenta en la completitud (la cuenta la nueva). */
+  reemplazadaPor?: string
 }
 
 export interface Respuesta {

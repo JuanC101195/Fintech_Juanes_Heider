@@ -360,8 +360,8 @@ const BASE: Pregunta[] = [
     id: 'S4',
     bloque: SERVICIOS,
     titulo: 'Si el crédito sigue con saldo después de la última cuota pactada, ¿se siguen cobrando servicios?',
-    contexto: 'En el caso 8 el crédito termina en la semana 89, pero desde la 87 no se causan servicios: por ejemplo, el seguro de vida no tendría prima esas semanas.',
-    excelHoy: 'Los servicios se cobran solo hasta la cuota 86.',
+    contexto: 'En el caso 8 el crédito sigue con saldo después de la cuota 104, la última pactada, y desde ahí no se causan servicios: por ejemplo, el seguro de vida no tendría prima esas semanas.',
+    excelHoy: 'Los servicios se cobran solo hasta la última cuota pactada (104).',
     previsualizacion: 'S4',
     opciones: [
       { codigo: 'no', texto: 'No, solo hasta la última cuota pactada', esExcel: true, escenario: 'no', ajustes: { serviciosDespuesDelPlazo: 'false' } },
@@ -632,7 +632,7 @@ const BASE: Pregunta[] = [
     id: 'C4',
     bloque: CONTABILIDAD,
     titulo: '¿Son correctas estas definiciones de la hoja Validaciones?',
-    contexto: 'La hoja no trae fórmula para dos validaciones. Se tomaron así: "cuotas eliminadas" = 86 − última cuota pagada (caso 6: 25) y "periodos adicionales" = última semana − 86 (caso 8: 3).',
+    contexto: 'La hoja no trae fórmula para dos validaciones. Se tomaron así: "cuotas eliminadas" = 104 − última cuota pagada (caso 6) y "periodos adicionales" = última semana − 104 (caso 8).',
     excelHoy: 'Sin fórmula.',
     opciones: [
       { codigo: 'si', texto: 'Sí, son correctas' },
@@ -1272,6 +1272,218 @@ const RONDA_3: Pregunta[] = [
   },
 ]
 
+// Ronda 4: confirmaciones cortas de lo que la ronda 3 dejó contradictorio, incompleto o sin repetir.
+const RONDA_4: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'R4-QUIN',
+    bloque: PAGOS,
+    titulo: 'Escribió 104 periodos al año para la quincena. Una quincena son 24 periodos al año (2 por mes). ¿Confirma 24?',
+    contexto:
+      'En el detalle de PPER escribió "quincena se toman 104 periodos año". Con 104 periodos habría un pago cada 3,5 días, que no es una quincena; el 104 es el número de cuotas semanales del caso 8. El motor ya lo implementa con 24 (tasa del periodo = (1+EA)^(1/24) − 1).',
+    excelHoy: 'El Excel solo modela cuotas semanales (52 periodos al año).',
+    opciones: [
+      { codigo: 'si-24', texto: 'Sí, 24' },
+      { codigo: 'otro-valor', texto: 'No, otro valor', detalle: 'Indique el valor y por qué.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R4-MENSUAL-DIA',
+    bloque: PAGOS,
+    titulo: 'Para la cuota mensual escribió "el 5 o el primer día del mes". ¿Es una fecha fija para todos o se elige por crédito?',
+    contexto: 'Para la quincena ya quedó el 5 y el 20. Falta saber si el motor usa un solo día mensual para todos los créditos o lo guarda en cada uno.',
+    excelHoy: 'El Excel solo modela cuotas semanales.',
+    opciones: [
+      { codigo: 'dia-5-todos', texto: 'Fija para todos: el día 5 de cada mes' },
+      { codigo: 'dia-1-todos', texto: 'Fija para todos: el primer día de cada mes' },
+      { codigo: 'por-credito', texto: 'Se elige por crédito (1 o 5) y se pacta en la oferta' },
+    ],
+  },
+
+  // ── Abonos y prepago ──────────────────────────────────────────────────────────
+  {
+    id: 'R4-A3',
+    bloque: ABONOS,
+    titulo: '¿Se acepta cualquier abono extra o hay un valor mínimo?',
+    contexto:
+      'Esta pregunta (antes A3) quedó igual: su respuesta del 20 de octubre habló solo del orden de la prelación y no dijo si hay un mínimo, así que no alcanzó para decidir. Basta responder: sin mínimo, o el valor mínimo en pesos.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'sin-minimo', texto: 'Sin mínimo: se acepta cualquier valor', ajustes: { abonoMinimo: '0' } },
+      { codigo: 'con-minimo', texto: 'Con mínimo', pideValor: true },
+    ],
+    valor: { etiqueta: 'Abono extra mínimo', unidad: 'COP', ajuste: 'abonoMinimo', sugeridos: [{ valor: 50000 }, { valor: 100000 }, { valor: 174049 }] },
+  },
+
+  // ── Cambio de tasa y usura ────────────────────────────────────────────────────
+  {
+    id: 'R4-T5',
+    bloque: TASA,
+    titulo: 'Si el cliente está en mora cuando cambia la tasa, ¿sobre qué saldo se recalcula la cuota?',
+    contexto:
+      'Esta pregunta (antes T5) quedó igual: su respuesta fue "investigar las cláusulas aceleratorias", lo que no dice qué saldo usar mientras tanto. Proponemos tres reglas concretas para que escoja una; si luego la cláusula dice otra cosa, se ajusta.',
+    excelHoy: 'El Excel solo modela el cambio de tasa con el cliente al día.',
+    opciones: [
+      { codigo: 'saldo-vigente', texto: 'Solo sobre el capital vigente; lo vencido se cobra aparte' },
+      { codigo: 'saldo-total', texto: 'Sobre el saldo total (vigente + vencido)' },
+      { codigo: 'acelerar', texto: 'El crédito se acelera: se exige todo el saldo y no se recalcula la cuota' },
+    ],
+  },
+  {
+    id: 'R4-USURA-PLAZO',
+    bloque: TASA,
+    titulo: 'Si nadie autoriza la nueva usura, ¿a los cuántos días hábiles de su publicación se aplica sola? ¿Vale lo mismo para el lote de créditos vigentes?',
+    contexto:
+      'USU-3 dijo que si nadie autoriza la usura se aplica sola, pero USU-5 dijo que el recálculo de los vigentes espera la aprobación del lote. Para que no se contradigan, proponemos que se aplique sola al vencer un plazo de aprobación. Falta el plazo y si ese plazo cubre también el lote.',
+    excelHoy: 'No hay alerta ni plazo: la tasa la digita quien arma el caso.',
+    opciones: [
+      { codigo: 'sola-plazo-y-lote', texto: 'Se aplica sola al vencer el plazo, también para el lote de vigentes', pideValor: true },
+      { codigo: 'sola-plazo-lote-espera', texto: 'Sola al vencer el plazo para los nuevos; el lote de vigentes siempre espera la aprobación', pideValor: true },
+    ],
+    valor: { etiqueta: 'Días hábiles desde la publicación', unidad: 'días', sugeridos: [{ valor: 1 }, { valor: 3 }, { valor: 5 }] },
+  },
+  {
+    id: 'R4-AVISO-CLIENTE',
+    bloque: TASA,
+    titulo: 'Dijo que no se avisa al cliente cuando cambia la tasa. ¿Lo confirma o lo valida antes con legal?',
+    contexto:
+      'Los servicios (fondo, asistencia, seguro) no cambian con la tasa: eso ya quedó. Lo que preocupa es el aviso: la protección al consumidor financiero suele exigir informar los cambios de condiciones del crédito, y aquí cambia la cuota o el plazo.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'no-se-avisa', texto: 'Confirmo: no se avisa al cliente' },
+      { codigo: 'se-avisa', texto: 'Sí se avisa al cliente cuando cambia la tasa', detalle: 'Indique por qué medio y con cuánta anticipación.', pideTexto: true },
+      { codigo: 'valida-legal', texto: 'Lo valido con legal y respondo después', detalle: 'Queda pendiente el concepto de legal.' },
+    ],
+  },
+
+  // ── Dación y retoma ───────────────────────────────────────────────────────────
+  {
+    id: 'R4-R2',
+    bloque: RECUPERACION,
+    titulo: 'Al recuperar la moto, ¿se descuenta el costo real (grúa, bodegaje, avalúo, trámites) con su soporte?',
+    contexto:
+      'Esta pregunta (antes R2) quedó igual: respondió que aún no tiene definido el valor. No hace falta el valor, solo la regla: en la retoma (REC-5) ya dijo que se descuentan los costos con soporte. Falta saber si en la dación también y si hay un valor fijo mientras se define la política.',
+    excelHoy: 'No se descuenta nada.',
+    opciones: [
+      { codigo: 'no', texto: 'No se descuenta nada', esExcel: true },
+      { codigo: 'costo-real', texto: 'Sí, el costo real con soporte, tanto en dación como en retoma' },
+      { codigo: 'si', texto: 'Sí, un valor estimado fijo por recuperación mientras se define la política', pideValor: true },
+    ],
+    valor: { etiqueta: 'Costo estimado de una recuperación', unidad: 'COP', ajuste: 'costoRecuperacion' },
+  },
+  {
+    id: 'R4-PERITO',
+    bloque: RECUPERACION,
+    titulo: 'El valor de la dación o la retoma es la guía Fasecolda × 65 %. ¿Cuándo se usa el perito externo?',
+    contexto: 'Dijo que el perito es la segunda opción. Para programarlo hay que saber cuándo entra: solo cuando falta la referencia, también si el cliente objeta el valor, o en otros casos.',
+    excelHoy: 'El avalúo es un dato de entrada del caso.',
+    opciones: [
+      { codigo: 'sin-referencia', texto: 'Solo si la moto no tiene referencia en la guía Fasecolda' },
+      { codigo: 'sin-referencia-u-objecion', texto: 'Si no hay referencia Fasecolda o el cliente objeta el valor' },
+      { codigo: 'otros-casos', texto: 'En otros casos', detalle: 'Indique cuáles.', pideTexto: true },
+    ],
+  },
+
+  // ── Contabilidad ──────────────────────────────────────────────────────────────
+  {
+    id: 'R4-C5',
+    bloque: CONTABILIDAD,
+    titulo: '¿El GPS y los gastos comerciales son parte del alistamiento? Sí o no.',
+    contexto:
+      'Esta pregunta (antes C5) quedó igual: marcó la opción "incluye GPS y gastos comerciales", pero su detalle decía "total = moto + alistamiento", que los deja fuera; las dos respuestas se contradicen. En su ejemplo la inicial se resta de 6.500.000 + 700.000; el valor total del Excel suma además GPS y plataforma (80.000) y gastos comerciales (60.000).',
+    excelHoy: 'El Excel no tiene pago inicial.',
+    opciones: [
+      { codigo: 'valor-total', texto: 'Sí: la inicial se resta del valor total (moto + alistamiento + GPS + gastos comerciales)' },
+      { codigo: 'moto-alistamiento', texto: 'No: se resta solo de moto + alistamiento y el GPS y los gastos comerciales se financian siempre' },
+    ],
+  },
+  {
+    id: 'R4-COBRANZA-CONTABLE',
+    bloque: CONTABILIDAD,
+    titulo: 'Los gastos de cobranza son una compensación de gastos reales, no un ingreso. ¿Cómo se registran?',
+    contexto: 'Si no son ingreso, el asiento cambia: o la financiera paga el gasto y le cobra al cliente el reembolso (cuenta por cobrar), o recibe el dinero para terceros.',
+    excelHoy: 'El Excel los trata como un concepto más del pago.',
+    opciones: [
+      { codigo: 'cxc-reembolsable', texto: 'Cuenta por cobrar reembolsable contra el gasto real' },
+      { codigo: 'ingreso-para-terceros', texto: 'Ingreso recibido para terceros (cuenta por pagar)' },
+      { codigo: 'otro-tratamiento', texto: 'Otro tratamiento', pideTexto: true },
+    ],
+  },
+
+  // ── Roles y parámetros ────────────────────────────────────────────────────────
+  {
+    id: 'R4-SUPLENTE',
+    bloque: ROLES,
+    titulo: 'Hay un solo administrador y ningún suplente. ¿Qué pasa si no está?',
+    contexto: 'Sin él nadie puede cambiar la tasa, la usura ni los gastos de cobranza, y la usura vence cada mes.',
+    excelHoy: 'No aplica.',
+    opciones: [
+      { codigo: 'suplente', texto: 'Se nombra un suplente con los mismos permisos y misma bitácora' },
+      { codigo: 'contingencia', texto: 'Procedimiento de contingencia: la dirección financiera designa a alguien por escrito mientras falte', pideTexto: true },
+      { codigo: 'esperar', texto: 'Se espera a que vuelva; no se prevé reemplazo' },
+    ],
+  },
+
+  {
+    id: 'R4-PLAZO-LINEA',
+    bloque: PAGOS,
+    titulo: 'Dijo "máximo 24 meses" de plazo. ¿El tope de 24 vale para todas las líneas o cada línea tiene el suyo?',
+    contexto: 'El catálogo de Inputs tiene la línea ORDINARIO con 36 meses. Si el tope es 24 para todas, esa línea se recorta; si no, el motor guarda el tope en cada línea.',
+    excelHoy: 'El catálogo de Inputs trae el plazo de cada línea (ORDINARIO: 36 meses).',
+    opciones: [
+      { codigo: 'todas-24', texto: '24 meses para todas las líneas' },
+      { codigo: 'por-linea', texto: 'Cada línea con su tope (ORDINARIO 36)', detalle: 'Si algún tope del catálogo cambia, indíquelo.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R4-PLAZO-LIMITE',
+    bloque: PAGOS,
+    titulo: 'El plazo límite de recuperación va en periodos. ¿Cuántos?',
+    contexto: 'Ya quedó que se expresa en periodos de la periodicidad del crédito (PPER-6), pero falta el valor. Hoy el motor usa el equivalente a 120 semanas (casos 8 y 9: 100 y 120 semanas).',
+    excelHoy: 'Plazo límite de 100 semanas en el caso 8 y 120 en el caso 9.',
+    opciones: [
+      { codigo: 'equivalente-120', texto: 'Mantener el equivalente a 120 semanas (≈ 27 meses)' },
+      { codigo: 'meses', texto: 'Otro plazo, en meses', pideValor: true },
+    ],
+    valor: { etiqueta: 'Plazo límite', unidad: 'meses', sugeridos: [{ valor: 24 }, { valor: 27 }, { valor: 36 }] },
+  },
+  {
+    id: 'R4-PAGO-SIN-CUOTA',
+    bloque: ABONOS,
+    titulo: 'Si un pago llega cuando todavía no hay cuota causada, ¿todo cuenta como abono extra?',
+    contexto: 'Pasa antes de la primera cuota o justo después de pagar al día. Hoy el motor lo trata todo como abono extra (recalcula plazo o cuota); la otra lectura es guardarlo como saldo a favor para la próxima cuota.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'todo-abono-extra', texto: 'Sí, todo es abono extra' },
+      { codigo: 'saldo-a-favor', texto: 'Se guarda como saldo a favor para la próxima cuota' },
+    ],
+  },
+  {
+    id: 'R4-CASO13',
+    bloque: ABONOS,
+    titulo: 'Caso 13 (abono extra con pendientes): ¿los valores son correctos?',
+    contexto:
+      'Armado por el equipo con sus reglas. En la semana 42 el cliente tiene pendientes por 317.354,81 (cobranza, mora, interés, seguro y capital vencido) y trae un abono de 1.500.000: se pagan los pendientes y 1.182.645,20 van a capital vigente; el saldo queda en 3.169.909,34. Con menor plazo la cuota sigue en 100.406,27 y el crédito termina en la semana 83; con menor cuota baja a 73.124,59 y termina en la 104. El detalle semana a semana está en docs/reglas/caso-13.md.',
+    excelHoy: 'No hay hoja en el Excel: lo arma el equipo.',
+    opciones: [
+      { codigo: 'correctos', texto: 'Los valores son correctos' },
+      { codigo: 'diferencias', texto: 'Hay diferencias', detalle: 'Indique cuáles valores y cuáles esperaba.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R4-FONDO-TOPE',
+    bloque: RECUPERACION,
+    titulo: 'El fondo de garantías cubre todo el faltante de una dación. ¿Tiene un tope que el motor deba controlar?',
+    contexto: 'Con REC-1 el fondo cubre el faltante completo. Si tuviera un tope (por crédito o global), el resto quedaría como cuenta por cobrar al cliente (REC-3).',
+    excelHoy: 'El faltante de la dación se carga al fondo sin tope.',
+    opciones: [
+      { codigo: 'sin-tope', texto: 'Sin tope por crédito' },
+      { codigo: 'tope-aportado', texto: 'Tope = lo aportado por el cliente al fondo' },
+      { codigo: 'otro', texto: 'Otro tope', detalle: 'Indique cuál y si es por crédito o global.', pideTexto: true },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -1317,14 +1529,81 @@ const RESPONDIDAS_20_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   X4: { referencia: REF_20_OCT, nota: 'Pendiente: Excel corregido.', respuesta: 'El plazo límite del caso 8 llega según el Excel que adjuntará.' },
 }
 
+// Respondidas en la ronda 3 (Diego, 20 de octubre de 2026, 15:54), ya contrastadas. Cuando hay comentario,
+// el resumen es el del comentario. Las que dependen de un documento de Diego llevan nota y no cuentan como
+// cerradas; las que se volvieron a preguntar en la ronda 4 quedan como reemplazadas.
+const REF_RONDA_3 = 'Ronda 3'
+const RESPONDIDAS_RONDA_3: Record<string, Omit<Respondida, 'fecha'>> = {
+  'PPER': { referencia: REF_RONDA_3, respuesta: 'Se ofrecen semanal, quincenal y mensual según la negociación; la tasa del periodo es la conversión financiera de la E.A. (mensual 12, semanal 52, quincenal 24; el 24 se confirma en R4-QUIN).' },
+  'PPER-2': { referencia: REF_RONDA_3, respuesta: 'El plazo se pacta en número de cuotas según la periodicidad, con un máximo de 24 meses.' },
+  'PPER-3': { referencia: REF_RONDA_3, respuesta: 'Si se pacta en meses, el número de cuotas se redondea hacia abajo: ROUNDDOWN(meses × periodos/12).' },
+  'PPER-4': { referencia: REF_RONDA_3, respuesta: 'Quincenal y mensual entran al catálogo; la periodicidad diaria se retira.' },
+  'PPER-5': { referencia: REF_RONDA_3, respuesta: 'En mensual, la mora se cuenta por los días reales del mes.' },
+  'PPER-6': { referencia: REF_RONDA_3, respuesta: 'El plazo límite se expresa en periodos de la periodicidad del crédito.' },
+  'PPER-7': { referencia: REF_RONDA_3, respuesta: 'En un prepago a mitad de periodo se cobran los días transcurridos.' },
+  'PPER-10': { referencia: REF_RONDA_3, respuesta: 'La periodicidad no cambia durante el crédito; si hace falta, se liquida y se abre uno nuevo.' },
+  'CAL-1': { referencia: REF_RONDA_3, respuesta: 'La cuota es a tiempo hasta el fin del martes; el atraso empieza el miércoles (día 1).' },
+  'CAL-2': { referencia: REF_RONDA_3, respuesta: 'Sin manejo de festivos.' },
+  'CAL-3': { referencia: REF_RONDA_3, respuesta: 'El martes es fijo para todos los créditos; la primera fecha se pacta en la oferta.' },
+  'SRV-1': { referencia: REF_RONDA_3, respuesta: 'En un prepago se giran a los terceros solo los periodos causados, sin devolución.' },
+  'SRV-2': { referencia: REF_RONDA_3, respuesta: 'Si un abono acorta el plazo, la cobertura de seguro y fondo termina con el nuevo plazo.' },
+  'SRV-3': { referencia: REF_RONDA_3, respuesta: 'La última cuota lleva los servicios completos.' },
+  'SRV-4': { referencia: REF_RONDA_3, respuesta: 'Una cuenta por pagar por tercero y el IVA en su propia cuenta.' },
+  'ABN-1': { referencia: REF_RONDA_3, respuesta: 'El equipo arma el caso 13 (abono extra con pendientes) y Diego valida los valores.' },
+  'ABN-2': { referencia: REF_RONDA_3, respuesta: 'El excedente del abono cubre primero el capital vencido más antiguo y después el vigente.' },
+  'ABN-3': { referencia: REF_RONDA_3, respuesta: 'Sin límite de abonos extra.' },
+  'ABN-4': { referencia: REF_RONDA_3, respuesta: 'Pagar antes del martes el valor exacto de una cuota ya causada es pago corriente, no anticipo; lo que supere ese valor es abono extra.' },
+  'ABN-5': { referencia: REF_RONDA_3, respuesta: 'Cada abono a menor cuota recalcula la cuota sobre las cuotas restantes.' },
+  'ABN-6': { referencia: REF_RONDA_3, respuesta: 'El prepago no tiene costo; paz y salvo y liberación de la prenda en 30 días.' },
+  'USU-1': { referencia: REF_RONDA_3, respuesta: 'La nueva usura rige desde la cuota siguiente a la publicación; se corrige el Excel.' },
+  'USU-2': { referencia: REF_RONDA_3, respuesta: 'La actualiza alguien de riesgos o de la dirección financiera.' },
+  'USU-4': { referencia: REF_RONDA_3, respuesta: 'Hay una usura por línea de crédito: la que publica la Superfinanciera el último día hábil de cada mes.' },
+  'USU-5': { referencia: REF_RONDA_3, respuesta: 'Se recalculan todos los créditos vigentes, con aprobación del lote.' },
+  'USU-6': { referencia: REF_RONDA_3, respuesta: 'Cuando la tasa baja, siempre se mantiene la misma cuota y baja el plazo (modalidad del caso 10).' },
+  'USU-7': { referencia: REF_RONDA_3, respuesta: 'Solo cambian la tasa la usura y la ley o regulación.' },
+  'REC-1': { referencia: REF_RONDA_3, respuesta: 'El fondo de garantías cubre todo el faltante de la dación.' },
+  'REC-2': { referencia: REF_RONDA_3, respuesta: 'El fondo cubre todos los conceptos: capital, intereses, mora, servicios y cobranza.' },
+  'REC-3': { referencia: REF_RONDA_3, respuesta: 'Si el fondo no alcanza, queda una cuenta por cobrar al cliente y pasa a cobro jurídico.' },
+  'REC-4': { referencia: REF_RONDA_3, respuesta: 'En la retoma, primero se compensan otras obligaciones del cliente y se le devuelve el resto.' },
+  'REC-5': { referencia: REF_RONDA_3, respuesta: 'El excedente se transfiere menos los costos de la retoma, con soporte.' },
+  'REC-7': { referencia: REF_RONDA_3, respuesta: 'Al llegar al plazo límite con saldo, la recuperación (dación o retoma) es obligatoria.' },
+  'REC-8': { referencia: REF_RONDA_3, respuesta: 'La semana del evento cuenta como vencida.' },
+  'CON-2': { referencia: REF_RONDA_3, respuesta: 'Mismas cuentas del PUC con un auxiliar por línea de crédito.' },
+  'CON-3': { referencia: REF_RONDA_3, respuesta: 'El CRM entrega cada pago asociado a su crédito.' },
+  'ROL-2': { referencia: REF_RONDA_3, respuesta: 'Todos los parámetros del producto son sensibles.' },
+  'ROL-3': { referencia: REF_RONDA_3, respuesta: 'Un cambio de parámetro rige solo para créditos nuevos, salvo la usura, que recalcula los vigentes desde la cuota siguiente.' },
+  'ROL-4': { referencia: REF_RONDA_3, respuesta: 'El administrador cambia de inmediato, con bitácora (quién, qué, cuándo), sin segundo aprobador.' },
+  'ROL-5': { referencia: REF_RONDA_3, respuesta: 'El siguiente alcance es el motor de scoring, antes de la fábrica de créditos.' },
+  'COB-1': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'COB-2': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'COB-3': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'COB-4': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'COB-5': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'COB-6': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
+  'PPER-8': { referencia: REF_RONDA_3, nota: 'Pendiente: política de ejecución de la dación.', respuesta: 'Diego enviará la política de ejecución de la dación; esta decisión va dentro de ella.' },
+  'PPER-9': { referencia: REF_RONDA_3, nota: 'Pendiente: política de ejecución de la dación.', respuesta: 'Diego enviará la política de ejecución de la dación; esta decisión va dentro de ella.' },
+  'CON-1': { referencia: REF_RONDA_3, nota: 'Pendiente: PUC en Excel.', respuesta: 'Diego enviará el plan de cuentas (PUC) en un Excel por correo.' },
+  'PPER-1': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-MENSUAL-DIA', nota: 'Reemplazada por R4-MENSUAL-DIA.', respuesta: 'Quincenal: se paga el 5 y el 20. Mensual: "el 5 o el primer día del mes"; falta saber si es fija para todos o por crédito.' },
+  'USU-3': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-USURA-PLAZO', nota: 'Reemplazada por R4-USURA-PLAZO.', respuesta: 'Si nadie autoriza, la usura se aplica sola; choca con USU-5 (el lote espera aprobación), así que falta el plazo.' },
+  'USU-8': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-AVISO-CLIENTE', nota: 'Reemplazada por R4-AVISO-CLIENTE.', respuesta: 'Los servicios (fondo, asistencia, seguro) no cambian con la tasa. Dijo que no se avisa al cliente; falta confirmarlo con legal.' },
+  'CON-4': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-COBRANZA-CONTABLE', nota: 'Reemplazada por R4-COBRANZA-CONTABLE.', respuesta: 'Los gastos de cobranza no son ingreso: son compensación de gastos reales; falta el tratamiento contable.' },
+  'REC-6': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-PERITO', nota: 'Reemplazada por R4-PERITO.', respuesta: 'Valor de dación o retoma = guía Fasecolda × 65 %, con perito externo como segunda opción; falta cuándo aplica el perito.' },
+  'ROL-1': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-SUPLENTE', nota: 'Reemplazada por R4-SUPLENTE.', respuesta: 'Un solo administrador, sin suplente; falta qué pasa si no está.' },
+  'A3': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-A3', nota: 'Reemplazada por R4-A3.', respuesta: 'Habló solo de la prelación; no dijo si hay un mínimo.' },
+  'T5': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-T5', nota: 'Reemplazada por R4-T5.', respuesta: 'Pidió investigar las cláusulas aceleratorias; no escogió un saldo.' },
+  'R2': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-R2', nota: 'Reemplazada por R4-R2.', respuesta: 'Dijo que aún no tiene definido el valor.' },
+  'C5': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-C5', nota: 'Reemplazada por R4-C5.', respuesta: 'Marcó "incluye GPS y gastos comerciales" pero su detalle dice "moto + alistamiento"; se contradicen.' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4].map((p) => {
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
   if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }
+  if (RESPONDIDAS_RONDA_3[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_RONDA_3[p.id] } }
   return p
 }).map(conPendiente)
 
@@ -1343,7 +1622,8 @@ export const BLOQUES_ABIERTOS: string[] = BLOQUES.filter((b) => PREGUNTAS.some((
  */
 export function completitudPorBloque(): { bloque: string; cerradas: number; total: number }[] {
   return BLOQUES.map((bloque) => {
-    const delBloque = TODAS.filter((p) => p.bloque === bloque)
+    // Las reemplazadas por una pregunta de la ronda 4 no cuentan: la cuenta la nueva.
+    const delBloque = TODAS.filter((p) => p.bloque === bloque && !p.respondida?.reemplazadaPor)
     return { bloque, total: delBloque.length, cerradas: delBloque.filter((p) => p.respondida && !p.respondida.nota).length }
   })
 }

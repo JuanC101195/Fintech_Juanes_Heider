@@ -20,17 +20,27 @@ describe('preguntas', () => {
     expect(RESPONDIDAS.length + PREGUNTAS.length).toBe(TODAS.length)
     expect(RESPONDIDAS.map((p) => p.id)).toEqual(expect.arrayContaining(['P1', 'P7', 'A1', 'A2', 'C4', 'PTOPE', 'S3', 'X4']))
     for (const p of PREGUNTAS) expect(p.respondida, p.id).toBeUndefined()
-    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct)/)
+    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3)/)
     for (const b of BLOQUES_ABIERTOS) expect(PREGUNTAS.some((p) => p.bloque === b), b).toBe(true)
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
 
-  it('quedan abiertas las que Diego dejó indefinidas el 20 de octubre y las de la ronda 3', () => {
-    const ronda3 = PREGUNTAS.filter((p) => /^(COB|CAL|SRV|ABN|USU|REC|CON|ROL)-\d+$/.test(p.id))
-    expect(ronda3).toHaveLength(44)
-    expect(PREGUNTAS.filter((p) => !ronda3.includes(p)).map((p) => p.id).sort()).toEqual(['A3', 'C5', 'PPER', ...Array.from({ length: 10 }, (_, i) => `PPER-${i + 1}`), 'R2', 'T5'].sort())
-    // Ninguna pregunta nueva obliga a escoger una opción de relleno: todas ofrecen al menos 2 opciones reales.
-    for (const p of ronda3) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
+  it('la ronda 4 deja abiertas 16 confirmaciones y ninguna otra', () => {
+    const ronda4 = PREGUNTAS.filter((p) => p.id.startsWith('R4-'))
+    expect(ronda4.map((p) => p.id).sort()).toEqual(
+      ['R4-A3', 'R4-AVISO-CLIENTE', 'R4-C5', 'R4-CASO13', 'R4-COBRANZA-CONTABLE', 'R4-FONDO-TOPE', 'R4-MENSUAL-DIA', 'R4-PAGO-SIN-CUOTA', 'R4-PERITO', 'R4-PLAZO-LIMITE', 'R4-PLAZO-LINEA', 'R4-QUIN', 'R4-R2', 'R4-SUPLENTE', 'R4-T5', 'R4-USURA-PLAZO'].sort(),
+    )
+    expect(PREGUNTAS).toHaveLength(16)
+    // Todas ofrecen al menos 2 opciones reales, sin relleno.
+    for (const p of ronda4) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
+    // Las que se volvieron a preguntar quedan como reemplazadas y apuntan a una pregunta abierta.
+    const reemplazadas = RESPONDIDAS.filter((p) => p.respondida!.reemplazadaPor)
+    expect(reemplazadas.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'CON-4', 'PPER-1', 'R2', 'REC-6', 'ROL-1', 'T5', 'USU-3', 'USU-8'])
+    for (const p of reemplazadas) expect(ronda4.map((x) => x.id), p.id).toContain(p.respondida!.reemplazadaPor)
+    // Las que esperan un documento de Diego no se vuelven a preguntar.
+    for (const id of [...Array.from({ length: 6 }, (_, i) => `COB-${i + 1}`), 'PPER-8', 'PPER-9', 'CON-1']) {
+      expect(RESPONDIDAS.find((p) => p.id === id)!.respondida!.nota, id).toMatch(/^Pendiente: /)
+    }
     for (const id of ['PTOPE', 'PCOB', 'PDIAS']) {
       expect(RESPONDIDAS.find((p) => p.id === id)!.respondida!.nota).toMatch(/política de gastos de cobranza/)
     }
@@ -80,10 +90,11 @@ describe('completitud', () => {
   it('cuenta las cerradas sobre el total inventariado por bloque, sin las respondidas con salvedad', () => {
     const filas = completitudPorBloque()
     expect(filas.map((f) => f.bloque)).toEqual([...BLOQUES])
-    expect(filas.reduce((s, f) => s + f.total, 0)).toBe(TODAS.length)
-    const cerradas = filas.reduce((s, f) => s + f.cerradas, 0)
+        const cerradas = filas.reduce((s, f) => s + f.cerradas, 0)
     expect(cerradas).toBe(RESPONDIDAS.filter((p) => !p.respondida!.nota).length)
     expect(cerradas).toBeLessThan(RESPONDIDAS.length)
+    // Las reemplazadas por la ronda 4 no cuentan en el total: las cuenta la pregunta nueva.
+    expect(filas.reduce((s, f) => s + f.total, 0)).toBe(TODAS.length - RESPONDIDAS.filter((p) => p.respondida!.reemplazadaPor).length)
   })
 
   it('docs/completitud-reglas.md menciona cada pregunta del cuestionario', () => {
@@ -93,13 +104,14 @@ describe('completitud', () => {
 })
 
 describe('respuestas', () => {
-  const minimo = PREGUNTAS.find((p) => p.id === 'A3')!
-  const inicial = PREGUNTAS.find((p) => p.id === 'C5')!
+  const minimo = PREGUNTAS.find((p) => p.id === 'R4-A3')!
+  const inicial = PREGUNTAS.find((p) => p.id === 'R4-C5')!
 
   it('una respuesta con valor pendiente no está completa', () => {
     expect(estaCompleta(minimo, { codigo: 'con-minimo' })).toBe(false)
     expect(estaCompleta(minimo, { codigo: 'con-minimo', valor: 50000 })).toBe(true)
-    expect(estaCompleta(inicial, { codigo: 'otra' })).toBe(false)
+    expect(estaCompleta(inicial, undefined)).toBe(false)
+    expect(estaCompleta(inicial, { codigo: 'moto-alistamiento' })).toBe(true)
   })
 
   it('PENDIENTE exige comentario o detalle; un comentario solo, sin opción, también cuenta', () => {
@@ -119,7 +131,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ A3: { codigo: 'sin-minimo' }, R2: { codigo: 'si' }, T5: { comentario: 'Depende de la cláusula' } }).completas).toBe(2)
+    expect(avance({ 'R4-A3': { codigo: 'sin-minimo' }, 'R4-R2': { codigo: 'si' }, 'R4-T5': { comentario: 'Depende de la cláusula' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -129,7 +141,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { A3: { codigo: 'con-minimo', valor: 20000 }, T5: { comentario: 'Así' } },
+    respuestas: { 'R4-A3': { codigo: 'con-minimo', valor: 20000 }, 'R4-T5': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -139,9 +151,9 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'A3')).toContain('abonoMinimo=20000')
-    expect(filas.find((f) => f[0] === 'T5')).toContain('Así')
-    expect(filas.find((f) => f[0] === 'T5')![10]).toBe('Sí')
+    expect(filas.find((f) => f[0] === 'R4-A3')).toContain('abonoMinimo=20000')
+    expect(filas.find((f) => f[0] === 'R4-T5')).toContain('Así')
+    expect(filas.find((f) => f[0] === 'R4-T5')![10]).toBe('Sí')
   })
 
   it('manda la fila a la tabla y avisa si falla', async () => {
@@ -173,10 +185,10 @@ describe('exportación a Excel', () => {
     const estado: Estado = {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
-        T5: { codigo: 'saldo-total', comentario: 'Así lo hacemos hoy' },
-        A3: { codigo: 'con-minimo', valor: 20000 },
-        C5: { codigo: 'otra', texto: 'Solo la moto' },
-        R2: { codigo: CODIGO_PENDIENTE, comentario: 'Va en la política de cobranza' },
+        'R4-T5': { codigo: 'saldo-total', comentario: 'Así lo hacemos hoy' },
+        'R4-A3': { codigo: 'con-minimo', valor: 20000 },
+        'R4-QUIN': { codigo: 'otro-valor', texto: 'Otro valor' },
+        'R4-R2': { codigo: CODIGO_PENDIENTE, comentario: 'Va en la política de cobranza' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -195,16 +207,16 @@ describe('exportación a Excel', () => {
       })
       return encontrada!
     }
-    expect(fila('T5').getCell(4).value).toBe('saldo-total')
-    expect(fila('T5').getCell(9).value).toBe('Así lo hacemos hoy')
+    expect(fila('R4-T5').getCell(4).value).toBe('saldo-total')
+    expect(fila('R4-T5').getCell(9).value).toBe('Así lo hacemos hoy')
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
-    expect(fila('A3').getCell(6).value).toBe(20000)
-    expect(fila('A3').getCell(10).value).toBe('abonoMinimo=20000')
-    expect(fila('C5').getCell(8).value).toBe('Solo la moto')
-    expect(fila('R2').getCell(4).value).toBe(CODIGO_PENDIENTE)
-    expect(fila('R2').getCell(11).value).toBe('Sí')
-    expect(fila('PPER').getCell(11).value).toBe('No')
+    expect(fila('R4-A3').getCell(6).value).toBe(20000)
+    expect(fila('R4-A3').getCell(10).value).toBe('abonoMinimo=20000')
+    expect(fila('R4-QUIN').getCell(8).value).toBe('Otro valor')
+    expect(fila('R4-R2').getCell(4).value).toBe(CODIGO_PENDIENTE)
+    expect(fila('R4-R2').getCell(11).value).toBe('Sí')
+    expect(fila('R4-SUPLENTE').getCell(11).value).toBe('No')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!
     expect(efecto.rowCount).toBe(1)
