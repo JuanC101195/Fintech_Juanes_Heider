@@ -105,3 +105,41 @@ export function decimalEs(valor: string | null | undefined): string {
 export function aNumeroGrafico(valor: string): number {
   return Number(deMicros(aMicros(valor)))
 }
+
+// ---------- entrada de dinero y porcentajes en formularios ----------
+// El valor "canónico" es el string decimal del API ("1500000", "3000000.5"); lo que se ve lleva miles con punto y
+// decimales con coma ("1.500.000", "3.000.000,5"). Nunca pasa por number.
+
+/** "1500000" → "1.500.000"; "3000000.5" → "3.000.000,5"; un punto final ("1500.") se ve "1.500," mientras se escribe. */
+export function formatearMiles(canonico: string): string {
+  if (!canonico) return ''
+  const [entera, fraccion] = canonico.split('.')
+  const agrupada = entera.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return fraccion === undefined ? agrupada : `${agrupada},${fraccion}`
+}
+
+/**
+ * Lo que la persona escribe → valor canónico. Acepta "$ 1.500.000", "1500000", "1.500.000,50" y también lo pegado
+ * con punto decimal ("1500000.50"). Quita ceros a la izquierda y cualquier otro carácter.
+ */
+export function leerMiles(texto: string): string {
+  let t = texto.replace(/[^\d.,]/g, '')
+  if (!t.includes(',') && /^\d+\.\d+$/.test(t) && t.split('.')[1].length !== 3) t = t.replace('.', ',')
+  const [entera = '', ...resto] = t.replaceAll('.', '').split(',')
+  const digitos = entera.replace(/^0+(?=\d)/, '')
+  if (resto.length === 0) return digitos
+  return `${digitos || '0'}.${resto.join('')}`
+}
+
+/** "0.81" → "81"; "0.815" → "81,5" (para mostrar una tasa como porcentaje). */
+export function fraccionAPorcentaje(fraccion: string): string {
+  if (!esDecimal(fraccion)) return ''
+  return deMicros(aMicros(fraccion) * 100n).replace('.', ',')
+}
+
+/** "81" o "81,5" → "0.81" / "0.815"; null si no es un número. Exacto: solo mueve la coma. */
+export function porcentajeAFraccion(texto: string): string | null {
+  const t = texto.trim().replace('%', '').trim().replace(',', '.')
+  if (!esDecimal(t)) return null
+  return deMicros(aMicros(t) / 100n)
+}

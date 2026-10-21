@@ -172,7 +172,7 @@ curl localhost:8080/api/v1/casos
 
 ```json
 [{"numero": 1, "nombre": "Operación normal", "descripcion": "Paga las 104 cuotas semanales a tiempo.", "fuente": "Excel 11-oct, hoja Caso1_Normal"},
- {"numero": 13, "nombre": "Abono extra con pendientes", "descripcion": "...", "fuente": "Equipo, valores validados por Diego (ABN-1, docs/reglas/caso-13.md); no está en el Excel"}]
+ {"numero": 13, "nombre": "Abono extra con pendientes", "descripcion": "...", "fuente": "Propuesto por el equipo; Diego aún debe validar los valores (pregunta R4-CASO13). No está en el Excel"}]
 ```
 
 Los casos 1 a 12 salen de `simulaciones.EscenariosExcel` (hojas Caso1 a Caso12) y el 13 de `EscenariosExcel.caso13` (el mismo escenario que `Caso13AbonoConPendientesTest`). Todos sobre la réplica del Excel: CPPU, semanal, 104 cuotas.

@@ -114,6 +114,11 @@
   --color-aviso: var(--c-aviso);
   --color-on-aviso: var(--c-on-aviso);
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  /* Letra legible para quien no es técnico: lo más pequeño (notas, leyendas) queda en 14 px y el texto en 16 px. */
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
 }
 
 @layer base {
@@ -125,8 +130,8 @@
   :root[data-tema="oscuro"] { color-scheme: dark; }
   body {
     @apply bg-surface text-on-surface font-sans;
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 16px;
+    line-height: 24px;
     margin: 0;
   }
   h1, h2, h3 { text-wrap: balance; }
@@ -141,17 +146,19 @@
 
 @layer components {
   .tarjeta { @apply rounded-xl border border-outline-variant bg-surface-lowest p-4; }
-  .campo-etiqueta { @apply mb-1 block text-xs font-semibold text-on-surface-variant; }
+  .campo-etiqueta { @apply mb-1.5 block text-base font-semibold text-on-surface; }
   .campo {
-    @apply w-full rounded-lg border border-outline bg-surface-lowest px-3 py-2 text-on-surface;
-    min-height: 44px;
+    @apply w-full rounded-lg border border-outline bg-surface-lowest px-3 py-2 text-base text-on-surface;
+    min-height: 48px;
   }
   .campo[aria-invalid="true"] { @apply border-error; }
   .boton {
     @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary;
     min-height: 44px;
   }
-  .boton:disabled { @apply opacity-50; }
+  .boton:disabled { @apply cursor-not-allowed opacity-60; }
+  .boton-suave:hover { @apply bg-surface-high; }
+  .boton-suave:disabled { @apply cursor-not-allowed opacity-50; }
   .boton-suave {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border border-outline-variant bg-surface-lowest px-3 py-2 font-semibold text-on-surface;
     min-height: 44px;
@@ -161,6 +168,13 @@
     max-height: 30rem;
   }
   .scroll-tabla table { @apply w-full border-collapse text-sm; }
+  /* Tarjeta elegible (radio oculto): borde y fondo marcan la elegida, el foco del teclado se ve en el borde. */
+  .opcion-tarjeta {
+    @apply flex min-h-12 cursor-pointer gap-3 rounded-xl border border-outline-variant bg-surface-lowest p-3 text-left text-on-surface;
+  }
+  .opcion-tarjeta:hover { @apply border-outline; }
+  .opcion-tarjeta:has(:checked), .opcion-tarjeta[aria-pressed="true"] { @apply border-2 border-primary bg-primary-container/25; padding: calc(0.75rem - 1px); }
+  .opcion-tarjeta:has(:focus-visible) { outline: 3px solid var(--c-primary); outline-offset: 2px; }
   .scroll-tabla thead th {
     @apply sticky top-0 z-10 whitespace-nowrap bg-surface-container px-3 py-2 text-right text-xs font-semibold text-on-surface-variant;
   }

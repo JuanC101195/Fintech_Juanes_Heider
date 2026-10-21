@@ -47,7 +47,7 @@ final class CatalogoCasos {
             caso(13, "Abono extra con pendientes",
                     "La semana 40 no paga, la 41 paga 5.000 con 3 días de atraso y la 42 abona 1.500.000 a menor plazo. "
                             + "Con NEGOCIO el abono paga primero los pendientes (A4); con EXCEL va todo a capital.",
-                    "Equipo, valores validados por Diego (ABN-1, docs/reglas/caso-13.md); no está en el Excel",
+                    "Propuesto por el equipo; Diego aún debe validar los valores (pregunta R4-CASO13). No está en el Excel",
                     EscenariosExcel::caso13));
 
     private CatalogoCasos() {

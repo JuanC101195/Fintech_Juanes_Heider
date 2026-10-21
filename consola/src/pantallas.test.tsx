@@ -112,6 +112,23 @@ describe('Simulador', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Simular' }))
     await waitFor(() => expect(screen.getByText(/El plazo máximo es de 24 meses/, { selector: 'p' })).toBeTruthy())
   })
+
+  it('elige la línea con tarjetas, formatea el dinero en vivo y mueve el plazo con − y +', async () => {
+    abrir('#/simulador')
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Resultado de la simulación' })).toBeTruthy())
+    expect(screen.getAllByRole('radio', { name: /^Crédito popular|^Consumo/ })).toHaveLength(4)
+    const moto = screen.getByLabelText('Valor de la moto') as HTMLInputElement
+    expect(moto.value).toBe('5.100.000')
+    expect(moto.inputMode).toBe('numeric')
+    fireEvent.change(moto, { target: { value: '6.200.0005' } })
+    expect(moto.value).toBe('62.000.005')
+    const plazo = screen.getByLabelText('Plazo en cuotas') as HTMLInputElement
+    fireEvent.click(screen.getByRole('button', { name: 'Plazo en cuotas: restar 1' }))
+    expect(plazo.value).toBe('47')
+    fireEvent.click(screen.getByRole('button', { name: 'Plazo en cuotas: sumar 1' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Plazo en cuotas: sumar 1' }))
+    expect(plazo.value).toBe('48')
+  })
 })
 
 describe('Casos', () => {
@@ -131,9 +148,13 @@ describe('Casos', () => {
     expect(t).toContain('$ 3.169.909,34')
     expect(t).toContain('Termina en el periodo 83')
     expect(screen.getByRole('list', { name: 'Línea de tiempo de eventos' }).textContent).toContain('Periodo 40')
+    // Por defecto solo los asientos de periodos con eventos; el botón despliega todos.
+    const destacados = screen.getAllByText('✓ Cuadra').length
+    expect(destacados).toBeLessThan(10)
+    fireEvent.click(screen.getByRole('button', { name: /Ver los \d+ asientos/ }))
     expect(screen.getAllByText('✓ Cuadra').length).toBeGreaterThan(40)
     expect(screen.getByRole('columnheader', { name: 'Pago' })).toBeTruthy()
-    expect(screen.getByRole('columnheader', { name: 'Aplicación por prelación' })).toBeTruthy()
+    expect(screen.getByRole('columnheader', { name: 'Cómo se repartió el pago (prelación)' })).toBeTruthy()
   })
 
   it('cambiar el perfil a EXCEL recarga el caso con otro resultado', async () => {
@@ -142,20 +163,35 @@ describe('Casos', () => {
     expect(texto()).toContain('$ 3.169.909,34')
     fireEvent.click(screen.getByRole('radio', { name: /Excel/ }))
     await waitFor(() => expect(texto()).not.toContain('$ 3.169.909,34'))
-    expect(texto()).toContain('$ 2.991.408,97')
+    await waitFor(() => expect(texto()).toContain('$ 2.991.408,97'))
+  })
+
+  it('"Ver otro caso" lleva a otro caso con el selector propio', async () => {
+    abrir('#/casos/13')
+    const boton = await screen.findByRole('button', { name: /Ver otro caso/ })
+    fireEvent.click(boton)
+    fireEvent.change(screen.getByRole('combobox', { name: /Buscar/ }), { target: { value: 'retoma' } })
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([expect.stringContaining('Caso 4')])
+    fireEvent.keyDown(screen.getByRole('combobox', { name: /Buscar/ }), { key: 'Enter' })
+    await waitFor(() => expect(window.location.hash).toBe('#/casos/4'))
   })
 })
+
+/** Encuentra la tarjeta de punto de partida (radio) de un caso: "Caso 1:" no debe confundirse con "Caso 10:". */
+const radioCaso = (n: number) => screen.getByRole('radio', { name: new RegExp(`^Caso ${n}:`) })
+const partidaActual = () => document.querySelector('[data-prueba="partida-actual"]')?.textContent
 
 describe('Laboratorio', () => {
   it('muestra el error legible del API (ABONO_MAYOR_QUE_SALDO)', async () => {
     abrir('#/laboratorio')
-    await waitFor(() => expect(screen.getByLabelText('Tipo de instrucción')).toBeTruthy())
+    await waitFor(() => expect(screen.getByRole('radio', { name: /^Abono extra/ })).toBeTruthy())
     fireEvent.change(screen.getByLabelText('Periodo'), { target: { value: '10' } })
-    fireEvent.change(screen.getByLabelText('Tipo de instrucción'), { target: { value: 'ABONO_EXTRA' } })
-    fireEvent.change(screen.getByLabelText('Valor del abono (COP)'), { target: { value: '99000000' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar instrucción' }))
-    expect(screen.getByText(/Abono extraordinario de \$/)).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Ejecutar' }))
+    fireEvent.click(screen.getByRole('radio', { name: /^Abono extra/ }))
+    fireEvent.change(screen.getByLabelText('Valor del abono'), { target: { value: '99000000' } })
+    expect((screen.getByLabelText('Valor del abono') as HTMLInputElement).value).toBe('99.000.000')
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar evento' }))
+    expect(within(screen.getByRole('list', { name: 'Eventos agregados' })).getByText(/Abono extra de \$/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Calcular resultado' }))
     const alerta = await screen.findByRole('alert')
     expect(alerta.textContent).toContain('ABONO_MAYOR_QUE_SALDO')
     expect(alerta.textContent).toContain('mayor que el saldo de capital')
@@ -164,39 +200,109 @@ describe('Laboratorio', () => {
 
   it('valida el formulario antes de agregar', async () => {
     abrir('#/laboratorio')
-    await waitFor(() => expect(screen.getByLabelText('Tipo de instrucción')).toBeTruthy())
-    fireEvent.change(screen.getByLabelText('Tipo de instrucción'), { target: { value: 'PAGO_VALOR' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Agregar instrucción' }))
-    expect(screen.getByText('Obligatorio')).toBeTruthy()
+    await waitFor(() => expect(screen.getByRole('radio', { name: /^Pago de un valor/ })).toBeTruthy())
+    fireEvent.click(screen.getByRole('radio', { name: /^Pago de un valor/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar evento' }))
+    expect(screen.getByText(/Este dato es obligatorio/)).toBeTruthy()
   })
 
-  it('parte de un caso y ejecuta', async () => {
+  it('parte de un caso desde las tarjetas y calcula', async () => {
     abrir('#/laboratorio')
-    await waitFor(() => expect(screen.getAllByRole('option', { name: /Caso 13/ }).length).toBe(1))
-    fireEvent.change(screen.getByLabelText('Partir de un caso'), { target: { value: '13' } })
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar la instrucción del periodo 42/ }).length).toBeGreaterThan(0))
-    fireEvent.click(screen.getByRole('button', { name: 'Ejecutar' }))
+    await waitFor(() => expect(radioCaso(13)).toBeTruthy())
+    expect(screen.getAllByRole('radio', { name: /^(Caso \d+|Crédito nuevo):/ })).toHaveLength(14)
+    fireEvent.click(radioCaso(13))
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar el evento del periodo 42/ }).length).toBeGreaterThan(0))
+    expect(partidaActual()).toBe('Caso 13 · Abono extra con pendientes')
+    fireEvent.click(screen.getByRole('button', { name: 'Calcular resultado' }))
     await waitFor(() => expect(texto()).toContain('Termina en el periodo 83'))
     expect(screen.getByRole('region', { name: 'Tabla periodo a periodo' })).toBeTruthy()
   })
 
-  it('"Abrir en el laboratorio" desde un caso carga sus instrucciones', async () => {
+  it('"Probar variaciones en el laboratorio" carga el caso y lo deja marcado como punto de partida (bug: decía «Crédito nuevo»)', async () => {
+    abrir('#/casos/1')
+    fireEvent.click(await screen.findByRole('button', { name: /Probar variaciones en el laboratorio/ }))
+    await waitFor(() => expect(partidaActual()).toBe('Caso 1 · Operación normal'))
+    fireEvent.click(screen.getByRole('button', { name: 'Elegir otro caso' }))
+    await waitFor(() => expect(radioCaso(1)).toBeTruthy())
+    // Un solo estado: la tarjeta marcada y el texto «Ahora» dicen lo mismo.
+    expect((radioCaso(1) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByRole('radio', { name: /^Crédito nuevo:/ }) as HTMLInputElement).checked).toBe(false)
+    expect(screen.getAllByRole('radio', { checked: true, name: /^(Caso \d+|Crédito nuevo):/ })).toHaveLength(1)
+    // Volver a crédito nuevo también deja todo coherente.
+    fireEvent.click(screen.getByRole('radio', { name: /^Crédito nuevo:/ }))
+    expect(partidaActual()).toBe('Crédito nuevo, sin eventos')
+  })
+
+  it('desde el caso 13 trae sus eventos y al cambiarlos lo dice', async () => {
     abrir('#/casos/13')
-    const boton = await screen.findByRole('button', { name: 'Abrir en el laboratorio' })
-    fireEvent.click(boton)
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar la instrucción del periodo 42/ }).length).toBeGreaterThan(0))
-    expect(texto()).toContain('Caso 13: Abono extra con pendientes')
+    fireEvent.click(await screen.findByRole('button', { name: /Probar variaciones en el laboratorio/ }))
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar el evento del periodo 42/ }).length).toBeGreaterThan(0))
+    expect(partidaActual()).toBe('Caso 13 · Abono extra con pendientes')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Quitar el evento del periodo 42' })[0])
+    expect(partidaActual()).toBe('Caso 13 · Abono extra con pendientes (con cambios tuyos)')
+  })
+
+  it('el atajo "no paga 2 semanas" llena el formulario y crea dos periodos seguidos', async () => {
+    abrir('#/laboratorio')
+    const atajo = await screen.findByRole('button', { name: /El cliente no paga 2 semanas/ })
+    fireEvent.click(atajo)
+    expect((screen.getByRole('radio', { name: /^Sin pago/ }) as HTMLInputElement).checked).toBe(true)
+    expect((screen.getByLabelText('¿Cuántos periodos seguidos?') as HTMLInputElement).value).toBe('2')
+    fireEvent.click(screen.getByRole('button', { name: 'Periodo: sumar 1' }))
+    expect((screen.getByLabelText('Periodo') as HTMLInputElement).value).toBe('2')
+    fireEvent.change(screen.getByLabelText('Periodo'), { target: { value: '40' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar evento' }))
+    expect(screen.getByRole('button', { name: 'Editar el evento del periodo 40' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Editar el evento del periodo 41' })).toBeTruthy()
+  })
+
+  it('los atajos de abono, usura y dación traen el valor ya escrito y con formato', async () => {
+    abrir('#/laboratorio')
+    fireEvent.click(await screen.findByRole('button', { name: /Abono extra de \$ 500\.000 a menor plazo/ }))
+    expect((screen.getByLabelText('Valor del abono') as HTMLInputElement).value).toBe('500.000')
+    fireEvent.click(screen.getByRole('button', { name: /Baja la usura al 81 %/ }))
+    expect((screen.getByLabelText('Nueva tasa de usura (efectiva anual)') as HTMLInputElement).value).toBe('81')
+    fireEvent.click(screen.getByRole('button', { name: /Dación de la moto/ }))
+    expect((screen.getByLabelText('Valor en que se recibe la moto') as HTMLInputElement).value).toBe('3.000.000')
+    fireEvent.click(screen.getByRole('button', { name: 'Agregar evento' }))
+    expect(sp(texto())).toContain('Dación en pago por $ 3.000.000')
   })
 })
 
 describe('Reglas', () => {
-  it('muestra las claves con su valor por perfil, la fuente y lo por confirmar', async () => {
+  it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
-    const tabla = await screen.findByRole('region', { name: 'Tabla de reglas por perfil' })
-    expect(within(tabla).getAllByRole('row')).toHaveLength(12)
-    expect(within(tabla).getByText('PRIMERO_PENDIENTES')).toBeTruthy()
-    expect(within(tabla).getByText('A4')).toBeTruthy()
+    const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(11)
+    expect(within(lista).getByText('Primero paga lo pendiente y el resto va a capital')).toBeTruthy()
+    expect(within(lista).getByText(/A4/)).toBeTruthy()
+    expect(lista.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)
     expect(screen.getByRole('heading', { name: 'Por confirmar' })).toBeTruthy()
+  })
+})
+
+describe('servidor dormido', () => {
+  it('mientras el API no responde la primera vez, avisa que puede tardar en despertar; luego ya no', async () => {
+    let soltar: () => void = () => undefined
+    const espera = new Promise<void>((r) => (soltar = r))
+    const lenta = { ...demo, modo: 'api' as const, catalogo: async () => (await espera, demo.catalogo()) }
+    window.location.hash = '#/simulador'
+    render(<App fuente={lenta} />)
+    expect(screen.getByText(/puede tardar unos segundos en despertar/)).toBeTruthy()
+    soltar()
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Resultado de la simulación' })).toBeTruthy())
+    expect(screen.queryByText(/puede tardar unos segundos en despertar/)).toBeNull()
+  })
+})
+
+describe('sin jerga técnica a la vista', () => {
+  it('el laboratorio no muestra nombres internos (MISMA_CUOTA, DACION_EN_PAGO…)', async () => {
+    abrir('#/laboratorio')
+    await waitFor(() => expect(radioCaso(13)).toBeTruthy())
+    fireEvent.click(screen.getByRole('radio', { name: /^Cambio de tasa/ }))
+    expect(document.body.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)
+    fireEvent.click(screen.getByRole('radio', { name: /^Dación o retoma/ }))
+    expect(document.body.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)
   })
 })
 
