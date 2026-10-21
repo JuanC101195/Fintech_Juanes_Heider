@@ -148,6 +148,10 @@ describe('Casos', () => {
     expect(t).toContain('$ 3.169.909,34')
     expect(t).toContain('Termina en el periodo 83')
     expect(screen.getByRole('list', { name: 'Línea de tiempo de eventos' }).textContent).toContain('Periodo 40')
+    // Por defecto solo los asientos de periodos con eventos; el botón despliega todos.
+    const destacados = screen.getAllByText('✓ Cuadra').length
+    expect(destacados).toBeLessThan(10)
+    fireEvent.click(screen.getByRole('button', { name: /Ver los \d+ asientos/ }))
     expect(screen.getAllByText('✓ Cuadra').length).toBeGreaterThan(40)
     expect(screen.getByRole('columnheader', { name: 'Pago' })).toBeTruthy()
     expect(screen.getByRole('columnheader', { name: 'Cómo se repartió el pago (prelación)' })).toBeTruthy()

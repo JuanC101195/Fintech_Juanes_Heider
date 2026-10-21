@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { categoria, describir, type CategoriaEvento } from '../api/instrucciones'
 import { cop, copCentavos, esCero } from '../dinero'
 import type { Asiento, Ejecucion, Instruccion, Movimiento } from '../tipos'
@@ -166,14 +167,25 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
 
 export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
   if (asientos.length === 0) return <p className="text-on-surface-variant">No hay asientos para mostrar.</p>
+  const [todos, setTodos] = useState(false)
   const descuadrados = asientos.filter((a) => !a.cuadra).length
+  // Por defecto solo los periodos con algo distinto a un pago normal (o un descuadre): son los que interesan.
+  const destacados = asientos.filter((a) => a.evento !== 'Pago normal' || !a.cuadra)
+  const visibles = todos || destacados.length === 0 ? asientos : destacados
   return (
     <div>
       <p className="mb-2 text-sm text-on-surface-variant" role="status">
         {asientos.length} asientos · {descuadrados === 0 ? 'todos cuadran' : `${descuadrados} no cuadran`}
+        {visibles.length < asientos.length && ` · se muestran los ${visibles.length} de periodos con eventos`}
       </p>
+      {destacados.length > 0 && destacados.length < asientos.length && (
+        <button type="button" onClick={() => setTodos(!todos)}
+          className="mb-2 min-h-11 rounded-xl border border-outline-variant px-4 font-semibold">
+          {todos ? 'Ver solo los periodos con eventos' : `Ver los ${asientos.length} asientos`}
+        </button>
+      )}
       <div className="grid gap-2">
-        {asientos.map((a) => {
+        {visibles.map((a) => {
           return (
             <details key={`${a.periodo}-${a.evento}`} className="rounded-xl border border-outline-variant bg-surface-lowest">
               <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
