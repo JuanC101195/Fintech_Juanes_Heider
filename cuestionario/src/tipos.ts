@@ -53,6 +53,8 @@ export interface Respondida {
   respuesta: string
   /** Salvedad que sigue vigente aunque ya se contestó (por ejemplo, una política aún pendiente). */
   nota?: string
+  /** Id de la pregunta de la ronda 4 que la reemplaza: ya no cuenta en la completitud (la cuenta la nueva). */
+  reemplazadaPor?: string
 }
 
 export interface Respuesta {
