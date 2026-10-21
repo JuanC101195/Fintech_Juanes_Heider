@@ -3,9 +3,10 @@ package co.financiera.cartera.nucleo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import co.financiera.cartera.simulaciones.EscenariosExcel;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.api.Test;
 
 /** ADR 0002, paso 1 · Catálogo de periodicidades (Inputs ⑤ y respuestas PPER de Diego). */
 class PeriodicidadTest {
@@ -39,6 +40,35 @@ class PeriodicidadTest {
         assertThat(Periodicidad.SEMANAL.cuotasEnMeses(7)).isEqualTo(30);
         assertThat(Periodicidad.QUINCENAL.cuotasEnMeses(7)).isEqualTo(14);
         assertThat(Periodicidad.MENSUAL.cuotasEnMeses(7)).isEqualTo(7);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"SEMANAL, 104, 120", "QUINCENAL, 48, 55", "MENSUAL, 24, 27"})
+    void elPlazoSePactaEnCuotasConMaximoDe24MesesYElLimiteVaEnPeriodos(Periodicidad per, int maximo, int limite) {
+        ParametrosProducto p = ParametrosProducto.de(LineaCredito.CPPU, per, maximo);
+        assertThat(p.periodicidad()).isEqualTo(per);
+        assertThat(p.plazoLimitePeriodos()).isEqualTo(limite);
+        assertThatThrownBy(() -> ParametrosProducto.de(LineaCredito.CPPU, per, maximo + 1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(per.unidadCuota());
+        // La línea ORDINARIO permite 36 meses, pero ningún crédito pasa de 24 (PPER-2).
+        assertThatThrownBy(() -> ParametrosProducto.de(LineaCredito.ORDINARIO, per, maximo + 1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void elPlazoEnMesesSeConvierteACuotasHaciaAbajo() {
+        assertThat(ParametrosProducto.deMeses(LineaCredito.CPPU, Periodicidad.SEMANAL, 7).numeroCuotas()).isEqualTo(30);
+        assertThat(ParametrosProducto.deMeses(LineaCredito.CPPU, Periodicidad.QUINCENAL, 24).numeroCuotas()).isEqualTo(48);
+        assertThat(ParametrosProducto.deMeses(LineaCredito.CPPU, Periodicidad.MENSUAL, 24).numeroCuotas()).isEqualTo(24);
+    }
+
+    @Test
+    void laReplicaDelExcelConservaLosLimitesDe100Y120Semanas() {
+        ParametrosProducto p = ParametrosProducto.replicaExcel();
+        assertThat(p.plazoLimitePeriodos()).isEqualTo(120);
+        assertThat(EscenariosExcel.caso8(p).parametros().plazoLimitePeriodos()).isEqualTo(100);
+        assertThat(EscenariosExcel.caso9(p).parametros().plazoLimitePeriodos()).isEqualTo(120);
     }
 
     @Test

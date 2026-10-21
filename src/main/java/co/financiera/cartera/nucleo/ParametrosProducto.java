@@ -30,6 +30,17 @@ public record ParametrosProducto(
         BigDecimal cobranzaDiaria,
         int plazoLimitePeriodos) {
 
+    /** Plazo máximo de cualquier crédito, sin importar la línea ni la periodicidad (Diego, PPER-2). */
+    public static final int PLAZO_MAXIMO_MESES = 24;
+
+    /**
+     * Horizonte de proyección por defecto de un crédito con saldo pendiente: las 120 semanas del Excel
+     * (Inputs C72) convertidas a periodos del crédito con ROUNDDOWN(semanas × ppa / 52), como hace el
+     * Excel en C73. Semanal 120, quincenal 55, mensual 27. Diego (PPER-6) fijó que el plazo límite se
+     * expresa en periodos del crédito, pero no dio el valor: este es provisional.
+     */
+    static final int PLAZO_LIMITE_EXCEL_SEMANAS = 120;
+
     public ParametrosProducto {
         if (periodicidad == null) {
             throw new IllegalArgumentException("La periodicidad del crédito es obligatoria");
@@ -42,17 +53,27 @@ public record ParametrosProducto(
     }
 
     /**
-     * Producto de una línea de crédito con la periodicidad y el número de cuotas que se pacten. Las
-     * cuotas no pueden pasar el plazo máximo de la línea: ROUNDDOWN(plazo máximo × periodos por mes).
+     * Producto de una línea de crédito con la periodicidad y el número de cuotas que se pacten (Diego,
+     * PPER-2: el plazo se pacta en cuotas). Las cuotas no pueden pasar ROUNDDOWN(plazo máximo × ppa / 12),
+     * con plazo máximo = el menor entre el de la línea y 24 meses: semanal 104, quincenal 48, mensual 24.
      */
     public static ParametrosProducto de(LineaCredito linea, Periodicidad periodicidad, int numeroCuotas) {
-        int maximo = periodicidad.cuotasEnMeses(linea.plazoMaximoMeses());
+        int maximo = periodicidad.cuotasEnMeses(Math.min(linea.plazoMaximoMeses(), PLAZO_MAXIMO_MESES));
         if (numeroCuotas < 1 || numeroCuotas > maximo) {
             throw new IllegalArgumentException("La línea " + linea + " admite de 1 a " + maximo + " "
                     + periodicidad.unidadCuota() + "; se pidieron " + numeroCuotas);
         }
         return new ParametrosProducto(numeroCuotas, periodicidad, linea.tasaEA(), bd("0.03"), bd("40000"),
-                bd("0.0025"), bd("0.19"), bd("3000"), Math.max(120, numeroCuotas));
+                bd("0.0025"), bd("0.19"), bd("3000"),
+                Math.max(periodicidad.periodosDesdeSemanas(PLAZO_LIMITE_EXCEL_SEMANAS), numeroCuotas));
+    }
+
+    /**
+     * Producto con el plazo pactado en meses: cuotas = ROUNDDOWN(meses × ppa / 12) (Diego, PPER-3;
+     * Inputs B15). 7 meses semanales = 30 cuotas.
+     */
+    public static ParametrosProducto deMeses(LineaCredito linea, Periodicidad periodicidad, int meses) {
+        return de(linea, periodicidad, periodicidad.cuotasEnMeses(meses));
     }
 
     public ParametrosProducto conTasaEA(BigDecimal ea) {

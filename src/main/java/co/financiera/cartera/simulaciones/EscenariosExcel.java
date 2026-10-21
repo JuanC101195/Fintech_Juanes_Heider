@@ -52,15 +52,21 @@ public final class EscenariosExcel {
         return base(p).en(Calendario.periodoDelMes(10, p), new AbonoExtra(bd(2_000_000), ModalidadAbono.MENOR_PLAZO));
     }
 
-    /** Pago del 40 % de la cuota en el mes 10; luego vuelve a pagar la cuota pactada. Límite 100 semanas. */
+    /**
+     * Pago del 40 % de la cuota en el mes 10; luego vuelve a pagar la cuota pactada. Límite: 100 semanas
+     * en periodos del crédito, ROUNDDOWN(100 × ppa / 52) como Inputs C66 (semanal 100).
+     */
     public static Escenario caso8(ParametrosProducto p) {
-        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(100))
+        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(p.periodicidad().periodosDesdeSemanas(100)))
                 .en(Calendario.periodoDelMes(10, p), new PagoParcial(bd("0.4"), 0));
     }
 
-    /** Desde el mes 10 todas las cuotas se pagan con 14 días de atraso. Límite 120 semanas. */
+    /**
+     * Desde el mes 10 todas las cuotas se pagan con 14 días de atraso. Límite: 120 semanas en periodos
+     * del crédito, ROUNDDOWN(120 × ppa / 52) como Inputs C73 (semanal 120).
+     */
     public static Escenario caso9(ParametrosProducto p) {
-        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(120))
+        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(p.periodicidad().periodosDesdeSemanas(120)))
                 .desde(Calendario.periodoDelMes(10, p), new PagoContractual(14));
     }
 
