@@ -1,6 +1,6 @@
 # ADR 0002 · Periodicidad configurable del crédito
 
-**Estado:** propuesta · 2026-10-20 (pendiente de las respuestas de Diego, ver "Preguntas abiertas")
+**Estado:** aceptada y en curso · 2026-10-20. Diego respondió las preguntas PPER (ronda 3), y los pasos 0 a 6 del plan y el `CalendarioPagos` del paso 7 están hechos en la rama `feat/periodicidad`. Ver "Avance" al final.
 
 ## Contexto
 
@@ -164,3 +164,19 @@ Total: unos 8 a 9 días; 4 días (pasos 0 a 5) se pueden hacer ya sin respuestas
 - **P-PER-8** Cobranza: los 3.000 diarios y su tope por pago, ¿son iguales en todas las periodicidades? En mensual un atraso de 20 días es normal dentro del mes siguiente: ¿cuándo se considera cuota vencida?
 - **P-PER-9** Eventos que hoy se cuentan en periodos (caso 11: 4 periodos de espera antes de la dación), ¿se cuentan en periodos o en días/semanas cuando el crédito es mensual?
 - **P-PER-10** ¿Puede cambiar la periodicidad durante la vida del crédito (reestructuración)? Si sí, ¿cómo se recalcula la cuota?
+
+## Avance (2026-10-20, rama `feat/periodicidad`)
+
+Respuestas de Diego (ronda 3, PPER): hay periodicidad semanal, quincenal y mensual, y la tasa es la conversión efectiva de la EA con 52, 24 y 12 periodos por año. Diego escribió "104 para quincena"; lo tomamos como error y usamos 24, pendiente de su confirmación. La diaria sale del catálogo (PPER-4). El plazo se pacta en cuotas con un máximo de 24 meses; si se pacta en meses, las cuotas son ROUNDDOWN(meses × ppa / 12) (PPER-2 y PPER-3). El plazo límite va en periodos del crédito (PPER-6). La periodicidad no cambia después del desembolso (PPER-10). El prepago a mitad de periodo cobra los días transcurridos (PPER-7). En mensual, la mora se cuenta por los días reales del mes (PPER-5). Vencimientos: la quincenal paga el 5 y el 20 y la semanal los martes, sin festivos y a tiempo hasta el fin del martes (CAL-1 a CAL-3). La fecha de la mensual (el 1 o el 5) sigue sin decidir.
+
+| Paso | Estado | Qué quedó |
+|---|---|---|
+| 0 | Hecho | `ReplicaSemanalNoCambiaTest`: SHA-256 de cada fila y asiento de los 12 casos con `replicaExcel()` (`src/test/resources/caracterizacion/replica-semanal.sha256`). Pasó sin regenerarse en todos los pasos siguientes. |
+| 1 | Hecho | `Periodicidad` con `SEMANAL`, `QUINCENAL(24)` y `MENSUAL`, más `diasNominales`, `adjetivo`, `unidadCuota`, `periodosPorMes`, `cuotasEnMeses` y `periodosDesdeSemanas`. La `DIARIA` se eliminó porque nada la usaba. El mensaje de cuotas fuera de rango usa la unidad de la periodicidad. Prueba: `PeriodicidadTest`. |
+| 2 | Hecho | `ParametrosProducto` guarda la `Periodicidad`; `periodosPorAnio()`, `mesesPorAnio()` y `periodosPorMes()` son derivados. Se agregó `Tasas.desdeEA(ea, Periodicidad)`. La firma `desdeEA(ea, 52, 12)` se conserva porque la usan el cambio de tasa del motor y las pruebas de usura que trabaja otro agente. |
+| 3 | Hecho | Máximo de 24 meses (`PLAZO_MAXIMO_MESES`, también para la línea ORDINARIO de 36) y `deMeses`. Los casos 8 y 9 usan `periodosDesdeSemanas(100 / 120)`, como Inputs C66 y C73. El límite por defecto son 120 semanas expresadas en periodos (semanal 120, quincenal 55, mensual 27) y es **provisional**: Diego fijó la unidad pero no el valor. |
+| 4 | Hecho en parte | `Corrida.semana` pasó a `procesarPeriodo`, y los javadocs de `Calendario`, `Servicios`, `Escenario`, `Instruccion` y `Movimiento` se reescribieron en periodos. Las cuotas clave de `GeneradorEscenarios` salen del `Calendario`; el JSON queda idéntico y sus claves no se renombran (`GeneradorEscenariosTest`). **Pendiente:** las cuotas 86 y 87 de S4, PDOBLE y PTOPE, que vienen del Excel viejo de 86 cuotas y hay que coordinar con `cuestionario/`; el mensaje "Semana N" de `AbonoMayorQueElSaldoException`, que está en el área de abonos y lo verifican pruebas de otro agente; y los javadocs de `ReglasNegocio` y `contabilidad/reglas`. |
+| 5 | Hecho | `Caso1InvariantesTest` corre los 300 créditos en las tres periodicidades. `PeriodicidadEscenariosTest` corre los 12 casos en quincenal y mensual y verifica que ningún saldo quede negativo, la prelación, los asientos cuadrados, el cierre en cero o por evento, que los servicios de un mes sumen el valor mensual y el giro mensual. |
+| 6 | Hecho, falta la revisión de Diego | `PeriodicidadInvariantesTest` verifica que el saldo final dé 0, que el capital pagado sume el monto, que el interés sea saldo × tasa del periodo y que la cuota coincida con PAGO() de Excel en forma cerrada. Los planes quincenal y mensual están en `docs/reglas/planes-ejemplo-periodicidad.md`. |
+| 7 | Hecho en parte | `nucleo/CalendarioPagos` calcula los vencimientos (semanal los martes; quincenal el 5 y el 20; mensual el 1 o el 5 con `DiaPagoMensual` obligatorio y sin valor por defecto), los días de atraso (CAL-1) y los días reales de cada periodo (PPER-5). Prueba: `CalendarioPagosTest`. **Pendiente:** usarlo en el módulo `abonos`, que aún no existe. |
+| 8 | Pendiente | La mora por días reales (`DiasMora.DIAS_CALENDARIO`, PPER-5 ya respondida) y el prepago a mitad de periodo (PPER-7: ya existe `interesPrepagoPorDias` con días digitados). |
