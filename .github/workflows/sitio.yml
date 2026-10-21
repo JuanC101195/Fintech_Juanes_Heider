@@ -27,7 +27,9 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: cuestionario/package-lock.json
+          cache-dependency-path: |
+            cuestionario/package-lock.json
+            consola/package-lock.json
 
       - name: Compilar el cuestionario
         working-directory: cuestionario
@@ -35,12 +37,23 @@ jobs:
           npm ci
           npm run build
 
+      # La consola consume el API desplegado en Azure App Service (plan F1 gratuito, docs/despliegue.md).
+      # Si el API no responde, la consola cae sola al modo demostración con datos reales guardados.
+      - name: Compilar la consola
+        working-directory: consola
+        env:
+          VITE_API_URL: https://motor-cartera-api-jc.azurewebsites.net
+        run: |
+          npm ci
+          npm run build
+
       - name: Armar el sitio
         run: |
-          mkdir -p sitio
+          mkdir -p sitio/consola
           cp docs/sitio/index.html sitio/index.html
           cp docs/diagrama/agentes-motor-cartera.html sitio/diagrama.html
           cp cuestionario/dist/index.html sitio/cuestionario.html
+          cp -r consola/dist/. sitio/consola/
           touch sitio/.nojekyll
 
       - name: Publicar en gh-pages

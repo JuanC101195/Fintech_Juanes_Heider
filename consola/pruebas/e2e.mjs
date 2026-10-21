@@ -8,7 +8,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { chromium, problemas, raiz, servirDist } from './comun.mjs'
 
-const API = 'http://localhost:8080'
+const API = process.env.E2E_API_URL ?? 'http://localhost:8080'
 const salida = path.resolve(process.argv[2] ?? path.join(raiz, 'pruebas', 'capturas'))
 mkdirSync(salida, { recursive: true })
 

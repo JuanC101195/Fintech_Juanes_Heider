@@ -34,12 +34,34 @@ public class PerfilesReglas {
 
     public PerfilesReglas(@Value("${cartera.reglas.archivo:config/reglas-negocio.properties}") String archivo) {
         this.archivo = Path.of(archivo);
-        this.archivoEncontrado = Files.exists(this.archivo);
+        Map<String, String> valores = leer(this.archivo);
+        boolean enDisco = Files.exists(this.archivo);
+        if (!enDisco) {
+            // Desplegado (Azure) no existe config/ en disco: se usa la copia empaquetada en el jar.
+            valores = leerDelClasspath(this.archivo.toString().replace('\\', '/'));
+        }
+        this.archivoEncontrado = enDisco || !valores.isEmpty();
         if (!archivoEncontrado) {
             LOG.log(System.Logger.Level.WARNING, "No existe {0}: el perfil NEGOCIO usa las reglas del Excel",
                     this.archivo.toAbsolutePath());
         }
-        this.negocio = ReglasNegocio.desde(leer(this.archivo));
+        this.negocio = ReglasNegocio.desde(valores);
+    }
+
+    static Map<String, String> leerDelClasspath(String recurso) {
+        Map<String, String> mapa = new HashMap<>();
+        var entrada = PerfilesReglas.class.getClassLoader().getResourceAsStream(recurso);
+        if (entrada == null) {
+            return mapa;
+        }
+        java.util.Properties p = new java.util.Properties();
+        try (Reader r = new java.io.InputStreamReader(entrada, StandardCharsets.UTF_8)) {
+            p.load(r);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo leer " + recurso + " del classpath", e);
+        }
+        p.forEach((k, v) -> mapa.put(String.valueOf(k), String.valueOf(v)));
+        return mapa;
     }
 
     static Map<String, String> leer(Path archivo) {
