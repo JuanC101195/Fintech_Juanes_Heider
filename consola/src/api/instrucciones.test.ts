@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { aFormulario, aInstruccion, categoria, describir, ordenarInstrucciones, validarFormulario, valoresPorDefecto } from './instrucciones'
+import { aFormulario, agregarInstrucciones, aInstruccion, atajos, categoria, describir, ordenarInstrucciones, validarFormulario, valoresPorDefecto } from './instrucciones'
+
+describe('agregar y atajos', () => {
+  it('una instrucción del mismo tipo y periodo se reemplaza, no se duplica', () => {
+    const lista: Instruccion[] = [{ periodo: 5, tipo: 'SIN_PAGO', causaMoraYServicios: true }, { periodo: 2, tipo: 'PAGO_AL_DIA' }]
+    const r = agregarInstrucciones(lista, [{ periodo: 5, tipo: 'SIN_PAGO', causaMoraYServicios: false }, { periodo: 6, tipo: 'SIN_PAGO', causaMoraYServicios: false }])
+    expect(r.map((i) => `${i.periodo}-${i.tipo}-${String(i.causaMoraYServicios)}`)).toEqual(['2-PAGO_AL_DIA-undefined', '5-SIN_PAGO-false', '6-SIN_PAGO-false'])
+  })
+  it('los atajos hablan del periodo según la periodicidad y traen valores válidos', () => {
+    expect(atajos('SEMANAL')[0].texto).toBe('El cliente no paga 2 semanas')
+    expect(atajos('MENSUAL')[0].texto).toBe('El cliente no paga 2 meses')
+    for (const a of atajos('SEMANAL')) expect(validarFormulario(a.tipo, 10, { ...valoresPorDefecto(a.tipo), ...a.valores })).toEqual({})
+  })
+})
 import { agruparEventos } from '../componentes/DetalleEjecucion'
 import type { Instruccion } from '../tipos'
 
@@ -38,7 +51,7 @@ describe('formulario → instrucción', () => {
 
 describe('validación', () => {
   it('exige los campos obligatorios y un periodo entero', () => {
-    expect(validarFormulario('ABONO_EXTRA', 42, { valor: '', modalidad: 'MENOR_PLAZO' })).toEqual({ valor: 'Obligatorio' })
+    expect(validarFormulario('ABONO_EXTRA', 42, { valor: '', modalidad: 'MENOR_PLAZO' })).toEqual({ valor: 'Este dato es obligatorio' })
     expect(validarFormulario('SIN_PAGO', 0, valoresPorDefecto('SIN_PAGO')).periodo).toBeDefined()
   })
   it('rechaza dinero no positivo o mal escrito, y fracciones fuera de 0 a 1', () => {
@@ -52,9 +65,9 @@ describe('validación', () => {
 
 describe('descripciones y orden', () => {
   it('describe en español con pesos y porcentajes formateados', () => {
-    expect(describir({ periodo: 42, tipo: 'ABONO_EXTRA', valor: '1500000', modalidad: 'MENOR_PLAZO' }).replaceAll(' ', ' ')).toBe('Abono extraordinario de $ 1.500.000 · Menor plazo')
+    expect(describir({ periodo: 42, tipo: 'ABONO_EXTRA', valor: '1500000', modalidad: 'MENOR_PLAZO' }).replaceAll(' ', ' ')).toBe('Abono extra de $ 1.500.000 · Menor plazo')
     expect(describir({ periodo: 30, tipo: 'CAMBIO_TASA', nuevaTasaEA: '0.7', modalidad: 'MISMA_CUOTA' }).replaceAll(' ', ' ')).toBe('Cambio de tasa a 70,00 % EA · Misma cuota')
-    expect(describir({ periodo: 40, tipo: 'SIN_PAGO', causaMoraYServicios: true })).toContain('causa mora')
+    expect(describir({ periodo: 40, tipo: 'SIN_PAGO', causaMoraYServicios: true })).toContain('se cobran mora')
   })
   it('ordena por periodo sin mutar la lista original', () => {
     const lista: Instruccion[] = [{ periodo: 5, tipo: 'SIN_PAGO' }, { periodo: 2, tipo: 'PAGO_AL_DIA' }]

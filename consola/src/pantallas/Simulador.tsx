@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Campo, Cargando, MensajeError, Segmentado, SelectorPerfil, Tarjeta, Titulo } from '../componentes/comunes'
+import { Campo, Cargando, MensajeError, Segmentado, SelectorPerfil, sinJerga, Tarjeta, Titulo } from '../componentes/comunes'
+import { EntradaDinero, EntradaPasos } from '../componentes/entradas'
 import { GraficoSeries } from '../componentes/GraficoSeries'
 import { useCarga, useDatos } from '../datos'
 import { aMicros, cop, esDecimal, porcentaje, sumar } from '../dinero'
@@ -28,7 +29,7 @@ export function validarSimulador(f: Formulario, maxMeses: number): Errores {
     const meses = f.unidad === 'meses' ? Number(f.plazo) : (Number(f.plazo) * 12) / PERIODOS_POR_ANIO[f.periodicidad]
     if (meses > maxMeses) e.plazo = `El plazo máximo es de ${maxMeses} meses (${Math.floor((maxMeses * PERIODOS_POR_ANIO[f.periodicidad]) / 12)} cuotas ${NOMBRES[f.periodicidad].toLowerCase()}s)`
   }
-  if (!esDecimal(f.valorMoto) || aMicros(f.valorMoto) <= 0n) e.valorMoto = 'Escribe un valor mayor que cero, por ejemplo 5100000'
+  if (!esDecimal(f.valorMoto) || aMicros(f.valorMoto) <= 0n) e.valorMoto = 'Escribe un valor mayor que cero, por ejemplo 5.100.000'
   if (!esDecimal(f.pagoInicial)) e.pagoInicial = 'Escribe un valor, o 0 si no hay pago inicial'
   else if (!e.valorMoto && aMicros(f.pagoInicial) >= aMicros(f.valorMoto)) e.pagoInicial = 'El pago inicial debe ser menor que el valor de la moto'
   return e
@@ -101,64 +102,67 @@ export default function Simulador() {
   const verErrores = intentado ? errores : {}
   const infoPer = (p: Periodicidad) => catalogo?.periodicidades.find((x) => x.codigo === p)
   const periodicidadesLinea = (linea?.periodicidades ?? (['SEMANAL', 'QUINCENAL', 'MENSUAL'] as Periodicidad[]))
+  const maxCuotas = Math.floor((maxMeses * PERIODOS_POR_ANIO[f.periodicidad]) / 12)
 
   return (
     <div>
-      <Titulo detalle="Calcula la cuota y el plan de pagos de un crédito nuevo con las reglas del motor.">Simulador</Titulo>
-      {cat.cargando && <Cargando />}
-      {cat.error && <MensajeError error={cat.error} />}
+      <Titulo detalle="Calcula la cuota y el plan de pagos de un crédito nuevo. Cambia los datos y pulsa «Simular».">Simulador</Titulo>
+      {cat.cargando && <Cargando texto="Cargando las líneas de crédito…" />}
+      {cat.error && <MensajeError error={cat.error} alReintentar={cat.recargar} />}
       {catalogo && (
-        <form onSubmit={enviar} noValidate className="tarjeta mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3" aria-label="Datos del crédito">
-          <Campo etiqueta="Línea de crédito">
-            {(p) => (
-              <select {...p} className="campo" value={f.linea} onChange={(e) => setF({ ...f, linea: e.target.value })}>
-                {catalogo.lineas.map((l) => (
-                  <option key={l.codigo} value={l.codigo}>
-                    {l.nombre} ({l.codigo}) · {porcentaje(l.tasaEA)} EA
-                  </option>
-                ))}
-              </select>
-            )}
-          </Campo>
+        <form onSubmit={enviar} noValidate className="tarjeta mb-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Datos del crédito">
+          <div className="md:col-span-2 xl:col-span-3">
+            <Segmentado
+              nombre="linea"
+              etiqueta="Línea de crédito"
+              diseno="tarjetas"
+              columnas="grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4"
+              valor={f.linea}
+              alCambiar={(linea) => setF({ ...f, linea })}
+              opciones={catalogo.lineas.map((l) => ({ valor: l.codigo, etiqueta: l.nombre, nota: `Tasa ${porcentaje(l.tasaEA)} efectiva anual · hasta ${l.plazoMaximoMeses} meses` }))}
+            />
+          </div>
 
-          <div className="md:col-span-1 xl:col-span-2">
+          <div className="md:col-span-2 xl:col-span-3">
             <Segmentado
               nombre="periodicidad"
-              etiqueta="Periodicidad"
+              etiqueta="¿Cada cuánto paga el cliente?"
               valor={f.periodicidad}
               alCambiar={cambiarPeriodicidad}
               opciones={periodicidadesLinea.map((p) => ({ valor: p, etiqueta: NOMBRES[p], nota: infoPer(p)?.porConfirmar ? `${infoPer(p)?.periodosPorAnio} periodos/año, por confirmar` : undefined }))}
             />
           </div>
 
-          <div className="grid grid-cols-[1fr_auto] items-end gap-2">
-            <Campo etiqueta={f.unidad === 'cuotas' ? 'Plazo en cuotas' : 'Plazo en meses'} error={verErrores.plazo} ayuda={`Máximo ${maxMeses} meses`}>
-              {(p) => <input {...p} className="campo cifra" inputMode="numeric" value={f.plazo} onChange={(e) => setF({ ...f, plazo: e.target.value })} />}
+          <div>
+            <Campo etiqueta={f.unidad === 'cuotas' ? 'Plazo en cuotas' : 'Plazo en meses'} error={verErrores.plazo} ayuda={`Máximo ${maxMeses} meses (${maxCuotas} cuotas ${NOMBRES[f.periodicidad].toLowerCase()}s)`}>
+              {(p) => <EntradaPasos {...p} nombre={f.unidad === 'cuotas' ? 'Plazo en cuotas' : 'Plazo en meses'} valor={f.plazo} maximo={f.unidad === 'cuotas' ? maxCuotas : maxMeses} alCambiar={(plazo) => setF({ ...f, plazo })} />}
             </Campo>
-            <div className="mb-[1.35rem]">
-              <button type="button" className="boton-suave" aria-label={`Cambiar a plazo en ${f.unidad === 'cuotas' ? 'meses' : 'cuotas'}`} onClick={() => setF({ ...f, unidad: f.unidad === 'cuotas' ? 'meses' : 'cuotas', plazo: f.unidad === 'cuotas' ? String(maxMeses) : String(Math.floor((maxMeses * PERIODOS_POR_ANIO[f.periodicidad]) / 12)) })}>
-                {f.unidad === 'cuotas' ? 'Usar meses' : 'Usar cuotas'}
-              </button>
-            </div>
+            <button type="button" className="boton-suave mt-2 w-full" aria-label={`Cambiar a plazo en ${f.unidad === 'cuotas' ? 'meses' : 'cuotas'}`} onClick={() => setF({ ...f, unidad: f.unidad === 'cuotas' ? 'meses' : 'cuotas', plazo: f.unidad === 'cuotas' ? String(maxMeses) : String(maxCuotas) })}>
+              {f.unidad === 'cuotas' ? 'Prefiero escribirlo en meses' : 'Prefiero escribirlo en cuotas'}
+            </button>
           </div>
 
-          <Campo etiqueta="Valor de la moto (COP)" error={verErrores.valorMoto}>
-            {(p) => <input {...p} className="campo cifra" inputMode="decimal" value={f.valorMoto} onChange={(e) => setF({ ...f, valorMoto: e.target.value })} />}
+          <Campo etiqueta="Valor de la moto" error={verErrores.valorMoto} ayuda="En pesos, sin centavos">
+            {(p) => <EntradaDinero {...p} valor={f.valorMoto} alCambiar={(valorMoto) => setF({ ...f, valorMoto })} />}
           </Campo>
-          <Campo etiqueta="Pago inicial (COP)" error={verErrores.pagoInicial} ayuda="Opcional; se resta del valor total">
-            {(p) => <input {...p} className="campo cifra" inputMode="decimal" value={f.pagoInicial} onChange={(e) => setF({ ...f, pagoInicial: e.target.value })} />}
+          <Campo etiqueta="Pago inicial" error={verErrores.pagoInicial} ayuda="Opcional: lo que el cliente da de entrada. 0 si no da nada">
+            {(p) => <EntradaDinero {...p} valor={f.pagoInicial} alCambiar={(pagoInicial) => setF({ ...f, pagoInicial })} />}
           </Campo>
-          <SelectorPerfil valor={f.perfil} alCambiar={(perfil) => setF({ ...f, perfil })} />
+          <div className="md:col-span-2 xl:col-span-3">
+            <SelectorPerfil valor={f.perfil} alCambiar={(perfil) => setF({ ...f, perfil })} />
+          </div>
 
           <div className="md:col-span-2 xl:col-span-3">
-            <button type="submit" className="boton" disabled={calculando}>
+            <button type="submit" className="boton w-full sm:w-auto sm:min-w-48" disabled={calculando}>
               {calculando ? 'Calculando…' : 'Simular'}
             </button>
+            {intentado && hayErrores && <p className="mt-2 text-sm font-semibold text-error">Revisa los datos marcados en rojo.</p>}
           </div>
         </form>
       )}
 
-      {error != null && <MensajeError error={error} />}
+      {calculando && <Cargando texto="Calculando…" />}
+      {error != null && <MensajeError error={error} alReintentar={() => void simular(f)} />}
       {sim && <ResultadoSimulacion sim={sim} />}
     </div>
   )
@@ -183,14 +187,14 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
       {r.porConfirmar.length > 0 && (
         <ul className="rounded-xl bg-aviso p-3 text-sm font-semibold text-on-aviso">
           {r.porConfirmar.map((t) => (
-            <li key={t}>Por confirmar: {t}</li>
+            <li key={t}>Por confirmar: {sinJerga(t)}</li>
           ))}
         </ul>
       )}
       <dl className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
         <Tarjeta destacada etiqueta="Cuota total" valor={cop(r.cuotaTotal)} ayuda={`${r.cuotas} cuotas ${NOMBRES[r.periodicidad].toLowerCase()}s`} />
-        <Tarjeta etiqueta="Cuota financiera" valor={cop(r.cuotaFinanciera)} ayuda="Capital más interés" />
-        <Tarjeta etiqueta="Tasa del periodo" valor={porcentaje(r.tasaPeriodo)} ayuda={`${porcentaje(r.tasaEA)} EA`} />
+        <Tarjeta etiqueta="Cuota financiera" valor={cop(r.cuotaFinanciera)} ayuda="Capital más interés, sin servicios" />
+        <Tarjeta etiqueta="Tasa del periodo" valor={porcentaje(r.tasaPeriodo)} ayuda={`Equivale a ${porcentaje(r.tasaEA)} efectivo anual`} />
         <Tarjeta etiqueta="Total pagado" valor={cop(r.totalPagado)} ayuda={`Sobre ${cop(r.montoFinanciado)} financiados`} />
         <Tarjeta etiqueta="Intereses" valor={cop(r.totalIntereses)} />
         <Tarjeta etiqueta="Servicios" valor={cop(r.totalServicios)} ayuda="Fondo de garantías, asistencia y seguro" />

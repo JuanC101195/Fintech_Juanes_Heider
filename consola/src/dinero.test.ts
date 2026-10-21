@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { aMicros, comparar, cop, copCentavos, decimalEs, deMicros, esCero, esDecimal, porcentaje, redondear, restar, sumar } from './dinero'
+import { aMicros, comparar, cop, copCentavos, decimalEs, deMicros, esCero, esDecimal, formatearMiles, fraccionAPorcentaje, leerMiles, porcentaje, porcentajeAFraccion, redondear, restar, sumar } from './dinero'
+
+describe('entrada de dinero y porcentajes', () => {
+  it('formatea con miles en vivo y vuelve al valor exacto', () => {
+    expect(formatearMiles('1500000')).toBe('1.500.000')
+    expect(formatearMiles('3000000.5')).toBe('3.000.000,5')
+    expect(formatearMiles('')).toBe('')
+    expect(leerMiles('$ 1.500.000')).toBe('1500000')
+    expect(leerMiles('1.500.0001')).toBe('15000001')
+    expect(leerMiles('1.500.000,50')).toBe('1500000.50')
+    expect(leerMiles('1500000.50')).toBe('1500000.50')
+    expect(leerMiles('007')).toBe('7')
+    expect(leerMiles('abc')).toBe('')
+    // ida y vuelta sin perder nada, también con decimales largos del API
+    for (const v of ['5100000', '3169909.335342', '0']) expect(leerMiles(formatearMiles(v))).toBe(v)
+  })
+  it('convierte porcentajes y fracciones sin pasar por number', () => {
+    expect(fraccionAPorcentaje('0.81')).toBe('81')
+    expect(fraccionAPorcentaje('0.815')).toBe('81,5')
+    expect(porcentajeAFraccion('81')).toBe('0.81')
+    expect(porcentajeAFraccion('81,5 %')).toBe('0.815')
+    expect(porcentajeAFraccion('40')).toBe('0.4')
+    expect(porcentajeAFraccion('x')).toBeNull()
+  })
+})
 
 const sinEspeciales = (s: string) => s.replaceAll(' ', ' ')
 

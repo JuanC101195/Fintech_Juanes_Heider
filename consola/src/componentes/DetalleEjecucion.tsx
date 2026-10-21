@@ -59,7 +59,7 @@ const ESTILO_EVENTO: Record<CategoriaEvento, { punto: string; nombre: string; ic
 
 export function LineaTiempo({ instrucciones }: Readonly<{ instrucciones: Instruccion[] }>) {
   const eventos = agruparEventos(instrucciones)
-  if (eventos.length === 0) return <p className="text-on-surface-variant">Sin eventos: todos los periodos se pagan completos y a tiempo.</p>
+  if (eventos.length === 0) return <p className="text-on-surface-variant">Sin eventos: el cliente paga todas las cuotas completas y a tiempo.</p>
   return (
     <ol className="grid gap-2" aria-label="Línea de tiempo de eventos">
       {eventos.map((e) => {
@@ -99,7 +99,7 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
           <tr className="grupos">
             <th scope="col" rowSpan={2}>Periodo</th>
             <th scope="colgroup" colSpan={4}>Pago</th>
-            <th scope="colgroup" colSpan={5}>Aplicación por prelación</th>
+            <th scope="colgroup" colSpan={5}>Cómo se repartió el pago (prelación)</th>
             <th scope="colgroup" colSpan={7}>Saldos al cierre</th>
             <th scope="colgroup" colSpan={2} className="izq">Estado</th>
           </tr>
@@ -239,7 +239,8 @@ export function DetalleEjecucion({ ejecucion, instrucciones }: Readonly<{ ejecuc
         <LineaTiempo instrucciones={instrucciones} />
       </section>
       <section aria-labelledby="h-mov">
-        <h2 id="h-mov" className="mb-2 text-lg font-bold">Periodo a periodo</h2>
+        <h2 id="h-mov" className="mb-1 text-lg font-bold">Periodo a periodo</h2>
+        <p className="mb-2 text-sm text-on-surface-variant">Desliza la tabla hacia los lados para ver todas las columnas. CxC = cuentas por cobrar: lo que el cliente quedó debiendo de cada concepto.</p>
         <TablaMovimientos movimientos={ejecucion.movimientos} instrucciones={instrucciones} />
       </section>
       {ejecucion.asientos && (

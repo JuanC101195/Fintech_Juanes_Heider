@@ -50,3 +50,32 @@ export const problemas = (page) =>
     }
     return lista.slice(0, 10)
   })
+
+/**
+ * Usabilidad: ningún <select> nativo, áreas táctiles de 44 px o más (botones, enlaces de navegación, tarjetas,
+ * campos, opciones del selector) y nada de texto por debajo de 14 px (el texto base es de 16 px).
+ */
+export const usabilidad = (page) =>
+  page.evaluate(() => {
+    const lista = []
+    const n = document.querySelectorAll('select').length
+    if (n) lista.push(`${n} <select> nativo(s)`)
+    const visible = (el) => {
+      const r = el.getBoundingClientRect()
+      return r.width > 0 && r.height > 0 && !el.closest('.sr-only') && getComputedStyle(el).visibility !== 'hidden'
+    }
+    const tactiles = 'button, nav a, main a.tarjeta, main p > a, label.opcion-tarjeta, input:not([type=checkbox]):not([type=radio]):not(.sr-only), summary, [role=option]'
+    for (const el of document.querySelectorAll(tactiles)) {
+      if (!visible(el)) continue
+      const r = el.getBoundingClientRect()
+      if (r.height < 43.5) lista.push(`área táctil de ${Math.round(r.height)} px: <${el.tagName}> ${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 40)}`)
+    }
+    const caminante = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    for (let t = caminante.nextNode(); t; t = caminante.nextNode()) {
+      const el = t.parentElement
+      if (!el || !t.textContent.trim() || el.closest('svg') || !visible(el)) continue
+      const px = parseFloat(getComputedStyle(el).fontSize)
+      if (px < 13.9) lista.push(`letra de ${px} px: ${t.textContent.trim().slice(0, 40)}`)
+    }
+    return [...new Set(lista)].slice(0, 10)
+  })

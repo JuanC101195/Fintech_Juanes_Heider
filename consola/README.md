@@ -2,17 +2,27 @@
 
 Front interno (React 19 + Vite + Tailwind 4, tokens de Prestaya, claro y oscuro) para analistas de cartera y producto. No es para clientes. Habla con el API del motor (`/api/v1`, contrato v1).
 
-Pantallas: **Simulador** (cuota, plan y gráficos), **Casos** (los 13 casos periodo a periodo, línea de tiempo y asientos, perfil EXCEL o NEGOCIO), **Laboratorio** (armar instrucciones por periodo, ejecutar y ver errores del API) y **Reglas** (claves por perfil, fuente y lo que sigue por confirmar).
+Pantallas: **Simulador** (cuota, plan y gráficos), **Casos** (los 13 casos periodo a periodo, línea de tiempo y asientos, perfil EXCEL o NEGOCIO), **Laboratorio** (partir de un caso o de un crédito nuevo, armar los eventos por periodo con tarjetas o atajos, calcular y ver errores del API) y **Reglas** (cada regla en lenguaje de negocio en los dos perfiles, su pregunta del cuestionario y lo que sigue por confirmar).
 
 ```bash
 cd consola
 npm install
 npm run dev        # http://localhost:5173 (con el backend en :8080: ../README.md)
-npm test           # vitest: dinero, cliente HTTP, instrucciones, pantallas y contrato contra docs/api-ejemplos
+npm test           # vitest: dinero, cliente HTTP, instrucciones, pantallas, Selector, contrato y que no haya <select>
 npm run build      # genera dist/
-node pruebas/humo.mjs   # Chromium en celular y escritorio, modo demostración (requiere npm run build)
-node pruebas/e2e.mjs    # Chromium contra el API REAL en :8080 (requiere build y backend arriba)
+node pruebas/humo.mjs   # Chromium a 360 px, 1366 px (claro y oscuro) y 1366 px con escala 1,5; modo demostración
+node pruebas/e2e.mjs    # Chromium contra el API REAL (E2E_API_URL, por defecto :8080; requiere build con VITE_API_URL)
 ```
+
+## Usabilidad
+
+La usa Diego (gerente, no técnico). Reglas que las pruebas vigilan:
+
+- **Nada de `<select>` nativo** (en Windows abre una lista con letra diminuta). Hasta 4 opciones: botones segmentados o tarjetas (`Segmentado`). 5 o más: `componentes/Selector.tsx` (listbox ARIA, teclado, buscador con más de 7 opciones, hoja inferior en el celular). `src/sinSelect.test.ts` falla si vuelve a aparecer.
+- Texto base de 16 px (nada por debajo de 14 px), áreas táctiles de 44 px o más; `humo.mjs` y `e2e.mjs` lo revisan.
+- Dinero con miles en vivo (`EntradaDinero`), tasas como porcentaje (`EntradaPorcentaje`) y enteros con − y + (`EntradaPasos`); el valor que viaja al API sigue siendo el decimal exacto.
+- Sin nombres internos a la vista (MISMA_CUOTA, NEGOCIO…): se traducen a lenguaje de negocio.
+- Mientras el API (plan gratuito, se duerme) no haya respondido la primera vez, los indicadores de carga avisan que puede tardar hasta 30 s.
 
 ## API y modo demostración
 
