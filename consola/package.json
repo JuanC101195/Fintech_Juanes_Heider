@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "cobertura": "vitest run --coverage",
-    "fixtures": "node src/demo/generar.mjs",
-    "humo": "node pruebas/humo.mjs"
+    "fixtures": "node src/demo/descargar.mjs",
+    "humo": "node pruebas/humo.mjs",
+    "e2e": "node pruebas/e2e.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

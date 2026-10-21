@@ -51,7 +51,7 @@ function validarAbonos(peticion: PeticionEjecucion, base: CasoDetalle): void {
       throw new ErrorDeApi(400, {
         codigo: 'ABONO_MAYOR_QUE_SALDO',
         mensaje: `El abono de la semana ${i.periodo} supera el saldo de capital`,
-        detalle: { periodo: i.periodo, valorAbono: i.valor, saldo },
+        detalle: { periodo: i.periodo, abono: i.valor, saldo },
       })
     }
   }

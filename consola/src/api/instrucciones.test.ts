@@ -22,7 +22,7 @@ describe('formulario → instrucción', () => {
   it('usura, cambio de tasa y cierre por recuperación', () => {
     expect(aInstruccion('USURA_VIGENTE', 43, { usuraEA: '0.81' })).toEqual({ periodo: 43, tipo: 'USURA_VIGENTE', usuraEA: '0.81' })
     expect(aInstruccion('CAMBIO_TASA', 30, { nuevaTasaEA: '0.7', modalidad: 'MISMA_CUOTA' })).toEqual({ periodo: 30, tipo: 'CAMBIO_TASA', nuevaTasaEA: '0.7', modalidad: 'MISMA_CUOTA' })
-    expect(aInstruccion('CIERRE_POR_RECUPERACION', 25, { tipoRecuperacion: 'DACION', valorMoto: '3200000' })).toEqual({ periodo: 25, tipo: 'CIERRE_POR_RECUPERACION', tipoRecuperacion: 'DACION', valorMoto: '3200000' })
+    expect(aInstruccion('CIERRE_POR_RECUPERACION', 25, { tipoRecuperacion: 'DACION_EN_PAGO', valorMoto: '3200000' })).toEqual({ periodo: 25, tipo: 'CIERRE_POR_RECUPERACION', tipoRecuperacion: 'DACION_EN_PAGO', valorMoto: '3200000' })
   })
 
   it('ida y vuelta: instrucción → formulario → instrucción', () => {

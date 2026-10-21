@@ -7,10 +7,11 @@ Pantallas: **Simulador** (cuota, plan y gráficos), **Casos** (los 13 casos peri
 ```bash
 cd consola
 npm install
-npm run dev        # http://localhost:5173
-npm test           # vitest: dinero, cliente HTTP, instrucciones, pantallas con fixtures
+npm run dev        # http://localhost:5173 (con el backend en :8080: ../README.md)
+npm test           # vitest: dinero, cliente HTTP, instrucciones, pantallas y contrato contra docs/api-ejemplos
 npm run build      # genera dist/
-node pruebas/humo.mjs   # Chromium en celular y escritorio (requiere npm run build antes)
+node pruebas/humo.mjs   # Chromium en celular y escritorio, modo demostración (requiere npm run build)
+node pruebas/e2e.mjs    # Chromium contra el API REAL en :8080 (requiere build y backend arriba)
 ```
 
 ## API y modo demostración
@@ -20,8 +21,8 @@ node pruebas/humo.mjs   # Chromium en celular y escritorio (requiere npm run bui
 - **Vacía** (`VITE_API_URL=`) o **API que no responde**: modo demostración con los fixtures de `src/demo/fixtures/` y un aviso fijo "Datos de demostración". Las cifras de la demo no cambian con los parámetros (solo se validan el plazo máximo y que un abono no supere el saldo).
 - Un error de negocio del API (HTTP 400/404 con `codigo`) **no** activa la demo: se muestra legible.
 
-Para usar los JSON reales de `docs/api-ejemplos/`, cópialos en `src/demo/fixtures/` con estos nombres: `catalogo.json`, `reglas.json`, `casos.json`, `simulacion-{semanal|quincenal|mensual}.json` y `caso-{N}-{EXCEL|NEGOCIO}.json` (si falta el de EXCEL se usa el de NEGOCIO). `npm run fixtures` regenera los actuales con un mini-motor de ilustración (`src/demo/generar.mjs`); no reemplaza al motor Java.
+Los fixtures son respuestas **reales** del API (catálogo, reglas, casos, simulaciones y los 13 casos en EXCEL y NEGOCIO). Se regeneran con el backend arriba: `npm run fixtures` (`src/demo/descargar.mjs [urlApi]`). Por defecto quita de cada movimiento los campos que la consola no usa para que cada archivo pese ~320 KB como máximo; `--completo` guarda la respuesta íntegra (unos 6 MB). Se cargan de forma perezosa, uno por pantalla.
 
 ## Dinero
 
-Viaja como string decimal y nunca pasa por `parseFloat`: `src/dinero.ts` formatea con `Intl.NumberFormat('es-CO')` desde el string y suma con BigInt en micro-pesos.
+El API manda el dinero **sin redondear** (hasta 34 decimales, DECIMAL128). Viaja como string decimal y nunca pasa por `parseFloat`: `src/dinero.ts` suma con BigInt a 34 decimales (sin perder nada) y redondea solo al mostrar: `cop` a pesos (355.666,9755… → $ 355.667, P-05) y `copCentavos` a centavos en las tablas periodo a periodo y los asientos ($ 3.169.909,34).

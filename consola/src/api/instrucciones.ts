@@ -1,4 +1,4 @@
-import { esDecimal, aMicros, cop, porcentaje, decimalEs } from '../dinero'
+import { esDecimal, aMicros, comparar, cop, porcentaje, decimalEs } from '../dinero'
 import type { Catalogo, Instruccion, TipoInstruccion } from '../tipos'
 
 export type TipoCampo = 'dinero' | 'entero' | 'fraccion' | 'tasa' | 'booleano' | 'opcion'
@@ -32,7 +32,6 @@ export const ETIQUETAS_VALOR: Record<string, string> = {
   MENOR_CUOTA: 'Menor cuota',
   MISMA_FECHA_FINAL: 'Misma fecha final',
   MISMA_CUOTA: 'Misma cuota',
-  DACION: 'Dación en pago',
   DACION_EN_PAGO: 'Dación en pago',
   RETOMA: 'Retoma',
 }
@@ -61,7 +60,7 @@ export const CAMPOS_POR_TIPO: Record<TipoInstruccion, Campo[]> = {
   ],
   PAGO_AL_DIA: [],
   CIERRE_POR_RECUPERACION: [
-    { nombre: 'tipoRecuperacion', etiqueta: 'Tipo de recuperación', tipo: 'opcion', opciones: 'tiposRecuperacion', obligatorio: true, defecto: 'DACION' },
+    { nombre: 'tipoRecuperacion', etiqueta: 'Tipo de recuperación', tipo: 'opcion', opciones: 'tiposRecuperacion', obligatorio: true, defecto: 'DACION_EN_PAGO' },
     { nombre: 'valorMoto', etiqueta: 'Valor de la moto (COP)', tipo: 'dinero', obligatorio: true },
   ],
 }
@@ -92,8 +91,8 @@ export function validarFormulario(tipo: TipoInstruccion, periodo: number, valore
     }
     if (c.tipo === 'entero' && !entero.test(texto)) errores[c.nombre] = 'Debe ser un entero sin signo'
     else if (c.tipo === 'dinero' && (!esDecimal(texto) || aMicros(texto) <= 0n)) errores[c.nombre] = 'Debe ser un valor positivo, por ejemplo 1500000'
-    else if (c.tipo === 'fraccion' && (!esDecimal(texto) || aMicros(texto) <= 0n || aMicros(texto) > 1_000_000n)) errores[c.nombre] = 'Debe estar entre 0 y 1'
-    else if (c.tipo === 'tasa' && (!esDecimal(texto) || aMicros(texto) <= 0n || aMicros(texto) >= 10_000_000n)) errores[c.nombre] = 'Debe ser una fracción positiva, por ejemplo 0.81'
+    else if (c.tipo === 'fraccion' && (!esDecimal(texto) || aMicros(texto) <= 0n || comparar(texto, '1') > 0)) errores[c.nombre] = 'Debe estar entre 0 y 1'
+    else if (c.tipo === 'tasa' && (!esDecimal(texto) || aMicros(texto) <= 0n || comparar(texto, '10') >= 0)) errores[c.nombre] = 'Debe ser una fracción positiva, por ejemplo 0.81'
   }
   return errores
 }

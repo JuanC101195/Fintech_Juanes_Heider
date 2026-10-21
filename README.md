@@ -16,6 +16,24 @@ La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](
 - **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
 - **Cuestionario para negocio en línea** con solo las 24 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.
 
+## API y consola: cómo levantar todo
+
+El motor se expone por HTTP ([`docs/api.md`](docs/api.md), `/api/v1`) y la consola de analistas ([`consola/`](consola/README.md), React) habla con él.
+
+```bash
+# 1. Backend (JDK 21) en http://localhost:8080
+export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot"
+./mvnw spring-boot:run
+
+# 2. Consola en http://localhost:5173 (otra terminal)
+cd consola
+npm install
+npm run dev
+```
+
+- **Modo demostración** (sin backend): `VITE_API_URL= npm run dev` o simplemente no levantar el API. La consola muestra el aviso "Datos de demostración" y sirve respuestas reales del API guardadas en `consola/src/demo/fixtures/` (se regeneran con `npm run fixtures` con el backend arriba).
+- **Pruebas**: `./mvnw -q -B test` (backend); en `consola/`: `npm test`, `npm run build`, `node pruebas/humo.mjs` (demo) y `node pruebas/e2e.mjs` (de punta a punta contra el API real, con el backend arriba).
+
 ## Cómo funciona el motor
 
 ```mermaid

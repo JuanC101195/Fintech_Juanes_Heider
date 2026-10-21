@@ -48,8 +48,8 @@ export function TablaReglas({ reglas }: Readonly<{ reglas: TipoReglas }>) {
         </thead>
         <tbody>
           {reglas.claves.map((k) => {
-            const e = reglas.perfiles.EXCEL[k.clave] ?? '—'
-            const n = reglas.perfiles.NEGOCIO[k.clave] ?? '—'
+            const e = reglas.perfiles.EXCEL[k.clave] ?? 'sin tope'
+            const n = reglas.perfiles.NEGOCIO[k.clave] ?? 'sin tope'
             return (
               <tr key={k.clave}>
                 <th scope="row">{k.clave}</th>

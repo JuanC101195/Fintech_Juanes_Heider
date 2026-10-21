@@ -1,4 +1,5 @@
-// Tipos del contrato del API (contrato-api-cartera.md, v1). El dinero y las tasas son strings decimales.
+// Tipos del API real (docs/api.md, v1), verificados contra docs/api-ejemplos/*.json en contrato.test.ts.
+// El dinero y las tasas son strings decimales SIN redondear (hasta 34 decimales); se redondea solo al mostrar.
 
 export type Perfil = 'EXCEL' | 'NEGOCIO'
 export type Periodicidad = 'SEMANAL' | 'QUINCENAL' | 'MENSUAL'
@@ -16,6 +17,9 @@ export interface InfoPeriodicidad {
   periodosPorAnio: number
   adjetivo: string
   porConfirmar: boolean
+  diasNominales: number
+  unidadCuota: string
+  cuotasMaximas: number
 }
 
 export type TipoInstruccion =
@@ -36,7 +40,9 @@ export interface Catalogo {
   tiposInstruccion: TipoInstruccion[]
   modalidadesAbono: string[]
   modalidadesCambioTasa: string[]
+  /** Son los nombres reales de `Instruccion.TipoRecuperacion`: DACION_EN_PAGO y RETOMA. */
   tiposRecuperacion: string[]
+  perfilesReglas: Perfil[]
   valoresPorDefecto: Record<string, string>
 }
 
@@ -47,8 +53,10 @@ export interface ClaveRegla {
 }
 
 export interface Reglas {
-  perfiles: Record<Perfil, Record<string, string>>
+  /** Valor de cada clave por perfil; `topeCobranzaPorPago` es null cuando no hay tope. */
+  perfiles: Record<Perfil, Record<string, string | null>>
   claves: ClaveRegla[]
+  archivoNegocio?: string
 }
 
 export interface Credito {
@@ -59,9 +67,19 @@ export interface Credito {
   valorMoto: string
   pagoInicial: string
   perfilReglas: Perfil
+  matriculaRunt?: string
+  soat?: string
+  prenda?: string
+  gpsPlataforma?: string
+  gastosComerciales?: string
+  /** Horizonte de proyección con saldo pendiente (casos 8 y 9: 100 y 120). */
+  plazoLimitePeriodos?: number | null
 }
 
 export interface ResumenSimulacion {
+  linea?: string
+  perfilReglas?: Perfil
+  serviciosPorCuota?: string
   montoFinanciado: string
   tasaEA: string
   tasaPeriodo: string
@@ -77,6 +95,9 @@ export interface ResumenSimulacion {
 
 export interface FilaPlan {
   periodo: number
+  mes?: number
+  saldoInicial?: string
+  cuotaFinanciera?: string
   interes: string
   capital: string
   fondoGarantias: string
@@ -91,7 +112,11 @@ export interface Simulacion {
   plan: FilaPlan[]
 }
 
-/** Campos de una instrucción: los del record de `Instruccion`, en camelCase; el resto es opcional por tipo. */
+/**
+ * Campos de una instrucción: los del record de `Instruccion`, en camelCase; el resto es opcional por tipo.
+ * `modalidad` es un solo campo compartido por ABONO_EXTRA (MENOR_PLAZO/MENOR_CUOTA) y CAMBIO_TASA (MISMA_FECHA_FINAL/MISMA_CUOTA).
+ * `tipoRecuperacion` (DACION_EN_PAGO/RETOMA) es el de CIERRE_POR_RECUPERACION.
+ */
 export interface Instruccion {
   periodo: number
   tipo: TipoInstruccion
@@ -114,55 +139,91 @@ export interface PeticionEjecucion {
   incluirAsientos: boolean
 }
 
-export interface ServiciosPorConcepto {
-  fondoGarantias?: string
-  asistencia?: string
-  seguro?: string
+/** Servicios por concepto; `total` es la suma que calcula el API. */
+export interface Servicios {
+  fondoGarantias: string
+  asistencia: string
+  seguro: string
+  total: string
 }
 
-/** Movimiento: todos sus campos viajan como string; aquí van los que la consola muestra, el resto se conserva. */
+/** Lo que un pago extraordinario cancela de la deuda pendiente (cobranza, mora, interés, servicios y capital). */
+export interface DeudaExtinguida {
+  cobranza: string
+  mora: string
+  interesCorriente: string
+  servicios: Servicios
+  capital: string
+  total: string
+}
+
+export type EstadoCredito = 'DESEMBOLSADO' | 'VIGENTE_AL_DIA' | 'EN_MORA' | 'CANCELADO' | 'CERRADO_POR_EVENTO'
+
+/** Movimiento del motor: todos los campos de dinero son strings decimales sin redondear. */
 export interface Movimiento {
   periodo: number
-  estado: string
-  etiqueta?: string
-  evento?: string
-  mes?: number
-  saldoInicial?: string
-  cuotaFinanciera?: string
-  interesCorriente?: string
-  interesMora?: string
-  capitalContractual?: string
-  cobranzaCausada?: string
-  pagoRecibido?: string
-  pagoCobranza?: string
-  pagoMora?: string
-  pagoInteresCorriente?: string
-  pagoServicios?: string
-  pagoCapital?: string
-  abonoExtra?: string
-  prepagoCapital?: string
-  cxcCobranza?: string
-  cxcMora?: string
-  cxcInteresCorriente?: string
-  cxcServicios?: string
-  capitalVencido?: string
-  capitalVigente?: string
-  saldoFinal?: string
-  cuotasVencidas?: number | string
-  pendientesPagadosExtra?: Record<string, string> | string
-  [campo: string]: unknown
+  mes: number
+  estado: EstadoCredito | (string & {})
+  /** Nombre del evento del motor ("Pago normal", "Cuota + abono extra"…); `etiqueta` trae el mismo texto. */
+  evento: string
+  etiqueta: string
+  saldoInicial: string
+  tasaPeriodica: string
+  cuotaFinanciera: string
+  interesCorriente: string
+  interesMora: string
+  capitalContractual: string
+  cobranzaCausada: string
+  serviciosCausados: Servicios
+  pagoRecibido: string
+  pagoCobranza: string
+  pagoMora: string
+  pagoInteresCorriente: string
+  pagoServicios: string
+  pagoCapital: string
+  abonoExtra: string
+  prepagoCapital: string
+  cxcCobranza: string
+  cxcMora: string
+  cxcInteresCorriente: string
+  cxcServicios: string
+  capitalVencido: string
+  capitalVigente: string
+  saldoFinal: string
+  cuotasVencidas: number
+  deudaAExtinguir: string
+  inventario: string
+  cxcFondoGarantias: string
+  cxpDeudor: string
+  pagoTerceros: Servicios
+  pagosServicios: Servicios
+  cxcServiciosPorConcepto: Servicios
+  extinguido: DeudaExtinguida
+  capitalVencidoInicial: string
+  /** Pendientes (cobranza, mora, interés, servicios, capital) que un pago extra cubrió antes de abonar a capital. Siempre es un objeto. */
+  pendientesPagadosExtra: DeudaExtinguida
+  interesPrepago: string
+  /** Todo lo que pagó el cliente en el periodo (cuota + extraordinario). */
+  pagoTotalCliente: string
+  pagoExtraordinario: string
 }
 
 export interface LineaAsiento {
   cuenta: string
+  nombreCuenta: string
   debito: string
   credito: string
+  /** Por qué se mueve la cuenta, en español ("Aplicación 100% a capital"). */
+  explicacion: string
 }
 
 export interface Asiento {
   periodo: number
   evento: string
   lineas: LineaAsiento[]
+  totalDebitos: string
+  totalCreditos: string
+  /** Calculado por el API al centavo. */
   cuadra: boolean
 }
 
@@ -172,6 +233,8 @@ export interface ResumenEjecucion {
   saldoFinal: string
   totalPagadoCliente: string
   cuotasVencidasMax: number
+  montoFinanciado: string
+  perfilReglas: Perfil
 }
 
 export interface Ejecucion {
@@ -190,8 +253,9 @@ export interface CasoResumen {
 export interface CasoDetalle extends Ejecucion {
   caso: CasoResumen
   instrucciones: Instruccion[]
-  /** Supuesto: el API puede mandar el crédito del caso; si no, el laboratorio usa uno por defecto. */
-  credito?: Credito
+  perfilReglas: Perfil
+  /** Crédito del caso en formato de request (con `plazoLimitePeriodos`); el laboratorio lo reejecuta tal cual. */
+  credito: Credito
 }
 
 export interface ErrorApi {

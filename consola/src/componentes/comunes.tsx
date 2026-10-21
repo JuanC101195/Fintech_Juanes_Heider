@@ -29,9 +29,9 @@ const EXPLICACIONES: Record<string, string> = {
 }
 
 function detalleLegible(detalle: Record<string, unknown>): string[] {
-  const etiquetas: Record<string, string> = { periodo: 'Periodo', valorAbono: 'Abono', saldo: 'Saldo de capital', meses: 'Meses pedidos', maximoMeses: 'Máximo de meses' }
+  const etiquetas: Record<string, string> = { periodo: 'Periodo', abono: 'Abono', valorAbono: 'Abono', saldo: 'Saldo de capital', meses: 'Meses pedidos', maximoMeses: 'Máximo de meses', maximoCuotas: 'Máximo de cuotas', periodicidad: 'Periodicidad', campo: 'Campo' }
   return Object.entries(detalle).map(([k, v]) => {
-    const texto = typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) && k !== 'periodo' ? cop(v) : String(v)
+    const texto = typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) && !['periodo', 'maximoMeses', 'maximoCuotas', 'meses'].includes(k) ? cop(v) : String(v)
     return `${etiquetas[k] ?? k}: ${texto}`
   })
 }

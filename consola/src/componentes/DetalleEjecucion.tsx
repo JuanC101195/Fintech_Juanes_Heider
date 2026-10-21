@@ -1,14 +1,14 @@
 import { categoria, describir, type CategoriaEvento } from '../api/instrucciones'
-import { cop, esCero, sumar } from '../dinero'
+import { cop, copCentavos, esCero } from '../dinero'
 import type { Asiento, Ejecucion, Instruccion, Movimiento } from '../tipos'
 import { Tarjeta } from './comunes'
 
 const ETIQUETA_ESTADO: Record<string, string> = {
-  AL_DIA: 'Al día',
+  DESEMBOLSADO: 'Desembolsado',
+  VIGENTE_AL_DIA: 'Al día',
   EN_MORA: 'En mora',
   CANCELADO: 'Cancelado',
-  RECUPERADO: 'Recuperado (dación)',
-  RETOMADO: 'Retomado',
+  CERRADO_POR_EVENTO: 'Cerrado por recuperación',
 }
 
 export function nombreEstado(estado: string): string {
@@ -17,8 +17,8 @@ export function nombreEstado(estado: string): string {
 
 function Estado({ estado }: Readonly<{ estado: string }>) {
   const clase =
-    estado === 'AL_DIA' ? 'bg-tertiary-container text-on-tertiary-container' : estado === 'EN_MORA' ? 'bg-secondary-fixed text-on-secondary-fixed' : 'bg-primary-container text-on-primary-container'
-  const icono = estado === 'AL_DIA' ? '●' : estado === 'EN_MORA' ? '▲' : '■'
+    estado === 'VIGENTE_AL_DIA' ? 'bg-tertiary-container text-on-tertiary-container' : estado === 'EN_MORA' ? 'bg-secondary-fixed text-on-secondary-fixed' : 'bg-primary-container text-on-primary-container'
+  const icono = estado === 'VIGENTE_AL_DIA' ? '●' : estado === 'EN_MORA' ? '▲' : '■'
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${clase}`}>
       <span aria-hidden="true">{icono}</span>
@@ -85,14 +85,13 @@ export function LineaTiempo({ instrucciones }: Readonly<{ instrucciones: Instruc
 // ---------- tabla de movimientos ----------
 
 function pendientesPagados(m: Movimiento): string {
-  const p = m.pendientesPagadosExtra
-  return p && typeof p === 'object' ? (p.total ?? '0') : '0'
+  return m.pendientesPagadosExtra?.total ?? '0'
 }
 
 export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movimientos: Movimiento[]; instrucciones: Instruccion[] }>) {
   const marcados = new Map<number, CategoriaEvento>()
   for (const i of instrucciones) marcados.set(i.periodo, categoria(i.tipo))
-  const c = (v: string | undefined) => (esCero(v) ? '—' : cop(v))
+  const c = (v: string | undefined) => (esCero(v) ? '—' : copCentavos(v))
   return (
     <div className="scroll-tabla dos" tabIndex={0} role="region" aria-label="Tabla periodo a periodo">
       <table>
@@ -148,12 +147,12 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
                 <td>{c(m.cxcServicios)}</td>
                 <td>{c(m.capitalVencido)}</td>
                 <td>{c(m.capitalVigente)}</td>
-                <td className="font-semibold">{cop(m.saldoFinal)}</td>
+                <td className="font-semibold">{copCentavos(m.saldoFinal)}</td>
                 <td className="izq">
                   <Estado estado={m.estado} />
                   {m.etiqueta && <span className="ml-2 text-xs text-on-surface-variant">{m.etiqueta}</span>}
                 </td>
-                <td>{String(m.cuotasVencidas ?? 0)}</td>
+                <td>{m.cuotasVencidas ?? 0}</td>
               </tr>
             )
           })}
@@ -175,8 +174,6 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
       </p>
       <div className="grid gap-2">
         {asientos.map((a) => {
-          const debito = sumar(...a.lineas.map((l) => l.debito))
-          const credito = sumar(...a.lineas.map((l) => l.credito))
           return (
             <details key={`${a.periodo}-${a.evento}`} className="rounded-xl border border-outline-variant bg-surface-lowest">
               <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
@@ -191,6 +188,7 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
                   <thead>
                     <tr>
                       <th scope="col">Cuenta</th>
+                      <th scope="col" className="izq">Por qué</th>
                       <th scope="col">Débito</th>
                       <th scope="col">Crédito</th>
                     </tr>
@@ -198,7 +196,8 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
                   <tbody>
                     {a.lineas.map((l, k) => (
                       <tr key={`${l.cuenta}-${k}`}>
-                        <th scope="row">{l.cuenta.replaceAll('_', ' ')}</th>
+                        <th scope="row" title={l.cuenta}>{l.nombreCuenta || l.cuenta.replaceAll('_', ' ')}</th>
+                        <td className="izq min-w-48 !whitespace-normal text-on-surface-variant">{l.explicacion}</td>
                         <td>{c0(l.debito)}</td>
                         <td>{c0(l.credito)}</td>
                       </tr>
@@ -206,9 +205,9 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td>Total</td>
-                      <td>{cop(debito)}</td>
-                      <td>{cop(credito)}</td>
+                      <td colSpan={2}>Total</td>
+                      <td>{copCentavos(a.totalDebitos)}</td>
+                      <td>{copCentavos(a.totalCreditos)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -221,7 +220,7 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
   )
 }
 
-const c0 = (v: string) => (esCero(v) ? '—' : cop(v))
+const c0 = (v: string) => (esCero(v) ? '—' : copCentavos(v))
 
 // ---------- conjunto ----------
 
