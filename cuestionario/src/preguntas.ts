@@ -360,8 +360,8 @@ const BASE: Pregunta[] = [
     id: 'S4',
     bloque: SERVICIOS,
     titulo: 'Si el crédito sigue con saldo después de la última cuota pactada, ¿se siguen cobrando servicios?',
-    contexto: 'En el caso 8 el crédito termina en la semana 89, pero desde la 87 no se causan servicios: por ejemplo, el seguro de vida no tendría prima esas semanas.',
-    excelHoy: 'Los servicios se cobran solo hasta la cuota 86.',
+    contexto: 'En el caso 8 el crédito sigue con saldo después de la cuota 104, la última pactada, y desde ahí no se causan servicios: por ejemplo, el seguro de vida no tendría prima esas semanas.',
+    excelHoy: 'Los servicios se cobran solo hasta la última cuota pactada (104).',
     previsualizacion: 'S4',
     opciones: [
       { codigo: 'no', texto: 'No, solo hasta la última cuota pactada', esExcel: true, escenario: 'no', ajustes: { serviciosDespuesDelPlazo: 'false' } },
@@ -632,7 +632,7 @@ const BASE: Pregunta[] = [
     id: 'C4',
     bloque: CONTABILIDAD,
     titulo: '¿Son correctas estas definiciones de la hoja Validaciones?',
-    contexto: 'La hoja no trae fórmula para dos validaciones. Se tomaron así: "cuotas eliminadas" = 86 − última cuota pagada (caso 6: 25) y "periodos adicionales" = última semana − 86 (caso 8: 3).',
+    contexto: 'La hoja no trae fórmula para dos validaciones. Se tomaron así: "cuotas eliminadas" = 104 − última cuota pagada (caso 6) y "periodos adicionales" = última semana − 104 (caso 8).',
     excelHoy: 'Sin fórmula.',
     opciones: [
       { codigo: 'si', texto: 'Sí, son correctas' },
@@ -1421,6 +1421,65 @@ const RONDA_4: Pregunta[] = [
       { codigo: 'suplente', texto: 'Se nombra un suplente con los mismos permisos y misma bitácora' },
       { codigo: 'contingencia', texto: 'Procedimiento de contingencia: la dirección financiera designa a alguien por escrito mientras falte', pideTexto: true },
       { codigo: 'esperar', texto: 'Se espera a que vuelva; no se prevé reemplazo' },
+    ],
+  },
+
+  {
+    id: 'R4-PLAZO-LINEA',
+    bloque: PAGOS,
+    titulo: 'Dijo "máximo 24 meses" de plazo. ¿El tope de 24 vale para todas las líneas o cada línea tiene el suyo?',
+    contexto: 'El catálogo de Inputs tiene la línea ORDINARIO con 36 meses. Si el tope es 24 para todas, esa línea se recorta; si no, el motor guarda el tope en cada línea.',
+    excelHoy: 'El catálogo de Inputs trae el plazo de cada línea (ORDINARIO: 36 meses).',
+    opciones: [
+      { codigo: 'todas-24', texto: '24 meses para todas las líneas' },
+      { codigo: 'por-linea', texto: 'Cada línea con su tope (ORDINARIO 36)', detalle: 'Si algún tope del catálogo cambia, indíquelo.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R4-PLAZO-LIMITE',
+    bloque: PAGOS,
+    titulo: 'El plazo límite de recuperación va en periodos. ¿Cuántos?',
+    contexto: 'Ya quedó que se expresa en periodos de la periodicidad del crédito (PPER-6), pero falta el valor. Hoy el motor usa el equivalente a 120 semanas (casos 8 y 9: 100 y 120 semanas).',
+    excelHoy: 'Plazo límite de 100 semanas en el caso 8 y 120 en el caso 9.',
+    opciones: [
+      { codigo: 'equivalente-120', texto: 'Mantener el equivalente a 120 semanas (≈ 27 meses)' },
+      { codigo: 'meses', texto: 'Otro plazo, en meses', pideValor: true },
+    ],
+    valor: { etiqueta: 'Plazo límite', unidad: 'meses', sugeridos: [{ valor: 24 }, { valor: 27 }, { valor: 36 }] },
+  },
+  {
+    id: 'R4-PAGO-SIN-CUOTA',
+    bloque: ABONOS,
+    titulo: 'Si un pago llega cuando todavía no hay cuota causada, ¿todo cuenta como abono extra?',
+    contexto: 'Pasa antes de la primera cuota o justo después de pagar al día. Hoy el motor lo trata todo como abono extra (recalcula plazo o cuota); la otra lectura es guardarlo como saldo a favor para la próxima cuota.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'todo-abono-extra', texto: 'Sí, todo es abono extra' },
+      { codigo: 'saldo-a-favor', texto: 'Se guarda como saldo a favor para la próxima cuota' },
+    ],
+  },
+  {
+    id: 'R4-CASO13',
+    bloque: ABONOS,
+    titulo: 'Caso 13 (abono extra con pendientes): ¿los valores son correctos?',
+    contexto:
+      'Armado por el equipo con sus reglas. En la semana 42 el cliente tiene pendientes por 317.354,81 (cobranza, mora, interés, seguro y capital vencido) y trae un abono de 1.500.000: se pagan los pendientes y 1.182.645,20 van a capital vigente; el saldo queda en 3.169.909,34. Con menor plazo la cuota sigue en 100.406,27 y el crédito termina en la semana 83; con menor cuota baja a 73.124,59 y termina en la 104. El detalle semana a semana está en docs/reglas/caso-13.md.',
+    excelHoy: 'No hay hoja en el Excel: lo arma el equipo.',
+    opciones: [
+      { codigo: 'correctos', texto: 'Los valores son correctos' },
+      { codigo: 'diferencias', texto: 'Hay diferencias', detalle: 'Indique cuáles valores y cuáles esperaba.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R4-FONDO-TOPE',
+    bloque: RECUPERACION,
+    titulo: 'El fondo de garantías cubre todo el faltante de una dación. ¿Tiene un tope que el motor deba controlar?',
+    contexto: 'Con REC-1 el fondo cubre el faltante completo. Si tuviera un tope (por crédito o global), el resto quedaría como cuenta por cobrar al cliente (REC-3).',
+    excelHoy: 'El faltante de la dación se carga al fondo sin tope.',
+    opciones: [
+      { codigo: 'sin-tope', texto: 'Sin tope por crédito' },
+      { codigo: 'tope-aportado', texto: 'Tope = lo aportado por el cliente al fondo' },
+      { codigo: 'otro', texto: 'Otro tope', detalle: 'Indique cuál y si es por crédito o global.', pideTexto: true },
     ],
   },
 ]

@@ -22,7 +22,7 @@ export interface Opcion {
 
 export interface CampoValor {
   etiqueta: string
-  unidad: 'COP' | '%' | 'pp' | 'días' | 'semanas'
+  unidad: 'COP' | '%' | 'pp' | 'días' | 'semanas' | 'meses'
   ayuda?: string
   /** Valores sugeridos; si tienen escenario, se previsualizan con el motor. */
   sugeridos?: { valor: number; escenario?: string }[]

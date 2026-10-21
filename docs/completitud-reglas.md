@@ -17,19 +17,19 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 16 | 29 | 55 % |
+| Pagos, mora y cobranza | 16 | 31 | 52 % |
 | Servicios complementarios | 10 | 10 | 100 % |
-| Abonos y prepago | 11 | 12 | 92 % |
+| Abonos y prepago | 11 | 14 | 79 % |
 | Cambio de tasa y usura | 10 | 13 | 77 % |
-| Dación y retoma | 10 | 12 | 83 % |
+| Dación y retoma | 10 | 13 | 77 % |
 | Contabilidad | 5 | 9 | 56 % |
 | Roles y parámetros | 4 | 5 | 80 % |
 | Ajustes al Excel | 1 | 3 | 33 % |
-| **Tabla A (preguntas del cuestionario)** | **67** | **93** | **72 %** |
+| **Tabla A (preguntas del cuestionario)** | **67** | **98** | **68 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **78** | **111** | **70 %** |
+| **Total de reglas inventariadas** | **78** | **116** | **67 %** |
 
-Las 93 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces) más las 11 de la ronda 4 (ids `R4-*`). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 98 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces) más las 16 de la ronda 4 (ids `R4-*`). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
@@ -69,6 +69,8 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | CAL-1 | Vencimiento los martes (1 de 3): ¿hasta qué momento del martes se paga a tiempo? | Decidida | Ronda 3 (20 oct 2026): La cuota es a tiempo hasta el fin del martes; el atraso empieza el miércoles (día 1). |
 | CAL-2 | Vencimiento los martes (2 de 3): si el martes es festivo, ¿cuándo vence la cuota? | Decidida | Ronda 3 (20 oct 2026): Sin manejo de festivos. |
 | CAL-3 | Vencimiento los martes (3 de 3): ¿cuándo vence la primera cuota y el martes es igual para todos los créditos? | Decidida | Ronda 3 (20 oct 2026): El martes es fijo para todos los créditos; la primera fecha se pacta en la oferta. |
+| R4-PLAZO-LINEA | Plazo máximo: ¿24 meses para todas las líneas o cada línea con su tope? | Abierta | Pregunta R4-PLAZO-LINEA del cuestionario (ronda 4) |
+| R4-PLAZO-LIMITE | ¿Cuántos periodos tiene el plazo límite de recuperación? | Abierta | Pregunta R4-PLAZO-LIMITE del cuestionario (ronda 4) |
 
 | R4-QUIN | Quincenal: ¿son 24 periodos al año (y no 104)? | Abierta | Pregunta R4-QUIN del cuestionario (ronda 4) |
 | R4-MENSUAL-DIA | Mensual: ¿el día de pago es fijo para todos o se elige por crédito? | Abierta | Pregunta R4-MENSUAL-DIA del cuestionario (ronda 4) |
@@ -103,6 +105,8 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | ABN-4 | Un abono extra recibido entre cuotas, ¿se aplica de una vez o junto con la siguiente cuota? | Decidida | Ronda 3 (20 oct 2026): Pagar antes del martes el valor exacto de una cuota ya causada es pago corriente, no anticipo; lo que supere ese valor es abono extra. |
 | ABN-5 | Con varios abonos a menor cuota, ¿cada uno recalcula la cuota hasta la cuota pactada? | Decidida | Ronda 3 (20 oct 2026): Cada abono a menor cuota recalcula la cuota sobre las cuotas restantes. |
 | ABN-6 | En un prepago total, ¿hay algún costo y cuándo se entrega el paz y salvo? | Decidida | Ronda 3 (20 oct 2026): El prepago no tiene costo; paz y salvo y liberación de la prenda en 30 días. |
+| R4-PAGO-SIN-CUOTA | Pago sin cuota causada: ¿todo es abono extra o saldo a favor? | Abierta | Pregunta R4-PAGO-SIN-CUOTA del cuestionario (ronda 4) |
+| R4-CASO13 | Caso 13 (abono extra con pendientes): ¿los valores son correctos? | Abierta | Pregunta R4-CASO13 del cuestionario (ronda 4) |
 
 | R4-A3 | ¿Se acepta cualquier abono extra o hay un valor mínimo? | Abierta | Pregunta R4-A3 del cuestionario (ronda 4) |
 ### Cambio de tasa y usura
@@ -142,6 +146,7 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | REC-6 | ¿Quién fija el valor de la dación o la retoma? | Reemplazada por R4-PERITO | Ronda 3 (20 oct 2026): Valor de dación o retoma = guía Fasecolda × 65 %, con perito externo como segunda opción; falta cuándo aplica el perito. No cuenta en el total: la cuenta R4-PERITO. |
 | REC-7 | Si el cliente nunca se pone al día y llega al plazo límite con saldo, ¿qué ocurre? | Decidida | Ronda 3 (20 oct 2026): Al llegar al plazo límite con saldo, la recuperación (dación o retoma) es obligatoria. |
 | REC-8 | La semana del siniestro o de la recuperación, ¿cuenta como cuota vencida? | Decidida | Ronda 3 (20 oct 2026): La semana del evento cuenta como vencida. |
+| R4-FONDO-TOPE | ¿El fondo de garantías tiene un tope que el motor deba controlar? | Abierta | Pregunta R4-FONDO-TOPE del cuestionario (ronda 4) |
 
 | R4-R2 | Al recuperar la moto, ¿se descuenta el costo real con soporte? | Abierta | Pregunta R4-R2 del cuestionario (ronda 4) |
 | R4-PERITO | Valor Fasecolda × 65 %: ¿cuándo se usa el perito externo? | Abierta | Pregunta R4-PERITO del cuestionario (ronda 4) |

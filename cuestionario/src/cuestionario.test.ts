@@ -25,12 +25,12 @@ describe('preguntas', () => {
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
 
-  it('la ronda 4 deja abiertas 11 confirmaciones y ninguna otra', () => {
+  it('la ronda 4 deja abiertas 16 confirmaciones y ninguna otra', () => {
     const ronda4 = PREGUNTAS.filter((p) => p.id.startsWith('R4-'))
     expect(ronda4.map((p) => p.id).sort()).toEqual(
-      ['R4-A3', 'R4-AVISO-CLIENTE', 'R4-C5', 'R4-COBRANZA-CONTABLE', 'R4-MENSUAL-DIA', 'R4-PERITO', 'R4-QUIN', 'R4-R2', 'R4-SUPLENTE', 'R4-T5', 'R4-USURA-PLAZO'].sort(),
+      ['R4-A3', 'R4-AVISO-CLIENTE', 'R4-C5', 'R4-CASO13', 'R4-COBRANZA-CONTABLE', 'R4-FONDO-TOPE', 'R4-MENSUAL-DIA', 'R4-PAGO-SIN-CUOTA', 'R4-PERITO', 'R4-PLAZO-LIMITE', 'R4-PLAZO-LINEA', 'R4-QUIN', 'R4-R2', 'R4-SUPLENTE', 'R4-T5', 'R4-USURA-PLAZO'].sort(),
     )
-    expect(PREGUNTAS).toHaveLength(11)
+    expect(PREGUNTAS).toHaveLength(16)
     // Todas ofrecen al menos 2 opciones reales, sin relleno.
     for (const p of ronda4) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
     // Las que se volvieron a preguntar quedan como reemplazadas y apuntan a una pregunta abierta.
