@@ -43,8 +43,8 @@ public record ParametrosProducto(
     public static ParametrosProducto de(LineaCredito linea, Periodicidad periodicidad, int numeroCuotas) {
         int maximo = linea.plazoMaximoMeses() * periodicidad.periodosPorAnio() / 12;
         if (numeroCuotas < 1 || numeroCuotas > maximo) {
-            throw new IllegalArgumentException("La línea " + linea + " admite de 1 a " + maximo + " cuotas "
-                    + periodicidad.name().toLowerCase() + "es; se pidieron " + numeroCuotas);
+            throw new IllegalArgumentException("La línea " + linea + " admite de 1 a " + maximo + " "
+                    + periodicidad.unidadCuota() + "; se pidieron " + numeroCuotas);
         }
         return new ParametrosProducto(numeroCuotas, periodicidad.periodosPorAnio(), 12, linea.tasaEA(), bd("0.03"), bd("40000"),
                 bd("0.0025"), bd("0.19"), bd("3000"), Math.max(120, numeroCuotas));
