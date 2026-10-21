@@ -19,6 +19,7 @@ import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
+import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadCambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
 import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
@@ -271,14 +272,22 @@ class RespuestasDiego20OctTest {
         }
     }
 
+    /**
+     * T1/T2/T4 con la modalidad del Excel ({@code modalidadUsura = MISMA_FECHA_FINAL}, que es lo que hace
+     * {@link ReglasNegocio#EXCEL}): la cuota se recalcula como en el caso 2. Diego eligió en la ronda 3
+     * (USU-6) mantener la cuota y bajar el plazo; esa modalidad se prueba en
+     * {@code RespuestasDiegoRonda3Test.Usu6UsuraConLaMismaCuota}. Estas pruebas fijan la modalidad
+     * explícitamente para no depender del valor por defecto.
+     */
     @Nested
     class T2T4AjustePorUsura {
 
+        private final ReglasNegocio comoCaso2 = ReglasNegocio.EXCEL.conModalidadUsura(ModalidadCambioTasa.MISMA_FECHA_FINAL);
         private final BigDecimal tasa79 = Tasas.desdeEA(new BigDecimal("0.79"), 52, 12).periodica();
 
         @Test
         void siLaTasaSuperaLaUsuraBajaDesdeLaCuotaSiguienteYRecalculaComoElCaso2() {
-            List<Movimiento> m = motor.ejecutar(base().en(43, new UsuraVigente(new BigDecimal("0.80"))));
+            List<Movimiento> m = motor.ejecutar(base().en(43, new UsuraVigente(new BigDecimal("0.80"))).conReglas(comoCaso2));
             assertThat(m.get(43).tasaPeriodica()).isEqualByComparingTo(Tasas.de(P).periodica());
             Movimiento cambio = m.get(44);
             assertThat(cambio.evento()).isEqualTo("Cambio de tasa");
@@ -293,7 +302,7 @@ class RespuestasDiego20OctTest {
         @Test
         void conUsuraDe81PublicadaEnLa43ReproduceElCaso2DelExcel() {
             int periodo44 = Calendario.primerPeriodoDelMes(11, P);
-            List<Movimiento> m = motor.ejecutar(base().en(periodo44 - 1, new UsuraVigente(new BigDecimal("0.81"))));
+            List<Movimiento> m = motor.ejecutar(base().en(periodo44 - 1, new UsuraVigente(new BigDecimal("0.81"))).conReglas(comoCaso2));
             ComparadorExcel comparador = new ComparadorExcel()
                     .dinero("Saldo inicial", Movimiento::saldoInicial)
                     .tasa("Tasa periódica", Movimiento::tasaPeriodica)
@@ -309,7 +318,7 @@ class RespuestasDiego20OctTest {
             List<Movimiento> m = motor.ejecutar(base()
                     .en(43, new UsuraVigente(new BigDecimal("0.80")))
                     .en(60, new UsuraVigente(new BigDecimal("0.95")))
-                    .en(70, new UsuraVigente(new BigDecimal("0.75"))));
+                    .en(70, new UsuraVigente(new BigDecimal("0.75"))).conReglas(comoCaso2));
             assertThat(m.get(61).tasaPeriodica()).isCloseTo(tasa79, offset(ComparadorExcel.TOLERANCIA_TASA));
             assertThat(m.get(61).evento()).isNotEqualTo("Cambio de tasa");
             assertThat(m.get(61).cuotaFinanciera()).isEqualByComparingTo(m.get(60).cuotaFinanciera());

@@ -175,6 +175,7 @@ public final class MotorCartera {
                 ordenes.cambioTasa = ajustarPorUsura(periodo, usuraPorAplicar);
                 usuraPorAplicar = null;
             }
+            boolean pagoExplicito = false;
             for (Instruccion i : instrucciones) {
                 switch (i) {
                     case CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) -> {
@@ -185,16 +186,27 @@ public final class MotorCartera {
                     case AbonoExtra a -> ordenes.abono = a;
                     case PrepagoTotal t -> ordenes.prepago = t;
                     case CierrePorRecuperacion c -> ordenes.cierre = c;
-                    default -> ordenes.pago = i;
+                    default -> {
+                        ordenes.pago = i;
+                        pagoExplicito = true;
+                    }
                 }
+            }
+            // REC-8 (Diego, ronda 3, 2026-10-20): la semana de la dación o la retoma cuenta como vencida. Si el
+            // escenario no dice cómo paga esa semana, no se supone un pago a tiempo: se trata como sin pago, y
+            // moraAntesDeRecuperacion decide si causa mora y servicios (los casos 3, 4 y 11 ya lo hacían explícito).
+            if (ordenes.cierre != null && !pagoExplicito) {
+                ordenes.pago = new SinPago(false);
             }
             return ordenes;
         }
 
         /**
          * Ajuste por usura como evento de tasa: la EA vigente baja a usura − margen solo si la supera
-         * ({@link Usura#tasaAjustada(BigDecimal, BigDecimal, BigDecimal)}) y la cuota se recalcula como en el
-         * caso 2 (PMT con las cuotas restantes y el saldo). Devuelve si la tasa cambió.
+         * ({@link Usura#tasaAjustada(BigDecimal, BigDecimal, BigDecimal)}). Lo que se conserva lo decide
+         * {@code ReglasNegocio.modalidadUsura}: con MISMA_CUOTA (Diego, USU-6, ronda 3) la cuota se mantiene y
+         * baja el plazo como en el caso 10; con MISMA_FECHA_FINAL (EXCEL) la cuota se recalcula como en el
+         * caso 2. Devuelve si la tasa cambió.
          */
         private boolean ajustarPorUsura(int periodo, BigDecimal usuraEA) {
             BigDecimal actual = tasas.efectivaAnual();
@@ -202,7 +214,7 @@ public final class MotorCartera {
             if (nueva.compareTo(actual) == 0) {
                 return false;
             }
-            cambiarTasa(periodo, nueva, ModalidadCambioTasa.MISMA_FECHA_FINAL);
+            cambiarTasa(periodo, nueva, escenario.reglas().modalidadUsura());
             return true;
         }
 
@@ -217,13 +229,21 @@ public final class MotorCartera {
                 cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasVigentes - periodo + 1, saldo);
                 return;
             }
+            cuotasVigentes = periodo - 1 + cuotasHastaSaldoCero(saldoPlan);
+        }
+
+        /**
+         * Cuotas de valor {@code cuota} que hacen falta para llevar {@code base} a cero con la tasa vigente,
+         * NPER = −ln(1 − r·S/C) / ln(1 + r) redondeado hacia arriba (la última se ajusta). Lo usan el caso 10
+         * y el abono a menor plazo (SRV-2).
+         */
+        private int cuotasHastaSaldoCero(BigDecimal base) {
             double r = tasas.periodica().doubleValue();
-            double proporcion = r * saldoPlan.doubleValue() / cuota.doubleValue();
+            double proporcion = r * base.doubleValue() / cuota.doubleValue();
             if (proporcion >= 1) {
                 throw new IllegalArgumentException("Con la tasa nueva la cuota no alcanza para cubrir el interés: no amortiza");
             }
-            int restantes = (int) Math.ceil(-Math.log(1 - proporcion) / Math.log(1 + r) - 1e-9);
-            cuotasVigentes = periodo - 1 + restantes;
+            return (int) Math.ceil(-Math.log(1 - proporcion) / Math.log(1 + r) - 1e-9);
         }
 
         /** FCC y asistencia solo se causan en periodos pagados al día (Inputs ⑥, P-07). */
@@ -364,6 +384,15 @@ public final class MotorCartera {
                 cuota = Amortizacion.cuotaFija(tasaVigente, cuotasVigentes - periodo, base);
             }
             saldoPlan = restar(saldo, capitalVencido);
+            // SRV-2 (Diego, ronda 3, 2026-10-20): si el abono acorta el plazo, la cobertura de los servicios
+            // termina con el nuevo plazo. Se recalcula el número de cuotas como en el caso 10 (NPER con la misma
+            // cuota) para que causar() deje de causar servicios y capital contractual después de la última. En
+            // el caso 6 del Excel el crédito ya terminaba en la cuota 71 porque el saldo llega a cero; esto solo
+            // cambia algo si el cliente se atrasa después del abono.
+            if (abono.modalidad() == ModalidadAbono.MENOR_PLAZO && periodo < cuotasVigentes && saldoPlan.signum() > 0
+                    && !esCero(saldoPlan)) {
+                cuotasVigentes = Math.min(cuotasVigentes, periodo + cuotasHastaSaldoCero(saldoPlan));
+            }
             return aplicado;
         }
 
