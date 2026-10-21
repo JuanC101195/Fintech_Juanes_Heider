@@ -64,8 +64,10 @@ public sealed interface Instruccion {
     /**
      * Se publica una tasa de usura nueva (EA en fracción) durante esta semana (T2/T4, Diego
      * 2026-10-20). Si la EA vigente del crédito la supera, baja a usura − {@code margenUsura} desde la
-     * cuota siguiente (T1) y la cuota se recalcula como en el caso 2; si no la supera, nada cambia (la
-     * tasa nunca sube). Ver {@link co.financiera.cartera.nucleo.Usura#tasaAjustada}.
+     * cuota siguiente (T1); si no la supera, nada cambia (la tasa nunca sube). Qué se conserva lo decide
+     * {@code ReglasNegocio.modalidadUsura}: Diego (USU-6, ronda 3) mantiene la cuota y baja el plazo como
+     * el caso 10; {@code ReglasNegocio.EXCEL} recalcula la cuota como el caso 2. Ver
+     * {@link co.financiera.cartera.nucleo.Usura#tasaAjustada}.
      */
     record UsuraVigente(BigDecimal usuraEA) implements Instruccion {
 
