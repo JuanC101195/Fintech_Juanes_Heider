@@ -23,6 +23,11 @@ import java.math.BigDecimal;
  *                                 última cuota (A6). El Excel prepaga el mismo día de la cuota.
  * @param margenUsura              puntos porcentuales de EA por debajo de la usura a los que se lleva
  *                                 un crédito que la supera (T2): 1 = 100 pb = 0,01 de EA
+ * @param modalidadUsura           qué se conserva cuando la usura obliga a bajar la tasa. Diego (USU-6,
+ *                                 ronda 3, 2026-10-20): siempre la misma cuota y baja el plazo
+ *                                 ({@code MISMA_CUOTA}, caso 10). {@link #EXCEL} conserva la fecha final y
+ *                                 recalcula la cuota ({@code MISMA_FECHA_FINAL}), como el cambio de tasa
+ *                                 del caso 2, que es lo que hacía el motor desde el PR #8.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -34,7 +39,8 @@ public record ReglasNegocio(
         boolean moraAntesDeRecuperacion,
         AplicacionAbono aplicacionAbono,
         boolean interesPrepagoPorDias,
-        BigDecimal margenUsura) {
+        BigDecimal margenUsura,
+        Instruccion.ModalidadCambioTasa modalidadUsura) {
 
     /** Margen bajo la usura acordado con negocio y confirmado por Diego (T2, 2026-10-20): 1 punto de EA. */
     public static final BigDecimal MARGEN_USURA_POR_DEFECTO = BigDecimal.ONE;
@@ -47,7 +53,8 @@ public record ReglasNegocio(
      */
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
             FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true,
-            AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO);
+            AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO,
+            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -91,7 +98,7 @@ public record ReglasNegocio(
     /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
     public static final java.util.Set<String> CLAVES = java.util.Set.of("prelacion", "formulaMora", "baseInteres",
             "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
-            "aplicacionAbono", "interesPrepagoPorDias", "margenUsura");
+            "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura");
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -130,52 +137,55 @@ public record ReglasNegocio(
         if ((v = config.get("margenUsura")) != null && !v.isBlank()) {
             r = r.conMargenUsura(new BigDecimal(v.trim()));
         }
+        if ((v = config.get("modalidadUsura")) != null) {
+            r = r.conModalidadUsura(Instruccion.ModalidadCambioTasa.valueOf(v.trim()));
+        }
         return r;
     }
 
     public ReglasNegocio conPrelacion(OrdenPrelacion valor) {
         return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
         return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
         return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                valor, aplicacionAbono, interesPrepagoPorDias, margenUsura);
+                valor, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conAplicacionAbono(AplicacionAbono valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura);
+                moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura, modalidadUsura);
     }
 
     public ReglasNegocio conInteresPrepagoPorDias(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura);
+                moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura, modalidadUsura);
     }
 
     /** Margen bajo la usura en puntos porcentuales de EA (1 = 100 pb); no puede ser negativo. */
@@ -184,6 +194,13 @@ public record ReglasNegocio(
             throw new IllegalArgumentException("El margen bajo la usura debe ser cero o positivo: " + valor);
         }
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor);
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor, modalidadUsura);
+    }
+
+    /** Qué se conserva cuando la usura obliga a bajar la tasa (USU-6): la cuota o la fecha final. */
+    public ReglasNegocio conModalidadUsura(Instruccion.ModalidadCambioTasa valor) {
+        java.util.Objects.requireNonNull(valor, "modalidadUsura");
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, valor);
     }
 }
