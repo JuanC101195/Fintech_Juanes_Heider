@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.within;
 
 import co.financiera.cartera.contabilidad.Contabilizador;
 import co.financiera.cartera.nucleo.Calc;
-import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.DeudaExtinguida;
 import co.financiera.cartera.nucleo.motor.Escenario;
@@ -17,8 +16,7 @@ import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio.AplicacionAbono;
 import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
-import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
-import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
+import co.financiera.cartera.simulaciones.EscenariosExcel;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Nested;
@@ -43,14 +41,11 @@ class Caso13AbonoConPendientesTest {
     private final MotorCartera motor = new MotorCartera();
 
     static Escenario conPendientes() {
-        return new Escenario(Operacion.ejemploExcel(), ParametrosProducto.replicaExcel())
-                .en(SIN_PAGO, new SinPago(true))
-                .en(PAGO_TARDIO, new PagoValor(bd(5_000), 3))
-                .en(ABONO, new SinPago(true));
+        return EscenariosExcel.caso13ConPendientes(ParametrosProducto.replicaExcel());
     }
 
     static Escenario caso13(BigDecimal abono, ModalidadAbono modalidad) {
-        return conPendientes().en(ABONO, new AbonoExtra(abono, modalidad)).conReglas(DIEGO);
+        return EscenariosExcel.caso13(ParametrosProducto.replicaExcel(), abono, modalidad).conReglas(DIEGO);
     }
 
     /** Lo pendiente al cierre de la semana del abono si el cliente no abonara. */

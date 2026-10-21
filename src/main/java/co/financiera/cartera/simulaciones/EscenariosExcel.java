@@ -14,12 +14,14 @@ import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadCambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoAlDia;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoContractual;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
+import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
+import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
 import co.financiera.cartera.nucleo.motor.Instruccion.TipoRecuperacion;
 
 /**
- * Los escenarios de las hojas Caso1 a Caso9 del Excel (parámetros de la hoja Inputs), para
- * reutilizarlos fuera de las pruebas: previsualizaciones del cuestionario y demos.
+ * Los escenarios de las hojas Caso1 a Caso12 del Excel (parámetros de la hoja Inputs) y el caso 13 del
+ * equipo, para reutilizarlos fuera de las pruebas: previsualizaciones del cuestionario, demos y el API.
  */
 public final class EscenariosExcel {
 
@@ -39,6 +41,11 @@ public final class EscenariosExcel {
         return new Escenario(Operacion.ejemploExcel().conPagoInicial(pagoInicial), p);
     }
 
+    /** Caso 2: desde el mes 11 (Inputs C40) la tasa pasa a 80 % EA (C41); se conserva la fecha final. */
+    public static Escenario caso2(ParametrosProducto p) {
+        return base(p).en(Calendario.primerPeriodoDelMes(11, p), new CambioTasa(bd("0.80")));
+    }
+
     /** Pago normal hasta el mes 7, sin pago hasta el siniestro del mes 8 y dación por 3.000.000. */
     public static Escenario caso3(ParametrosProducto p, boolean causaMoraYServicios) {
         int ultimoPagado = Calendario.periodoDelMes(7, p);
@@ -47,9 +54,29 @@ public final class EscenariosExcel {
                 .en(siniestro, new CierrePorRecuperacion(TipoRecuperacion.DACION_EN_PAGO, bd(3_000_000)));
     }
 
+    /**
+     * Caso 4: paga hasta el mes 3 (Inputs C48), no paga hasta el mes 4 (C49) y se retoma la moto por un
+     * avalúo de 6.800.000 (C47), mayor que la deuda. Como el Excel, sin mora en las semanas sin pago (D8).
+     */
+    public static Escenario caso4(ParametrosProducto p) {
+        int retoma = Calendario.periodoDelMes(4, p);
+        return base(p).entre(Calendario.periodoDelMes(3, p) + 1, retoma, new SinPago(false))
+                .en(retoma, new CierrePorRecuperacion(TipoRecuperacion.RETOMA, bd(6_800_000)));
+    }
+
+    /** Caso 5: prepago total el mismo día de la cuota del mes 10. */
+    public static Escenario caso5(ParametrosProducto p) {
+        return base(p).en(Calendario.periodoDelMes(10, p), new PrepagoTotal());
+    }
+
     /** Abono extra de 2.000.000 en el mes 10 aplicado como menor plazo. */
     public static Escenario caso6(ParametrosProducto p) {
         return base(p).en(Calendario.periodoDelMes(10, p), new AbonoExtra(bd(2_000_000), ModalidadAbono.MENOR_PLAZO));
+    }
+
+    /** Caso 7: abono extra de 2.000.000 en el mes 10 aplicado como menor cuota. */
+    public static Escenario caso7(ParametrosProducto p) {
+        return base(p).en(Calendario.periodoDelMes(10, p), new AbonoExtra(bd(2_000_000), ModalidadAbono.MENOR_CUOTA));
     }
 
     /**
@@ -96,5 +123,37 @@ public final class EscenariosExcel {
         int inferior = Calendario.periodoDelMes(10, p);
         int normalizacion = Math.clamp(Calendario.periodoDelMes(14, p), inferior + 1, p.numeroCuotas());
         return base(p).en(inferior, new PagoParcial(bd("0.4"), 0)).en(normalizacion, new PagoAlDia());
+    }
+
+    /** Caso 13: semana sin pago. */
+    public static final int CASO13_SIN_PAGO = 40;
+    /** Caso 13: semana con un pago de 5.000 y 3 días de atraso. */
+    public static final int CASO13_PAGO_TARDIO = 41;
+    /** Caso 13: semana sin pago de la cuota pero con el abono extra. */
+    public static final int CASO13_ABONO = 42;
+    /** Caso 13: valor del abono extra. */
+    public static final java.math.BigDecimal CASO13_VALOR_ABONO = bd(1_500_000);
+
+    /**
+     * Caso 13 sin el abono: la semana 40 no paga, la 41 paga 5.000 con 3 días de atraso y la 42 no paga la
+     * cuota (ABN-1, docs/reglas/caso-13.md). Periodos semanales de la réplica del Excel.
+     */
+    public static Escenario caso13ConPendientes(ParametrosProducto p) {
+        return base(p).en(CASO13_SIN_PAGO, new SinPago(true))
+                .en(CASO13_PAGO_TARDIO, new PagoValor(bd(5_000), 3))
+                .en(CASO13_ABONO, new SinPago(true));
+    }
+
+    /**
+     * Caso 13 · Abono extra con pendientes: el de {@link #caso13ConPendientes} más un abono extra en la
+     * semana 42. Con {@code aplicacionAbono = PRIMERO_PENDIENTES} paga primero los pendientes (A4/D21).
+     */
+    public static Escenario caso13(ParametrosProducto p, java.math.BigDecimal abono, ModalidadAbono modalidad) {
+        return caso13ConPendientes(p).en(CASO13_ABONO, new AbonoExtra(abono, modalidad));
+    }
+
+    /** Caso 13 con los valores de docs/reglas/caso-13.md: abono de 1.500.000 a menor plazo. */
+    public static Escenario caso13(ParametrosProducto p) {
+        return caso13(p, CASO13_VALOR_ABONO, ModalidadAbono.MENOR_PLAZO);
     }
 }

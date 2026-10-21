@@ -94,4 +94,21 @@ class RecaudoConVencidosTest {
                 .isCloseTo(normalizacion.capitalVencidoInicial(), within(UN_PESO));
         assertThat(normalizacion.capitalVencido()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
     }
+
+    /**
+     * Una cuota pagada a tiempo después de un pago tardío paga primero la cobranza pendiente; el asiento la
+     * acredita a CxC gastos de cobranza y cuadra (antes faltaba esa línea y el asiento se descuadraba).
+     */
+    @Test
+    void laCobranzaPendienteQuePagaLaCuotaSeAcreditaYElAsientoCuadra() {
+        Escenario e = new Escenario(co.financiera.cartera.nucleo.Operacion.ejemploExcel(), P)
+                .en(40, new co.financiera.cartera.nucleo.motor.Instruccion.SinPago(true))
+                .en(41, new co.financiera.cartera.nucleo.motor.Instruccion.PagoValor(Calc.bd(5_000), 3));
+        Movimiento semana = correr(e).get(42);
+        assertThat(semana.pagoCobranza()).isPositive();
+        Asiento asiento = new RecaudoConVencidos().contabilizar(semana).orElseThrow();
+        assertThat(asiento.cuadra()).isTrue();
+        assertThat(suma(List.of(asiento), Cuenta.CXC_GASTOS_COBRANZA, Asiento.Linea::credito))
+                .isEqualByComparingTo(semana.pagoCobranza());
+    }
 }

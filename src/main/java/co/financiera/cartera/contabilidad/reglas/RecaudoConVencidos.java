@@ -20,7 +20,7 @@ import java.util.Optional;
  *
  * <ol>
  *   <li>Causación de la mora: CxC interés mora contra Ingresos por mora.
- *   <li>Aplicación del recaudo por prelación: CxC interés mora → CxC interés corriente → servicios →
+ *   <li>Aplicación del recaudo por prelación: CxC gastos de cobranza pendientes → CxC interés mora → CxC interés corriente → servicios →
  *       Cartera de créditos.
  *   <li>Reclasificación del cambio de capital vencido de la semana: si crece, de cartera vigente a
  *       vencida; si se recupera, de vencida a vigente.
@@ -50,6 +50,8 @@ public final class RecaudoConVencidos implements ReglaContable {
                 debito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.interesMora()), "Causación de mora"),
                 credito(Cuenta.INGRESOS_MORA, sinResiduo(m.interesMora()), "Contrapartida del interés de mora"),
                 debito(Cuenta.CAJA, m.pagoRecibido(), "Recaudo de la cuota más lo atrasado"),
+                // Cobranza causada en una semana anterior (pago tardío) que esta cuota paga primero.
+                credito(Cuenta.CXC_GASTOS_COBRANZA, sinResiduo(m.pagoCobranza()), "Primera prioridad"),
                 credito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.pagoMora()), "Segunda prioridad"),
                 credito(Cuenta.CXC_INTERES_CORRIENTE, sinResiduo(m.pagoInteresCorriente()), "Tercera prioridad"),
                 credito(Cuenta.CXP_SERVICIOS_TERCEROS, sinResiduo(m.pagoServicios()), "Fondo, asistencia y seguro"),

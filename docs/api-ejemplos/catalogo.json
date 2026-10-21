@@ -1,0 +1,79 @@
+{
+  "lineas" : [ {
+    "codigo" : "CPPU",
+    "nombre" : "Crédito popular productivo urbano",
+    "tasaEA" : "0.8762",
+    "plazoMaximoMeses" : 24,
+    "periodicidades" : [ "SEMANAL", "QUINCENAL", "MENSUAL" ]
+  }, {
+    "codigo" : "CPPR",
+    "nombre" : "Crédito popular productivo rural",
+    "tasaEA" : "0.6545",
+    "plazoMaximoMeses" : 24,
+    "periodicidades" : [ "SEMANAL", "QUINCENAL", "MENSUAL" ]
+  }, {
+    "codigo" : "BAJO_MONTO",
+    "nombre" : "Consumo de bajo monto",
+    "tasaEA" : "0.6666",
+    "plazoMaximoMeses" : 24,
+    "periodicidades" : [ "SEMANAL", "QUINCENAL", "MENSUAL" ]
+  }, {
+    "codigo" : "ORDINARIO",
+    "nombre" : "Consumo y ordinario",
+    "tasaEA" : "0.2859",
+    "plazoMaximoMeses" : 36,
+    "periodicidades" : [ "SEMANAL", "QUINCENAL", "MENSUAL" ]
+  } ],
+  "periodicidades" : [ {
+    "codigo" : "SEMANAL",
+    "periodosPorAnio" : 52,
+    "adjetivo" : "semanal",
+    "porConfirmar" : false,
+    "diasNominales" : 7,
+    "unidadCuota" : "cuotas semanales",
+    "cuotasMaximas" : 104
+  }, {
+    "codigo" : "QUINCENAL",
+    "periodosPorAnio" : 24,
+    "adjetivo" : "quincenal",
+    "porConfirmar" : true,
+    "diasNominales" : 15,
+    "unidadCuota" : "cuotas quincenales",
+    "cuotasMaximas" : 48
+  }, {
+    "codigo" : "MENSUAL",
+    "periodosPorAnio" : 12,
+    "adjetivo" : "mensual",
+    "porConfirmar" : false,
+    "diasNominales" : 30,
+    "unidadCuota" : "cuotas mensuales",
+    "cuotasMaximas" : 24
+  } ],
+  "tiposInstruccion" : [ "PAGO_CONTRACTUAL", "PAGO_PARCIAL", "PAGO_VALOR", "SIN_PAGO", "ABONO_EXTRA", "PREPAGO_TOTAL", "USURA_VIGENTE", "CAMBIO_TASA", "PAGO_AL_DIA", "CIERRE_POR_RECUPERACION" ],
+  "modalidadesAbono" : [ "MENOR_PLAZO", "MENOR_CUOTA" ],
+  "modalidadesCambioTasa" : [ "MISMA_FECHA_FINAL", "MISMA_CUOTA" ],
+  "tiposRecuperacion" : [ "DACION_EN_PAGO", "RETOMA" ],
+  "perfilesReglas" : [ "EXCEL", "NEGOCIO" ],
+  "valoresPorDefecto" : {
+    "linea" : "CPPU",
+    "periodicidad" : "SEMANAL",
+    "cuotas" : "104",
+    "plazoMaximoMeses" : "24",
+    "valorMoto" : "5100000",
+    "matriculaRunt" : "171100",
+    "soat" : "373300",
+    "prenda" : "120000",
+    "alistamiento" : "664400",
+    "gpsPlataforma" : "80000",
+    "gastosComerciales" : "60000",
+    "pagoInicial" : "0",
+    "valorTotal" : "5904400",
+    "montoFinanciado" : "5904400",
+    "fondoGarantiasPorcentajeMensual" : "0.03",
+    "asistenciaMensual" : "40000",
+    "seguroPorcentajeMensual" : "0.0025",
+    "iva" : "0.19",
+    "cobranzaDiaria" : "3000",
+    "perfilReglas" : "NEGOCIO"
+  }
+}

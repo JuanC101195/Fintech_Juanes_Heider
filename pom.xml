@@ -110,6 +110,16 @@
 	</dependencyManagement>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<!-- Las reglas de negocio viajan dentro del jar: en Azure no existe la carpeta config/. -->
+			<resource>
+				<directory>config</directory>
+				<targetPath>config</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

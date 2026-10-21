@@ -1,6 +1,5 @@
 package co.financiera.cartera.casos;
 
-import static co.financiera.cartera.nucleo.Calc.bd;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.data.Offset.offset;
@@ -15,13 +14,6 @@ import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.EstadoCredito;
-import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
-import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
-import co.financiera.cartera.nucleo.motor.Instruccion.CierrePorRecuperacion;
-import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadAbono;
-import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
-import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
-import co.financiera.cartera.nucleo.motor.Instruccion.TipoRecuperacion;
 import co.financiera.cartera.nucleo.motor.MotorCartera;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import co.financiera.cartera.simulaciones.EscenariosExcel;
@@ -52,17 +44,14 @@ class PeriodicidadEscenariosTest {
     /** Los 12 casos con los eventos de Inputs: meses 3-4 (caso 4), 7-8 (caso 3), 10 (casos 5 a 9, 11, 12), 11 (casos 2 y 10). */
     private static Map<String, Escenario> escenarios(Periodicidad per) {
         ParametrosProducto p = parametros(per);
-        int mes10 = Calendario.periodoDelMes(10, p);
         Map<String, Escenario> e = new LinkedHashMap<>();
         e.put("caso1", EscenariosExcel.caso1(p));
-        e.put("caso2", new Escenario(Operacion.ejemploExcel(), p).en(Calendario.primerPeriodoDelMes(11, p), new CambioTasa(bd("0.80"))));
+        e.put("caso2", EscenariosExcel.caso2(p));
         e.put("caso3", EscenariosExcel.caso3(p, false));
-        int retoma = Calendario.periodoDelMes(4, p);
-        e.put("caso4", new Escenario(Operacion.ejemploExcel(), p).entre(Calendario.periodoDelMes(3, p) + 1, retoma, new SinPago(false))
-                .en(retoma, new CierrePorRecuperacion(TipoRecuperacion.RETOMA, bd(6_800_000))));
-        e.put("caso5", new Escenario(Operacion.ejemploExcel(), p).en(mes10, new PrepagoTotal()));
+        e.put("caso4", EscenariosExcel.caso4(p));
+        e.put("caso5", EscenariosExcel.caso5(p));
         e.put("caso6", EscenariosExcel.caso6(p));
-        e.put("caso7", new Escenario(Operacion.ejemploExcel(), p).en(mes10, new AbonoExtra(bd(2_000_000), ModalidadAbono.MENOR_CUOTA)));
+        e.put("caso7", EscenariosExcel.caso7(p));
         e.put("caso8", EscenariosExcel.caso8(p));
         e.put("caso9", EscenariosExcel.caso9(p));
         e.put("caso10", EscenariosExcel.caso10(p));
