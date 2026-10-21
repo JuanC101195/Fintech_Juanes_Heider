@@ -31,6 +31,8 @@ CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago'
 DESCARTADOS = {
     'A3': 'abonoMinimo=0: Diego no dio un mínimo; el abono sigue la prelación de Inputs (pregunta abierta)',
     'R2': 'costoRecuperacion=0: los costos de recuperación van dentro de los gastos de cobranza, aún sin definir',
+    'T5': 'saldo-total: el comentario pide investigar las cláusulas aceleratorias; se repitió sin responder (ronda 4)',
+    'C5': 'valor-total: el detalle (total = moto + alistamiento) contradice la opción con GPS y gastos comerciales; se repitió sin responder (ronda 4)',
 }
 # Código de la opción que marca una pregunta aún sin opción real; sus ajustes tampoco se aplican.
 CODIGO_PENDIENTE = 'PENDIENTE'
