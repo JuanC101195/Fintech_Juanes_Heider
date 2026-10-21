@@ -1,12 +1,111 @@
-// Arma la entrada de archify (agentes.architecture.json) del diagrama de los 9 agentes.
-// Uso: node docs/diagrama/fuente/generar.mjs <ruta-al-repo-archify>
-// Luego: node <archify>/archify/bin/archify.mjs finalize architecture docs/diagrama/fuente/agentes.architecture.json docs/diagrama/agentes-motor-cartera.html --quality showcase --json
-import { readFileSync, writeFileSync } from 'node:fs';
+// Genera el diagrama del proyecto con archify: dos vistas (arquitectura y fases de construcción) en un solo HTML con pestañas.
+// Uso (desde la raíz del repo): node docs/diagrama/fuente/generar.mjs <ruta-al-repo-archify>
+//   1. Escribe las entradas de archify: fuente/arquitectura.architecture.json y fuente/fases.architecture.json.
+//   2. Corre `archify finalize architecture ... --quality showcase` para cada una (valida y renderiza).
+//   3. Arma docs/diagrama/agentes-motor-cartera.html: pestañas + cada vista en un iframe (srcdoc), sin archivos aparte.
+// El workflow .github/workflows/sitio.yml publica ese HTML como diagrama.html.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const archify = process.argv[2];
+if (!archify) throw new Error('Falta la ruta al repo de archify: node docs/diagrama/fuente/generar.mjs <archify>');
 const es = JSON.parse(readFileSync(path.join(archify, 'archify/examples/locales/es.json'), 'utf8'));
+const fuente = new URL('.', import.meta.url);
+const salida = new URL('../agentes-motor-cartera.html', import.meta.url);
 
+// ───────────────────────── Vista 1 · Arquitectura actual ─────────────────────────
+const arquitectura = {
+  schema_version: 1,
+  diagram_type: 'architecture',
+  meta: {
+    title: 'Motor de cartera · arquitectura',
+    subtitle: 'Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 21 oct 2026',
+    locale: 'es',
+    translations: es,
+    output: 'arquitectura.html',
+    quality_profile: 'showcase',
+    legend: {
+      mode: 'auto',
+      entries: {
+        frontend: { label: 'Páginas web (React)' },
+        backend: { label: 'Módulos y herramientas' },
+        database: { label: 'Datos y configuración' },
+        cloud: { label: 'Función en la nube' },
+        external: { label: 'Personas' },
+      },
+    },
+  },
+  components: [
+    { id: 'diego', type: 'external', label: 'Negocio', sublabel: 'responde las reglas', pos: [20, 60], size: [150, 60] },
+    { id: 'equipo', type: 'external', label: 'Equipo de cartera', sublabel: 'simula y revisa', pos: [20, 404], size: [150, 60] },
+    { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'cuestionario/ · React', tag: 'ronda 4', pos: [240, 56], size: [200, 68] },
+    { id: 'diagrama', type: 'frontend', label: 'Diagrama del proyecto', sublabel: 'docs/diagrama/ · archify', pos: [240, 228], size: [200, 68] },
+    { id: 'consola', type: 'frontend', label: 'Consola', sublabel: 'consola/ · React', tag: 'usa el API', pos: [240, 400], size: [200, 68] },
+    { id: 'funcion', type: 'cloud', label: 'Azure Function', sublabel: 'nube/ · guarda respuestas', pos: [530, 56], size: [200, 68] },
+    { id: 'tabla', type: 'database', label: 'Table Storage', sublabel: 'tabla respuestas', pos: [790, 56], size: [180, 68] },
+    { id: 'importador', type: 'backend', label: 'Importador', sublabel: 'importar_respuestas.py', tag: 'herramientas/', pos: [1060, 56], size: [200, 68] },
+    { id: 'reglas', type: 'database', label: 'reglas-negocio.properties', sublabel: 'config/ · va en el jar', pos: [1060, 228], size: [200, 68] },
+    { id: 'api', type: 'backend', label: 'api', sublabel: 'REST /api/v1', tag: 'PerfilesReglas', pos: [530, 400], size: [200, 68] },
+    { id: 'simulaciones', type: 'backend', label: 'simulaciones', sublabel: 'EscenariosExcel · 13 casos', pos: [790, 310], size: [200, 68] },
+    { id: 'contabilidad', type: 'backend', label: 'contabilidad', sublabel: 'Contabilizador · reglas', pos: [790, 490], size: [200, 68] },
+    { id: 'nucleo', type: 'backend', label: 'nucleo', sublabel: 'MotorCartera · cálculo puro', tag: 'Periodicidad', pos: [1060, 400], size: [200, 68] },
+  ],
+  boundaries: [
+    { kind: 'region', label: 'GitHub Pages', wraps: ['cuestionario', 'diagrama', 'consola'] },
+    { kind: 'region', label: 'Azure · respuestas sin servidor', wraps: ['funcion', 'tabla'] },
+    { kind: 'region', label: 'Azure App Service F1 · Java 21 · un jar', wraps: ['reglas', 'api', 'simulaciones', 'contabilidad', 'nucleo'] },
+  ],
+  connections: [
+    { id: 'responde', from: 'diego', to: 'cuestionario', label: 'responde', variant: 'emphasis' },
+    { id: 'autoguarda', from: 'cuestionario', to: 'funcion', label: 'autoguarda', variant: 'emphasis' },
+    { id: 'escribe-tabla', from: 'funcion', to: 'tabla', label: 'escribe' },
+    { id: 'lee-nube', from: 'tabla', to: 'importador', label: '--nube', variant: 'dashed' },
+    { id: 'escribe-reglas', from: 'importador', to: 'reglas', label: 'escribe', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
+    { id: 'usa-consola', from: 'equipo', to: 'consola', label: 'usa', variant: 'emphasis' },
+    { id: 'consulta', from: 'equipo', to: 'diagrama', label: 'consulta', variant: 'dashed', fromSide: 'top', toSide: 'left' },
+    { id: 'https', from: 'consola', to: 'api', label: 'HTTPS', variant: 'emphasis' },
+    { id: 'perfil', from: 'reglas', to: 'api', label: 'perfil NEGOCIO', variant: 'dashed', fromSide: 'left', toSide: 'top' },
+    { id: 'casos', from: 'api', to: 'simulaciones', label: 'casos', fromSide: 'right', toSide: 'left' },
+    { id: 'asientos', from: 'api', to: 'contabilidad', label: 'asientos', fromSide: 'right', toSide: 'left' },
+    { id: 'escenarios', from: 'simulaciones', to: 'nucleo', label: 'escenarios', fromSide: 'right', toSide: 'left' },
+    { id: 'movimientos', from: 'contabilidad', to: 'nucleo', label: 'movimientos', fromSide: 'right', toSide: 'left' },
+  ],
+  cards: [
+    { dot: 'cyan', title: 'nucleo · cálculo puro', items: [
+      'MotorCartera: un ciclo por periodo para todos los casos',
+      'Periodicidad semanal, quincenal o mensual y CalendarioPagos',
+      'Usura (misma cuota o misma fecha) y ClasificacionPago',
+      'Sin Spring ni base de datos; BigDecimal sin redondeo',
+    ] },
+    { dot: 'violet', title: 'contabilidad, simulaciones y api', items: [
+      'contabilidad: Contabilizador y una regla por evento',
+      'simulaciones: EscenariosExcel (13 casos) y GeneradorEscenarios',
+      'api: REST /api/v1 con perfiles EXCEL y NEGOCIO',
+      'Spring Modulith verifica que ningún módulo use internos de otro',
+    ] },
+    { dot: 'emerald', title: 'De la respuesta a la regla', items: [
+      'El cuestionario autoguarda cada cambio en la Azure Function',
+      'El importador lee la tabla y escribe config/reglas-negocio.properties',
+      'Ese archivo va dentro del jar: un cambio de reglas exige redesplegar',
+    ] },
+    { dot: 'amber', title: 'Despliegue', items: [
+      'API: Azure App Service plan F1 gratuito, Java 21, sin estado',
+      'Consola, cuestionario y diagrama: GitHub Pages (workflow Sitio)',
+      'Si el API duerme o agota su cuota, la consola usa datos de demostración',
+    ] },
+    { dot: 'rose', title: 'Estado', items: [
+      '296 pruebas en verde, 13 casos reproducidos al centavo',
+      'Completitud de reglas: 67 % (78 de 116); cuestionario: 68 %',
+      'Pendiente de negocio: ronda 4, política de cobranza y PUC',
+      'El caso 13 espera que negocio valide sus valores',
+    ] },
+  ],
+};
+
+// ───────────────────────── Vista 2 · Fases de construcción ─────────────────────────
 // caso, nombre, segundos, llamadas a herramientas, pruebas, commit, entrega
 const agentes = [
   [1, 'Normal', 434, 34, 25, 'a12318c', 'RecaudoCuota + invariantes'],
@@ -24,24 +123,38 @@ const PASO = 72, Y0 = 40, H = 60, CY = Y0 + 4 * PASO + H / 2; // fila central = 
 // con muchas conexiones. En los lados de arriba y abajo archify ordena los puertos por la x del otro extremo
 // (y empata por id): correr 1-2 px los casos 7-9 y las entregas 1-3 invierte ese orden donde hace falta
 // para que las líneas queden anidadas y no se crucen.
-const ladoBase = (n) => (n <= 3 ? 'top' : n >= 7 ? 'bottom' : 'right');
-const ladoIntegracion = (n) => (n <= 3 ? 'top' : n >= 7 ? 'bottom' : 'left');
+const lado = (n, medio) => {
+  if (n <= 3) return 'top';
+  if (n >= 7) return 'bottom';
+  return medio;
+};
+const ladoBase = (n) => lado(n, 'right');
+const ladoIntegracion = (n) => lado(n, 'left');
 const ajusteAgente = (n) => (n >= 7 ? 9 - n : 0);
 const ajusteEntrega = (n) => (n <= 3 ? 3 - n : 0);
+// Fila de abajo (fases 6 a 10): se lee de derecha a izquierda, siguiendo la columna de la derecha.
+const YB = 840;
 
-const components = [
+const componentesFases = [
   { id: 'juan', type: 'external', label: 'Juan Esteban', sublabel: 'pide el motor', pos: [20, CY - 30], size: [130, 60] },
   { id: 'orquestador', type: 'frontend', label: 'Orquestador', sublabel: 'arma y coordina', tag: 'sesión principal', pos: [230, CY - 34], size: [150, 68] },
-  { id: 'base', type: 'frontend', label: 'Base común', sublabel: 'núcleo + caso 1', tag: '8e24c4a', pos: [440, CY - 65], size: [170, 130] },
+  { id: 'base', type: 'frontend', label: '1 · Base común', sublabel: 'núcleo + caso 1', tag: '8e24c4a', pos: [440, CY - 65], size: [170, 130] },
   { id: 'excel', type: 'database', label: 'Excel de Diego', sublabel: '9 hojas → 9 CSV', pos: [230, CY + 150], size: [150, 60] },
-  { id: 'integracion', type: 'frontend', label: 'Integración', sublabel: '9 merges · 124 pruebas', tag: 'e815f82', pos: [1240, CY - 65], size: [170, 130] },
+  { id: 'integracion', type: 'frontend', label: '3 · Integración', sublabel: '9 merges · 124 pruebas', tag: 'e815f82', pos: [1240, CY - 65], size: [170, 130] },
   { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'ReglasNegocio · 139 pruebas', tag: '73756ea', pos: [1470, CY - 34], size: [170, 68] },
-  { id: 'diego', type: 'external', label: 'Diego', sublabel: 'respondió P-01 a P-27', pos: [1470, CY + 130], size: [170, 60] },
-  { id: 'respuestas', type: 'frontend', label: 'Reglas de Diego', sublabel: 'inicial · abonos · mora · 147 pruebas', tag: '16 oct', pos: [1440, CY + 250], size: [230, 68] },
-  { id: 'excel11', type: 'frontend', label: 'Excel de Diego · 11 oct', sublabel: 'casos 10-12 · sesión principal · 167 pruebas', tag: '16 oct', pos: [1440, CY + 380], size: [230, 68] },
+  { id: 'diego', type: 'external', label: 'Diego · negocio', sublabel: 'responde por rondas', pos: [1470, CY + 100], size: [170, 60] },
+  { id: 'respuestas', type: 'frontend', label: '4 · Respuestas 16 oct', sublabel: 'inicial · abonos · mora · 147 pruebas', tag: 'd3ce717', pos: [1440, CY + 190], size: [230, 68] },
+  { id: 'excel11', type: 'frontend', label: '5 · Excel del 11 oct', sublabel: 'casos 10 a 12 · 167 pruebas', tag: '36d9995', pos: [1440, CY + 290], size: [230, 68] },
   { id: 'github', type: 'external', label: 'GitHub', sublabel: 'Fintech_Juanes_Heider', pos: [1470, CY - 190], size: [170, 60] },
+  { id: 'ronda3', type: 'backend', label: '6 · Respuestas 20 oct', sublabel: 'ronda 3 · D20 a D33', tag: '4 ramas', pos: [1440, CY + 390], size: [230, 68] },
+  { id: 'ronda4', type: 'frontend', label: 'Cuestionario ronda 4', sublabel: '16 confirmaciones', tag: 'abierta', pos: [1440, CY + 500], size: [230, 68] },
+  { id: 'motor', type: 'backend', label: '7 · Motor', sublabel: 'prelación · misma cuota · caso 13', tag: '4d76c58', pos: [1110, YB - 90], size: [240, 68] },
+  { id: 'periodicidad', type: 'backend', label: '8 · Periodicidad', sublabel: 'ADR 0002 · semanal a mensual', tag: '49539f9', pos: [1110, YB + 30], size: [240, 68] },
+  { id: 'api', type: 'backend', label: '9 · API REST v1', sublabel: 'módulo api · /api/v1', tag: '2d04f7a', pos: [770, YB - 90], size: [220, 68] },
+  { id: 'consola', type: 'backend', label: '9 · Consola', sublabel: 'React · consume el API', tag: '67bcc63', pos: [770, YB + 30], size: [220, 68] },
+  { id: 'despliegue', type: 'frontend', label: '10 · Despliegue', sublabel: 'App Service F1 · GitHub Pages', tag: '296 pruebas', pos: [420, YB - 34], size: [230, 68] },
 ];
-const connections = [
+const conexionesFases = [
   { id: 'solicita', from: 'juan', to: 'orquestador', label: 'solicita', variant: 'emphasis' },
   { id: 'arma-base', from: 'orquestador', to: 'base', label: 'arma', variant: 'emphasis' },
   { id: 'exporta-csv', from: 'excel', to: 'orquestador', label: 'exporta a CSV', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
@@ -50,62 +163,193 @@ const connections = [
   { id: 'respaldo', from: 'cuestionario', to: 'github', label: 'push', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
   { id: 'aplica', from: 'diego', to: 'respuestas', label: 'aplica', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
   { id: 'excel-nuevo', from: 'respuestas', to: 'excel11', label: 'Excel nuevo', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
+  { id: 'ronda-3', from: 'excel11', to: 'ronda3', label: 'rondas 2 y 3', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
+  { id: 'abre-ronda4', from: 'ronda3', to: 'ronda4', label: 'abre', variant: 'dashed', fromSide: 'bottom', toSide: 'top' },
+  { id: 'reglas-motor', from: 'ronda3', to: 'motor', label: 'reglas', variant: 'emphasis', fromSide: 'left', toSide: 'right' },
+  { id: 'reglas-periodo', from: 'ronda3', to: 'periodicidad', fromSide: 'left', toSide: 'right' },
+  { id: 'motor-api', from: 'motor', to: 'api', label: 'expone', variant: 'emphasis', fromSide: 'left', toSide: 'right' },
+  { id: 'periodo-consola', from: 'periodicidad', to: 'consola', fromSide: 'left', toSide: 'right' },
+  { id: 'consume', from: 'consola', to: 'api', label: 'consume', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
+  { id: 'publica-api', from: 'api', to: 'despliegue', label: 'publica', variant: 'emphasis', fromSide: 'left', toSide: 'right' },
+  { id: 'publica-consola', from: 'consola', to: 'despliegue', fromSide: 'left', toSide: 'right' },
 ];
 for (const [n, nombre, seg, her, pruebas, commit, entrega] of agentes) {
   const y = Y0 + (n - 1) * PASO;
-  components.push({ id: `agente${n}`, type: 'backend', label: `Caso ${n} · ${nombre}`, sublabel: `agente IA · ${seg} s · ${her} herram.`, pos: [690 + ajusteAgente(n), y], size: [220, H] });
-  components.push({ id: `entrega${n}`, type: 'database', label: `${pruebas} pruebas · ${commit}`, sublabel: entrega, pos: [960 + ajusteEntrega(n), y], size: [200, H] });
-  connections.push({ id: `entrega${n}-hecha`, from: `agente${n}`, to: `entrega${n}` });
+  componentesFases.push(
+    { id: `agente${n}`, type: 'backend', label: `Caso ${n} · ${nombre}`, sublabel: `agente IA · ${seg} s · ${her} herram.`, pos: [690 + ajusteAgente(n), y], size: [220, H] },
+    { id: `entrega${n}`, type: 'database', label: `${pruebas} pruebas · ${commit}`, sublabel: entrega, pos: [960 + ajusteEntrega(n), y], size: [200, H] },
+  );
+  conexionesFases.push({ id: `entrega${n}-hecha`, from: `agente${n}`, to: `entrega${n}` });
 }
 for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
-  connections.push({ id: `lanza${n}`, from: 'base', to: `agente${n}`, fromSide: ladoBase(n), toSide: 'left', ...(n === 1 ? { label: 'lanza' } : {}) });
+  conexionesFases.push({ id: `lanza${n}`, from: 'base', to: `agente${n}`, fromSide: ladoBase(n), toSide: 'left', ...(n === 1 ? { label: 'lanza' } : {}) });
 }
 for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
-  connections.push({ id: `merge${n}`, from: `entrega${n}`, to: 'integracion', fromSide: 'right', toSide: ladoIntegracion(n), ...(n === 1 ? { label: 'merge' } : {}) });
+  conexionesFases.push({ id: `merge${n}`, from: `entrega${n}`, to: 'integracion', fromSide: 'right', toSide: ladoIntegracion(n), ...(n === 1 ? { label: 'merge' } : {}) });
 }
 
-const doc = {
+const fases = {
   schema_version: 1,
   diagram_type: 'architecture',
   meta: {
-    title: 'Motor de cartera · 9 agentes y 3 casos nuevos',
-    subtitle: 'Casos 1 a 9: orquestador + 9 agentes de IA en git worktrees (8 oct) · casos 10 a 12: sesión principal (16 oct)',
+    title: 'Motor de cartera · cómo se construyó',
+    subtitle: '10 fases del 8 al 21 oct 2026: base común, 9 casos en paralelo, integración, rondas con negocio, motor, periodicidad, API, consola y despliegue',
     locale: 'es',
     translations: es,
-    output: 'docs/diagrama/agentes-motor-cartera.html',
+    output: 'fases.html',
     quality_profile: 'showcase',
     legend: {
       mode: 'auto',
       entries: {
-        frontend: { label: 'Orquestador (sesión principal)' },
-        backend: { label: 'Agente de IA' },
+        frontend: { label: 'Fase en secuencia (sesión principal)' },
+        backend: { label: 'Carril en paralelo (agente o rama)' },
         database: { label: 'Datos y entregas' },
         external: { label: 'Personas y externos' },
       },
     },
   },
-  components,
-  boundaries: [{ kind: 'region', label: '9 git worktrees en paralelo · 7 min 14 s', wraps: agentes.flatMap(([n]) => [`agente${n}`, `entrega${n}`]) }],
-  connections,
+  components: componentesFases,
+  boundaries: [
+    { kind: 'region', label: '2 · 9 git worktrees en paralelo · 7 min 14 s', wraps: agentes.flatMap(([n]) => [`agente${n}`, `entrega${n}`]) },
+    { kind: 'region', label: '20 oct · ramas en paralelo', wraps: ['motor', 'periodicidad'] },
+    { kind: 'region', label: '20 oct · API y consola en paralelo', wraps: ['api', 'consola'] },
+  ],
+  connections: conexionesFases,
   cards: [
-    { dot: 'cyan', title: '9 casos, 9 carriles separados', items: ['Un agente por hoja del Excel, cada uno en su git worktree', 'Solo tocó su prueba, su regla contable y su documento', '1.032.778 tokens y 237 llamadas a herramientas en total'] },
-    { dot: 'emerald', title: 'Un solo motor compartido', items: ['La base común se hizo antes de lanzarlos (8e24c4a)', '8 de 9 agentes no tuvieron que cambiar MotorCartera', 'Los 9 casos se reproducen celda por celda (1 COP)'] },
-    { dot: 'violet', title: 'La integración es el punto de encuentro', items: ['9 merges, 4 choques en Contabilizador unidos a mano', '124 pruebas en verde; el cuestionario lleva la suite a 139', 'Las respuestas de Diego la llevan a 147'] },
-    { dot: 'amber', title: 'Hallazgos de los agentes', items: [
-      'Caso 3: faltante para el fondo de garantías de 1.709.819,75',
-      'Caso 4: excedente para el cliente de 1.185.578,46',
-      'Caso 8: el capital vencido paga interés y mora a la vez',
-      'Caso 9: el crédito nunca termina con 14 días de atraso',
+    { dot: 'cyan', title: '1 a 3 · Base y 9 casos (8 oct)', items: [
+      'Base común antes de lanzar los carriles (8e24c4a)',
+      'Un agente por hoja del Excel, cada uno en su git worktree',
+      '9 merges, 4 choques en Contabilizador unidos a mano: 124 pruebas',
     ] },
-    { dot: 'rose', title: 'Respuestas de Diego (16 oct)', items: [
-      'Pago inicial opcional que digita el asesor',
-      'Abono sin elección → menor plazo; mayor que el saldo → rechazo',
-      'Mora antes de dación y retoma; vencido paga solo mora',
-      'Excel del 11 oct: casos 10, 11 y 12 hechos por la sesión principal (cambiaban el motor compartido)',
-      '12 casos al centavo y recaudo con vencidos: 167 pruebas',
+    { dot: 'emerald', title: '4 y 5 · Negocio y Excel nuevo (16 oct)', items: [
+      'Pago inicial opcional, abono sin elección → menor plazo',
+      'Excel del 11 oct: casos 10, 11 y 12 en la sesión principal',
+      'Recaudo con vencidos: 167 pruebas',
     ] },
-    { dot: 'slate', title: 'Cómo se lanzaron', items: ['Subagentes de propósito general del asistente de programación', 'isolation: worktree, en segundo plano y en paralelo', 'Prompts en docs/agentes/prompts/ · commits sin atribución'] },
+    { dot: 'violet', title: '6 · Rondas con negocio (20 oct)', items: [
+      'Respuestas del 20 oct y ronda 3: decisiones D20 a D33',
+      'El cuestionario guarda en la nube; el importador las lleva a config/',
+      'Ronda 4 abierta: 16 confirmaciones concretas',
+    ] },
+    { dot: 'amber', title: '7 y 8 · Motor y periodicidad', items: [
+      'Todo abono respeta la prelación; el excedente va al vencido más antiguo',
+      'Usura con misma cuota; caso 13: abono extra con pendientes',
+      'ADR 0002: periodicidad semanal, quincenal o mensual y CalendarioPagos',
+    ] },
+    { dot: 'rose', title: '9 y 10 · API, consola y despliegue (20 y 21 oct)', items: [
+      'API REST v1 (D34) y consola React integrada con prueba e2e',
+      'API en Azure App Service F1; consola, cuestionario y diagrama en GitHub Pages',
+      '296 pruebas; completitud de reglas 67 %',
+    ] },
+    { dot: 'slate', title: 'Pendiente de negocio', items: [
+      'Ronda 4 del cuestionario',
+      'Política de gastos de cobranza (tope, valor diario)',
+      'PUC con los códigos contables y validación del caso 13',
+    ] },
   ],
 };
-writeFileSync(new URL('./agentes.architecture.json', import.meta.url), JSON.stringify(doc, null, 2) + '\n');
-console.log('ok', components.length, 'nodos', connections.length, 'conexiones');
+
+// ───────────────────────── Render con archify y armado del HTML ─────────────────────────
+const cli = path.join(archify, 'archify/bin/archify.mjs');
+const tmp = mkdtempSync(path.join(tmpdir(), 'diagrama-'));
+const vistas = [
+  { id: 'arquitectura', nombre: 'Arquitectura', doc: arquitectura },
+  { id: 'fases', nombre: 'Cómo se construyó', doc: fases },
+];
+for (const v of vistas) {
+  const json = new URL(`./${v.id}.architecture.json`, fuente);
+  writeFileSync(json, JSON.stringify(v.doc, null, 2) + '\n');
+  const html = path.join(tmp, `${v.id}.html`);
+  execFileSync(process.execPath, [cli, 'finalize', 'architecture', fileURLToPath(json), html, '--quality', 'showcase', '--out-dir', tmp], { stdio: 'inherit' });
+  // En celular la barra de ruta/lente/zoom de archify no cabe en 360 px: se deja partir en dos filas.
+  const movil = '<style>@media (max-width: 480px) { .diagram-nav { flex-wrap: wrap; justify-content: center; row-gap: 4px; overflow: visible; } }</style>';
+  v.html = readFileSync(html, 'utf8').replace('</head>', `${movil}</head>`);
+  console.log('ok', v.id, v.doc.components.length, 'nodos', v.doc.connections.length, 'conexiones');
+}
+
+const escapar = (s) => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+const pagina = `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor de cartera · Diagrama</title>
+<meta name="description" content="Arquitectura del motor de cartera y fases de su construcción, generado con archify.">
+<style>
+  :root { --fondo: #f4f5f7; --barra: #ffffff; --borde: #e2e5ea; --texto: #0f172a; --suave: #64748b; --activa: #0e7490; --activa-fondo: #e0f2f7; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --fondo: #0b1220; --barra: #0f172a; --borde: #1e293b; --texto: #e2e8f0; --suave: #94a3b8; --activa: #67e8f9; --activa-fondo: #123040; color-scheme: dark; } }
+  :root[data-theme="dark"] { --fondo: #0b1220; --barra: #0f172a; --borde: #1e293b; --texto: #e2e8f0; --suave: #94a3b8; --activa: #67e8f9; --activa-fondo: #123040; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--fondo); color: var(--texto); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+  header { flex: none; display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: var(--barra); border-bottom: 1px solid var(--borde); }
+  header strong { font-size: 14px; white-space: nowrap; }
+  nav { display: flex; gap: 4px; min-width: 0; }
+  nav button { font: inherit; font-weight: 600; color: var(--suave); background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+  nav button:hover { color: var(--texto); }
+  nav button[aria-selected="true"] { color: var(--activa); background: var(--activa-fondo); border-color: var(--borde); }
+  nav button:focus-visible { outline: 2px solid var(--activa); outline-offset: 2px; }
+  main { flex: 1; min-height: 0; position: relative; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--fondo); }
+  iframe[hidden] { display: none; }
+  @media (max-width: 480px) { header strong { display: none; } nav { flex: 1; } nav button { flex: 1; padding: 6px 8px; } }
+</style>
+</head>
+<body>
+<header>
+  <strong>Motor de cartera</strong>
+  <nav role="tablist" aria-label="Vistas del diagrama">
+${vistas.map((v, i) => `    <button role="tab" id="pestana-${v.id}" aria-controls="vista-${v.id}" aria-selected="${i === 0}" data-vista="${v.id}">${v.nombre}</button>`).join('\n')}
+  </nav>
+</header>
+<main>
+${vistas.map((v) => `  <iframe role="tabpanel" id="vista-${v.id}" aria-labelledby="pestana-${v.id}" title="${v.nombre}" hidden data-doc="${escapar(v.html)}"></iframe>`).join('\n')}
+</main>
+<script>
+(() => {
+  const pestanas = [...document.querySelectorAll('[role="tab"]')];
+  const raiz = document.documentElement;
+  // El tema lo maneja archify dentro de cada vista: la barra copia el de la vista activa y lo pasa a la otra.
+  const seguirTema = (marco) => {
+    const doc = marco.contentDocument;
+    if (!doc) return;
+    const copiar = () => { const t = doc.documentElement.getAttribute('data-theme'); if (t) raiz.setAttribute('data-theme', t); };
+    copiar();
+    new MutationObserver(copiar).observe(doc.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  };
+  const mostrar = (id, foco) => {
+    for (const p of pestanas) {
+      const activa = p.dataset.vista === id;
+      p.setAttribute('aria-selected', String(activa));
+      p.tabIndex = activa ? 0 : -1;
+      const marco = document.getElementById('vista-' + p.dataset.vista);
+      marco.hidden = !activa;
+      if (activa && marco.dataset.doc) {
+        marco.addEventListener('load', () => seguirTema(marco), { once: true });
+        marco.srcdoc = marco.dataset.doc;
+        delete marco.dataset.doc;
+      } else if (activa) {
+        const t = raiz.getAttribute('data-theme');
+        const doc = marco.contentDocument;
+        if (t && doc && doc.documentElement.getAttribute('data-theme') !== t) doc.documentElement.setAttribute('data-theme', t);
+      }
+      if (activa && foco) p.focus();
+    }
+    history.replaceState(null, '', '#' + id);
+  };
+  pestanas.forEach((p, i) => {
+    p.addEventListener('click', () => mostrar(p.dataset.vista));
+    p.addEventListener('keydown', (e) => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (d) mostrar(pestanas[(i + d + pestanas.length) % pestanas.length].dataset.vista, true);
+    });
+  });
+  const inicial = location.hash.slice(1);
+  mostrar(pestanas.some((p) => p.dataset.vista === inicial) ? inicial : pestanas[0].dataset.vista);
+})();
+</script>
+</body>
+</html>
+`;
+writeFileSync(salida, pagina);
+console.log('ok', salida.pathname, Math.round(pagina.length / 1024), 'KB');

@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "Motor de cartera · 9 agentes y 3 casos nuevos",
-    "subtitle": "Casos 1 a 9: orquestador + 9 agentes de IA en git worktrees (8 oct) · casos 10 a 12: sesión principal (16 oct)",
+    "title": "Motor de cartera · arquitectura",
+    "subtitle": "Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 21 oct 2026",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -445,79 +445,38 @@
       "viewer.common.clear": "Borrar",
       "viewer.common.close": "Cerrar"
     },
-    "output": "docs/diagrama/agentes-motor-cartera.html",
+    "output": "arquitectura.html",
     "quality_profile": "showcase",
     "legend": {
       "mode": "auto",
       "entries": {
         "frontend": {
-          "label": "Orquestador (sesión principal)"
+          "label": "Páginas web (React)"
         },
         "backend": {
-          "label": "Agente de IA"
+          "label": "Módulos y herramientas"
         },
         "database": {
-          "label": "Datos y entregas"
+          "label": "Datos y configuración"
+        },
+        "cloud": {
+          "label": "Función en la nube"
         },
         "external": {
-          "label": "Personas y externos"
+          "label": "Personas"
         }
       }
     }
   },
   "components": [
     {
-      "id": "juan",
+      "id": "diego",
       "type": "external",
-      "label": "Juan Esteban",
-      "sublabel": "pide el motor",
+      "label": "Negocio",
+      "sublabel": "responde las reglas",
       "pos": [
         20,
-        328
-      ],
-      "size": [
-        130,
         60
-      ]
-    },
-    {
-      "id": "orquestador",
-      "type": "frontend",
-      "label": "Orquestador",
-      "sublabel": "arma y coordina",
-      "tag": "sesión principal",
-      "pos": [
-        230,
-        324
-      ],
-      "size": [
-        150,
-        68
-      ]
-    },
-    {
-      "id": "base",
-      "type": "frontend",
-      "label": "Base común",
-      "sublabel": "núcleo + caso 1",
-      "tag": "8e24c4a",
-      "pos": [
-        440,
-        293
-      ],
-      "size": [
-        170,
-        130
-      ]
-    },
-    {
-      "id": "excel",
-      "type": "database",
-      "label": "Excel de Diego",
-      "sublabel": "9 hojas → 9 CSV",
-      "pos": [
-        230,
-        508
       ],
       "size": [
         150,
@@ -525,669 +484,358 @@
       ]
     },
     {
-      "id": "integracion",
-      "type": "frontend",
-      "label": "Integración",
-      "sublabel": "9 merges · 124 pruebas",
-      "tag": "e815f82",
+      "id": "equipo",
+      "type": "external",
+      "label": "Equipo de cartera",
+      "sublabel": "simula y revisa",
       "pos": [
-        1240,
-        293
+        20,
+        404
       ],
       "size": [
-        170,
-        130
+        150,
+        60
       ]
     },
     {
       "id": "cuestionario",
       "type": "frontend",
       "label": "Cuestionario",
-      "sublabel": "ReglasNegocio · 139 pruebas",
-      "tag": "73756ea",
+      "sublabel": "cuestionario/ · React",
+      "tag": "ronda 4",
       "pos": [
-        1470,
-        324
+        240,
+        56
       ],
       "size": [
-        170,
+        200,
         68
       ]
     },
     {
-      "id": "diego",
-      "type": "external",
-      "label": "Diego",
-      "sublabel": "respondió P-01 a P-27",
-      "pos": [
-        1470,
-        488
-      ],
-      "size": [
-        170,
-        60
-      ]
-    },
-    {
-      "id": "respuestas",
+      "id": "diagrama",
       "type": "frontend",
-      "label": "Reglas de Diego",
-      "sublabel": "inicial · abonos · mora · 147 pruebas",
-      "tag": "16 oct",
+      "label": "Diagrama del proyecto",
+      "sublabel": "docs/diagrama/ · archify",
       "pos": [
-        1440,
-        608
+        240,
+        228
       ],
       "size": [
-        230,
+        200,
         68
       ]
     },
     {
-      "id": "excel11",
+      "id": "consola",
       "type": "frontend",
-      "label": "Excel de Diego · 11 oct",
-      "sublabel": "casos 10-12 · sesión principal · 167 pruebas",
-      "tag": "16 oct",
+      "label": "Consola",
+      "sublabel": "consola/ · React",
+      "tag": "usa el API",
       "pos": [
-        1440,
-        738
-      ],
-      "size": [
-        230,
-        68
-      ]
-    },
-    {
-      "id": "github",
-      "type": "external",
-      "label": "GitHub",
-      "sublabel": "Fintech_Juanes_Heider",
-      "pos": [
-        1470,
-        168
-      ],
-      "size": [
-        170,
-        60
-      ]
-    },
-    {
-      "id": "agente1",
-      "type": "backend",
-      "label": "Caso 1 · Normal",
-      "sublabel": "agente IA · 434 s · 34 herram.",
-      "pos": [
-        690,
-        40
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega1",
-      "type": "database",
-      "label": "25 pruebas · a12318c",
-      "sublabel": "RecaudoCuota + invariantes",
-      "pos": [
-        962,
-        40
-      ],
-      "size": [
-        200,
-        60
-      ]
-    },
-    {
-      "id": "agente2",
-      "type": "backend",
-      "label": "Caso 2 · Cambio de tasa",
-      "sublabel": "agente IA · 280 s · 24 herram.",
-      "pos": [
-        690,
-        112
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega2",
-      "type": "database",
-      "label": "17 pruebas · 4a7a55d",
-      "sublabel": "Usura · sin asiento",
-      "pos": [
-        961,
-        112
-      ],
-      "size": [
-        200,
-        60
-      ]
-    },
-    {
-      "id": "agente3",
-      "type": "backend",
-      "label": "Caso 3 · Dación en pago",
-      "sublabel": "agente IA · 323 s · 32 herram.",
-      "pos": [
-        690,
-        184
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega3",
-      "type": "database",
-      "label": "9 pruebas · ec217cf",
-      "sublabel": "regla DacionEnPago",
-      "pos": [
-        960,
-        184
-      ],
-      "size": [
-        200,
-        60
-      ]
-    },
-    {
-      "id": "agente4",
-      "type": "backend",
-      "label": "Caso 4 · Retoma",
-      "sublabel": "agente IA · 247 s · 19 herram.",
-      "pos": [
-        690,
-        256
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega4",
-      "type": "database",
-      "label": "7 pruebas · a68b27e",
-      "sublabel": "regla Retoma",
-      "pos": [
-        960,
-        256
-      ],
-      "size": [
-        200,
-        60
-      ]
-    },
-    {
-      "id": "agente5",
-      "type": "backend",
-      "label": "Caso 5 · Prepago total",
-      "sublabel": "agente IA · 266 s · 25 herram.",
-      "pos": [
-        690,
-        328
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega5",
-      "type": "database",
-      "label": "13 pruebas · 30efd7a",
-      "sublabel": "regla AbonoExtraordinario",
-      "pos": [
-        960,
-        328
-      ],
-      "size": [
-        200,
-        60
-      ]
-    },
-    {
-      "id": "agente6",
-      "type": "backend",
-      "label": "Caso 6 · Menor plazo",
-      "sublabel": "agente IA · 260 s · 21 herram.",
-      "pos": [
-        690,
-        400
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega6",
-      "type": "database",
-      "label": "12 pruebas · 6df09b3",
-      "sublabel": "usa AbonoExtraordinario",
-      "pos": [
-        960,
+        240,
         400
       ],
       "size": [
         200,
-        60
+        68
       ]
     },
     {
-      "id": "agente7",
-      "type": "backend",
-      "label": "Caso 7 · Menor cuota",
-      "sublabel": "agente IA · 307 s · 29 herram.",
+      "id": "funcion",
+      "type": "cloud",
+      "label": "Azure Function",
+      "sublabel": "nube/ · guarda respuestas",
       "pos": [
-        692,
-        472
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega7",
-      "type": "database",
-      "label": "14 pruebas · af8dbaf",
-      "sublabel": "usa AbonoExtraordinario",
-      "pos": [
-        960,
-        472
+        530,
+        56
       ],
       "size": [
         200,
-        60
+        68
       ]
     },
     {
-      "id": "agente8",
-      "type": "backend",
-      "label": "Caso 8 · Pago inferior",
-      "sublabel": "agente IA · 382 s · 30 herram.",
+      "id": "tabla",
+      "type": "database",
+      "label": "Table Storage",
+      "sublabel": "tabla respuestas",
       "pos": [
-        691,
-        544
+        790,
+        56
       ],
       "size": [
-        220,
-        60
+        180,
+        68
       ]
     },
     {
-      "id": "entrega8",
-      "type": "database",
-      "label": "12 pruebas · 1962b47",
-      "sublabel": "regla PagoInferior",
+      "id": "importador",
+      "type": "backend",
+      "label": "Importador",
+      "sublabel": "importar_respuestas.py",
+      "tag": "herramientas/",
       "pos": [
-        960,
-        544
+        1060,
+        56
       ],
       "size": [
         200,
-        60
+        68
       ]
     },
     {
-      "id": "agente9",
-      "type": "backend",
-      "label": "Caso 9 · Cobranza",
-      "sublabel": "agente IA · 301 s · 23 herram.",
-      "pos": [
-        690,
-        616
-      ],
-      "size": [
-        220,
-        60
-      ]
-    },
-    {
-      "id": "entrega9",
+      "id": "reglas",
       "type": "database",
-      "label": "13 pruebas · 8fefa8d",
-      "sublabel": "regla CobranzaYMora",
+      "label": "reglas-negocio.properties",
+      "sublabel": "config/ · va en el jar",
       "pos": [
-        960,
-        616
+        1060,
+        228
       ],
       "size": [
         200,
-        60
+        68
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "api",
+      "sublabel": "REST /api/v1",
+      "tag": "PerfilesReglas",
+      "pos": [
+        530,
+        400
+      ],
+      "size": [
+        200,
+        68
+      ]
+    },
+    {
+      "id": "simulaciones",
+      "type": "backend",
+      "label": "simulaciones",
+      "sublabel": "EscenariosExcel · 13 casos",
+      "pos": [
+        790,
+        310
+      ],
+      "size": [
+        200,
+        68
+      ]
+    },
+    {
+      "id": "contabilidad",
+      "type": "backend",
+      "label": "contabilidad",
+      "sublabel": "Contabilizador · reglas",
+      "pos": [
+        790,
+        490
+      ],
+      "size": [
+        200,
+        68
+      ]
+    },
+    {
+      "id": "nucleo",
+      "type": "backend",
+      "label": "nucleo",
+      "sublabel": "MotorCartera · cálculo puro",
+      "tag": "Periodicidad",
+      "pos": [
+        1060,
+        400
+      ],
+      "size": [
+        200,
+        68
       ]
     }
   ],
   "boundaries": [
     {
       "kind": "region",
-      "label": "9 git worktrees en paralelo · 7 min 14 s",
+      "label": "GitHub Pages",
       "wraps": [
-        "agente1",
-        "entrega1",
-        "agente2",
-        "entrega2",
-        "agente3",
-        "entrega3",
-        "agente4",
-        "entrega4",
-        "agente5",
-        "entrega5",
-        "agente6",
-        "entrega6",
-        "agente7",
-        "entrega7",
-        "agente8",
-        "entrega8",
-        "agente9",
-        "entrega9"
+        "cuestionario",
+        "diagrama",
+        "consola"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Azure · respuestas sin servidor",
+      "wraps": [
+        "funcion",
+        "tabla"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Azure App Service F1 · Java 21 · un jar",
+      "wraps": [
+        "reglas",
+        "api",
+        "simulaciones",
+        "contabilidad",
+        "nucleo"
       ]
     }
   ],
   "connections": [
     {
-      "id": "solicita",
-      "from": "juan",
-      "to": "orquestador",
-      "label": "solicita",
-      "variant": "emphasis"
-    },
-    {
-      "id": "arma-base",
-      "from": "orquestador",
-      "to": "base",
-      "label": "arma",
-      "variant": "emphasis"
-    },
-    {
-      "id": "exporta-csv",
-      "from": "excel",
-      "to": "orquestador",
-      "label": "exporta a CSV",
-      "variant": "dashed",
-      "fromSide": "top",
-      "toSide": "bottom"
-    },
-    {
-      "id": "dudas",
-      "from": "integracion",
-      "to": "cuestionario",
-      "label": "dudas",
-      "variant": "emphasis"
-    },
-    {
-      "id": "envia",
-      "from": "cuestionario",
-      "to": "diego",
-      "label": "envía",
-      "variant": "dashed",
-      "fromSide": "bottom",
-      "toSide": "top"
-    },
-    {
-      "id": "respaldo",
-      "from": "cuestionario",
-      "to": "github",
-      "label": "push",
-      "variant": "dashed",
-      "fromSide": "top",
-      "toSide": "bottom"
-    },
-    {
-      "id": "aplica",
+      "id": "responde",
       "from": "diego",
-      "to": "respuestas",
-      "label": "aplica",
+      "to": "cuestionario",
+      "label": "responde",
+      "variant": "emphasis"
+    },
+    {
+      "id": "autoguarda",
+      "from": "cuestionario",
+      "to": "funcion",
+      "label": "autoguarda",
+      "variant": "emphasis"
+    },
+    {
+      "id": "escribe-tabla",
+      "from": "funcion",
+      "to": "tabla",
+      "label": "escribe"
+    },
+    {
+      "id": "lee-nube",
+      "from": "tabla",
+      "to": "importador",
+      "label": "--nube",
+      "variant": "dashed"
+    },
+    {
+      "id": "escribe-reglas",
+      "from": "importador",
+      "to": "reglas",
+      "label": "escribe",
       "variant": "emphasis",
       "fromSide": "bottom",
       "toSide": "top"
     },
     {
-      "id": "excel-nuevo",
-      "from": "respuestas",
-      "to": "excel11",
-      "label": "Excel nuevo",
-      "variant": "emphasis",
-      "fromSide": "bottom",
-      "toSide": "top"
+      "id": "usa-consola",
+      "from": "equipo",
+      "to": "consola",
+      "label": "usa",
+      "variant": "emphasis"
     },
     {
-      "id": "entrega1-hecha",
-      "from": "agente1",
-      "to": "entrega1"
-    },
-    {
-      "id": "entrega2-hecha",
-      "from": "agente2",
-      "to": "entrega2"
-    },
-    {
-      "id": "entrega3-hecha",
-      "from": "agente3",
-      "to": "entrega3"
-    },
-    {
-      "id": "entrega4-hecha",
-      "from": "agente4",
-      "to": "entrega4"
-    },
-    {
-      "id": "entrega5-hecha",
-      "from": "agente5",
-      "to": "entrega5"
-    },
-    {
-      "id": "entrega6-hecha",
-      "from": "agente6",
-      "to": "entrega6"
-    },
-    {
-      "id": "entrega7-hecha",
-      "from": "agente7",
-      "to": "entrega7"
-    },
-    {
-      "id": "entrega8-hecha",
-      "from": "agente8",
-      "to": "entrega8"
-    },
-    {
-      "id": "entrega9-hecha",
-      "from": "agente9",
-      "to": "entrega9"
-    },
-    {
-      "id": "lanza1",
-      "from": "base",
-      "to": "agente1",
-      "fromSide": "top",
-      "toSide": "left",
-      "label": "lanza"
-    },
-    {
-      "id": "lanza2",
-      "from": "base",
-      "to": "agente2",
+      "id": "consulta",
+      "from": "equipo",
+      "to": "diagrama",
+      "label": "consulta",
+      "variant": "dashed",
       "fromSide": "top",
       "toSide": "left"
     },
     {
-      "id": "lanza3",
-      "from": "base",
-      "to": "agente3",
-      "fromSide": "top",
-      "toSide": "left"
+      "id": "https",
+      "from": "consola",
+      "to": "api",
+      "label": "HTTPS",
+      "variant": "emphasis"
     },
     {
-      "id": "lanza4",
-      "from": "base",
-      "to": "agente4",
-      "fromSide": "right",
-      "toSide": "left"
-    },
-    {
-      "id": "lanza5",
-      "from": "base",
-      "to": "agente5",
-      "fromSide": "right",
-      "toSide": "left"
-    },
-    {
-      "id": "lanza6",
-      "from": "base",
-      "to": "agente6",
-      "fromSide": "right",
-      "toSide": "left"
-    },
-    {
-      "id": "lanza7",
-      "from": "base",
-      "to": "agente7",
-      "fromSide": "bottom",
-      "toSide": "left"
-    },
-    {
-      "id": "lanza8",
-      "from": "base",
-      "to": "agente8",
-      "fromSide": "bottom",
-      "toSide": "left"
-    },
-    {
-      "id": "lanza9",
-      "from": "base",
-      "to": "agente9",
-      "fromSide": "bottom",
-      "toSide": "left"
-    },
-    {
-      "id": "merge1",
-      "from": "entrega1",
-      "to": "integracion",
-      "fromSide": "right",
-      "toSide": "top",
-      "label": "merge"
-    },
-    {
-      "id": "merge2",
-      "from": "entrega2",
-      "to": "integracion",
-      "fromSide": "right",
+      "id": "perfil",
+      "from": "reglas",
+      "to": "api",
+      "label": "perfil NEGOCIO",
+      "variant": "dashed",
+      "fromSide": "left",
       "toSide": "top"
     },
     {
-      "id": "merge3",
-      "from": "entrega3",
-      "to": "integracion",
-      "fromSide": "right",
-      "toSide": "top"
-    },
-    {
-      "id": "merge4",
-      "from": "entrega4",
-      "to": "integracion",
+      "id": "casos",
+      "from": "api",
+      "to": "simulaciones",
+      "label": "casos",
       "fromSide": "right",
       "toSide": "left"
     },
     {
-      "id": "merge5",
-      "from": "entrega5",
-      "to": "integracion",
+      "id": "asientos",
+      "from": "api",
+      "to": "contabilidad",
+      "label": "asientos",
       "fromSide": "right",
       "toSide": "left"
     },
     {
-      "id": "merge6",
-      "from": "entrega6",
-      "to": "integracion",
+      "id": "escenarios",
+      "from": "simulaciones",
+      "to": "nucleo",
+      "label": "escenarios",
       "fromSide": "right",
       "toSide": "left"
     },
     {
-      "id": "merge7",
-      "from": "entrega7",
-      "to": "integracion",
+      "id": "movimientos",
+      "from": "contabilidad",
+      "to": "nucleo",
+      "label": "movimientos",
       "fromSide": "right",
-      "toSide": "bottom"
-    },
-    {
-      "id": "merge8",
-      "from": "entrega8",
-      "to": "integracion",
-      "fromSide": "right",
-      "toSide": "bottom"
-    },
-    {
-      "id": "merge9",
-      "from": "entrega9",
-      "to": "integracion",
-      "fromSide": "right",
-      "toSide": "bottom"
+      "toSide": "left"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "9 casos, 9 carriles separados",
+      "title": "nucleo · cálculo puro",
       "items": [
-        "Un agente por hoja del Excel, cada uno en su git worktree",
-        "Solo tocó su prueba, su regla contable y su documento",
-        "1.032.778 tokens y 237 llamadas a herramientas en total"
-      ]
-    },
-    {
-      "dot": "emerald",
-      "title": "Un solo motor compartido",
-      "items": [
-        "La base común se hizo antes de lanzarlos (8e24c4a)",
-        "8 de 9 agentes no tuvieron que cambiar MotorCartera",
-        "Los 9 casos se reproducen celda por celda (1 COP)"
+        "MotorCartera: un ciclo por periodo para todos los casos",
+        "Periodicidad semanal, quincenal o mensual y CalendarioPagos",
+        "Usura (misma cuota o misma fecha) y ClasificacionPago",
+        "Sin Spring ni base de datos; BigDecimal sin redondeo"
       ]
     },
     {
       "dot": "violet",
-      "title": "La integración es el punto de encuentro",
+      "title": "contabilidad, simulaciones y api",
       "items": [
-        "9 merges, 4 choques en Contabilizador unidos a mano",
-        "124 pruebas en verde; el cuestionario lleva la suite a 139",
-        "Las respuestas de Diego la llevan a 147"
+        "contabilidad: Contabilizador y una regla por evento",
+        "simulaciones: EscenariosExcel (13 casos) y GeneradorEscenarios",
+        "api: REST /api/v1 con perfiles EXCEL y NEGOCIO",
+        "Spring Modulith verifica que ningún módulo use internos de otro"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "De la respuesta a la regla",
+      "items": [
+        "El cuestionario autoguarda cada cambio en la Azure Function",
+        "El importador lee la tabla y escribe config/reglas-negocio.properties",
+        "Ese archivo va dentro del jar: un cambio de reglas exige redesplegar"
       ]
     },
     {
       "dot": "amber",
-      "title": "Hallazgos de los agentes",
+      "title": "Despliegue",
       "items": [
-        "Caso 3: faltante para el fondo de garantías de 1.709.819,75",
-        "Caso 4: excedente para el cliente de 1.185.578,46",
-        "Caso 8: el capital vencido paga interés y mora a la vez",
-        "Caso 9: el crédito nunca termina con 14 días de atraso"
+        "API: Azure App Service plan F1 gratuito, Java 21, sin estado",
+        "Consola, cuestionario y diagrama: GitHub Pages (workflow Sitio)",
+        "Si el API duerme o agota su cuota, la consola usa datos de demostración"
       ]
     },
     {
       "dot": "rose",
-      "title": "Respuestas de Diego (16 oct)",
+      "title": "Estado",
       "items": [
-        "Pago inicial opcional que digita el asesor",
-        "Abono sin elección → menor plazo; mayor que el saldo → rechazo",
-        "Mora antes de dación y retoma; vencido paga solo mora",
-        "Excel del 11 oct: casos 10, 11 y 12 hechos por la sesión principal (cambiaban el motor compartido)",
-        "12 casos al centavo y recaudo con vencidos: 167 pruebas"
-      ]
-    },
-    {
-      "dot": "slate",
-      "title": "Cómo se lanzaron",
-      "items": [
-        "Subagentes de propósito general del asistente de programación",
-        "isolation: worktree, en segundo plano y en paralelo",
-        "Prompts en docs/agentes/prompts/ · commits sin atribución"
+        "296 pruebas en verde, 13 casos reproducidos al centavo",
+        "Completitud de reglas: 67 % (78 de 116); cuestionario: 68 %",
+        "Pendiente de negocio: ronda 4, política de cobranza y PUC",
+        "El caso 13 espera que negocio valide sus valores"
       ]
     }
   ]

@@ -1,123 +1,69 @@
 # Motor de reglas de cartera · créditos de moto
 
-Motor de reglas para la plataforma de crédito de motos del proyecto **Financiera** (Juan Esteban Cardozo, Heider Galvis y Diego González). Cada semana del crédito decide qué pasa con el pago del cliente: lo reparte por prelación, causa interés, mora, cobranza y servicios, aplica abonos, prepagos, daciones y retomas, y genera el asiento contable en partida doble.
+## Accesos
 
-La fuente de verdad es el Excel de casos operativos de Diego ([`docs/fuentes/`](docs/fuentes/)): el motor reproduce sus 9 casos celda por celda.
-
-**En línea:** [diagrama interactivo](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html) · [cuestionario de reglas para negocio](https://juanc101195.github.io/Fintech_Juanes_Heider/cuestionario.html) · [inicio](https://juanc101195.github.io/Fintech_Juanes_Heider/)
-
-## Estado (16 oct 2026 · Excel de Diego del 11 de octubre)
-
-- **Los 12 casos del Excel se reproducen celda por celda** (tolerancia 1 COP): operación normal, cambio de tasa (con fecha final fija o con cuota fija), dación en pago, retoma, prepago total, abono extra con menor plazo y con menor cuota, pago inferior con mora, pago tardío con cobranza, pago inferior seguido de dación y pago inferior con normalización.
-- **Producto parametrizable**: catálogo de líneas de crédito (CPPU 87,62 % EA, CPPR, Bajo monto y Ordinario, cada una con su plazo máximo), periodicidad diaria, semanal o mensual y número de cuotas (104 en el ejemplo).
-- **167 pruebas automáticas, 0 fallas**, incluidas las reglas que nunca se pueden romper: saldo nunca negativo y asientos siempre cuadrados.
-- **Asientos contables** de cada evento en partida doble: recaudo, abonos, pago inferior con reclasificación, cobranza y mora, recaudo con vencidos y su reclasificación, dación y retoma (cada concepto extinguido con la moto en su propia cuenta).
-- **Respuestas de Diego del 16 de octubre aplicadas**: pago inicial opcional, abonos y mora antes de dación o retoma (ver abajo).
-- **Calidad con Sonar**: [SonarCloud](https://sonarcloud.io/project/overview?id=JuanC101195_Fintech_Juanes_Heider) analiza cada push y cada PR (Java, TypeScript y Python) y GitHub Actions corre las pruebas. Quality Gate aprobado, 0 bugs y 0 vulnerabilidades.
-- **Cuestionario para negocio en línea** con solo las 24 preguntas abiertas. Las respuestas se guardan solas en Azure mientras se responde (sin archivos de por medio) y se cargan al motor con `importar_respuestas.py --nube`.
-
-## API y consola: cómo levantar todo
-
-El motor se expone por HTTP ([`docs/api.md`](docs/api.md), `/api/v1`) y la consola de analistas ([`consola/`](consola/README.md), React) habla con él.
-
-```bash
-# 1. Backend (JDK 21) en http://localhost:8080
-export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot"
-./mvnw spring-boot:run
-
-# 2. Consola en http://localhost:5173 (otra terminal)
-cd consola
-npm install
-npm run dev
-```
-
-- **Modo demostración** (sin backend): `VITE_API_URL= npm run dev` o simplemente no levantar el API. La consola muestra el aviso "Datos de demostración" y sirve respuestas reales del API guardadas en `consola/src/demo/fixtures/` (se regeneran con `npm run fixtures` con el backend arriba).
-- **Pruebas**: `./mvnw -q -B test` (backend); en `consola/`: `npm test`, `npm run build`, `node pruebas/humo.mjs` (demo) y `node pruebas/e2e.mjs` (de punta a punta contra el API real, con el backend arriba).
-
-## Cómo funciona el motor
-
-```mermaid
-flowchart LR
-    E["Escenario<br/>operación + instrucciones por semana"] --> M["MotorCartera<br/>un ciclo semanal"]
-    M --> C["Causación<br/>interés · mora · cobranza · servicios"]
-    C --> P["Prelación<br/>cobranza → mora → interés → servicios → capital"]
-    P --> A["Abonos · prepago · cierre con la moto"]
-    A --> MV["Movimiento por semana<br/>saldos y estado"]
-    MV --> K["Contabilizador<br/>asientos en partida doble"]
-```
-
-Cada caso del Excel es un `Escenario` con instrucciones por semana: pago completo, parcial, tardío, sin pago, abono, prepago, cambio de tasa, dación o retoma. Un solo ciclo los cubre todos.
-
-## Reglas de negocio
-
-Lo que el Excel no define se configura en `ReglasNegocio`. Por defecto reproduce el Excel; las respuestas de negocio se cargan desde [`config/reglas-negocio.properties`](config/reglas-negocio.properties).
-
-| Regla | Decisión | Fuente |
+| | Qué es | Para qué sirve |
 |---|---|---|
-| Pago inicial | Opcional: lo digita el asesor y se resta del valor total de la operación | Diego, P-09 |
-| Abono extra sin elección del cliente | Reduce el plazo | Diego, P-13 |
-| Abono mayor que el saldo | Se rechaza | Diego, P-14 |
-| Mora antes de dación o retoma | Se causa como en cualquier atraso | Diego, P-16 |
-| Interés sobre capital vencido | El vencido paga solo mora | Diego, P-03 |
-| Prelación | Cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital, también para el valor de la moto | Excel 11 oct, Inputs ⑥ |
-| Servicios en atraso o impago | Solo se causa el seguro; fondo y asistencia no | Excel 11 oct, Inputs ⑥ |
-| Giro a terceros | Lo recaudado de cada servicio, al cierre de cada mes | Excel 11 oct |
-| Fondo de garantías y seguro | Sobre el monto financiado inicial | Diego, P-07 |
-| Redondeo | Ninguno en el cálculo; solo en la presentación | Diego, P-05 |
+| 🧮 [**Consola del motor**](https://juanc101195.github.io/Fintech_Juanes_Heider/consola/) | Aplicación web | Simular créditos, ver los 13 casos y probar abonos, tasas y daciones. La primera carga puede tardar unos 30 s porque el servidor gratuito despierta. |
+| 📝 [**Cuestionario de reglas**](https://juanc101195.github.io/Fintech_Juanes_Heider/cuestionario.html) | Formulario web | Las preguntas abiertas para negocio. Las respuestas se guardan solas. |
+| 🗺️ [**Diagrama del proyecto**](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html) | Diagrama interactivo | Ver cómo encajan las piezas del proyecto. |
+| 🏠 [Inicio](https://juanc101195.github.io/Fintech_Juanes_Heider/) | Sitio | Portada con todos los enlaces. |
+| 🔌 [API (técnicos)](https://motor-cartera-api-jc.azurewebsites.net/api/v1/catalogo) | Servicio HTTP | Catálogo de líneas de crédito; el resto del contrato está en [`docs/api.md`](docs/api.md). |
 
-Detalle de cada respuesta y lo que falta: [docs/respuestas-diego-2026-10-16.md](docs/respuestas-diego-2026-10-16.md). Historial de decisiones: [docs/decisiones.md](docs/decisiones.md).
+## Qué es
 
-## Estructura
+Un motor de reglas de cartera para créditos de moto. Ante cada pago decide qué caso aplica, lo aplica por prelación (cobranza, mora, interés, servicios y capital) y genera el asiento contable en partida doble. Reproduce el Excel de casos operativos del negocio ([`docs/fuentes/`](docs/fuentes/)). Maneja periodicidad semanal, quincenal y mensual.
 
-| Carpeta | Contenido |
+## Cómo está armado
+
+Monolito modular en Java 21 y Spring Boot (Spring Modulith), más las aplicaciones que lo rodean. El detalle está en el [diagrama](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html).
+
+| Pieza | Qué hace |
 |---|---|
-| [`src/`](src/) | Motor (Java 21, Spring Boot 4, monolito modular con Spring Modulith) y sus pruebas |
-| [`cuestionario/`](cuestionario/) | Página para que negocio responda las reglas abiertas viendo el efecto calculado de cada opción; exporta las respuestas a Excel |
-| [`herramientas/`](herramientas/) | Exportador del Excel a CSV de prueba e importador de las respuestas del cuestionario |
-| [`nube/`](nube/) | Azure Function que recibe las respuestas del cuestionario y las guarda en Azure Table Storage |
-| [`config/`](config/) | Reglas de negocio vigentes |
-| [`docs/`](docs/) | Decisiones, ADR, reglas por caso, preguntas y respuestas de negocio, pendientes y diagrama |
-| [`backlog-financiera/`](backlog-financiera/) | Épicas, features e historias (Gherkin) del proyecto y su priorización por sprints |
+| `src/` · `nucleo` | Ciclo de cada periodo: causación, prelación, abonos, prepago, dación y retoma |
+| `src/` · `contabilidad` | Asientos en partida doble de cada evento |
+| `src/` · `simulaciones` | Casos y escenarios que se calculan con el motor |
+| `src/` · `api` | API HTTP `/api/v1` que expone el motor |
+| [`consola/`](consola/README.md) | Consola web (React) para analistas |
+| [`cuestionario/`](cuestionario/) | Formulario web de reglas abiertas para negocio |
+| [`nube/`](nube/) | Función de Azure que guarda las respuestas del cuestionario |
+| [`herramientas/`](herramientas/) | Scripts: exportar el Excel a CSV e importar respuestas de negocio |
 
-## Cómo correrlo
+## Para desarrollar
 
 Requisitos: JDK 21, Node 20+ y Python 3.
 
 ```bash
-# Motor
+# Pruebas Java
 export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.10.7-hotspot"
-./mvnw -q -B test                              # 147 pruebas
-python herramientas/exportar_excel.py          # regenera los CSV de prueba desde el Excel
+./mvnw -q -B test
 
-# Cuestionario para negocio
-cd cuestionario && npm install
-npm run escenarios   # calcula con el motor las cifras de cada opción
-npm run dev          # lo abre en el navegador
-npm run build        # dist/index.html: un solo archivo para enviar por correo
+# API en http://localhost:8080
+./mvnw spring-boot:run
 
-# Análisis de calidad local (SonarQube en Docker)
-docker run -d --name sonarqube-motor -p 9000:9000 sonarqube:community
-(cd cuestionario && npm run cobertura)
-./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar   -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<token> -Dsonar.organization= -Dsonar.projectKey=motor-cartera
+# Consola en http://localhost:5173 (ese puerto, por el CORS del API)
+cd consola && npm install && npm run dev
 
-# Respuestas de negocio → motor (requiere az login)
-python herramientas/importar_respuestas.py --nube --ver   # quién respondió, cuándo y cuánto lleva
-python herramientas/importar_respuestas.py --nube         # carga lo último respondido a config/reglas-negocio.properties
-./mvnw -q -B test    # ReglasNegocioConfiguradaTest corre los casos con esas reglas
+# Cuestionario
+cd cuestionario && npm install && npm run dev
+
+# Leer las respuestas de negocio (requiere az login)
+python herramientas/importar_respuestas.py --nube --ver
 ```
 
-## Cómo se construyó
+## Estado y documentos
 
-Una sesión orquestadora armó el núcleo y el caso 1. Después, 9 agentes de IA en paralelo, uno por caso del Excel y cada uno en su propia rama, reprodujeron los demás. La integración unió sus 9 entregas y el cuestionario llevó las preguntas a negocio. Con las respuestas de Diego llegaron las reglas del 16 de octubre.
+| Documento | Para qué sirve |
+|---|---|
+| [`docs/decisiones.md`](docs/decisiones.md) | Decisiones del motor y preguntas abiertas |
+| [`docs/completitud-reglas.md`](docs/completitud-reglas.md) | Qué reglas están cubiertas y cuáles faltan |
+| [`docs/adr/`](docs/adr/) | Decisiones de arquitectura (monolito modular, periodicidad configurable) |
+| [`docs/reglas/`](docs/reglas/) | Una regla por caso, con sus cifras |
+| [`docs/api.md`](docs/api.md) | Contrato del API |
+| [`docs/despliegue.md`](docs/despliegue.md) | Cómo se publica cada pieza |
 
-**[Abrir el diagrama interactivo →](https://juanc101195.github.io/Fintech_Juanes_Heider/diagrama.html)** (tema claro u oscuro, modo presentación, exportar, ruta entre nodos y búsqueda)
+## Despliegue
 
-Prompts, métricas por agente y método: [docs/agentes/](docs/agentes/README.md). El sitio se publica solo desde `main` con [`.github/workflows/sitio.yml`](.github/workflows/sitio.yml).
-
-## Documentos clave
-
-- [Decisiones](docs/decisiones.md) y [ADR del monolito modular](docs/adr/0001-monolito-modular.md)
-- [Preguntas para Diego](docs/preguntas-diego.md) y [sus respuestas del 16 de octubre](docs/respuestas-diego-2026-10-16.md)
-- Reglas por caso: [`docs/reglas/caso-1.md`](docs/reglas/caso-1.md) a [`caso-9.md`](docs/reglas/caso-9.md)
-- [Pendientes técnicos](docs/pendientes-tecnicos.md)
-- [Backlog y priorización](backlog-financiera/)
+- **API**: Azure App Service F1 (gratuito).
+- **Consola, cuestionario y diagrama**: GitHub Pages, se publican solos al mergear a `main`.
+- Detalle en [`docs/despliegue.md`](docs/despliegue.md).
