@@ -3,7 +3,7 @@ package co.financiera.cartera.nucleo.motor;
 import java.math.BigDecimal;
 
 /**
- * Lo que pasa en una semana del crédito. El motor arranca cada semana con un pago contractual a
+ * Lo que pasa en un periodo del crédito. El motor arranca cada periodo con un pago contractual a
  * tiempo, salvo que una instrucción diga otra cosa.
  */
 public sealed interface Instruccion {

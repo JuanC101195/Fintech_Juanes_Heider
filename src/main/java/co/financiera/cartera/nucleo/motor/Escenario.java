@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Un crédito y lo que le pasa semana a semana. Las semanas sin instrucción son pagos
- * contractuales a tiempo.
+ * Un crédito y lo que le pasa periodo a periodo (semana, quincena o mes, según la periodicidad).
+ * Los periodos sin instrucción son pagos contractuales a tiempo.
  */
 public final class Escenario {
 
     private final Operacion operacion;
     private final ParametrosProducto parametros;
     private final Map<Integer, List<Instruccion>> instrucciones = new TreeMap<>();
-    /** Desde esta semana, toda semana sin instrucción propia usa esta (pagos tardíos recurrentes, caso 9). */
+    /** Desde este periodo, todo periodo sin instrucción propia usa esta (pagos tardíos recurrentes, caso 9). */
     private final Map<Integer, Instruccion> porDefectoDesde = new TreeMap<>();
     private ReglasNegocio reglas = ReglasNegocio.EXCEL;
 
@@ -41,7 +41,7 @@ public final class Escenario {
         return this;
     }
 
-    /** Aplica la instrucción a cada semana desde {@code desde} hasta {@code hasta} inclusive. */
+    /** Aplica la instrucción a cada periodo desde {@code desde} hasta {@code hasta} inclusive. */
     public Escenario entre(int desde, int hasta, Instruccion instruccion) {
         for (int p = desde; p <= hasta; p++) {
             en(p, instruccion);

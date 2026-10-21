@@ -3,7 +3,8 @@ package co.financiera.cartera.nucleo;
 import java.math.BigDecimal;
 
 /**
- * Servicios complementarios por cuota semanal (hoja Inputs, filas 28 a 31). Se calculan sobre el
+ * Servicios complementarios por cuota (hoja Inputs, filas 28 a 31): valor mensual × 12 / ppa, así que
+ * en mensual cada cuota lleva el valor mensual completo y en quincenal la mitad. Se calculan sobre el
  * monto financiado inicial, no sobre el saldo (Diego, P-07).
  *
  * <p>El fondo de garantías es hoy el Fondo de Coberturas Crediticias (FCC del Excel); se nombra
@@ -14,12 +15,12 @@ public record Servicios(BigDecimal fondoGarantias, BigDecimal asistencia, BigDec
     public static final Servicios NINGUNO = new Servicios(Calc.CERO, Calc.CERO, Calc.CERO);
 
     public static Servicios porCuota(BigDecimal montoFinanciado, ParametrosProducto p) {
-        BigDecimal semanasMes = p.periodosPorMes();
+        BigDecimal periodosMes = p.periodosPorMes();
         BigDecimal conIva = Calc.sumar(Calc.UNO, p.iva());
         BigDecimal fondoGarantias = Calc.multiplicar(
-                Calc.dividir(Calc.multiplicar(montoFinanciado, p.fondoGarantiasPorcentajeMensual()), semanasMes), conIva);
-        BigDecimal asistencia = Calc.multiplicar(Calc.dividir(p.asistenciaMensual(), semanasMes), conIva);
-        BigDecimal seguro = Calc.dividir(Calc.multiplicar(montoFinanciado, p.seguroPorcentajeMensual()), semanasMes);
+                Calc.dividir(Calc.multiplicar(montoFinanciado, p.fondoGarantiasPorcentajeMensual()), periodosMes), conIva);
+        BigDecimal asistencia = Calc.multiplicar(Calc.dividir(p.asistenciaMensual(), periodosMes), conIva);
+        BigDecimal seguro = Calc.dividir(Calc.multiplicar(montoFinanciado, p.seguroPorcentajeMensual()), periodosMes);
         return new Servicios(fondoGarantias, asistencia, seguro);
     }
 

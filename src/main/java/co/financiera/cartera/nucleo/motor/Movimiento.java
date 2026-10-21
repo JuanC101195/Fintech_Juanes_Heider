@@ -14,7 +14,7 @@ public record Movimiento(
         BigDecimal saldoInicial,
         BigDecimal tasaPeriodica,
         BigDecimal cuotaFinanciera,
-        // Causaciones de la semana
+        // Causaciones del periodo
         BigDecimal interesCorriente,
         BigDecimal interesMora,
         BigDecimal capitalContractual,
@@ -61,7 +61,7 @@ public record Movimiento(
         BigDecimal interesPrepago) {
 
     /**
-     * Pago total del cliente en la semana: pago recibido + abonos extraordinarios (lo que fue a capital
+     * Pago total del cliente en el periodo: pago recibido + abonos extraordinarios (lo que fue a capital
      * vigente, a pendientes y al interés por días del prepago).
      */
     public BigDecimal pagoTotalCliente() {
