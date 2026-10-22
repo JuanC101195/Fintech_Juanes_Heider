@@ -48,10 +48,9 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
-  await page.getByLabel('Comentario de la pregunta R4-QUIN', { exact: true }).fill('Confirmo 24 periodos al año')
+  await page.getByLabel('Comentario de la pregunta P5-PRORRATEO', { exact: true }).fill('Solo el interés por días reales')
   await page.getByRole('button', { name: /Abonos y prepago →/ }).click()
-  await page.getByRole('radio', { name: /Con mínimo/ }).check()
-  await page.getByRole('button', { name: '$50.000' }).click()
+  await page.getByRole('radio', { name: /Es abono extra a capital/ }).check()
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
@@ -61,7 +60,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
     // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa.
     await page.getByRole('button', { name: /Cambio de tasa y usura →/ }).click()
     await page.getByText('Agregar un comentario').first().click()
-    await page.getByLabel('Comentario de la pregunta R4-T5').fill('Depende de lo que digan las cláusulas aceleratorias')
+    await page.getByLabel('Comentario de la pregunta P5-USURA-DIA').fill('Un día hábil, como dije en la ronda 4')
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
