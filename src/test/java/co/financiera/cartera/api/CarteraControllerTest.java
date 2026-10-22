@@ -72,7 +72,10 @@ class CarteraControllerTest {
                     .andExpect(jsonPath("$.lineas[0].periodicidades", hasItem("QUINCENAL")))
                     .andExpect(jsonPath("$.periodicidades[1].codigo").value("QUINCENAL"))
                     .andExpect(jsonPath("$.periodicidades[1].periodosPorAnio").value(24))
-                    .andExpect(jsonPath("$.periodicidades[1].porConfirmar").value(true))
+                    // R4-QUIN (Diego, ronda 4): la quincena son 24 periodos por año, ya no está por confirmar.
+                    .andExpect(jsonPath("$.periodicidades[1].porConfirmar").value(false))
+                    .andExpect(jsonPath("$.lineas[3].codigo").value("ORDINARIO"))
+                    .andExpect(jsonPath("$.lineas[3].plazoMaximoMeses").value(24))
                     .andExpect(jsonPath("$.periodicidades[0].porConfirmar").value(false))
                     .andExpect(jsonPath("$.tiposInstruccion", hasSize(10)))
                     .andExpect(jsonPath("$.tiposInstruccion", hasItem("CIERRE_POR_RECUPERACION")))
@@ -92,10 +95,13 @@ class CarteraControllerTest {
             mvc.perform(get("/api/v1/reglas")).andExpect(status().isOk())
                     .andExpect(jsonPath("$.perfiles.EXCEL.aplicacionAbono").value("SOLO_CAPITAL"))
                     .andExpect(jsonPath("$.perfiles.EXCEL.modalidadUsura").value("MISMA_FECHA_FINAL"))
-                    .andExpect(jsonPath("$.perfiles.NEGOCIO.aplicacionAbono").value("PRIMERO_PENDIENTES"))
+                    .andExpect(jsonPath("$.perfiles.NEGOCIO.aplicacionAbono").value("PRELACION_COMPLETA"))
+                    .andExpect(jsonPath("$.perfiles.NEGOCIO.cobranzaIngresoNoOperacional").value("true"))
+                    .andExpect(jsonPath("$.perfiles.NEGOCIO.plazoLimiteMeses").value("24"))
+                    .andExpect(jsonPath("$.perfiles.EXCEL.plazoLimiteMeses").value(org.hamcrest.Matchers.nullValue()))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.modalidadUsura").value("MISMA_CUOTA"))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.margenUsura").value("1"))
-                    .andExpect(jsonPath("$.claves", hasSize(11)))
+                    .andExpect(jsonPath("$.claves", hasSize(14)))
                     .andExpect(jsonPath("$.claves[0].clave").value("prelacion"))
                     .andExpect(jsonPath("$.archivoNegocio").value("config/reglas-negocio.properties"));
         }
@@ -120,7 +126,7 @@ class CarteraControllerTest {
             assertThat(new BigDecimal(resumen.get("tasaPeriodo").asString())).isCloseTo(new BigDecimal("0.026565419"),
                     org.assertj.core.data.Offset.offset(new BigDecimal("0.000000001")));
             assertThat(resumen.get("periodicidad").asString()).isEqualTo("QUINCENAL");
-            assertThat(resumen.get("porConfirmar").get(0).asString()).startsWith("QUINCENAL: 24 periodos/año");
+            assertThat(resumen.get("porConfirmar").size()).isZero(); // R4-QUIN
             JsonNode plan = r.get("plan");
             assertThat(plan.size()).isEqualTo(48);
             assertThat(alPeso(plan.get(0).get("interes"))).isEqualByComparingTo("156853");
@@ -261,10 +267,11 @@ class CarteraControllerTest {
             assertThat(r.get("caso").get("numero").asInt()).isEqualTo(13);
             assertThat(r.get("perfilReglas").asString()).isEqualTo("NEGOCIO");
             JsonNode semana = r.get("movimientos").get(42);
+            // R4-CASO13 (PRELACION_COMPLETA): lo vencido (317.354,81) más el fondo y la asistencia de la semana 42.
             assertThat(new BigDecimal(semana.get("pendientesPagadosExtra").get("total").asString()))
-                    .isCloseTo(new BigDecimal("317354.81"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
+                    .isCloseTo(new BigDecimal("376982.59"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
             assertThat(semana.get("estado").asString()).isEqualTo("VIGENTE_AL_DIA");
-            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(83);
+            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(84);
             assertThat(r.get("instrucciones").size()).isEqualTo(4);
             assertThat(r.get("instrucciones").get(3).get("tipo").asString()).isEqualTo("ABONO_EXTRA");
             assertThat(r.get("instrucciones").get(3).get("valor").asString()).isEqualTo("1500000");

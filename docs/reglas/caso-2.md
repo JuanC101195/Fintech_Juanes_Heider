@@ -44,3 +44,13 @@ Pruebas: `src/test/java/co/financiera/cartera/casos/Caso2CambioTasaTest.java` (r
 6. Si el cliente está **en mora** cuando cambia la tasa, ¿la cuota nueva se calcula sobre el saldo total o sobre el capital vigente? ¿El capital vencido sigue causando mora con la tasa vieja o con la nueva? (Hoy el motor usa la nueva.)
 7. ¿El cambio debe quedar registrado como **novedad** (auditoría, aviso al cliente con la nueva cuota) aunque no tenga asiento contable?
 8. ¿FCC y seguro se mantienen iguales tras el cambio de tasa? (El Excel los deja constantes; relacionado con P6.)
+
+## Respuestas de la ronda 4 (2026-10-21)
+
+Sin código: el motor no tiene fechas ni flujo de aprobación. Quedan como requisitos del proceso de usura y de administración de parámetros.
+
+| Id | Regla o requisito | Dónde aplica |
+|---|---|---|
+| R4-USURA-PLAZO | Si nadie autoriza la usura publicada, se aplica sola **1 día hábil** después de su publicación, también al lote de créditos vigentes. El motor recibe la usura como instrucción del periodo (`UsuraVigente`) y no sabe de días hábiles: el plazo lo cumple el proceso que publica la usura y arma el lote. El campo traía "1 días": se confirma en la ronda 5 (P5-USURA-DIA). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-USURA-PLAZO.** | Proceso de usura (módulo `procesos`, futuro) |
+| R4-AVISO-CLIENTE | No se avisa al cliente cuando cambia la tasa por usura. Es decisión del dueño de producto; **riesgo legal** anotado: la normativa de protección al consumidor financiero puede exigir informar el cambio de condiciones, y debe revisarlo el área jurídica antes de producción. **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-AVISO-CLIENTE.** | Proceso de usura; sin aviso en el motor ni en el API |
+| R4-SUPLENTE | Se nombra un suplente del autorizador de la usura (y del administrador de parámetros) con los mismos permisos y la misma bitácora (quién, qué, cuándo). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-SUPLENTE.** | Roles y bitácora (módulo de administración, futuro) |

@@ -2,8 +2,8 @@
   "caso" : {
     "numero" : 13,
     "nombre" : "Abono extra con pendientes",
-    "descripcion" : "La semana 40 no paga, la 41 paga 5.000 con 3 días de atraso y la 42 abona 1.500.000 a menor plazo. Con NEGOCIO el abono paga primero los pendientes (A4); con EXCEL va todo a capital.",
-    "fuente" : "Propuesto por el equipo; Diego aún debe validar los valores (pregunta R4-CASO13). No está en el Excel"
+    "descripcion" : "La semana 40 no paga, la 41 paga 5.000 con 3 días de atraso y la 42 abona 1.500.000 a menor plazo. Con NEGOCIO el abono paga primero lo vencido (A4) y el sobrante vuelve a pasar por la prelación sobre lo causado de la semana 42 (R4-CASO13); con EXCEL va todo a capital.",
+    "fuente" : "Propuesto por el equipo; regla de la ronda 4 (R4-CASO13); Diego debe validar las cifras nuevas (pregunta P5-CASO13). No está en el Excel"
   },
   "perfilReglas" : "NEGOCIO",
   "credito" : {
@@ -40,10 +40,10 @@
     "modalidad" : "MENOR_PLAZO"
   } ],
   "resumen" : {
-    "periodoFinal" : 83,
+    "periodoFinal" : 84,
     "estadoFinal" : "CANCELADO",
     "saldoFinal" : "0",
-    "totalPagadoCliente" : "14488600.33767704621061763555302639",
+    "totalPagadoCliente" : "14649641.8342334327853078495298363",
     "cuotasVencidasMax" : 2,
     "montoFinanciado" : "5904400",
     "perfilReglas" : "NEGOCIO"
@@ -133,6 +133,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "0",
     "pagoExtraordinario" : "0"
   }, {
@@ -220,6 +222,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -307,6 +311,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -394,6 +400,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -481,6 +489,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -568,6 +578,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -655,6 +667,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -742,6 +756,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -829,6 +845,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -916,6 +934,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1003,6 +1023,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1090,6 +1112,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1177,6 +1201,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1264,6 +1290,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1351,6 +1379,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1438,6 +1468,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1525,6 +1557,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1612,6 +1646,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1699,6 +1735,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1786,6 +1824,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1873,6 +1913,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -1960,6 +2002,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2047,6 +2091,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2134,6 +2180,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2221,6 +2269,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2308,6 +2358,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2395,6 +2447,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2482,6 +2536,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2569,6 +2625,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2656,6 +2714,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2743,6 +2803,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2830,6 +2892,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -2917,6 +2981,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3004,6 +3070,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3091,6 +3159,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3178,6 +3248,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3265,6 +3337,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3352,6 +3426,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3439,6 +3515,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3526,6 +3604,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3613,6 +3693,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "0",
     "pagoExtraordinario" : "0"
   }, {
@@ -3700,6 +3782,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "5000",
     "pagoExtraordinario" : "0"
   }, {
@@ -3716,10 +3800,10 @@
     "capitalContractual" : "46846.01715699427110293412120685743",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
-      "fondoGarantias" : "0",
-      "asistencia" : "0",
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
       "seguro" : "3406.384615384615384615384615384616",
-      "total" : "3406.384615384615384615384615384616"
+      "total" : "63034.17230769230769230769230769231"
     },
     "pagoRecibido" : "0",
     "pagoCobranza" : "0",
@@ -3727,15 +3811,15 @@
     "pagoInteresCorriente" : "0",
     "pagoServicios" : "0",
     "pagoCapital" : "0",
-    "abonoExtra" : "1182645.196195253781595118773783516",
+    "abonoExtra" : "1123017.408502946089287426466091208",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
     "cxcMora" : "0",
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3169909.335342596390987740224978012",
-    "saldoFinal" : "3169909.335342596390987740224978012",
+    "capitalVigente" : "3229537.12303490408329543253267032",
+    "saldoFinal" : "3229537.12303490408329543253267032",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -3778,29 +3862,31 @@
       "mora" : "1916.827412626865428778462102635439",
       "interesCorriente" : "162364.3868060920062949438807899808",
       "servicios" : {
-        "fondoGarantias" : "0",
-        "asistencia" : "0",
+        "fondoGarantias" : "48643.17230769230769230769230769231",
+        "asistencia" : "10984.61538461538461538461538461538",
         "seguro" : "10219.15384615384615384615384615385",
-        "total" : "10219.15384615384615384615384615385"
+        "total" : "69846.94153846153846153846153846154"
       },
       "capital" : "138854.4357398735005273127294777139",
-      "total" : "317354.8038047462184048812262164839"
+      "total" : "376982.5914970539107125735339087916"
     },
     "interesPrepago" : "0",
-    "pagoTotalCliente" : "1499999.9999999999999999999999999999",
-    "pagoExtraordinario" : "1499999.9999999999999999999999999999"
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
+    "pagoTotalCliente" : "1499999.9999999999999999999999999996",
+    "pagoExtraordinario" : "1499999.9999999999999999999999999996"
   }, {
     "periodo" : 43,
     "mes" : 10,
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3169909.335342596390987740224978012",
+    "saldoInicial" : "3229537.12303490408329543253267032",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "38591.88470512113410979269529466494",
+    "interesCorriente" : "39317.81988635377862728100298697264",
     "interesMora" : "0",
-    "capitalContractual" : "61814.38947686736816429284146123326",
+    "capitalContractual" : "61088.45429563472364680453376892556",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -3811,9 +3897,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "38591.88470512113410979269529466494",
+    "pagoInteresCorriente" : "39317.81988635377862728100298697264",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "61814.38947686736816429284146123329",
+    "pagoCapital" : "61088.45429563472364680453376892559",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -3821,18 +3907,18 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3108094.945865729022823447383516779",
-    "saldoFinal" : "3108094.945865729022823447383516779",
+    "capitalVigente" : "3168448.668739269359648627998901394",
+    "saldoFinal" : "3168448.668739269359648627998901394",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
     "cxcFondoGarantias" : "0",
     "cxpDeudor" : "0",
     "pagoTerceros" : {
-      "fondoGarantias" : "48643.17230769230769230769230769231",
-      "asistencia" : "10984.61538461538461538461538461538",
+      "fondoGarantias" : "97286.34461538461538461538461538462",
+      "asistencia" : "21969.23076923076923076923076923076",
       "seguro" : "13625.53846153846153846153846153847",
-      "total" : "73253.32615384615384615384615384616"
+      "total" : "132881.1138461538461538461538461539"
     },
     "pagosServicios" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -3874,6 +3960,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3882,12 +3970,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3108094.945865729022823447383516779",
+    "saldoInicial" : "3168448.668739269359648627998901394",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "37839.32886221059999761849004769509",
+    "interesCorriente" : "38574.101900887673162921287852008",
     "interesMora" : "0",
-    "capitalContractual" : "62566.94531977790227646704670820311",
+    "capitalContractual" : "61832.1722811008291111642489038902",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -3898,9 +3986,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "37839.32886221059999761849004769509",
+    "pagoInteresCorriente" : "38574.101900887673162921287852008",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "62566.94531977790227646704670820309",
+    "pagoCapital" : "61832.17228110082911116424890389019",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -3908,8 +3996,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3045528.000545951120546980336808576",
-    "saldoFinal" : "3045528.000545951120546980336808576",
+    "capitalVigente" : "3106616.496458168530537463749997504",
+    "saldoFinal" : "3106616.496458168530537463749997504",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -3961,6 +4049,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -3969,12 +4059,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3045528.000545951120546980336808576",
+    "saldoInicial" : "3106616.496458168530537463749997504",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "37077.61107009225684457905501907392",
+    "interesCorriente" : "37821.32956221713104591154397782543",
     "interesMora" : "0",
-    "capitalContractual" : "63328.66311189624542950648173682428",
+    "capitalContractual" : "62584.94461977137122817399277807277",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -3985,9 +4075,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "37077.61107009225684457905501907392",
+    "pagoInteresCorriente" : "37821.32956221713104591154397782543",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "63328.66311189624542950648173682429",
+    "pagoCapital" : "62584.94461977137122817399277807279",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -3995,8 +4085,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2982199.337434054875117473855071752",
-    "saldoFinal" : "2982199.337434054875117473855071752",
+    "capitalVigente" : "3044031.551838397159309289757219431",
+    "saldoFinal" : "3044031.551838397159309289757219431",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4048,6 +4138,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4056,12 +4148,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2982199.337434054875117473855071752",
+    "saldoInicial" : "3044031.551838397159309289757219431",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "36306.61978712560415710055475588359",
+    "interesCorriente" : "37059.39263862320398071779920779185",
     "interesMora" : "0",
-    "capitalContractual" : "64099.65439486289811698498200001461",
+    "capitalContractual" : "63346.88154336529829336773754810635",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4072,9 +4164,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "36306.61978712560415710055475588359",
+    "pagoInteresCorriente" : "37059.39263862320398071779920779185",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "64099.65439486289811698498200001459",
+    "pagoCapital" : "63346.88154336529829336773754810629",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4082,8 +4174,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2918099.683039191977000488873071737",
-    "saldoFinal" : "2918099.683039191977000488873071737",
+    "capitalVigente" : "2980684.670295031861015922019671325",
+    "saldoFinal" : "2980684.670295031861015922019671325",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4135,6 +4227,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4143,12 +4237,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2918099.683039191977000488873071737",
+    "saldoInicial" : "2980684.670295031861015922019671325",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "35526.2421137126497173587317979297",
+    "interesCorriente" : "36288.17955637701894941014333678797",
     "interesMora" : "0",
-    "capitalContractual" : "64880.0320682758525567268049579685",
+    "capitalContractual" : "64118.09462561148332467539341911023",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4159,9 +4253,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "35526.2421137126497173587317979297",
+    "pagoInteresCorriente" : "36288.17955637701894941014333678797",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "64880.03206827585255672680495796849",
+    "pagoCapital" : "64118.09462561148332467539341911019",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4169,8 +4263,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2853219.650970916124443762068113769",
-    "saldoFinal" : "2853219.650970916124443762068113769",
+    "capitalVigente" : "2916566.575669420377691246626252215",
+    "saldoFinal" : "2916566.575669420377691246626252215",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4222,6 +4316,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4230,12 +4326,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2853219.650970916124443762068113769",
+    "saldoInicial" : "2916566.575669420377691246626252215",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "34736.36377576553171026512664267014",
+    "interesCorriente" : "35507.57738340155310516529593986821",
     "interesMora" : "0",
-    "capitalContractual" : "65669.91040622297056382041011322808",
+    "capitalContractual" : "64898.69679858694916892024081602999",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4246,9 +4342,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "34736.36377576553171026512664267014",
+    "pagoInteresCorriente" : "35507.57738340155310516529593986821",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "65669.91040622297056382041011322809",
+    "pagoCapital" : "64898.69679858694916892024081602999",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4256,8 +4352,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2787549.740564693153879941658000541",
-    "saldoFinal" : "2787549.740564693153879941658000541",
+    "capitalVigente" : "2851667.878870833428522326385436185",
+    "saldoFinal" : "2851667.878870833428522326385436185",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4309,6 +4405,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4317,12 +4415,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2787549.740564693153879941658000541",
+    "saldoInicial" : "2851667.878870833428522326385436185",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "33936.8691079728683365478208747955",
+    "interesCorriente" : "34717.47181273449985390938044943456",
     "interesMora" : "0",
-    "capitalContractual" : "66469.40507401563393753771588110271",
+    "capitalContractual" : "65688.80236925400242017615630646364",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4333,9 +4431,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "33936.8691079728683365478208747955",
+    "pagoInteresCorriente" : "34717.47181273449985390938044943456",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "66469.40507401563393753771588110269",
+    "pagoCapital" : "65688.80236925400242017615630646359",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4343,8 +4441,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2721080.335490677519942403942119438",
-    "saldoFinal" : "2721080.335490677519942403942119438",
+    "capitalVigente" : "2785979.076501579426102150229129721",
+    "saldoFinal" : "2785979.076501579426102150229129721",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4396,6 +4494,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4404,12 +4504,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2721080.335490677519942403942119438",
+    "saldoInicial" : "2785979.076501579426102150229129721",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "33127.64103686238453091285324553937",
+    "interesCorriente" : "33917.74714578980451984600040214723",
     "interesMora" : "0",
-    "capitalContractual" : "67278.63314512611774317268351035884",
+    "capitalContractual" : "66488.52703619869775423953635375097",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4420,9 +4520,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "33127.64103686238453091285324553937",
+    "pagoInteresCorriente" : "33917.74714578980451984600040214723",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "67278.63314512611774317268351035879",
+    "pagoCapital" : "66488.52703619869775423953635375099",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4430,8 +4530,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2653801.702345551402199231258609079",
-    "saldoFinal" : "2653801.702345551402199231258609079",
+    "capitalVigente" : "2719490.54946538072834791069277597",
+    "saldoFinal" : "2719490.54946538072834791069277597",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4483,6 +4583,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4491,12 +4593,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2653801.702345551402199231258609079",
+    "saldoInicial" : "2719490.54946538072834791069277597",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "32308.56106365733557224524061528508",
+    "interesCorriente" : "33108.28627541541850892854542817854",
     "interesMora" : "0",
-    "capitalContractual" : "68097.71311833116670184029614061314",
+    "capitalContractual" : "67297.98790657308376515699132771966",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4507,9 +4609,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "32308.56106365733557224524061528508",
+    "pagoInteresCorriente" : "33108.28627541541850892854542817854",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "68097.71311833116670184029614061309",
+    "pagoCapital" : "67297.98790657308376515699132771969",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4517,8 +4619,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2585703.989227220235497390962468466",
-    "saldoFinal" : "2585703.989227220235497390962468466",
+    "capitalVigente" : "2652192.56155880764458275370144825",
+    "saldoFinal" : "2652192.56155880764458275370144825",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4570,6 +4672,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4578,12 +4682,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2585703.989227220235497390962468466",
+    "saldoInicial" : "2652192.56155880764458275370144825",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "31479.5092469242171775929634608773",
+    "interesCorriente" : "32288.9706687447910437263394668622",
     "interesMora" : "0",
-    "capitalContractual" : "68926.76493506428509649257329502091",
+    "capitalContractual" : "68117.303513243711230359197289036",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4594,9 +4698,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "31479.5092469242171775929634608773",
+    "pagoInteresCorriente" : "32288.9706687447910437263394668622",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "68926.76493506428509649257329502089",
+    "pagoCapital" : "68117.30351324371123035919728903599",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4604,8 +4708,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2516777.224292155950400898389173445",
-    "saldoFinal" : "2516777.224292155950400898389173445",
+    "capitalVigente" : "2584075.258045563933352394504159214",
+    "saldoFinal" : "2584075.258045563933352394504159214",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4657,6 +4761,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4665,12 +4771,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2516777.224292155950400898389173445",
+    "saldoInicial" : "2584075.258045563933352394504159214",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "30640.3641850092211088517326983566",
+    "interesCorriente" : "31459.68034983958733923209199886233",
     "interesMora" : "0",
-    "capitalContractual" : "69765.90999697928116523380405754161",
+    "capitalContractual" : "68946.59383214891493485344475703587",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4681,9 +4787,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "30640.3641850092211088517326983566",
+    "pagoInteresCorriente" : "31459.68034983958733923209199886233",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "69765.90999697928116523380405754159",
+    "pagoCapital" : "68946.59383214891493485344475703589",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4691,8 +4797,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2447011.314295176669235664585115903",
-    "saldoFinal" : "2447011.314295176669235664585115903",
+    "capitalVigente" : "2515128.664213415018417541059402178",
+    "saldoFinal" : "2515128.664213415018417541059402178",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4744,6 +4850,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4752,12 +4860,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2447011.314295176669235664585115903",
+    "saldoInicial" : "2515128.664213415018417541059402178",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "29791.00299826086438615739376208493",
+    "interesCorriente" : "30620.29388212109151754023637428939",
     "interesMora" : "0",
-    "capitalContractual" : "70615.27118372763788792814299381328",
+    "capitalContractual" : "69785.98029986741075654530038160881",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4768,9 +4876,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "29791.00299826086438615739376208493",
+    "pagoInteresCorriente" : "30620.29388212109151754023637428939",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "70615.27118372763788792814299381329",
+    "pagoCapital" : "69785.98029986741075654530038160879",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4778,8 +4886,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2376396.04311144903134773644212209",
-    "saldoFinal" : "2376396.04311144903134773644212209",
+    "capitalVigente" : "2445342.683913547607660995759020569",
+    "saldoFinal" : "2445342.683913547607660995759020569",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4831,6 +4939,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4839,12 +4949,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2376396.04311144903134773644212209",
+    "saldoInicial" : "2445342.683913547607660995759020569",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "28931.30131103618889046651201011312",
+    "interesCorriente" : "29770.68835058772161551540296862154",
     "interesMora" : "0",
-    "capitalContractual" : "71474.9728709523133836190247457851",
+    "capitalContractual" : "70635.58583140078065857013378727666",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4855,9 +4965,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "28931.30131103618889046651201011312",
+    "pagoInteresCorriente" : "29770.68835058772161551540296862154",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "71474.97287095231338361902474578509",
+    "pagoCapital" : "70635.58583140078065857013378727669",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4865,8 +4975,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2304921.070240496717964117417376305",
-    "saldoFinal" : "2304921.070240496717964117417376305",
+    "capitalVigente" : "2374707.098082146827002425625233292",
+    "saldoFinal" : "2374707.098082146827002425625233292",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4918,6 +5028,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -4926,12 +5038,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2304921.070240496717964117417376305",
+    "saldoInicial" : "2374707.098082146827002425625233292",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "28061.13323348789644507893797129982",
+    "interesCorriente" : "28910.73934381605271903624253737875",
     "interesMora" : "0",
-    "capitalContractual" : "72345.14094850060582900659878459839",
+    "capitalContractual" : "71495.53483817244955504929421851945",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4942,9 +5054,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "28061.13323348789644507893797129982",
+    "pagoInteresCorriente" : "28910.73934381605271903624253737875",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "72345.14094850060582900659878459839",
+    "pagoCapital" : "71495.53483817244955504929421851949",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4952,8 +5064,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2232575.929291996112135110818591707",
-    "saldoFinal" : "2232575.929291996112135110818591707",
+    "capitalVigente" : "2303211.563243974377447376331014773",
+    "saldoFinal" : "2303211.563243974377447376331014773",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5005,6 +5117,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5013,12 +5127,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2232575.929291996112135110818591707",
+    "saldoInicial" : "2303211.563243974377447376331014773",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "27180.37134312975238728806825718521",
+    "interesCorriente" : "28040.32093574271255555568510480225",
     "interesMora" : "0",
-    "capitalContractual" : "73225.902838858749886797468498713",
+    "capitalContractual" : "72365.95324624578971852985165109595",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5029,9 +5143,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "27180.37134312975238728806825718521",
+    "pagoInteresCorriente" : "28040.32093574271255555568510480225",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "73225.90283885874988679746849871299",
+    "pagoCapital" : "72365.95324624578971852985165109589",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5039,8 +5153,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2159350.026453137362248313350092994",
-    "saldoFinal" : "2159350.026453137362248313350092994",
+    "capitalVigente" : "2230845.609997728587728846479363677",
+    "saldoFinal" : "2230845.609997728587728846479363677",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5092,6 +5206,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5100,12 +5216,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2159350.026453137362248313350092994",
+    "saldoInicial" : "2230845.609997728587728846479363677",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "26288.88666617755817223769425529654",
+    "interesCorriente" : "27159.30566722448178892225345821106",
     "interesMora" : "0",
-    "capitalContractual" : "74117.38751581094410184784250060167",
+    "capitalContractual" : "73246.96851476402048516328329768714",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5116,9 +5232,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "26288.88666617755817223769425529654",
+    "pagoInteresCorriente" : "27159.30566722448178892225345821106",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "74117.38751581094410184784250060169",
+    "pagoCapital" : "73246.96851476402048516328329768709",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5126,8 +5242,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2085232.638937326418146465507592392",
-    "saldoFinal" : "2085232.638937326418146465507592392",
+    "capitalVigente" : "2157598.64148296456724368319606599",
+    "saldoFinal" : "2157598.64148296456724368319606599",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5179,6 +5295,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5187,12 +5305,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2085232.638937326418146465507592392",
+    "saldoInicial" : "2157598.64148296456724368319606599",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "25386.54865866296068666417384283028",
+    "interesCorriente" : "26267.56452737389878195949260035154",
     "interesMora" : "0",
-    "capitalContractual" : "75019.72552332554158742136291306793",
+    "capitalContractual" : "74138.70965461460349212604415554666",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5203,9 +5321,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "25386.54865866296068666417384283028",
+    "pagoInteresCorriente" : "26267.56452737389878195949260035154",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "75019.72552332554158742136291306789",
+    "pagoCapital" : "74138.70965461460349212604415554669",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5213,8 +5331,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2010212.913414000876559044144679324",
-    "saldoFinal" : "2010212.913414000876559044144679324",
+    "capitalVigente" : "2083459.931828349963751557151910443",
+    "saldoFinal" : "2083459.931828349963751557151910443",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5266,6 +5384,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5274,12 +5394,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2010212.913414000876559044144679324",
+    "saldoInicial" : "2083459.931828349963751557151910443",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "24473.2251873173326856966946354344",
+    "interesCorriente" : "25364.96693466763571844596737513484",
     "interesMora" : "0",
-    "capitalContractual" : "75933.04899467116958838884212046381",
+    "capitalContractual" : "75041.30724732086655563956938076336",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5290,9 +5410,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "24473.2251873173326856966946354344",
+    "pagoInteresCorriente" : "25364.96693466763571844596737513484",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "75933.04899467116958838884212046379",
+    "pagoCapital" : "75041.30724732086655563956938076339",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5300,8 +5420,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1934279.86441932970697065530255886",
-    "saldoFinal" : "1934279.86441932970697065530255886",
+    "capitalVigente" : "2008418.62458102909719591758252968",
+    "saldoFinal" : "2008418.62458102909719591758252968",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5353,6 +5473,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5361,12 +5483,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1934279.86441932970697065530255886",
+    "saldoInicial" : "2008418.62458102909719591758252968",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "23548.78251022292509640555481070094",
+    "interesCorriente" : "24451.38071782487970206275879613576",
     "interesMora" : "0",
-    "capitalContractual" : "76857.49167176557717767998194519727",
+    "capitalContractual" : "75954.89346416362257202277795976244",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5377,9 +5499,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "23548.78251022292509640555481070094",
+    "pagoInteresCorriente" : "24451.38071782487970206275879613576",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "76857.49167176557717767998194519729",
+    "pagoCapital" : "75954.89346416362257202277795976239",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5387,8 +5509,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1857422.372747564129792975320613663",
-    "saldoFinal" : "1857422.372747564129792975320613663",
+    "capitalVigente" : "1932463.731116865474623894804569918",
+    "saldoFinal" : "1932463.731116865474623894804569918",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5440,6 +5562,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5448,12 +5572,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1857422.372747564129792975320613663",
+    "saldoInicial" : "1932463.731116865474623894804569918",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "22613.08525722845785239830089493001",
+    "interesCorriente" : "23526.67209645291877070648815625435",
     "interesMora" : "0",
-    "capitalContractual" : "77793.1889247600444216872358609682",
+    "capitalContractual" : "76879.60208553558350337904859964385",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5464,9 +5588,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "22613.08525722845785239830089493001",
+    "pagoInteresCorriente" : "23526.67209645291877070648815625435",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "77793.18892476004442168723586096819",
+    "pagoCapital" : "76879.60208553558350337904859964389",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5474,8 +5598,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1779629.183822804085371288084752695",
-    "saldoFinal" : "1779629.183822804085371288084752695",
+    "capitalVigente" : "1855584.129031329891120515755970274",
+    "saldoFinal" : "1855584.129031329891120515755970274",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5527,6 +5651,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5535,12 +5661,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1779629.183822804085371288084752695",
+    "saldoInicial" : "1855584.129031329891120515755970274",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "21665.99641012628142947583815382866",
+    "interesCorriente" : "22590.70566145709867537182998434525",
     "interesMora" : "0",
-    "capitalContractual" : "78740.27777186222084460969860206955",
+    "capitalContractual" : "77815.56852053140359871370677155295",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5551,9 +5677,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "21665.99641012628142947583815382866",
+    "pagoInteresCorriente" : "22590.70566145709867537182998434525",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "78740.27777186222084460969860206949",
+    "pagoCapital" : "77815.56852053140359871370677155289",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5561,8 +5687,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1700888.906050941864526678386150626",
-    "saldoFinal" : "1700888.906050941864526678386150626",
+    "capitalVigente" : "1777768.560510798487521802049198721",
+    "saldoFinal" : "1777768.560510798487521802049198721",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5614,6 +5740,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5622,12 +5750,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1700888.906050941864526678386150626",
+    "saldoInicial" : "1777768.560510798487521802049198721",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "20707.37728258820633812412020139382",
+    "interesCorriente" : "21643.34435521228176859641177996548",
     "interesMora" : "0",
-    "capitalContractual" : "79698.8968994002959359614165545044",
+    "capitalContractual" : "78762.92982677622050548912497593272",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5638,9 +5766,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "20707.37728258820633812412020139382",
+    "pagoInteresCorriente" : "21643.34435521228176859641177996548",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "79698.89689940029593596141655450439",
+    "pagoCapital" : "78762.92982677622050548912497593269",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5648,8 +5776,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1621190.009151541568590716969596122",
-    "saldoFinal" : "1621190.009151541568590716969596122",
+    "capitalVigente" : "1699005.630684022267016312924222788",
+    "saldoFinal" : "1699005.630684022267016312924222788",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5701,6 +5829,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5709,12 +5839,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1621190.009151541568590716969596122",
+    "saldoInicial" : "1699005.630684022267016312924222788",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "19737.08749985706248931908703233489",
+    "interesCorriente" : "20684.44945149290442318033890138071",
     "interesMora" : "0",
-    "capitalContractual" : "80669.18668213143978476644972356334",
+    "capitalContractual" : "79721.82473049559785090519785451749",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5725,9 +5855,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "19737.08749985706248931908703233489",
+    "pagoInteresCorriente" : "20684.44945149290442318033890138071",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "80669.18668213143978476644972356329",
+    "pagoCapital" : "79721.82473049559785090519785451749",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5735,8 +5865,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1540520.822469410128805950519872559",
-    "saldoFinal" : "1540520.822469410128805950519872559",
+    "capitalVigente" : "1619283.805953526669165407726368271",
+    "saldoFinal" : "1619283.805953526669165407726368271",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5788,6 +5918,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5796,12 +5928,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1540520.822469410128805950519872559",
+    "saldoInicial" : "1619283.805953526669165407726368271",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "18754.98497819101458058826819925606",
+    "interesCorriente" : "19713.88053515869405242821309210738",
     "interesMora" : "0",
-    "capitalContractual" : "81651.28920379748769349726855664216",
+    "capitalContractual" : "80692.39364682980822165732366379082",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5812,9 +5944,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "18754.98497819101458058826819925606",
+    "pagoInteresCorriente" : "19713.88053515869405242821309210738",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "81651.28920379748769349726855664209",
+    "pagoCapital" : "80692.39364682980822165732366379079",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5822,8 +5954,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1458869.533265612641112453251315917",
-    "saldoFinal" : "1458869.533265612641112453251315917",
+    "capitalVigente" : "1538591.41230669686094375040270448",
+    "saldoFinal" : "1538591.41230669686094375040270448",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5875,6 +6007,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5883,12 +6017,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1458869.533265612641112453251315917",
+    "saldoInicial" : "1538591.41230669686094375040270448",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "17760.92590405762344426401223376956",
+    "interesCorriente" : "18731.49548159307102333705749998282",
     "interesMora" : "0",
-    "capitalContractual" : "82645.34827793087882982152452212866",
+    "capitalContractual" : "81674.77870039543125074847925591538",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5899,9 +6033,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "17760.92590405762344426401223376956",
+    "pagoInteresCorriente" : "18731.49548159307102333705749998282",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "82645.34827793087882982152452212859",
+    "pagoCapital" : "81674.77870039543125074847925591539",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5909,8 +6043,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1376224.184987681762282631726793788",
-    "saldoFinal" : "1376224.184987681762282631726793788",
+    "capitalVigente" : "1456916.633606301429693001923448565",
+    "saldoFinal" : "1456916.633606301429693001923448565",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5962,6 +6096,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -5970,12 +6106,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1376224.184987681762282631726793788",
+    "saldoInicial" : "1456916.633606301429693001923448565",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "16754.76471307460665407898821150069",
+    "interesCorriente" : "17737.15043589122453872962476829203",
     "interesMora" : "0",
-    "capitalContractual" : "83651.50946891389562000654854439753",
+    "capitalContractual" : "82669.12374609727773535591198760617",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5986,9 +6122,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "16754.76471307460665407898821150069",
+    "pagoInteresCorriente" : "17737.15043589122453872962476829203",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "83651.50946891389562000654854439749",
+    "pagoCapital" : "82669.12374609727773535591198760619",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5996,8 +6132,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1292572.675518767866662625178249391",
-    "saldoFinal" : "1292572.675518767866662625178249391",
+    "capitalVigente" : "1374247.509860204151957646011460959",
+    "saldoFinal" : "1374247.509860204151957646011460959",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6049,6 +6185,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6057,12 +6195,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1292572.675518767866662625178249391",
+    "saldoInicial" : "1374247.509860204151957646011460959",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "15736.35406869421459432822942419738",
+    "interesCorriente" : "16730.69979179481490800596623757793",
     "interesMora" : "0",
-    "capitalContractual" : "84669.92011329428767975730733170086",
+    "capitalContractual" : "83675.57439019368736607957051832027",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6073,9 +6211,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "15736.35406869421459432822942419738",
+    "pagoInteresCorriente" : "16730.69979179481490800596623757793",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "84669.92011329428767975730733170079",
+    "pagoCapital" : "83675.57439019368736607957051832029",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6083,8 +6221,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1207902.75540547357898286787091769",
-    "saldoFinal" : "1207902.75540547357898286787091769",
+    "capitalVigente" : "1290571.935470010464591566440942639",
+    "saldoFinal" : "1290571.935470010464591566440942639",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6136,6 +6274,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6144,12 +6284,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1207902.75540547357898286787091769",
+    "saldoInicial" : "1290571.935470010464591566440942639",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "14705.54484062810065232202077025391",
+    "interesCorriente" : "15711.99617037021752358913457676438",
     "interesMora" : "0",
-    "capitalContractual" : "85700.72934136040162176351598564432",
+    "capitalContractual" : "84694.27801161828475049640217913382",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6160,9 +6300,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "14705.54484062810065232202077025391",
+    "pagoInteresCorriente" : "15711.99617037021752358913457676438",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "85700.7293413604016217635159856443",
+    "pagoCapital" : "84694.27801161828475049640217913379",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6170,8 +6310,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1122202.026064113177361104354932046",
-    "saldoFinal" : "1122202.026064113177361104354932046",
+    "capitalVigente" : "1205877.657458392179841070038763505",
+    "saldoFinal" : "1205877.657458392179841070038763505",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6223,6 +6363,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6231,12 +6373,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1122202.026064113177361104354932046",
+    "saldoInicial" : "1205877.657458392179841070038763505",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "13662.18608300952619428271315029747",
+    "interesCorriente" : "14680.89039842718630584038503890496",
     "interesMora" : "0",
-    "capitalContractual" : "86744.08809897897607980282360560077",
+    "capitalContractual" : "85725.38378356131596824515171699324",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6247,9 +6389,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "13662.18608300952619428271315029747",
+    "pagoInteresCorriente" : "14680.89039842718630584038503890496",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "86744.0880989789760798028236056007",
+    "pagoCapital" : "85725.3837835613159682451517169932",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6257,8 +6399,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1035457.937965134201281301531326445",
-    "saldoFinal" : "1035457.937965134201281301531326445",
+    "capitalVigente" : "1120152.273674830863872824887046512",
+    "saldoFinal" : "1120152.273674830863872824887046512",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6310,6 +6452,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6318,12 +6462,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1035457.937965134201281301531326445",
+    "saldoInicial" : "1120152.273674830863872824887046512",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "12606.12501228970252163149137363304",
+    "interesCorriente" : "13637.23148667477636771599288288877",
     "interesMora" : "0",
-    "capitalContractual" : "87800.1491696987997524540453822652",
+    "capitalContractual" : "86769.04269531372590636954387300943",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6334,9 +6478,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "12606.12501228970252163149137363304",
+    "pagoInteresCorriente" : "13637.23148667477636771599288288877",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "87800.1491696987997524540453822652",
+    "pagoCapital" : "86769.0426953137259063695438730094",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6344,8 +6488,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "947657.7887954354015288474859441798",
-    "saldoFinal" : "947657.7887954354015288474859441798",
+    "capitalVigente" : "1033383.230979517137966455343173503",
+    "saldoFinal" : "1033383.230979517137966455343173503",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6397,6 +6541,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6405,12 +6551,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "947657.7887954354015288474859441798",
+    "saldoInicial" : "1033383.230979517137966455343173503",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "11537.20698486503307313589258820661",
+    "interesCorriente" : "12580.86660761132717616562700987798",
     "interesMora" : "0",
-    "capitalContractual" : "88869.06719712346920094964416769163",
+    "capitalContractual" : "87825.40757437717509791990974602022",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6421,9 +6567,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "11537.20698486503307313589258820661",
+    "pagoInteresCorriente" : "12580.86660761132717616562700987798",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "88869.0671971234692009496441676916",
+    "pagoCapital" : "87825.4075743771750979199097460202",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6431,8 +6577,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "858788.7215983119323278978417764882",
-    "saldoFinal" : "858788.7215983119323278978417764882",
+    "capitalVigente" : "945557.8234051399628685354334274828",
+    "saldoFinal" : "945557.8234051399628685354334274828",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6484,6 +6630,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6492,12 +6640,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "858788.7215983119323278978417764882",
+    "saldoInicial" : "945557.8234051399628685354334274828",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "10455.27547443197973294456524543563",
+    "interesCorriente" : "11511.64107314526854459715796240453",
     "interesMora" : "0",
-    "capitalContractual" : "89950.99870755652254114097151046261",
+    "capitalContractual" : "88894.63310884323372948837879349367",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6508,9 +6656,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "10455.27547443197973294456524543563",
+    "pagoInteresCorriente" : "11511.64107314526854459715796240453",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "89950.9987075565225411409715104626",
+    "pagoCapital" : "88894.6331088432337294883787934937",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6518,8 +6666,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "768837.7228907554097867568702660256",
-    "saldoFinal" : "768837.7228907554097867568702660256",
+    "capitalVigente" : "856663.1902962967291390470546339891",
+    "saldoFinal" : "856663.1902962967291390470546339891",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6571,6 +6719,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6579,12 +6729,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "768837.7228907554097867568702660256",
+    "saldoInicial" : "856663.1902962967291390470546339891",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "9360.172049066237219352063957867022",
+    "interesCorriente" : "10429.39831194347237395228728898141",
     "interesMora" : "0",
-    "capitalContractual" : "91046.10213292226505473347279803122",
+    "capitalContractual" : "89976.87587004502990013324946691679",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6595,9 +6745,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "9360.172049066237219352063957867022",
+    "pagoInteresCorriente" : "10429.39831194347237395228728898141",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "91046.1021329222650547334727980312",
+    "pagoCapital" : "89976.8758700450299001332494669168",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6605,8 +6755,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "677791.6207578331447320233974679944",
-    "saldoFinal" : "677791.6207578331447320233974679944",
+    "capitalVigente" : "766686.3144262516992389138051670723",
+    "saldoFinal" : "766686.3144262516992389138051670723",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6658,6 +6808,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6666,12 +6818,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "677791.6207578331447320233974679944",
+    "saldoInicial" : "766686.3144262516992389138051670723",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "8251.736348022859158372832838687722",
+    "interesCorriente" : "9333.979846503833163279494737264926",
     "interesMora" : "0",
-    "capitalContractual" : "92154.53783396564311571270391721052",
+    "capitalContractual" : "91072.29433548466911080604201863327",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6682,9 +6834,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "8251.736348022859158372832838687722",
+    "pagoInteresCorriente" : "9333.979846503833163279494737264926",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "92154.5378339656431157127039172105",
+    "pagoCapital" : "91072.2943354846691108060420186333",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6692,8 +6844,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "585637.0829238675016163106935507839",
-    "saldoFinal" : "585637.0829238675016163106935507839",
+    "capitalVigente" : "675614.020090767030128107763148439",
+    "saldoFinal" : "675614.020090767030128107763148439",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6745,6 +6897,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6753,12 +6907,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "585637.0829238675016163106935507839",
+    "saldoInicial" : "675614.020090767030128107763148439",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "7129.806058253938583948272986002014",
+    "interesCorriente" : "8225.225269948719928313269124494251",
     "interesMora" : "0",
-    "capitalContractual" : "93276.46812373456369013726376989622",
+    "capitalContractual" : "92181.04891203978234577226763140395",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6769,9 +6923,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "7129.806058253938583948272986002014",
+    "pagoInteresCorriente" : "8225.225269948719928313269124494251",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "93276.4681237345636901372637698962",
+    "pagoCapital" : "92181.0489120397823457722676314039",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6779,8 +6933,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "492360.6148001329379261734297808877",
-    "saldoFinal" : "492360.6148001329379261734297808877",
+    "capitalVigente" : "583432.9711787272477823354955170351",
+    "saldoFinal" : "583432.9711787272477823354955170351",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6832,6 +6986,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6840,12 +6996,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "492360.6148001329379261734297808877",
+    "saldoInicial" : "583432.9711787272477823354955170351",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "5994.216890640404246880281400804187",
+    "interesCorriente" : "7102.972222535901292558051331526634",
     "interesMora" : "0",
-    "capitalContractual" : "94412.05729134809802720525535509405",
+    "capitalContractual" : "93303.30195945260098152748542437157",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6856,9 +7012,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "5994.216890640404246880281400804187",
+    "pagoInteresCorriente" : "7102.972222535901292558051331526634",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "94412.057291348098027205255355094",
+    "pagoCapital" : "93303.3019594526009815274854243716",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6866,8 +7022,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "397948.5575087848398989681744257937",
-    "saldoFinal" : "397948.5575087848398989681744257937",
+    "capitalVigente" : "490129.6692192746468008080100926635",
+    "saldoFinal" : "490129.6692192746468008080100926635",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6919,6 +7075,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -6927,12 +7085,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "397948.5575087848398989681744257937",
+    "saldoInicial" : "490129.6692192746468008080100926635",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "4844.802555934452251322404055985775",
+    "interesCorriente" : "5967.056367883504143746415008870138",
     "interesMora" : "0",
-    "capitalContractual" : "95561.47162605405002276313269991246",
+    "capitalContractual" : "94439.21781410499813033912174702806",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6943,9 +7101,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "4844.802555934452251322404055985775",
+    "pagoInteresCorriente" : "5967.056367883504143746415008870138",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "95561.4716260540500227631326999124",
+    "pagoCapital" : "94439.2178141049981303391217470281",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6953,8 +7111,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "302387.0858827307898762050417258813",
-    "saldoFinal" : "302387.0858827307898762050417258813",
+    "capitalVigente" : "395690.4514051696486704688883456354",
+    "saldoFinal" : "395690.4514051696486704688883456354",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7006,6 +7164,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -7014,12 +7174,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "302387.0858827307898762050417258813",
+    "saldoInicial" : "395690.4514051696486704688883456354",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "3681.394740409090164735545978428648",
+    "interesCorriente" : "4817.31136890552437323551518644402",
     "interesMora" : "0",
-    "capitalContractual" : "96724.87944157941210934999077746959",
+    "capitalContractual" : "95588.96281308297790085002156945418",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7030,9 +7190,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "3681.394740409090164735545978428648",
+    "pagoInteresCorriente" : "4817.31136890552437323551518644402",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "96724.87944157941210934999077746958",
+    "pagoCapital" : "95588.9628130829779008500215694542",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7040,8 +7200,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "205662.2064411513777668550509484117",
-    "saldoFinal" : "205662.2064411513777668550509484117",
+    "capitalVigente" : "300101.4885920866707696188667761812",
+    "saldoFinal" : "300101.4885920866707696188667761812",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7093,6 +7253,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -7101,12 +7263,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "205662.2064411513777668550509484117",
+    "saldoInicial" : "300101.4885920866707696188667761812",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "2503.823081211227858424174970215656",
+    "interesCorriente" : "3653.568863454365830791764411814889",
     "interesMora" : "0",
-    "capitalContractual" : "97902.45110077727441566136178568258",
+    "capitalContractual" : "96752.70531853413644329377234408331",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7117,9 +7279,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "2503.823081211227858424174970215656",
+    "pagoInteresCorriente" : "3653.568863454365830791764411814889",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "97902.45110077727441566136178568248",
+    "pagoCapital" : "96752.70531853413644329377234408328",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7127,8 +7289,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "107759.7553403741033511936891627292",
-    "saldoFinal" : "107759.7553403741033511936891627292",
+    "capitalVigente" : "203348.7832735525343263250944320979",
+    "saldoFinal" : "203348.7832735525343263250944320979",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7180,6 +7342,8 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
@@ -7188,12 +7352,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "107759.7553403741033511936891627292",
+    "saldoInicial" : "203348.7832735525343263250944320979",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "1311.915141414705924830751267007037",
+    "interesCorriente" : "2475.658439666840726084414191686059",
     "interesMora" : "0",
-    "capitalContractual" : "99094.3590405737963492547854888912",
+    "capitalContractual" : "97930.61574232166154800112256421214",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7204,9 +7368,9 @@
     "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "1311.915141414705924830751267007037",
+    "pagoInteresCorriente" : "2475.658439666840726084414191686059",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "99094.35904057379634925478548889118",
+    "pagoCapital" : "97930.61574232166154800112256421208",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7214,8 +7378,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "8665.39629980030700193890367383802",
-    "saldoFinal" : "8665.39629980030700193890367383802",
+    "capitalVigente" : "105418.1675312308727783239718678858",
+    "saldoFinal" : "105418.1675312308727783239718678858",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7267,20 +7431,22 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
     "pagoExtraordinario" : "0"
   }, {
     "periodo" : 83,
     "mes" : 20,
-    "estado" : "CANCELADO",
-    "evento" : "Pago final",
-    "etiqueta" : "Pago final",
-    "saldoInicial" : "8665.39629980030700193890367383802",
+    "estado" : "VIGENTE_AL_DIA",
+    "evento" : "Pago normal",
+    "etiqueta" : "Pago normal",
+    "saldoInicial" : "105418.1675312308727783239718678858",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.2741819885022740855367558982",
-    "interesCorriente" : "105.4963847696085783238610212494408",
+    "interesCorriente" : "1283.407611010021284782027920005983",
     "interesMora" : "0",
-    "capitalContractual" : "8665.3962998003070019389036738347",
+    "capitalContractual" : "99122.86657097848098930350883589222",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7288,12 +7454,101 @@
       "seguro" : "3406.384615384615384615384615384616",
       "total" : "63034.17230769230769230769230769231"
     },
-    "pagoRecibido" : "71805.06499226222327257045700277977",
+    "pagoRecibido" : "163440.4464896808099663932290635905",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "105.4963847696085783238610212494408",
+    "pagoInteresCorriente" : "1283.407611010021284782027920005983",
     "pagoServicios" : "63034.17230769230769230769230769231",
-    "pagoCapital" : "8665.39629980030700193890367383802",
+    "pagoCapital" : "99122.86657097848098930350883589218",
+    "abonoExtra" : "0",
+    "prepagoCapital" : "0",
+    "cxcCobranza" : "0",
+    "cxcMora" : "0",
+    "cxcInteresCorriente" : "0",
+    "cxcServicios" : "0",
+    "capitalVencido" : "0",
+    "capitalVigente" : "6295.30096025239178902046303199362",
+    "saldoFinal" : "6295.30096025239178902046303199362",
+    "cuotasVencidas" : 0,
+    "deudaAExtinguir" : "0",
+    "inventario" : "0",
+    "cxcFondoGarantias" : "0",
+    "cxpDeudor" : "0",
+    "pagoTerceros" : {
+      "fondoGarantias" : "0",
+      "asistencia" : "0",
+      "seguro" : "0",
+      "total" : "0"
+    },
+    "pagosServicios" : {
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
+      "seguro" : "3406.384615384615384615384615384616",
+      "total" : "63034.17230769230769230769230769231"
+    },
+    "cxcServiciosPorConcepto" : {
+      "fondoGarantias" : "0",
+      "asistencia" : "0",
+      "seguro" : "0",
+      "total" : "0"
+    },
+    "extinguido" : {
+      "cobranza" : "0",
+      "mora" : "0",
+      "interesCorriente" : "0",
+      "servicios" : {
+        "fondoGarantias" : "0",
+        "asistencia" : "0",
+        "seguro" : "0",
+        "total" : "0"
+      },
+      "capital" : "0",
+      "total" : "0"
+    },
+    "capitalVencidoInicial" : "0",
+    "pendientesPagadosExtra" : {
+      "cobranza" : "0",
+      "mora" : "0",
+      "interesCorriente" : "0",
+      "servicios" : {
+        "fondoGarantias" : "0",
+        "asistencia" : "0",
+        "seguro" : "0",
+        "total" : "0"
+      },
+      "capital" : "0",
+      "total" : "0"
+    },
+    "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
+    "pagoTotalCliente" : "163440.4464896808099663932290635905",
+    "pagoExtraordinario" : "0"
+  }, {
+    "periodo" : 84,
+    "mes" : 20,
+    "estado" : "CANCELADO",
+    "evento" : "Pago final",
+    "etiqueta" : "Pago final",
+    "saldoInicial" : "6295.30096025239178902046303199362",
+    "tasaPeriodica" : "0.0121744443208027",
+    "cuotaFinanciera" : "100406.2741819885022740855367558982",
+    "interesCorriente" : "76.64179102328851506304940941267143",
+    "interesMora" : "0",
+    "capitalContractual" : "6295.30096025239178902046303199348",
+    "cobranzaCausada" : "0",
+    "serviciosCausados" : {
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
+      "seguro" : "3406.384615384615384615384615384616",
+      "total" : "63034.17230769230769230769230769231"
+    },
+    "pagoRecibido" : "69406.1150589679879963912047490986",
+    "pagoCobranza" : "0",
+    "pagoMora" : "0",
+    "pagoInteresCorriente" : "76.64179102328851506304940941267143",
+    "pagoServicios" : "63034.17230769230769230769230769231",
+    "pagoCapital" : "6295.30096025239178902046303199362",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7309,10 +7564,10 @@
     "cxcFondoGarantias" : "0",
     "cxpDeudor" : "0",
     "pagoTerceros" : {
-      "fondoGarantias" : "48643.17230769230769230769230769231",
-      "asistencia" : "10984.61538461538461538461538461538",
-      "seguro" : "3406.384615384615384615384615384616",
-      "total" : "63034.17230769230769230769230769231"
+      "fondoGarantias" : "97286.34461538461538461538461538462",
+      "asistencia" : "21969.23076923076923076923076923076",
+      "seguro" : "6812.769230769230769230769230769232",
+      "total" : "126068.3446153846153846153846153846"
     },
     "pagosServicios" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7354,7 +7609,9 @@
       "total" : "0"
     },
     "interesPrepago" : "0",
-    "pagoTotalCliente" : "71805.06499226222327257045700277977",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
+    "pagoTotalCliente" : "69406.1150589679879963912047490986",
     "pagoExtraordinario" : "0"
   } ],
   "asientos" : [ {
@@ -8576,8 +8833,8 @@
       "credito" : "0",
       "explicacion" : "Causación de cobranza por días de atraso"
     }, {
-      "cuenta" : "INGRESOS_COBRANZA",
-      "nombreCuenta" : "Ingresos por cobranza",
+      "cuenta" : "INGRESOS_NO_OPERACIONALES_COBRANZA",
+      "nombreCuenta" : "Ingresos no operacionales por gastos de cobranza (PUC 42)",
       "debito" : "0",
       "credito" : "9000",
       "explicacion" : "Contrapartida de la cobranza causada"
@@ -8615,19 +8872,19 @@
     "lineas" : [ {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "1182645.196195253781595118773783516",
+      "debito" : "1123017.408502946089287426466091208",
       "credito" : "0",
       "explicacion" : "Abono extraordinario recibido"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "1182645.196195253781595118773783516",
+      "credito" : "1123017.408502946089287426466091208",
       "explicacion" : "Aplicación 100% a capital"
     }, {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "317354.8038047462184048812262164839",
+      "debito" : "376982.5914970539107125735339087916",
       "credito" : "0",
       "explicacion" : "Recaudo extraordinario aplicado a pendientes"
     }, {
@@ -8652,7 +8909,7 @@
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
       "nombreCuenta" : "CxP servicios a terceros",
       "debito" : "0",
-      "credito" : "10219.15384615384615384615384615385",
+      "credito" : "69846.94153846153846153846153846154",
       "explicacion" : "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"
     }, {
       "cuenta" : "CARTERA_VENCIDA",
@@ -8677,13 +8934,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "38591.88470512113410979269529466494",
+      "credito" : "39317.81988635377862728100298697264",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "61814.38947686736816429284146123329",
+      "credito" : "61088.45429563472364680453376892559",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8708,13 +8965,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "37839.32886221059999761849004769509",
+      "credito" : "38574.101900887673162921287852008",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "62566.94531977790227646704670820309",
+      "credito" : "61832.17228110082911116424890389019",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8739,13 +8996,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "37077.61107009225684457905501907392",
+      "credito" : "37821.32956221713104591154397782543",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "63328.66311189624542950648173682429",
+      "credito" : "62584.94461977137122817399277807279",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8770,13 +9027,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "36306.61978712560415710055475588359",
+      "credito" : "37059.39263862320398071779920779185",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "64099.65439486289811698498200001459",
+      "credito" : "63346.88154336529829336773754810629",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8786,7 +9043,7 @@
       "explicacion" : "Servicios recaudados por cuenta de terceros"
     } ],
     "totalDebitos" : "163440.4464896808099663932290635905",
-    "totalCreditos" : "163440.4464896808099663932290635905",
+    "totalCreditos" : "163440.4464896808099663932290635904",
     "cuadra" : true
   }, {
     "periodo" : 47,
@@ -8801,13 +9058,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "35526.2421137126497173587317979297",
+      "credito" : "36288.17955637701894941014333678797",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "64880.03206827585255672680495796849",
+      "credito" : "64118.09462561148332467539341911019",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8832,13 +9089,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "34736.36377576553171026512664267014",
+      "credito" : "35507.57738340155310516529593986821",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "65669.91040622297056382041011322809",
+      "credito" : "64898.69679858694916892024081602999",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8863,13 +9120,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "33936.8691079728683365478208747955",
+      "credito" : "34717.47181273449985390938044943456",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "66469.40507401563393753771588110269",
+      "credito" : "65688.80236925400242017615630646359",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8894,13 +9151,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "33127.64103686238453091285324553937",
+      "credito" : "33917.74714578980451984600040214723",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "67278.63314512611774317268351035879",
+      "credito" : "66488.52703619869775423953635375099",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8925,13 +9182,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "32308.56106365733557224524061528508",
+      "credito" : "33108.28627541541850892854542817854",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "68097.71311833116670184029614061309",
+      "credito" : "67297.98790657308376515699132771969",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8956,13 +9213,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "31479.5092469242171775929634608773",
+      "credito" : "32288.9706687447910437263394668622",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "68926.76493506428509649257329502089",
+      "credito" : "68117.30351324371123035919728903599",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -8987,13 +9244,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "30640.3641850092211088517326983566",
+      "credito" : "31459.68034983958733923209199886233",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "69765.90999697928116523380405754159",
+      "credito" : "68946.59383214891493485344475703589",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9018,13 +9275,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "29791.00299826086438615739376208493",
+      "credito" : "30620.29388212109151754023637428939",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "70615.27118372763788792814299381329",
+      "credito" : "69785.98029986741075654530038160879",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9049,13 +9306,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "28931.30131103618889046651201011312",
+      "credito" : "29770.68835058772161551540296862154",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "71474.97287095231338361902474578509",
+      "credito" : "70635.58583140078065857013378727669",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9080,13 +9337,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "28061.13323348789644507893797129982",
+      "credito" : "28910.73934381605271903624253737875",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "72345.14094850060582900659878459839",
+      "credito" : "71495.53483817244955504929421851949",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9111,13 +9368,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "27180.37134312975238728806825718521",
+      "credito" : "28040.32093574271255555568510480225",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "73225.90283885874988679746849871299",
+      "credito" : "72365.95324624578971852985165109589",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9127,7 +9384,7 @@
       "explicacion" : "Servicios recaudados por cuenta de terceros"
     } ],
     "totalDebitos" : "163440.4464896808099663932290635905",
-    "totalCreditos" : "163440.4464896808099663932290635905",
+    "totalCreditos" : "163440.4464896808099663932290635904",
     "cuadra" : true
   }, {
     "periodo" : 58,
@@ -9142,13 +9399,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "26288.88666617755817223769425529654",
+      "credito" : "27159.30566722448178892225345821106",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "74117.38751581094410184784250060169",
+      "credito" : "73246.96851476402048516328329768709",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9173,13 +9430,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "25386.54865866296068666417384283028",
+      "credito" : "26267.56452737389878195949260035154",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "75019.72552332554158742136291306789",
+      "credito" : "74138.70965461460349212604415554669",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9204,13 +9461,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "24473.2251873173326856966946354344",
+      "credito" : "25364.96693466763571844596737513484",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "75933.04899467116958838884212046379",
+      "credito" : "75041.30724732086655563956938076339",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9235,13 +9492,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "23548.78251022292509640555481070094",
+      "credito" : "24451.38071782487970206275879613576",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "76857.49167176557717767998194519729",
+      "credito" : "75954.89346416362257202277795976239",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9266,13 +9523,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "22613.08525722845785239830089493001",
+      "credito" : "23526.67209645291877070648815625435",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "77793.18892476004442168723586096819",
+      "credito" : "76879.60208553558350337904859964389",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9297,13 +9554,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "21665.99641012628142947583815382866",
+      "credito" : "22590.70566145709867537182998434525",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "78740.27777186222084460969860206949",
+      "credito" : "77815.56852053140359871370677155289",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9313,7 +9570,7 @@
       "explicacion" : "Servicios recaudados por cuenta de terceros"
     } ],
     "totalDebitos" : "163440.4464896808099663932290635905",
-    "totalCreditos" : "163440.4464896808099663932290635905",
+    "totalCreditos" : "163440.4464896808099663932290635904",
     "cuadra" : true
   }, {
     "periodo" : 64,
@@ -9328,13 +9585,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "20707.37728258820633812412020139382",
+      "credito" : "21643.34435521228176859641177996548",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "79698.89689940029593596141655450439",
+      "credito" : "78762.92982677622050548912497593269",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9359,13 +9616,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "19737.08749985706248931908703233489",
+      "credito" : "20684.44945149290442318033890138071",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "80669.18668213143978476644972356329",
+      "credito" : "79721.82473049559785090519785451749",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9390,13 +9647,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "18754.98497819101458058826819925606",
+      "credito" : "19713.88053515869405242821309210738",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "81651.28920379748769349726855664209",
+      "credito" : "80692.39364682980822165732366379079",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9421,13 +9678,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "17760.92590405762344426401223376956",
+      "credito" : "18731.49548159307102333705749998282",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "82645.34827793087882982152452212859",
+      "credito" : "81674.77870039543125074847925591539",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9452,13 +9709,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "16754.76471307460665407898821150069",
+      "credito" : "17737.15043589122453872962476829203",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "83651.50946891389562000654854439749",
+      "credito" : "82669.12374609727773535591198760619",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9483,13 +9740,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "15736.35406869421459432822942419738",
+      "credito" : "16730.69979179481490800596623757793",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "84669.92011329428767975730733170079",
+      "credito" : "83675.57439019368736607957051832029",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9514,13 +9771,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "14705.54484062810065232202077025391",
+      "credito" : "15711.99617037021752358913457676438",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "85700.7293413604016217635159856443",
+      "credito" : "84694.27801161828475049640217913379",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9545,13 +9802,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "13662.18608300952619428271315029747",
+      "credito" : "14680.89039842718630584038503890496",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "86744.0880989789760798028236056007",
+      "credito" : "85725.3837835613159682451517169932",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9576,13 +9833,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "12606.12501228970252163149137363304",
+      "credito" : "13637.23148667477636771599288288877",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "87800.1491696987997524540453822652",
+      "credito" : "86769.0426953137259063695438730094",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9607,13 +9864,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "11537.20698486503307313589258820661",
+      "credito" : "12580.86660761132717616562700987798",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "88869.0671971234692009496441676916",
+      "credito" : "87825.4075743771750979199097460202",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9638,13 +9895,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "10455.27547443197973294456524543563",
+      "credito" : "11511.64107314526854459715796240453",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "89950.9987075565225411409715104626",
+      "credito" : "88894.6331088432337294883787934937",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9669,13 +9926,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "9360.172049066237219352063957867022",
+      "credito" : "10429.39831194347237395228728898141",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "91046.1021329222650547334727980312",
+      "credito" : "89976.8758700450299001332494669168",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9700,13 +9957,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "8251.736348022859158372832838687722",
+      "credito" : "9333.979846503833163279494737264926",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "92154.5378339656431157127039172105",
+      "credito" : "91072.2943354846691108060420186333",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9731,13 +9988,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "7129.806058253938583948272986002014",
+      "credito" : "8225.225269948719928313269124494251",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "93276.4681237345636901372637698962",
+      "credito" : "92181.0489120397823457722676314039",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9762,13 +10019,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "5994.216890640404246880281400804187",
+      "credito" : "7102.972222535901292558051331526634",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "94412.057291348098027205255355094",
+      "credito" : "93303.3019594526009815274854243716",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9793,13 +10050,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "4844.802555934452251322404055985775",
+      "credito" : "5967.056367883504143746415008870138",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "95561.4716260540500227631326999124",
+      "credito" : "94439.2178141049981303391217470281",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9824,13 +10081,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "3681.394740409090164735545978428648",
+      "credito" : "4817.31136890552437323551518644402",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "96724.87944157941210934999077746958",
+      "credito" : "95588.9628130829779008500215694542",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9855,13 +10112,13 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "2503.823081211227858424174970215656",
+      "credito" : "3653.568863454365830791764411814889",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "97902.45110077727441566136178568248",
+      "credito" : "96752.70531853413644329377234408328",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9871,7 +10128,7 @@
       "explicacion" : "Servicios recaudados por cuenta de terceros"
     } ],
     "totalDebitos" : "163440.4464896808099663932290635905",
-    "totalCreditos" : "163440.4464896808099663932290635904",
+    "totalCreditos" : "163440.4464896808099663932290635905",
     "cuadra" : true
   }, {
     "periodo" : 82,
@@ -9886,13 +10143,44 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "1311.915141414705924830751267007037",
+      "credito" : "2475.658439666840726084414191686059",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "99094.35904057379634925478548889118",
+      "credito" : "97930.61574232166154800112256421208",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "CXP_SERVICIOS_TERCEROS",
+      "nombreCuenta" : "CxP servicios a terceros",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    } ],
+    "totalDebitos" : "163440.4464896808099663932290635905",
+    "totalCreditos" : "163440.4464896808099663932290635904",
+    "cuadra" : true
+  }, {
+    "periodo" : 83,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "163440.4464896808099663932290635905",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "1283.407611010021284782027920005983",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "99122.86657097848098930350883589218",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9905,25 +10193,25 @@
     "totalCreditos" : "163440.4464896808099663932290635905",
     "cuadra" : true
   }, {
-    "periodo" : 83,
+    "periodo" : 84,
     "evento" : "Pago final",
     "lineas" : [ {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "71805.06499226222327257045700277977",
+      "debito" : "69406.1150589679879963912047490986",
       "credito" : "0",
       "explicacion" : "Recaudo de la cuota total"
     }, {
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "105.4963847696085783238610212494408",
+      "credito" : "76.64179102328851506304940941267143",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "8665.39629980030700193890367383802",
+      "credito" : "6295.30096025239178902046303199362",
       "explicacion" : "Amortización de capital"
     }, {
       "cuenta" : "CXP_SERVICIOS_TERCEROS",
@@ -9932,8 +10220,8 @@
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
     } ],
-    "totalDebitos" : "71805.06499226222327257045700277977",
-    "totalCreditos" : "71805.06499226222327257045700277977",
+    "totalDebitos" : "69406.1150589679879963912047490986",
+    "totalCreditos" : "69406.1150589679879963912047490986",
     "cuadra" : true
   } ]
 }

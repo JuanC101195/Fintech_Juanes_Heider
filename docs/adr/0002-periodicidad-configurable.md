@@ -1,6 +1,6 @@
 # ADR 0002 · Periodicidad configurable del crédito
 
-**Estado:** aceptada y en curso · 2026-10-20. Diego respondió las preguntas PPER (ronda 3), y los pasos 0 a 6 del plan y el `CalendarioPagos` del paso 7 están hechos en la rama `feat/periodicidad`. Ver "Avance" al final.
+**Estado:** aceptada y en curso · 2026-10-20 (actualizado con la ronda 4 de Diego el 2026-10-21; ver "Ronda 4" al final). Diego respondió las preguntas PPER (ronda 3), y los pasos 0 a 6 del plan y el `CalendarioPagos` del paso 7 están hechos en la rama `feat/periodicidad`. Ver "Avance" al final.
 
 ## Contexto
 
@@ -180,3 +180,15 @@ Respuestas de Diego (ronda 3, PPER): hay periodicidad semanal, quincenal y mensu
 | 6 | Hecho, falta la revisión de Diego | `PeriodicidadInvariantesTest` verifica que el saldo final dé 0, que el capital pagado sume el monto, que el interés sea saldo × tasa del periodo y que la cuota coincida con PAGO() de Excel en forma cerrada. Los planes quincenal y mensual están en `docs/reglas/planes-ejemplo-periodicidad.md`. |
 | 7 | Hecho en parte | `nucleo/CalendarioPagos` calcula los vencimientos (semanal los martes; quincenal el 5 y el 20; mensual el 1 o el 5 con `DiaPagoMensual` obligatorio y sin valor por defecto), los días de atraso (CAL-1) y los días reales de cada periodo (PPER-5). Prueba: `CalendarioPagosTest`. **Pendiente:** usarlo en el módulo `abonos`, que aún no existe. |
 | 8 | Pendiente | La mora por días reales (`DiasMora.DIAS_CALENDARIO`, PPER-5 ya respondida) y el prepago a mitad de periodo (PPER-7: ya existe `interesPrepagoPorDias` con días digitados). |
+
+## Ronda 4 (2026-10-21)
+
+Respuestas de Diego del 2026-10-21 que tocan este ADR:
+
+- **R4-QUIN.** La quincena son **24** periodos al año: confirmado. Se quitó el "por confirmar" de `Periodicidad` y del API (`ServicioCartera.POR_CONFIRMAR` queda vacío; los campos `porConfirmar` del catálogo y de la simulación se conservan en `false` y en lista vacía para no romper a quien ya los lee). Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-QUIN.
+- **R4-MENSUAL-DIA.** La mensual vence el **día 5 de cada mes, fijo para todos**. `CalendarioPagos.mensual(desembolso, primerVencimiento)` exige un 5 (`DIA_PAGO_MENSUAL`); el enum `DiaPagoMensual` y la opción del día 1 se retiraron. Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-MENSUAL-DIA.
+  - **Prorrateo de la primera cuota: no implementado (ronda 5).** Diego comentó que la primera cuota se prorratea según lo corrido entre el desembolso y el próximo 5. Falta saber cómo (P5-PRORRATEO): ¿solo el interés por los días reales, con capital y servicios completos?, ¿todo proporcional?, ¿pasa también en quincenal (5 y 20) y en semanal (primer martes)? Cuando se responda, encaja como un ajuste de la causación del periodo 1 con `CalendarioPagos.diasDelPeriodo(1)`, detrás de una clave de `ReglasNegocio` para no cambiar la réplica semanal.
+- **R4-PLAZO-LINEA.** Tope de **24 meses para todas las líneas** en la primera versión, **parametrizable**. El tope ya no es la constante `ParametrosProducto.PLAZO_MAXIMO_MESES` (se eliminó): es el `plazoMaximoMeses` de cada `LineaCredito` (24 en todas, `LineaCredito.PLAZO_MAXIMO_MESES_PRIMERA_VERSION`; ORDINARIO pasó de 36 a 24) y `ParametrosProducto.de(linea, periodicidad, cuotas, plazoMaximoMeses)` acepta otro tope. Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-PLAZO-LINEA.
+- **R4-PLAZO-LIMITE.** El plazo límite de recuperación es de **24 meses** convertidos a periodos (104 / 48 / 24). Clave `plazoLimiteMeses` en `ReglasNegocio` (24 en `config/`). No cambia el defecto de `ParametrosProducto` (120 semanas convertidas) ni los casos 8 y 9 (100 y 120 semanas del Excel): lo aplica el API a los créditos nuevos y las simulaciones con el perfil `NEGOCIO`. El porqué está en `docs/reglas/caso-8.md`. Queda P5-LIMITE-DESDE (¿desde el desembolso o desde el primer atraso?). Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-PLAZO-LIMITE.
+
+Con esto el paso 3 deja de ser provisional en el valor (24 meses) para los créditos nuevos, y del paso 7 solo queda pendiente el prorrateo de la primera cuota y usar el calendario en el módulo `abonos`.

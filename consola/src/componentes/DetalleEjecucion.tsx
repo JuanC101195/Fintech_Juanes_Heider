@@ -85,6 +85,13 @@ export function LineaTiempo({ instrucciones }: Readonly<{ instrucciones: Instruc
 
 // ---------- tabla de movimientos ----------
 
+/** Nombres legibles de las cuentas, por si el API no trae `nombreCuenta`. */
+const NOMBRES_CUENTA: Record<string, string> = {
+  INGRESOS_NO_OPERACIONALES_COBRANZA: 'Ingresos no operacionales por gastos de cobranza',
+  CXP_COSTOS_RECUPERACION: 'Por pagar: costos de recuperación (grúa, bodegaje, avalúo, trámites)',
+  GASTO_COSTOS_RECUPERACION: 'Gasto por costos de recuperación asumidos',
+}
+
 function pendientesPagados(m: Movimiento): string {
   return m.pendientesPagadosExtra?.total ?? '0'
 }
@@ -99,7 +106,7 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
         <thead>
           <tr className="grupos">
             <th scope="col" rowSpan={2}>Periodo</th>
-            <th scope="colgroup" colSpan={4}>Pago</th>
+            <th scope="colgroup" colSpan={5}>Pago</th>
             <th scope="colgroup" colSpan={5}>Cómo se repartió el pago (prelación)</th>
             <th scope="colgroup" colSpan={7}>Saldos al cierre</th>
             <th scope="colgroup" colSpan={2} className="izq">Estado</th>
@@ -108,6 +115,7 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
             <th scope="col">Pago recibido</th>
             <th scope="col">Abono extra</th>
             <th scope="col">Prepago</th>
+            <th scope="col" title="Costo real de la recuperación (grúa, bodegaje, avalúo, trámites), con soporte">Costo de recuperación</th>
             <th scope="col">Pendientes pagados</th>
             <th scope="col">Cobranza</th>
             <th scope="col">Mora</th>
@@ -136,6 +144,7 @@ export function TablaMovimientos({ movimientos, instrucciones }: Readonly<{ movi
                 <td>{c(m.pagoRecibido)}</td>
                 <td>{c(m.abonoExtra)}</td>
                 <td>{c(m.prepagoCapital)}</td>
+                <td title={`Lo asume la financiera: ${c(m.costoRecuperacionAsumido ?? '0')}`}>{c(m.costoRecuperacion ?? '0')}</td>
                 <td>{c(pendientesPagados(m))}</td>
                 <td>{c(m.pagoCobranza)}</td>
                 <td>{c(m.pagoMora)}</td>
@@ -208,7 +217,7 @@ export function ListaAsientos({ asientos }: Readonly<{ asientos: Asiento[] }>) {
                   <tbody>
                     {a.lineas.map((l, k) => (
                       <tr key={`${l.cuenta}-${k}`}>
-                        <th scope="row" title={l.cuenta}>{l.nombreCuenta || l.cuenta.replaceAll('_', ' ')}</th>
+                        <th scope="row" title={l.cuenta}>{l.nombreCuenta || NOMBRES_CUENTA[l.cuenta] || l.cuenta.replaceAll('_', ' ')}</th>
                         <td className="izq min-w-48 !whitespace-normal text-on-surface-variant">{l.explicacion}</td>
                         <td>{c0(l.debito)}</td>
                         <td>{c0(l.credito)}</td>

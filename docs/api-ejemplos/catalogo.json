@@ -21,7 +21,7 @@
     "codigo" : "ORDINARIO",
     "nombre" : "Consumo y ordinario",
     "tasaEA" : "0.2859",
-    "plazoMaximoMeses" : 36,
+    "plazoMaximoMeses" : 24,
     "periodicidades" : [ "SEMANAL", "QUINCENAL", "MENSUAL" ]
   } ],
   "periodicidades" : [ {
@@ -36,7 +36,7 @@
     "codigo" : "QUINCENAL",
     "periodosPorAnio" : 24,
     "adjetivo" : "quincenal",
-    "porConfirmar" : true,
+    "porConfirmar" : false,
     "diasNominales" : 15,
     "unidadCuota" : "cuotas quincenales",
     "cuotasMaximas" : 48

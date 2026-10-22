@@ -98,8 +98,29 @@ public sealed interface Instruccion {
     record PagoAlDia() implements Instruccion {
     }
 
-    /** Recibe la moto y extingue la deuda (caso 3: dación con faltante; caso 4: retoma con excedente). */
-    record CierrePorRecuperacion(TipoRecuperacion tipo, BigDecimal valorMoto) implements Instruccion {
+    /**
+     * Recibe la moto y extingue la deuda (caso 3: dación con faltante; caso 4: retoma con excedente).
+     *
+     * <p>{@code costoRecuperacion} es el costo real de la recuperación con soporte (grúa, bodegaje, avalúo,
+     * trámites), 0 por defecto (el Excel no lo tiene). Diego (R4-R2, ronda 4, 2026-10-21) pide descontarlo en
+     * la dación y en la retoma: en la retoma reduce el excedente que se devuelve; en la dación lo decide
+     * {@code ReglasNegocio.costoRecuperacionAlFondo} (provisional, P5-COSTO-DACION).
+     */
+    record CierrePorRecuperacion(TipoRecuperacion tipo, BigDecimal valorMoto, BigDecimal costoRecuperacion)
+            implements Instruccion {
+
+        public CierrePorRecuperacion {
+            java.util.Objects.requireNonNull(valorMoto, "valorMoto");
+            costoRecuperacion = costoRecuperacion == null ? BigDecimal.ZERO : costoRecuperacion;
+            if (costoRecuperacion.signum() < 0) {
+                throw new IllegalArgumentException("El costo de la recuperación no puede ser negativo: " + costoRecuperacion);
+            }
+        }
+
+        /** Sin costo de recuperación, como el Excel. */
+        public CierrePorRecuperacion(TipoRecuperacion tipo, BigDecimal valorMoto) {
+            this(tipo, valorMoto, BigDecimal.ZERO);
+        }
     }
 
     enum ModalidadAbono {

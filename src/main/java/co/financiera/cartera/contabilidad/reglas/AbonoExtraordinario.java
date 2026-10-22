@@ -29,7 +29,8 @@ import java.util.Optional;
  *       pendiente de semanas anteriores ({@link Movimiento#pendientesPagadosExtra()}): débito Caja
  *       contra cada CxC por prelación (cobranza, mora, interés corriente), CxP servicios a terceros por
  *       los servicios recaudados (como el recaudo con vencidos) y Cartera capital vencida por el capital
- *       vencido recuperado.</li>
+ *       vencido recuperado. Con {@code PRELACION_COMPLETA} (R4-CASO13, ronda 4) el fondo y la asistencia del
+ *       periodo corriente que paga el excedente van a la misma CxP servicios a terceros.</li>
  *   <li>A6 · el interés corriente de los días del prepago ({@link Movimiento#interesPrepago()}): débito
  *       Caja / crédito Ingresos por intereses.</li>
  * </ul>

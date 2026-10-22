@@ -27,7 +27,9 @@ import org.junit.jupiter.api.Test;
  * el equipo y Diego valida los valores (docs/reglas/caso-13.md). Réplica del Excel; la semana 40 no paga,
  * la 41 paga 5.000 con 3 días de atraso y la 42 no paga la cuota pero trae un abono extra de 1.500.000.
  * Con {@code aplicacionAbono = PRIMERO_PENDIENTES} (A4/D21) el abono paga primero los pendientes por
- * prelación y el excedente va al capital vencido y después al vigente (ABN-2).
+ * prelación y el excedente va al capital vencido y después al vigente (ABN-2). Esas son las cifras de la
+ * ronda 3 ("antes"). Desde la ronda 4 (R4-CASO13) el perfil de negocio usa {@code PRELACION_COMPLETA}: el
+ * excedente vuelve a pasar por la prelación sobre lo causado de la semana 42 ({@link RondaCuatro}).
  */
 class Caso13AbonoConPendientesTest {
 
@@ -37,6 +39,8 @@ class Caso13AbonoConPendientesTest {
     static final int ABONO = 42;
     static final BigDecimal VALOR_ABONO = bd(1_500_000);
     static final ReglasNegocio DIEGO = ReglasNegocio.EXCEL.conAplicacionAbono(AplicacionAbono.PRIMERO_PENDIENTES);
+    /** R4-CASO13 (Diego, ronda 4, 2026-10-21): el excedente vuelve a pasar por la prelación. */
+    static final ReglasNegocio RONDA4 = ReglasNegocio.EXCEL.conAplicacionAbono(AplicacionAbono.PRELACION_COMPLETA);
 
     private final MotorCartera motor = new MotorCartera();
 
@@ -153,5 +157,105 @@ class Caso13AbonoConPendientesTest {
         assertThat(semana.pendientesPagadosExtra().total()).isZero();
         assertThat(semana.cxcInteresCorriente()).isEqualByComparingTo(antes.cxcInteresCorriente());
         assertThat(semana.estado()).isEqualTo(EstadoCredito.EN_MORA);
+    }
+
+    /**
+     * R4-CASO13. Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-CASO13. "Sí se aplica todo lo
+     * vencido de acuerdo al ejemplo, pero del 1.182.645,20 sobrante se vuelve a respetar la prelación de
+     * aplicación de pagos de las 7 líneas": después de lo vencido, el excedente pasa otra vez por cobranza →
+     * mora → interés corriente → fondo → asistencia → seguro → capital sobre lo causado de la semana 42, y
+     * solo el resto va a capital. Como la semana 42 no se pagó al día solo había causado el seguro (D17); con
+     * el abono su cuota queda pagada en la semana, así que el excedente cubre su fondo y su asistencia.
+     */
+    @Nested
+    class RondaCuatro {
+
+        private Escenario caso13Ronda4(BigDecimal abono, ModalidadAbono modalidad) {
+            return EscenariosExcel.caso13(ParametrosProducto.replicaExcel(), abono, modalidad).conReglas(RONDA4);
+        }
+
+        @Test
+        void elExcedentePagaElFondoYLaAsistenciaDeLaSemana42YSoloElRestoVaACapital() {
+            Movimiento antes = motor.ejecutar(caso13(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO)).get(ABONO);
+            Movimiento semana = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO)).get(ABONO);
+            DeudaExtinguida pagado = semana.pendientesPagadosExtra();
+
+            // Lo vencido se paga igual que en la ronda 3.
+            assertThat(pagado.cobranza()).isCloseTo(bd(4_000), within(UN_PESO));
+            assertThat(pagado.mora()).isCloseTo(bd("1916.83"), within(UN_PESO));
+            assertThat(pagado.interesCorriente()).isCloseTo(bd("162364.39"), within(UN_PESO));
+            assertThat(pagado.capital()).isCloseTo(bd("138854.44"), within(UN_PESO));
+            // Segunda pasada: fondo y asistencia de la cuota 42; el seguro ya estaba causado y pagado.
+            assertThat(pagado.servicios().fondoGarantias()).isCloseTo(bd("48643.17"), within(UN_PESO));
+            assertThat(pagado.servicios().asistencia()).isCloseTo(bd("10984.62"), within(UN_PESO));
+            assertThat(pagado.servicios().seguro()).isCloseTo(bd("10219.15"), within(UN_PESO));
+            assertThat(pagado.total()).isCloseTo(bd("376982.59"), within(UN_PESO));
+            assertThat(semana.serviciosCausados().total()).isCloseTo(bd("63034.17"), within(UN_PESO));
+
+            assertThat(semana.abonoExtra()).isCloseTo(bd("1123017.41"), within(UN_PESO));
+            assertThat(Calc.restar(antes.abonoExtra(), semana.abonoExtra())).isCloseTo(bd("59627.79"), within(UN_PESO));
+            assertThat(semana.saldoFinal()).isCloseTo(bd("3229537.12"), within(UN_PESO));
+            assertThat(semana.pagoTotalCliente()).isCloseTo(VALOR_ABONO, within(Calc.EPSILON_SALDO));
+            assertThat(semana.cxcServicios()).isZero();
+            assertThat(semana.cuotasVencidas()).isZero();
+            assertThat(semana.estado()).isEqualTo(EstadoCredito.VIGENTE_AL_DIA);
+        }
+
+        @Test
+        void aMenorPlazoTerminaEnLa84YAMenorCuotaLaCuotaBajaA74500() {
+            List<Movimiento> plazo = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO));
+            assertThat(plazo.get(ABONO + 1).cuotaFinanciera()).isCloseTo(bd("100406.27"), within(UN_PESO));
+            assertThat(plazo.get(ABONO + 1).interesCorriente()).isCloseTo(bd("39317.82"), within(UN_PESO));
+            assertThat(plazo.getLast().periodo()).isEqualTo(84);
+            assertThat(plazo.getLast().evento()).isEqualTo("Pago final");
+            assertThat(plazo.getLast().pagoRecibido()).isCloseTo(bd("69406.12"), within(UN_PESO));
+            assertThat(plazo.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
+
+            List<Movimiento> cuota = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_CUOTA));
+            assertThat(cuota.get(ABONO + 1).cuotaFinanciera()).isCloseTo(bd("74500.11"), within(UN_PESO));
+            assertThat(cuota.getLast().periodo()).isEqualTo(104);
+            assertThat(cuota.getLast().saldoFinal()).isCloseTo(BigDecimal.ZERO, within(UN_PESO));
+        }
+
+        /** A4 se mantiene: no se cobra nada de periodos futuros; la semana 43 causa y cobra lo de siempre. */
+        @Test
+        void nuncaSeCobranConceptosDePeriodosFuturos() {
+            List<Movimiento> m = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO));
+            Movimiento semana43 = m.get(ABONO + 1);
+            assertThat(semana43.serviciosCausados().total()).isCloseTo(bd("63034.17"), within(UN_PESO));
+            assertThat(semana43.pagoServicios()).isCloseTo(bd("63034.17"), within(UN_PESO));
+            assertThat(semana43.pagoInteresCorriente()).isEqualByComparingTo(semana43.interesCorriente());
+            // Lo recaudado de la semana 42 se gira a terceros al cerrar el mes, con la 43.
+            assertThat(semana43.pagoTerceros().fondoGarantias()).isCloseTo(bd("97286.34"), within(UN_PESO));
+        }
+
+        /** Si la cuota de la semana ya se pagó al día, no hay nada más que cobrar: igual que PRIMERO_PENDIENTES. */
+        @Test
+        void conLaCuotaPagadaAlDiaEsIgualQuePrimeroPendientes() {
+            Escenario caso6 = EscenariosExcel.caso6(ParametrosProducto.replicaExcel());
+            assertThat(motor.ejecutar(caso6.conReglas(RONDA4))).isEqualTo(motor.ejecutar(caso6.conReglas(DIEGO)));
+        }
+
+        /** Un excedente que no alcanza la cuota corriente paga en orden fondo → asistencia y no deja CxC. */
+        @Test
+        void unExcedenteCortoPagaPrimeroElFondoYNoDejaPendientes() {
+            Movimiento antes = sinAbono();
+            BigDecimal vencido = Calc.sumar(antes.cxcCobranza(), antes.cxcMora(), antes.cxcInteresCorriente(),
+                    antes.cxcServicios(), antes.capitalVencido());
+            Movimiento semana = motor.ejecutar(caso13Ronda4(Calc.sumar(vencido, bd(30_000)), ModalidadAbono.MENOR_PLAZO))
+                    .get(ABONO);
+            assertThat(semana.pendientesPagadosExtra().servicios().fondoGarantias()).isCloseTo(bd(30_000), within(UN_PESO));
+            assertThat(semana.pendientesPagadosExtra().servicios().asistencia()).isZero();
+            assertThat(semana.abonoExtra()).isZero();
+            assertThat(semana.cxcServicios()).isZero();
+            assertThat(semana.estado()).isEqualTo(EstadoCredito.VIGENTE_AL_DIA);
+        }
+
+        @Test
+        void losAsientosCuadranYElAbonoAcreditaLosServiciosATerceros() {
+            List<Movimiento> m = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO));
+            Contabilizador.estandar().contabilizar(m);
+            Contabilizador.estandar().contabilizar(motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_CUOTA)));
+        }
     }
 }

@@ -15,8 +15,9 @@ import java.util.Objects;
  *   <li><b>Semanal</b>: todos los martes, sin festivos (CAL-2, CAL-3). La primera fecha la fija la
  *       oferta y debe ser martes.</li>
  *   <li><b>Quincenal</b>: el 5 y el 20 de cada mes (Diego, PPER-1).</li>
- *   <li><b>Mensual</b>: el día 1 o el 5 de cada mes. Diego no ha decidido (PPER-1, ronda 4): es una
- *       opción obligatoria del calendario, sin valor por defecto de negocio.</li>
+ *   <li><b>Mensual</b>: el día 5 de cada mes, fijo para todos (Diego, R4-MENSUAL-DIA, ronda 4,
+ *       2026-10-21). La opción del día 1 se retiró. La primera cuota se prorratea según los días entre el
+ *       desembolso y el primer 5; cómo, es pregunta de la ronda 5 (P5-PRORRATEO) y no está implementado.</li>
  * </ul>
  *
  * <p>Una cuota es a tiempo hasta el fin del día de vencimiento; el atraso empieza el día siguiente
@@ -26,21 +27,8 @@ import java.util.Objects;
  */
 public final class CalendarioPagos {
 
-    /** Día de pago de los créditos mensuales. Sin valor por defecto: lo decide negocio (PPER-1). */
-    public enum DiaPagoMensual {
-        DIA_1(1),
-        DIA_5(5);
-
-        private final int dia;
-
-        DiaPagoMensual(int dia) {
-            this.dia = dia;
-        }
-
-        public int dia() {
-            return dia;
-        }
-    }
+    /** Día de pago de los créditos mensuales: el 5, fijo para todos (Diego, R4-MENSUAL-DIA). */
+    public static final int DIA_PAGO_MENSUAL = 5;
 
     /** Días de pago de la quincenal (PPER-1). */
     private static final int[] DIAS_QUINCENA = {5, 20};
@@ -74,12 +62,12 @@ public final class CalendarioPagos {
         return new CalendarioPagos(Periodicidad.QUINCENAL, desembolso, primerVencimiento);
     }
 
-    /** Mensual: el día de pago es obligatorio (sin defecto) y la primera fecha debe caer en ese día. */
-    public static CalendarioPagos mensual(LocalDate desembolso, DiaPagoMensual dia, LocalDate primerVencimiento) {
-        Objects.requireNonNull(dia, "El crédito mensual necesita el día de pago (1 o 5): negocio no ha fijado uno por defecto");
-        if (primerVencimiento.getDayOfMonth() != dia.dia()) {
-            throw new IllegalArgumentException("La cuota mensual vence el día " + dia.dia() + "; " + primerVencimiento
-                    + " no cae ese día");
+    /** Mensual: vence el día 5 de cada mes (R4-MENSUAL-DIA); la primera fecha debe ser un 5. */
+    public static CalendarioPagos mensual(LocalDate desembolso, LocalDate primerVencimiento) {
+        Objects.requireNonNull(primerVencimiento, "La primera fecha de pago es obligatoria");
+        if (primerVencimiento.getDayOfMonth() != DIA_PAGO_MENSUAL) {
+            throw new IllegalArgumentException("La cuota mensual vence el día " + DIA_PAGO_MENSUAL + "; "
+                    + primerVencimiento + " no cae ese día");
         }
         return new CalendarioPagos(Periodicidad.MENSUAL, desembolso, primerVencimiento);
     }

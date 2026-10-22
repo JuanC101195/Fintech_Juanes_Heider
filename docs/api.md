@@ -42,7 +42,7 @@ curl localhost:8080/api/v1/catalogo
 {
   "lineas": [{"codigo": "CPPU", "nombre": "Crédito popular productivo urbano", "tasaEA": "0.8762", "plazoMaximoMeses": 24,
               "periodicidades": ["SEMANAL", "QUINCENAL", "MENSUAL"]}],
-  "periodicidades": [{"codigo": "QUINCENAL", "periodosPorAnio": 24, "adjetivo": "quincenal", "porConfirmar": true,
+  "periodicidades": [{"codigo": "QUINCENAL", "periodosPorAnio": 24, "adjetivo": "quincenal", "porConfirmar": false,
                       "diasNominales": 15, "unidadCuota": "cuotas quincenales", "cuotasMaximas": 48}],
   "tiposInstruccion": ["PAGO_CONTRACTUAL", "PAGO_PARCIAL", "PAGO_VALOR", "SIN_PAGO", "ABONO_EXTRA", "PREPAGO_TOTAL",
                        "USURA_VIGENTE", "CAMBIO_TASA", "PAGO_AL_DIA", "CIERRE_POR_RECUPERACION"],
@@ -57,7 +57,7 @@ curl localhost:8080/api/v1/catalogo
 }
 ```
 
-`plazoMaximoMeses` es el de la línea (ORDINARIO dice 36), pero ningún crédito pasa de 24 meses (PPER-2): `cuotasMaximas` ya lo aplica. Respuesta completa: [`api-ejemplos/catalogo.json`](api-ejemplos/catalogo.json).
+`plazoMaximoMeses` es el de la línea: 24 meses en todas, incluida ORDINARIO, que antes decía 36 (R4-PLAZO-LINEA, ronda 4: el tope es un parámetro del catálogo de líneas y puede crecer). `cuotasMaximas` lo convierte a cuotas de cada periodicidad. `porConfirmar` es `false` en todas desde que Diego confirmó que la quincena son 24 periodos por año (R4-QUIN); el campo se conserva para no romper a quien lo lee. Respuesta completa: [`api-ejemplos/catalogo.json`](api-ejemplos/catalogo.json).
 
 ### GET /api/v1/reglas
 
@@ -69,14 +69,22 @@ curl localhost:8080/api/v1/reglas
 {
   "perfiles": {
     "EXCEL":   {"prelacion": "SERVICIOS_ANTES_DE_CAPITAL", "aplicacionAbono": "SOLO_CAPITAL", "modalidadUsura": "MISMA_FECHA_FINAL", "topeCobranzaPorPago": null, "...": "..."},
-    "NEGOCIO": {"prelacion": "SERVICIOS_ANTES_DE_CAPITAL", "aplicacionAbono": "PRIMERO_PENDIENTES", "modalidadUsura": "MISMA_CUOTA", "margenUsura": "1", "...": "..."}
+    "NEGOCIO": {"prelacion": "SERVICIOS_ANTES_DE_CAPITAL", "aplicacionAbono": "PRELACION_COMPLETA", "modalidadUsura": "MISMA_CUOTA", "margenUsura": "1",
+                "costoRecuperacionAlFondo": "true", "cobranzaIngresoNoOperacional": "true", "plazoLimiteMeses": "24", "...": "..."}
   },
   "claves": [{"clave": "prelacion", "descripcion": "Orden de aplicación de un pago", "fuente": "P1 / D16"}],
   "archivoNegocio": "config/reglas-negocio.properties"
 }
 ```
 
-Las claves son las 11 de `ReglasNegocio.CLAVES`, en el orden del record. `topeCobranzaPorPago` es `null` cuando no hay tope.
+Las claves son las 14 de `ReglasNegocio.CLAVES`, en el orden del record. `topeCobranzaPorPago` es `null` cuando no hay tope y `plazoLimiteMeses` es `null` en EXCEL (queda el del producto). Lo que agrega la ronda 4 (2026-10-21):
+
+| Clave | Qué hace | NEGOCIO | EXCEL |
+|---|---|---|---|
+| `aplicacionAbono` = `PRELACION_COMPLETA` | R4-CASO13: después de lo vencido, el sobrante del abono vuelve a pasar por la prelación sobre lo causado del periodo corriente (ver `reglas/caso-13.md`) | `PRELACION_COMPLETA` | `SOLO_CAPITAL` |
+| `costoRecuperacionAlFondo` | R4-R2 (provisional, P5-COSTO-DACION): en la dación el costo de la recuperación se suma al faltante que cubre el fondo | `true` | `true` (sin efecto: el Excel no tiene costo) |
+| `cobranzaIngresoNoOperacional` | R4-COBRANZA-CONTABLE: la cobranza causada se acredita a `INGRESOS_NO_OPERACIONALES_COBRANZA` (PUC clase 42) | `true` | `false` (`INGRESOS_COBRANZA`, como el Excel) |
+| `plazoLimiteMeses` | R4-PLAZO-LIMITE: plazo límite de los créditos nuevos y las simulaciones, en meses convertidos a periodos | `24` | `null` |
 
 ### POST /api/v1/simulaciones
 
@@ -87,7 +95,7 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
   -d '{"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"meses":null,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO"}'
 ```
 
-Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs) y `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente).
+Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs) y `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente). Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
 
 ```json
 {"resumen": {"linea": "CPPU", "perfilReglas": "NEGOCIO", "montoFinanciado": "5904400", "tasaEA": "0.8762",
@@ -95,7 +103,7 @@ Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas =
              "cuotaFinanciera": "219092.9355960436057213056188035084", "serviciosPorCuota": "136574.04",
              "cuotaTotal": "355666.9755960436057213056188035084", "totalPagado": "17072014.82861009307462266970256842",
              "totalIntereses": "4612060.908610093074622669702568407", "totalServicios": "6555553.92",
-             "periodicidad": "QUINCENAL", "porConfirmar": ["QUINCENAL: 24 periodos/año por confirmar con Diego"]},
+             "periodicidad": "QUINCENAL", "porConfirmar": []},
  "plan": [{"periodo": 1, "mes": 1, "saldoInicial": "5904400", "interes": "156852.86003897259232",
            "capital": "62240.0755570710134013056188035084", "cuotaFinanciera": "219092.9355960436057213056188035084",
            "fondoGarantias": "105393.54", "asistencia": "23800", "seguro": "7380.5",
@@ -139,7 +147,7 @@ Campos de cada instrucción (los de su record en `Instruccion`):
 | `USURA_VIGENTE` | `usuraEA` | — |
 | `CAMBIO_TASA` | `nuevaTasaEA`, `modalidad` (MISMA_FECHA_FINAL / MISMA_CUOTA) | MISMA_FECHA_FINAL |
 | `PAGO_AL_DIA` | — | — |
-| `CIERRE_POR_RECUPERACION` | `tipoRecuperacion` (DACION_EN_PAGO / RETOMA), `valorMoto` | — |
+| `CIERRE_POR_RECUPERACION` | `tipoRecuperacion` (DACION_EN_PAGO / RETOMA), `valorMoto`, `costoRecuperacion` (opcional: costo real de la recuperación con soporte, R4-R2) | `costoRecuperacion` 0 |
 
 Response:
 
@@ -156,7 +164,8 @@ Response:
 ```
 
 - `movimientos` empieza en el periodo 0 (desembolso, estado `DESEMBOLSADO`) y trae todos los campos de `Movimiento`; los `Servicios` y `DeudaExtinguida` van como objetos con su `total`. `etiqueta` es el `evento` del motor ("Pago normal", "Cuota + abono extra"…). Además vienen `pagoTotalCliente` y `pagoExtraordinario`.
-- `asientos` sale de `Contabilizador.estandar()`. `cuadra` = débitos y créditos iguales al centavo (las sumas DECIMAL128 difieren en residuos de 1e-28; el `Contabilizador` además rechaza cualquier asiento con más de 1 COP de diferencia).
+- Cada movimiento trae además `costoRecuperacion` y `costoRecuperacionAsumido` (R4-R2): el costo descontado en la dación o la retoma y la parte que asume la financiera (0 con `costoRecuperacionAlFondo = true`).
+- `asientos` sale de `Contabilizador.para(reglas del perfil)`: con EXCEL es igual a `Contabilizador.estandar()`; con NEGOCIO la cobranza causada va a `INGRESOS_NO_OPERACIONALES_COBRANZA` (R4-COBRANZA-CONTABLE) y los cierres con costo acreditan `CXP_COSTOS_RECUPERACION` (y debitan `GASTO_COSTOS_RECUPERACION` si lo asume la financiera). `cuadra` = débitos y créditos iguales al centavo (las sumas DECIMAL128 difieren en residuos de 1e-28; el `Contabilizador` además rechaza cualquier asiento con más de 1 COP de diferencia).
 
 ```bash
 # Abono mayor que el saldo → 400 ABONO_MAYOR_QUE_SALDO
@@ -172,7 +181,7 @@ curl localhost:8080/api/v1/casos
 
 ```json
 [{"numero": 1, "nombre": "Operación normal", "descripcion": "Paga las 104 cuotas semanales a tiempo.", "fuente": "Excel 11-oct, hoja Caso1_Normal"},
- {"numero": 13, "nombre": "Abono extra con pendientes", "descripcion": "...", "fuente": "Propuesto por el equipo; Diego aún debe validar los valores (pregunta R4-CASO13). No está en el Excel"}]
+ {"numero": 13, "nombre": "Abono extra con pendientes", "descripcion": "...", "fuente": "Propuesto por el equipo; regla de la ronda 4 (R4-CASO13); Diego debe validar las cifras nuevas (pregunta P5-CASO13). No está en el Excel"}]
 ```
 
 Los casos 1 a 12 salen de `simulaciones.EscenariosExcel` (hojas Caso1 a Caso12) y el 13 de `EscenariosExcel.caso13` (el mismo escenario que `Caso13AbonoConPendientesTest`). Todos sobre la réplica del Excel: CPPU, semanal, 104 cuotas.

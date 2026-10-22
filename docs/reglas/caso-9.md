@@ -73,3 +73,11 @@ Pendiente de la frontera: la cobranza y la mora se causan dentro del asiento de 
 - **P9.3** Si el cliente siempre paga la cuota pactada con atraso, ¿qué pasa al llegar al plazo límite (120 semanas) con saldo pendiente: castigo, cobro jurídico, retoma (caso 4)?
 - **P9.4** Con 14 días de atraso en cuotas semanales, ¿el cliente debe 2 cuotas al pagar? ¿La mora debe contar las cuotas vencidas siguientes?
 - **P9.5** ¿El recaudo de servicios es un pasivo con terceros (CxP) o un ingreso? Además, ¿quién causa el interés corriente semanal en el asiento?
+
+## Respuestas de la ronda 4 (2026-10-21)
+
+| Id | Regla | Implementada en | Probada |
+|---|---|---|---|
+| R4-COBRANZA-CONTABLE | Los gastos de cobranza se registran como **ingreso no operacional** (PUC clase 42), para que no se imputen como mayor interés de financiación. Cuenta nueva `INGRESOS_NO_OPERACIONALES_COBRANZA` ("Ingresos no operacionales por gastos de cobranza (PUC 42)"); la subcuenta exacta la fija contabilidad con el PUC (C2). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-COBRANZA-CONTABLE.** | `Cuenta`, `CobranzaYMora(Cuenta)`, `Contabilizador.para(reglas)` con la clave `cobranzaIngresoNoOperacional` (`true` en `config/`) | `RespuestasDiegoRonda4Test.CobranzaComoIngresoNoOperacional`, `RespuestasRonda4ApiTest` |
+
+El Excel (Caso9_Cobranza AE15:AG16) acredita la causación de la cobranza a "Ingresos por cobranza" (`INGRESOS_COBRANZA`), una cuenta propia que tampoco es ingreso por intereses. Esa réplica no cambia: `Contabilizador.estandar()` y `Contabilizador.para(ReglasNegocio.EXCEL)` siguen dando el panel del Excel celda por celda (`Caso9CobranzaTest`). La contabilidad no recibía las reglas de negocio; ahora `Contabilizador.para(reglas)` las recibe y el API la usa con el perfil del escenario, así que con `NEGOCIO` la cobranza va a la cuenta no operacional.

@@ -1484,6 +1484,102 @@ const RONDA_4: Pregunta[] = [
   },
 ]
 
+// Ronda 5: confirmaciones cortas de lo que la ronda 4 dejó abierto o cambió.
+// Cifras del caso 13 calculadas por el motor con aplicacionAbono=PRELACION_COMPLETA (docs/reglas/caso-13.md).
+export const CIFRAS_CASO13 =
+  'Ahora el motor paga lo vencido (317.354,81) y con el sobrante cobra también el fondo de garantías (48.643,17) y la asistencia (10.984,62) de la semana 42, que no se habían causado por estar en atraso: en total 376.982,59. ' +
+  'A capital vigente van 1.123.017,41 y el saldo queda en 3.229.537,12. A menor cuota, la cuota desde la semana 43 es 74.500,11 (termina en la 104); a menor plazo, el crédito termina en la semana 84 (última cuota 69.406,12). ' +
+  'Nunca se cobran conceptos de la semana 43 en adelante.'
+
+const RONDA_5: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'P5-PRORRATEO',
+    bloque: PAGOS,
+    titulo: 'La primera cuota mensual se prorratea entre el desembolso y el próximo día 5. ¿Qué se prorratea y en qué periodicidades?',
+    contexto:
+      'Dijo que la mensual vence el día 5 y que la primera cuota se prorratea según lo corrido entre el desembolso y el próximo 5. Falta saber qué parte de la cuota se prorratea. Por ejemplo, con el desembolso el día 20, la primera cuota cubre 15 días reales: el interés se calcula por esos días; la pregunta es si el capital y los servicios (fondo, asistencia, seguro) van completos o también proporcionales. Y si lo mismo vale para la quincenal (5 y 20) y la semanal (primer martes).',
+    excelHoy: 'El Excel solo modela cuotas semanales con periodos completos; no prorratea la primera cuota.',
+    opciones: [
+      { codigo: 'solo-interes-todas', texto: 'Solo el interés, por los días reales; capital y servicios completos. En las tres periodicidades' },
+      { codigo: 'solo-interes-mensual', texto: 'Solo el interés por días reales, y solo en la mensual', detalle: 'En la quincenal y la semanal la primera cuota es un periodo completo.' },
+      { codigo: 'todo-proporcional', texto: 'Todo proporcional a los días: interés, capital y servicios', detalle: 'Indique en el comentario si vale también para la quincenal y la semanal.' },
+      { codigo: 'otro', texto: 'Otra forma', pideTexto: true },
+    ],
+  },
+  {
+    id: 'P5-LIMITE-DESDE',
+    bloque: PAGOS,
+    titulo: 'El plazo límite de recuperación es de 24 meses. ¿Desde cuándo se cuenta?',
+    contexto:
+      'Para un crédito de 24 meses, contar desde el desembolso hace coincidir el límite con el fin del crédito; contarlo desde el primer atraso daría más tiempo. En un crédito de 12 meses hay que decidir si el límite sigue siendo de 24 meses o es el plazo del crédito.',
+    excelHoy: 'El Excel fija el límite en semanas (100 en el caso 8), sin una fecha de partida.',
+    opciones: [
+      { codigo: 'desde-desembolso-24', texto: 'Desde el desembolso: 24 meses para cualquier plazo del crédito' },
+      { codigo: 'desde-desembolso-plazo', texto: 'Desde el desembolso, y es el plazo pactado', detalle: 'Un crédito de 12 meses tiene límite de 12 meses.' },
+      { codigo: 'desde-primer-atraso', texto: 'Desde el primer atraso: 24 meses' },
+    ],
+  },
+
+  // ── Abonos y prepago ──────────────────────────────────────────────────────────
+  {
+    id: 'P5-PAGO-ANTES-PRIMERA',
+    bloque: ABONOS,
+    titulo: 'Si llega un pago antes de la primera cuota (cuando aún no hay cuota causada), ¿qué se hace con él?',
+    contexto:
+      'Dijo que solo antes de la primera cuota no hay cuota causada; después, un pago siempre cubre la cuota causada y lo que sobre es abono extra. Falta ese único caso: el pago que llega entre el desembolso y la primera cuota.',
+    excelHoy: 'No lo define.',
+    opciones: [
+      { codigo: 'abono-extra', texto: 'Es abono extra a capital', detalle: 'Se aplica de una vez y el cliente elige menor plazo o menor cuota.' },
+      { codigo: 'se-guarda', texto: 'Se guarda y se aplica a la primera cuota cuando se cause' },
+    ],
+  },
+  {
+    id: 'P5-CASO13',
+    bloque: ABONOS,
+    titulo: 'Caso 13 recalculado: el sobrante del abono pasa por la prelación. ¿Las cifras nuevas son correctas?',
+    contexto:
+      'Antes: en la semana 42 el cliente tenía pendientes por 317.354,81 y traía un abono de 1.500.000; se pagaban los pendientes y los 1.182.645,20 sobrantes iban directo a capital vigente (el saldo quedaba en 3.169.909,34). Ahora, con su respuesta de la ronda 4: se paga todo lo vencido como en el ejemplo y el sobrante de 1.182.645,20 vuelve a pasar por la prelación (cobranza, mora, interés corriente, fondo, asistencia, seguro, capital) sobre lo ya causado del periodo; solo el resto va a capital. Cifras nuevas: ' +
+      CIFRAS_CASO13 +
+      ' El detalle semana a semana está en docs/reglas/caso-13.md.',
+    excelHoy: 'No hay hoja en el Excel: lo arma el equipo.',
+    opciones: [
+      { codigo: 'correctos', texto: 'Las cifras nuevas son correctas' },
+      { codigo: 'diferencias', texto: 'Hay diferencias', detalle: 'Indique cuáles valores y cuáles esperaba.', pideTexto: true },
+    ],
+  },
+
+  // ── Cambio de tasa y usura ────────────────────────────────────────────────────
+  {
+    id: 'P5-USURA-DIA',
+    bloque: TASA,
+    titulo: 'Si nadie autoriza la nueva usura, ¿confirma que se aplica sola a 1 día hábil de su publicación?',
+    contexto:
+      'En la ronda 4 el campo de días traía "1 días". Entendemos 1 día hábil después de la publicación de la usura, también para el lote de créditos vigentes. Basta confirmar o dar el número correcto.',
+    excelHoy: 'No hay alerta ni plazo: la tasa la digita quien arma el caso.',
+    opciones: [
+      { codigo: 'un-dia-habil', texto: 'Sí, 1 día hábil' },
+      { codigo: 'otro-plazo', texto: 'No, otro plazo', pideValor: true },
+    ],
+    valor: { etiqueta: 'Días hábiles desde la publicación', unidad: 'días', sugeridos: [{ valor: 2 }, { valor: 3 }, { valor: 5 }] },
+  },
+
+  // ── Dación y retoma ───────────────────────────────────────────────────────────
+  {
+    id: 'P5-COSTO-DACION',
+    bloque: RECUPERACION,
+    titulo: 'En la dación, el costo real de la recuperación (grúa, bodegaje, avalúo, trámites), ¿lo cubre el fondo de garantías o la financiera?',
+    contexto:
+      'Dijo que en dación y en retoma se descuenta el costo real con soporte. En la retoma sale del excedente del cliente, pero en la dación no hay excedente: el fondo de garantías cubre el faltante de la deuda. Falta saber si el costo se suma a ese faltante (lo paga el fondo) o lo asume la financiera.',
+    excelHoy: 'El Excel no descuenta costos de recuperación.',
+    opciones: [
+      { codigo: 'suma-al-faltante', texto: 'Se suma al faltante: lo cubre el fondo de garantías' },
+      { codigo: 'financiera', texto: 'Lo asume la financiera; el fondo cubre solo el faltante de la deuda' },
+      { codigo: 'otro', texto: 'Otro tratamiento', pideTexto: true },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -1595,15 +1691,39 @@ const RESPONDIDAS_RONDA_3: Record<string, Omit<Respondida, 'fecha'>> = {
   'C5': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-C5', nota: 'Reemplazada por R4-C5.', respuesta: 'Marcó "incluye GPS y gastos comerciales" pero su detalle dice "moto + alistamiento"; se contradicen.' },
 }
 
+// Respondidas en la ronda 4 (Diego, 21 de octubre de 2026, 17:21), ya contrastadas. El resumen es la respuesta
+// VÁLIDA (el comentario o detalle manda sobre la opción marcada). R4-T5 sigue sin respuesta y queda visible como
+// pendiente de Diego; R4-CASO13 cambió la regla y se vuelve a validar en la ronda 5 (P5-CASO13).
+const REF_RONDA_4 = 'Ronda 4'
+const RESPONDIDAS_RONDA_4: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R4-QUIN': { referencia: REF_RONDA_4, respuesta: 'La quincena tiene 24 periodos al año (el 104 era un error).' },
+  'R4-MENSUAL-DIA': { referencia: REF_RONDA_4, respuesta: 'La mensual vence el día 5 de cada mes, igual para todos; la primera cuota se prorratea entre el desembolso y el próximo 5 (el cómo, en la ronda 5).' },
+  'R4-PLAZO-LINEA': { referencia: REF_RONDA_4, respuesta: 'Tope de 24 meses para todas las líneas en la primera versión, parametrizable; a futuro puede crecer.' },
+  'R4-PLAZO-LIMITE': { referencia: REF_RONDA_4, respuesta: 'El plazo límite de recuperación es de 24 meses, convertidos a periodos según la periodicidad (desde cuándo se cuenta, en la ronda 5).' },
+  'R4-A3': { referencia: REF_RONDA_4, respuesta: 'No hay valor mínimo para el abono extra.' },
+  'R4-PAGO-SIN-CUOTA': { referencia: REF_RONDA_4, respuesta: 'Solo antes de la primera cuota no hay cuota causada; después un pago cubre la cuota causada y lo que sobre es abono extra (ABN-4).' },
+  'R4-CASO13': { referencia: REF_RONDA_4, reemplazadaPor: 'P5-CASO13', nota: 'Reemplazada por P5-CASO13.', respuesta: 'Se paga todo lo vencido, pero el sobrante (1.182.645,20) vuelve a pasar por la prelación de las 7 líneas; solo el resto va a capital. Cambia D21/D30.' },
+  'R4-T5': { referencia: REF_RONDA_4, nota: 'Pendiente: Diego aún no responde', respuesta: 'Sin respuesta: Diego dijo "pendiente por dar respuesta".' },
+  'R4-USURA-PLAZO': { referencia: REF_RONDA_4, respuesta: 'Si nadie autoriza, la usura se aplica sola 1 día hábil después de su publicación, también al lote de vigentes.' },
+  'R4-AVISO-CLIENTE': { referencia: REF_RONDA_4, respuesta: 'No se avisa al cliente cuando cambia la tasa (decisión del dueño de producto; conviene validarla con legal).' },
+  'R4-R2': { referencia: REF_RONDA_4, respuesta: 'En la recuperación se descuenta el costo real con soporte (grúa, bodegaje, avalúo, trámites), en dación y en retoma.' },
+  'R4-PERITO': { referencia: REF_RONDA_4, respuesta: 'El perito externo se usa cuando la moto está en Fasecolda pero su estado real es de alto deterioro; en lo demás, Fasecolda × 65 %.' },
+  'R4-FONDO-TOPE': { referencia: REF_RONDA_4, respuesta: 'El fondo de garantías no tiene tope por crédito.' },
+  'R4-C5': { referencia: REF_RONDA_4, respuesta: 'El pago inicial se resta del valor total (moto + alistamiento + GPS + gastos comerciales); el GPS y los gastos comerciales son parte del alistamiento.' },
+  'R4-COBRANZA-CONTABLE': { referencia: REF_RONDA_4, respuesta: 'Los gastos de cobranza se registran como ingresos no operacionales, para que no se imputen como mayor interés de financiación (PUC clase 42).' },
+  'R4-SUPLENTE': { referencia: REF_RONDA_4, respuesta: 'Se nombra un suplente con los mismos permisos y la misma bitácora.' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5].map((p) => {
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
   if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }
   if (RESPONDIDAS_RONDA_3[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_RONDA_3[p.id] } }
+  if (RESPONDIDAS_RONDA_4[p.id]) return { ...p, respondida: { fecha: '21 oct 2026', ...RESPONDIDAS_RONDA_4[p.id] } }
   return p
 }).map(conPendiente)
 
@@ -1622,7 +1742,7 @@ export const BLOQUES_ABIERTOS: string[] = BLOQUES.filter((b) => PREGUNTAS.some((
  */
 export function completitudPorBloque(): { bloque: string; cerradas: number; total: number }[] {
   return BLOQUES.map((bloque) => {
-    // Las reemplazadas por una pregunta de la ronda 4 no cuentan: la cuenta la nueva.
+    // Las reemplazadas por una pregunta de una ronda posterior no cuentan: la cuenta la nueva.
     const delBloque = TODAS.filter((p) => p.bloque === bloque && !p.respondida?.reemplazadaPor)
     return { bloque, total: delBloque.length, cerradas: delBloque.filter((p) => p.respondida && !p.respondida.nota).length }
   })

@@ -67,3 +67,11 @@ Validaciones (hoja Validaciones, filas 14 a 16): deuda a extinguir, inventario y
 5. **Diferencia dación / retoma:** aparte del signo del residuo, ¿qué cambia entre los dos eventos (trámite, voluntariedad, costos, reporte a centrales, cuentas contables)? ¿Una retoma con faltante es posible (CxC FCC) y por qué la hoja fija N en 0?
 6. **Interés de la semana del evento:** ¿se cobra el interés completo de la semana de la retoma o proporcional a los días?
 7. **Cuenta contable:** ¿el residuo de mora/servicios/cobranza (si existiera) va a "CxC intereses corrientes" o a sus propias cuentas?
+
+## Respuestas de la ronda 4 (2026-10-21)
+
+| Id | Regla | Implementada en | Probada |
+|---|---|---|---|
+| R4-R2 | En la recuperación se descuenta el **costo real con soporte** (grúa, bodegaje, avalúo, trámites), en dación y en retoma. `CierrePorRecuperacion` lleva `costoRecuperacion` opcional (0 por defecto, como el Excel; en el API, el campo `costoRecuperacion` de la instrucción `CIERRE_POR_RECUPERACION`). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-R2.** | `MotorCartera.cerrar`, `Instruccion.CierrePorRecuperacion` | `RespuestasDiegoRonda4Test.R2CostoDeLaRecuperacion` |
+| R4-R2-RETOMA | En la retoma el costo **reduce el excedente que se devuelve** al cliente: CxP deudor = valor de la moto − deuda − costo (si da negativo, la diferencia se trata como en la dación según `costoRecuperacionAlFondo`). Asiento: débito Inventario = créditos de cada concepto extinguido + crédito CxP costos de recuperación (el costo) + crédito CxP deudor (el excedente neto). Cuentas provisionales hasta el PUC (C2). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-R2.** | `MotorCartera.cerrar`, `contabilidad/reglas/Retoma` | `enLaRetomaElCostoReduceElExcedenteQueSeDevuelve`, `unaRetomaConExcedenteMenorQueElCostoCuadraConLasDosOpciones`, `RespuestasRonda4ApiTest` |
+| R4-PERITO | **Requisito (sin código).** Avalúo = guía Fasecolda × 65 %; perito externo solo si la moto está en Fasecolda pero tiene alto deterioro real. El motor recibe el valor ya definido. **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-PERITO.** | — (fuera del motor) | — |

@@ -55,10 +55,16 @@ public record Movimiento(
         BigDecimal capitalVencidoInicial,
         // Lo que un abono extra o un prepago pagó de pendientes de semanas anteriores, por prelación
         // (A4, aplicacionAbono = PRIMERO_PENDIENTES); el capital es el capital vencido recuperado. No
-        // está incluido en abonoExtra ni en prepagoCapital, que son solo capital vigente.
+        // está incluido en abonoExtra ni en prepagoCapital, que son solo capital vigente. Con
+        // PRELACION_COMPLETA (R4-CASO13) incluye también el fondo y la asistencia del periodo corriente que
+        // pagó el excedente; esos servicios quedan además en serviciosCausados.
         DeudaExtinguida pendientesPagadosExtra,
         // Interés corriente de los días entre la última cuota y el prepago (A6, interesPrepagoPorDias)
-        BigDecimal interesPrepago) {
+        BigDecimal interesPrepago,
+        // Costo real de la recuperación con soporte que se descontó en la dación o la retoma (R4-R2)
+        BigDecimal costoRecuperacion,
+        // La parte de ese costo que asume la financiera (dación con costoRecuperacionAlFondo = false)
+        BigDecimal costoRecuperacionAsumido) {
 
     /**
      * Pago total del cliente en el periodo: pago recibido + abonos extraordinarios (lo que fue a capital
