@@ -74,6 +74,8 @@ export interface Credito {
   gastosComerciales?: string
   /** Horizonte de proyección con saldo pendiente (casos 8 y 9: 100 y 120). */
   plazoLimitePeriodos?: number | null
+  /** Si al crédito se le cobran gastos de cobranza (los activa un responsable, D44). */
+  cobranzaActiva?: boolean
 }
 
 export interface ResumenSimulacion {
@@ -211,6 +213,8 @@ export interface Movimiento {
   costoRecuperacion: string
   /** Parte de ese costo que asume la financiera (0 si se suma al faltante que cubre el fondo). */
   costoRecuperacionAsumido: string
+  /** El crédito llegó al umbral de cuotas vencidas para dación o retoma (D46); el motor no la ejecuta solo. */
+  listoParaRecuperacion: boolean
 }
 
 export interface LineaAsiento {
@@ -240,6 +244,9 @@ export interface ResumenEjecucion {
   cuotasVencidasMax: number
   montoFinanciado: string
   perfilReglas: Perfil
+  /** Si en algún periodo llegó al umbral de recuperación (D46) y desde cuál. */
+  listoParaRecuperacion: boolean
+  periodoListoParaRecuperacion: number | null
 }
 
 export interface Ejecucion {

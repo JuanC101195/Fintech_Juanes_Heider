@@ -35,6 +35,9 @@ const VALORES: Record<string, string> = {
 export function valorRegla(clave: string, valor: string | null): string {
   if (valor === null || valor === '') return clave === 'topeCobranzaPorPago' ? 'Sin tope' : 'Sin definir'
   if (VALORES[valor]) return VALORES[valor]
+  if (clave === 'cobranzaDiaria' && /^\d+(\.\d+)?$/.test(valor)) return `${cop(valor)} por día de atraso (valor de ejemplo, por definir)`
+  if (clave === 'cuotasVencidasParaRecuperacion') return `Con ${valor} cuotas atrasadas el crédito queda listo para dación o retoma`
+  if (clave === 'plazoLimiteMeses') return `${valor} meses`
   if (clave === 'margenUsura') return `${valor} ${valor === '1' ? 'punto' : 'puntos'} por debajo de la usura`
   if (clave === 'topeCobranzaPorPago' && /^\d+(\.\d+)?$/.test(valor)) return `Hasta ${cop(valor)} por pago`
   const t = valor.replaceAll('_', ' ').toLowerCase()

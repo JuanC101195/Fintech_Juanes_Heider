@@ -1507,6 +1507,7 @@ const RONDA_5: Pregunta[] = [
       { codigo: 'otro', texto: 'Otra forma', pideTexto: true },
     ],
   },
+
   {
     id: 'P5-LIMITE-DESDE',
     bloque: PAGOS,
@@ -1580,6 +1581,67 @@ const RONDA_5: Pregunta[] = [
   },
 ]
 
+// Ronda 6 (22 oct 2026): lo NO seguro de las respuestas por documento de Diego. Confirmaciones cortas con opciones concretas.
+const RONDA_6: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'R6-COBRANZA-ACTIVA',
+    bloque: PAGOS,
+    titulo: '¿Quién decide a qué créditos se les activa la cobranza, y se activa crédito por crédito o por regla?',
+    contexto:
+      'Dijo que los gastos de cobranza solo se cobran en mora, que el valor puede cambiar en el tiempo y que hace falta "un ente regulador que active a qué créditos se les inicia dicho cobro o no". Falta saber quién es ese responsable y si decide caso por caso o con una regla general (por ejemplo, todos los créditos que lleguen a cierta mora). Según su respuesta el motor guarda una marca de activación por crédito con quién la puso y cuándo, o aplica la regla sola.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso a todo crédito en mora, sin activación.',
+    opciones: [
+      { codigo: 'administrador-credito', texto: 'El administrador activa crédito por crédito' },
+      { codigo: 'director-credito', texto: 'El director financiero o el gerente activan crédito por crédito' },
+      { codigo: 'comite-credito', texto: 'Un comité decide crédito por crédito' },
+      { codigo: 'regla-mora', texto: 'Se activa sola por regla (al llegar a cierta mora) y un responsable puede exonerar', detalle: 'Indique en el comentario a qué mora y quién exonera.' },
+      { codigo: 'otro', texto: 'Otra forma', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R6-LIMITE-CORTO',
+    bloque: PAGOS,
+    titulo: 'En un crédito de menos de 24 meses, ¿el plazo límite de recuperación es su propio plazo o los 24 meses?',
+    contexto:
+      'Para el caso 8 dijo "ampliarlo hasta 104 cuotas", es decir 24 meses contados desde el desembolso, y que el límite coincide con el plazo del crédito. Falta el caso de un crédito más corto: uno de 12 meses puede tener el límite en 12 meses (su plazo) o seguir en 24 meses (más tiempo para recuperar antes de la recuperación obligatoria).',
+    excelHoy: 'El Excel fija el límite en semanas (100 en el caso 8, 104 según su respuesta), sin distinguir plazos.',
+    opciones: [
+      { codigo: 'plazo-del-credito', texto: 'Su propio plazo: un crédito de 12 meses tiene límite de 12 meses' },
+      { codigo: 'siempre-24', texto: 'Siempre 24 meses, sea cual sea el plazo del crédito' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+
+  // ── Dación y retoma ───────────────────────────────────────────────────────────
+  {
+    id: 'R6-RECUP-AUTO',
+    bloque: RECUPERACION,
+    titulo: 'Al llegar a 2 cuotas atrasadas, ¿el motor ejecuta la dación o la retoma solo, o solo marca el crédito para que una persona la ordene?',
+    contexto:
+      'Dijo que "la política es ejecutar dación o retoma luego de 2 cuotas atrasadas". La dación y la retoma terminan el crédito y mueven la moto y el dinero, así que conviene saber si el motor las hace solo o si apenas avisa. También falta qué pasa si el cliente se pone al día después de las 2 cuotas pero antes de que se ejecute.',
+    excelHoy: 'El Excel ejecuta la recuperación en la semana que dice la instrucción del caso; no hay un umbral automático.',
+    opciones: [
+      { codigo: 'marca-persona', texto: 'El motor solo marca "listo para recuperación"; una persona la ordena. Si el cliente se pone al día antes, la marca se quita y el crédito sigue' },
+      { codigo: 'marca-persona-sigue', texto: 'El motor solo marca; una persona la ordena. Aunque el cliente se ponga al día, la persona decide si se ejecuta' },
+      { codigo: 'automatica', texto: 'El motor la ejecuta solo al llegar a 2 cuotas atrasadas', detalle: 'Indique en el comentario si el cliente puede evitarla pagando antes de la ejecución.' },
+      { codigo: 'otro', texto: 'Otra forma', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R6-RECUP-VS-CASO11',
+    bloque: RECUPERACION,
+    titulo: 'El caso 11 espera 4 periodos antes de la dación. Con la política de 2 cuotas atrasadas, ¿se corrige el caso 11 a 2?',
+    contexto:
+      'El caso 11 del Excel (pago inferior y luego dación) espera 4 periodos. Su respuesta fija el umbral en 2 cuotas atrasadas. Si el caso 11 se ajusta a 2, el Excel queda corregido y el motor reproduce la política; si se deja en 4, el caso es un ejemplo de otra situación.',
+    excelHoy: 'El caso 11 espera 4 periodos de atraso antes de la dación.',
+    opciones: [
+      { codigo: 'ajustar-a-2', texto: 'Sí, el caso 11 se ajusta a 2 cuotas atrasadas (el Excel se corrige)' },
+      { codigo: 'dejar-4', texto: 'No, el caso 11 se queda en 4 como ejemplo', detalle: 'Indique en el comentario por qué el caso 11 no sigue la política de 2.' },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -1620,9 +1682,7 @@ const RESPONDIDAS_20_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   C1: { referencia: REF_20_OCT, respuesta: 'La causación sigue el plan normal (caso 1), respetando la periodicidad pactada.' },
   C2: { referencia: REF_20_OCT, nota: 'Pendiente: PUC que enviará por correo (ver CON-1).', respuesta: 'Los códigos del PUC los enviará por correo; quedan pendientes.' },
   C3: { referencia: REF_20_OCT, respuesta: 'El pago inicial lo recauda el concesionario y no afecta a la fábrica de crédito; se guarda para auditoría y para la simulación de la oferta comercial.' },
-  X1: { referencia: REF_20_OCT, nota: 'Pendiente: Excel corregido.', respuesta: 'Enviará una versión corregida del Excel (sin comentario).' },
   X3: { referencia: REF_20_OCT, respuesta: 'Se refería a dación (caso 3) o retoma (caso 4).' },
-  X4: { referencia: REF_20_OCT, nota: 'Pendiente: Excel corregido.', respuesta: 'El plazo límite del caso 8 llega según el Excel que adjuntará.' },
 }
 
 // Respondidas en la ronda 3 (Diego, 20 de octubre de 2026, 15:54), ya contrastadas. Cuando hay comentario,
@@ -1673,11 +1733,6 @@ const RESPONDIDAS_RONDA_3: Record<string, Omit<Respondida, 'fecha'>> = {
   'COB-1': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
   'COB-2': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
   'COB-3': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
-  'COB-4': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
-  'COB-5': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
-  'COB-6': { referencia: REF_RONDA_3, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Diego enviará la política completa de gastos de cobranza; esta decisión va dentro de ella.' },
-  'PPER-8': { referencia: REF_RONDA_3, nota: 'Pendiente: política de ejecución de la dación.', respuesta: 'Diego enviará la política de ejecución de la dación; esta decisión va dentro de ella.' },
-  'PPER-9': { referencia: REF_RONDA_3, nota: 'Pendiente: política de ejecución de la dación.', respuesta: 'Diego enviará la política de ejecución de la dación; esta decisión va dentro de ella.' },
   'CON-1': { referencia: REF_RONDA_3, nota: 'Pendiente: PUC en Excel.', respuesta: 'Diego enviará el plan de cuentas (PUC) en un Excel por correo.' },
   'PPER-1': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-MENSUAL-DIA', nota: 'Reemplazada por R4-MENSUAL-DIA.', respuesta: 'Quincenal: se paga el 5 y el 20. Mensual: "el 5 o el primer día del mes"; falta saber si es fija para todos o por crédito.' },
   'USU-3': { referencia: REF_RONDA_3, reemplazadaPor: 'R4-USURA-PLAZO', nota: 'Reemplazada por R4-USURA-PLAZO.', respuesta: 'Si nadie autoriza, la usura se aplica sola; choca con USU-5 (el lote espera aprobación), así que falta el plazo.' },
@@ -1692,8 +1747,7 @@ const RESPONDIDAS_RONDA_3: Record<string, Omit<Respondida, 'fecha'>> = {
 }
 
 // Respondidas en la ronda 4 (Diego, 21 de octubre de 2026, 17:21), ya contrastadas. El resumen es la respuesta
-// VÁLIDA (el comentario o detalle manda sobre la opción marcada). R4-T5 sigue sin respuesta y queda visible como
-// pendiente de Diego; R4-CASO13 cambió la regla y se vuelve a validar en la ronda 5 (P5-CASO13).
+// VÁLIDA (el comentario o detalle manda sobre la opción marcada). R4-T5 la contestó Diego por documento (RESPONDIDAS_22_OCT); R4-CASO13 cambió la regla y se vuelve a validar en la ronda 5 (P5-CASO13).
 const REF_RONDA_4 = 'Ronda 4'
 const RESPONDIDAS_RONDA_4: Record<string, Omit<Respondida, 'fecha'>> = {
   'R4-QUIN': { referencia: REF_RONDA_4, respuesta: 'La quincena tiene 24 periodos al año (el 104 era un error).' },
@@ -1703,7 +1757,6 @@ const RESPONDIDAS_RONDA_4: Record<string, Omit<Respondida, 'fecha'>> = {
   'R4-A3': { referencia: REF_RONDA_4, respuesta: 'No hay valor mínimo para el abono extra.' },
   'R4-PAGO-SIN-CUOTA': { referencia: REF_RONDA_4, respuesta: 'Solo antes de la primera cuota no hay cuota causada; después un pago cubre la cuota causada y lo que sobre es abono extra (ABN-4).' },
   'R4-CASO13': { referencia: REF_RONDA_4, reemplazadaPor: 'P5-CASO13', nota: 'Reemplazada por P5-CASO13.', respuesta: 'Se paga todo lo vencido, pero el sobrante (1.182.645,20) vuelve a pasar por la prelación de las 7 líneas; solo el resto va a capital. Cambia D21/D30.' },
-  'R4-T5': { referencia: REF_RONDA_4, nota: 'Pendiente: Diego aún no responde', respuesta: 'Sin respuesta: Diego dijo "pendiente por dar respuesta".' },
   'R4-USURA-PLAZO': { referencia: REF_RONDA_4, respuesta: 'Si nadie autoriza, la usura se aplica sola 1 día hábil después de su publicación, también al lote de vigentes.' },
   'R4-AVISO-CLIENTE': { referencia: REF_RONDA_4, respuesta: 'No se avisa al cliente cuando cambia la tasa (decisión del dueño de producto; conviene validarla con legal).' },
   'R4-R2': { referencia: REF_RONDA_4, respuesta: 'En la recuperación se descuenta el costo real con soporte (grúa, bodegaje, avalúo, trámites), en dación y en retoma.' },
@@ -1714,12 +1767,29 @@ const RESPONDIDAS_RONDA_4: Record<string, Omit<Respondida, 'fecha'>> = {
   'R4-SUPLENTE': { referencia: REF_RONDA_4, respuesta: 'Se nombra un suplente con los mismos permisos y la misma bitácora.' },
 }
 
+// Respondidas por documento (Diego, 22 de octubre de 2026, "rptas software.docx"), fuera del cuestionario. El resumen
+// es la respuesta VÁLIDA. PPER-8 sigue pendiente de la política de gastos de cobranza. P5-LIMITE-DESDE queda
+// reemplazada por R6-LIMITE-CORTO porque X4 la contesta solo en parte. Lo no seguro va a la ronda 6.
+const REF_22_OCT = 'Documento 22 oct'
+const RESPONDIDAS_22_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R4-T5': { referencia: REF_22_OCT, respuesta: 'La cuota se recalcula sobre el capital vigente; lo vencido se cobra aparte (está prohibido liquidar intereses sobre intereses).' },
+  X1: { referencia: REF_22_OCT, respuesta: 'Todas las operaciones tienen servicios complementarios; el Excel solo los simuló en una operación como ejemplo.' },
+  'COB-4': { referencia: REF_22_OCT, respuesta: 'Los gastos de cobranza solo se cobran mientras el cliente esté en mora; si se pone al día o termina de pagar, no se liquidan.' },
+  'COB-5': { referencia: REF_22_OCT, respuesta: 'Los exonera el director financiero o el gerente, con justificación y aprobando directamente en el software.' },
+  'COB-6': { referencia: REF_22_OCT, respuesta: 'La tarifa no está regulada: el cobro vale si el contrato de mutuo dice cuándo se causa y cuánto. Los 3.000 son un ejemplo; el valor real está pendiente y cambia en el tiempo. Un responsable activa la cobranza crédito por crédito (R6-COBRANZA-ACTIVA).' },
+  'PPER-8': { referencia: REF_22_OCT, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Sin respuesta: dijo que este tema está pendiente de definir y es de los gastos de cobranza.' },
+  'PPER-9': { referencia: REF_22_OCT, respuesta: 'No hay días específicos: la política es ejecutar la dación o la retoma luego de 2 cuotas atrasadas, en periodos de la periodicidad pactada (R6-RECUP-AUTO y R6-RECUP-VS-CASO11).' },
+  X4: { referencia: REF_22_OCT, respuesta: 'El plazo límite del caso 8 se amplía a 104 cuotas (24 meses), según el recálculo; en cualquier momento puede darse la retoma o la dación.' },
+  'P5-LIMITE-DESDE': { referencia: REF_22_OCT, reemplazadaPor: 'R6-LIMITE-CORTO', nota: 'Reemplazada por R6-LIMITE-CORTO.', respuesta: 'X4 la contesta en parte: el límite es de 104 cuotas (24 meses) desde el desembolso; falta el caso de un crédito de menos de 24 meses.' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6].map((p) => {
+  if (RESPONDIDAS_22_OCT[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_22_OCT[p.id] } }
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
   if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }
   if (RESPONDIDAS_RONDA_3[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_RONDA_3[p.id] } }

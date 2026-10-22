@@ -77,7 +77,7 @@ curl localhost:8080/api/v1/reglas
 }
 ```
 
-Las claves son las 14 de `ReglasNegocio.CLAVES`, en el orden del record. `topeCobranzaPorPago` es `null` cuando no hay tope y `plazoLimiteMeses` es `null` en EXCEL (queda el del producto). Lo que agrega la ronda 4 (2026-10-21):
+Las claves son las 17 de `ReglasNegocio.CLAVES`, en el orden del record. `topeCobranzaPorPago` es `null` cuando no hay tope y `plazoLimiteMeses` es `null` en EXCEL (queda el del producto). Lo que agrega la ronda 4 (2026-10-21):
 
 | Clave | Qué hace | NEGOCIO | EXCEL |
 |---|---|---|---|
@@ -85,6 +85,14 @@ Las claves son las 14 de `ReglasNegocio.CLAVES`, en el orden del record. `topeCo
 | `costoRecuperacionAlFondo` | R4-R2 (provisional, P5-COSTO-DACION): en la dación el costo de la recuperación se suma al faltante que cubre el fondo | `true` | `true` (sin efecto: el Excel no tiene costo) |
 | `cobranzaIngresoNoOperacional` | R4-COBRANZA-CONTABLE: la cobranza causada se acredita a `INGRESOS_NO_OPERACIONALES_COBRANZA` (PUC clase 42) | `true` | `false` (`INGRESOS_COBRANZA`, como el Excel) |
 | `plazoLimiteMeses` | R4-PLAZO-LIMITE: plazo límite de los créditos nuevos y las simulaciones, en meses convertidos a periodos | `24` | `null` |
+
+Lo que agrega el documento "rptas software" de Diego (2026-10-22):
+
+| Clave | Qué hace | NEGOCIO | EXCEL |
+|---|---|---|---|
+| `cambioTasaSobreCapitalVigente` | R4-T5: con el cliente en mora, la cuota nueva de un cambio de tasa (o de usura con `MISMA_FECHA_FINAL`) va solo sobre el capital vigente; lo vencido se cobra aparte y no se capitalizan intereses | `true` | `false` |
+| `cobranzaDiaria` | COB-6: valor diario de la cobranza para los créditos nuevos y las simulaciones; queda fijo en los parámetros del crédito (3.000 es un ejemplo, provisional) | `3000` | `null` (el del producto: 3.000) |
+| `cuotasVencidasParaRecuperacion` | PPER-9: cuotas atrasadas desde las que el crédito queda `listoParaRecuperacion` (solo se marca; el motor no ejecuta la dación ni la retoma, R6-RECUP-AUTO) | `2` | `null` (no se marca) |
 
 ### POST /api/v1/simulaciones
 
@@ -95,7 +103,7 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
   -d '{"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"meses":null,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO"}'
 ```
 
-Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs) y `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente). Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
+Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs), `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente) y `cobranzaActiva` (COB-6: si al crédito se le causan gastos de cobranza; `true` por defecto, como el Excel; en `false` un pago tardío causa mora pero no cobranza). Con el perfil NEGOCIO el valor diario de la cobranza sale de la clave `cobranzaDiaria`. Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
 
 ```json
 {"resumen": {"linea": "CPPU", "perfilReglas": "NEGOCIO", "montoFinanciado": "5904400", "tasaEA": "0.8762",
@@ -153,7 +161,8 @@ Response:
 
 ```json
 {"resumen": {"periodoFinal": "...", "estadoFinal": "CANCELADO", "saldoFinal": "0", "totalPagadoCliente": "...",
-             "cuotasVencidasMax": "...", "montoFinanciado": "5904400", "perfilReglas": "NEGOCIO"},
+             "cuotasVencidasMax": "...", "montoFinanciado": "5904400", "perfilReglas": "NEGOCIO",
+             "listoParaRecuperacion": false, "periodoListoParaRecuperacion": 41},
  "movimientos": [{"periodo": 42, "mes": 10, "estado": "VIGENTE_AL_DIA", "evento": "Cuota + abono extra",
                   "etiqueta": "Cuota + abono extra", "saldoInicial": "...", "serviciosCausados": {"fondoGarantias": "...", "asistencia": "...", "seguro": "...", "total": "..."},
                   "pendientesPagadosExtra": {"cobranza": "...", "mora": "...", "interesCorriente": "...", "servicios": {"...": "..."}, "capital": "...", "total": "..."},
@@ -165,6 +174,7 @@ Response:
 
 - `movimientos` empieza en el periodo 0 (desembolso, estado `DESEMBOLSADO`) y trae todos los campos de `Movimiento`; los `Servicios` y `DeudaExtinguida` van como objetos con su `total`. `etiqueta` es el `evento` del motor ("Pago normal", "Cuota + abono extra"…). Además vienen `pagoTotalCliente` y `pagoExtraordinario`.
 - Cada movimiento trae además `costoRecuperacion` y `costoRecuperacionAsumido` (R4-R2): el costo descontado en la dación o la retoma y la parte que asume la financiera (0 con `costoRecuperacionAlFondo = true`).
+- PPER-9: cada movimiento trae `listoParaRecuperacion` (boolean): el crédito llegó a `cuotasVencidasParaRecuperacion` cuotas atrasadas (2 con NEGOCIO) y sigue en mora. Es solo una marca: el motor no ejecuta la dación ni la retoma. El resumen trae `listoParaRecuperacion` (el del último periodo) y `periodoListoParaRecuperacion` (el primer periodo marcado; `null` si nunca llegó o el perfil no lo fija). Con EXCEL siempre `false` / `null`.
 - `asientos` sale de `Contabilizador.para(reglas del perfil)`: con EXCEL es igual a `Contabilizador.estandar()`; con NEGOCIO la cobranza causada va a `INGRESOS_NO_OPERACIONALES_COBRANZA` (R4-COBRANZA-CONTABLE) y los cierres con costo acreditan `CXP_COSTOS_RECUPERACION` (y debitan `GASTO_COSTOS_RECUPERACION` si lo asume la financiera). `cuadra` = débitos y créditos iguales al centavo (las sumas DECIMAL128 difieren en residuos de 1e-28; el `Contabilizador` además rechaza cualquier asiento con más de 1 COP de diferencia).
 
 ```bash
@@ -197,7 +207,7 @@ La respuesta de `/escenarios/ejecutar` (`resumen`, `movimientos`, `asientos`) m�
 
 - `caso`: número, nombre, descripción y fuente.
 - `perfilReglas`: el perfil con que corrió.
-- `credito`: el crédito del caso en formato de request (incluye `plazoLimitePeriodos`: 100 en el caso 8, 120 en el 9).
+- `credito`: el crédito del caso en formato de request (incluye `plazoLimitePeriodos`: en el caso 8, 100 con EXCEL y 104 con NEGOCIO por X4, 24 meses de `plazoLimiteMeses`; 120 en el 9 con los dos perfiles; y `cobranzaActiva`, `true`).
 - `instrucciones`: las del caso en formato de request, con todos los campos de su tipo explícitos. Las instrucciones "desde el periodo N" (caso 9: pago con 14 días de atraso desde el mes 10) llegan expandidas, una por periodo.
 
 Mandar `credito` + `instrucciones` a `/escenarios/ejecutar` con el mismo perfil da el mismo resultado (`CarteraControllerTest.lasInstruccionesDelCasoSeReejecutanIgual`). Ejemplo completo: [`api-ejemplos/caso-13-negocio.json`](api-ejemplos/caso-13-negocio.json).
@@ -229,7 +239,7 @@ Respuestas reales del API, generadas por `EjemplosApiTest` en cada `./mvnw test`
 3. **`modalidad`** es un solo campo para `ABONO_EXTRA` (ModalidadAbono) y `CAMBIO_TASA` (ModalidadCambioTasa), porque los dos records lo llaman igual.
 4. **Dinero sin redondear**: el contrato muestra `"219093.00"`; el API manda el valor completo del motor (`"219092.9355960436…"`) para no perder precisión, sin ceros sobrantes (`"5904400"`, `"0"`). Las tasas igual (`"0.0265654190161528"`, no `"0.0265"`).
 5. **`cuadra`** compara débitos y créditos **al centavo**, no con `==` exacto: con DECIMAL128 las sumas de un asiento cuadrado difieren en residuos de 1e-28 y la igualdad exacta daba `false` en asientos correctos.
-6. **Campos agregados** (no rompen el contrato): `catalogo.perfilesReglas`, `lineas[].periodicidades`, `periodicidades[].diasNominales/unidadCuota/cuotasMaximas`; `reglas.archivoNegocio`; `simulacion.resumen.linea/perfilReglas/serviciosPorCuota` y `plan[].mes/saldoInicial/cuotaFinanciera`; `ejecucion.resumen.montoFinanciado/perfilReglas`; en los movimientos `evento` (además de `etiqueta`), `pagoTotalCliente` y `pagoExtraordinario`; en los asientos `totalDebitos`, `totalCreditos` y en cada línea `nombreCuenta` y `explicacion`; en `/casos/{numero}` `perfilReglas` y `credito`; en `CreditoRequest` los costos de la operación y `plazoLimitePeriodos`.
+6. **Campos agregados** (no rompen el contrato): `catalogo.perfilesReglas`, `lineas[].periodicidades`, `periodicidades[].diasNominales/unidadCuota/cuotasMaximas`; `reglas.archivoNegocio`; `simulacion.resumen.linea/perfilReglas/serviciosPorCuota` y `plan[].mes/saldoInicial/cuotaFinanciera`; `ejecucion.resumen.montoFinanciado/perfilReglas`; en los movimientos `evento` (además de `etiqueta`), `pagoTotalCliente` y `pagoExtraordinario`; en los asientos `totalDebitos`, `totalCreditos` y en cada línea `nombreCuenta` y `explicacion`; en `/casos/{numero}` `perfilReglas` y `credito`; en `CreditoRequest` los costos de la operación, `plazoLimitePeriodos` y `cobranzaActiva` (COB-6); en los movimientos `listoParaRecuperacion` y en `ejecucion.resumen` `listoParaRecuperacion` y `periodoListoParaRecuperacion` (PPER-9).
 7. **Perfil por defecto**: `NEGOCIO` en simulaciones y escenarios, `EXCEL` en `/casos/{numero}` (el contrato no lo fija).
 8. **Error 500 `ASIENTO_DESCUADRADO`**: el contrato solo habla de 400 y 404; este es un error interno.
 

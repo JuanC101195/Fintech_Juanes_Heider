@@ -32,7 +32,7 @@ Pruebas: `src/test/java/co/financiera/cartera/casos/Caso2CambioTasaTest.java` (r
 5. **Ruido numérico en el motor (no es del Excel).** En la semana del cambio el motor deja capital vencido y mora del orden de 1e-27 por la resta `saldo − capital vencido` en DECIMAL128; está muy por debajo de `Calc.EPSILON_SALDO` y no cambia estado ni pagos. Se documenta por si en el futuro alguien compara contra cero exacto.
 6. **La usura no está en el Excel.** La hoja trata la baja de tasa como un dato de entrada (80 %), sin decir por qué cambia. La regla R-2.9 viene del acuerdo con negocio y se probó que, con usura 81 %, da exactamente el caso 2.
 
-7. **Usura publicada frente al cambio de tasa del Excel.** `CambioTasa` se ubica en la semana desde la que rige (el Excel: primera cuota del mes); `UsuraVigente` se ubica en la semana en que se publica la usura y rige desde la siguiente (T1). Las dos dan el mismo cronograma si la usura se publica la semana anterior a la cuota 44. **Pendiente (T5):** si el cliente está en mora cuando cambia la tasa, el motor sigue recalculando la cuota sobre el saldo total (punto 1); la respuesta de T5 no está implementada.
+7. **Usura publicada frente al cambio de tasa del Excel.** `CambioTasa` se ubica en la semana desde la que rige (el Excel: primera cuota del mes); `UsuraVigente` se ubica en la semana en que se publica la usura y rige desde la siguiente (T1). Las dos dan el mismo cronograma si la usura se publica la semana anterior a la cuota 44. **Resuelto (R4-T5, 2026-10-22):** con el cliente en mora la cuota nueva va solo sobre el capital vigente (punto 1); ver R-2.15.
 
 ## Preguntas para Diego
 
@@ -41,7 +41,7 @@ Pruebas: `src/test/java/co/financiera/cartera/casos/Caso2CambioTasaTest.java` (r
 3. Si la EA pactada es **igual** a la usura, ¿se deja así o también se baja un punto? El motor solo ajusta si la supera estrictamente.
 4. ¿Qué usura aplica: la de **consumo y ordinario** o la de **consumo de bajo monto / microcrédito**? (Liga con P5: ¿la EA de 87,32 % cumple la usura de la modalidad?)
 5. (Respondida, T4 2026-10-20: no vuelve a subir; si la usura baja de nuevo, se ajusta otra vez; R-2.12.) Si la usura **sube** después de un ajuste, ¿el crédito vuelve a la tasa pactada original o se queda en la ajustada? (Negocio dijo "tasa fija, solo cambia por ley"; el motor no sube tasas por su cuenta.)
-6. Si el cliente está **en mora** cuando cambia la tasa, ¿la cuota nueva se calcula sobre el saldo total o sobre el capital vigente? ¿El capital vencido sigue causando mora con la tasa vieja o con la nueva? (Hoy el motor usa la nueva.)
+6. (Respondida, R4-T5 2026-10-22: sobre el capital vigente; R-2.15.) Si el cliente está **en mora** cuando cambia la tasa, ¿la cuota nueva se calcula sobre el saldo total o sobre el capital vigente? ¿El capital vencido sigue causando mora con la tasa vieja o con la nueva? (Hoy el motor usa la nueva.)
 7. ¿El cambio debe quedar registrado como **novedad** (auditoría, aviso al cliente con la nueva cuota) aunque no tenga asiento contable?
 8. ¿FCC y seguro se mantienen iguales tras el cambio de tasa? (El Excel los deja constantes; relacionado con P6.)
 
@@ -54,3 +54,11 @@ Sin código: el motor no tiene fechas ni flujo de aprobación. Quedan como requi
 | R4-USURA-PLAZO | Si nadie autoriza la usura publicada, se aplica sola **1 día hábil** después de su publicación, también al lote de créditos vigentes. El motor recibe la usura como instrucción del periodo (`UsuraVigente`) y no sabe de días hábiles: el plazo lo cumple el proceso que publica la usura y arma el lote. El campo traía "1 días": se confirma en la ronda 5 (P5-USURA-DIA). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-USURA-PLAZO.** | Proceso de usura (módulo `procesos`, futuro) |
 | R4-AVISO-CLIENTE | No se avisa al cliente cuando cambia la tasa por usura. Es decisión del dueño de producto; **riesgo legal** anotado: la normativa de protección al consumidor financiero puede exigir informar el cambio de condiciones, y debe revisarlo el área jurídica antes de producción. **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-AVISO-CLIENTE.** | Proceso de usura; sin aviso en el motor ni en el API |
 | R4-SUPLENTE | Se nombra un suplente del autorizador de la usura (y del administrador de parámetros) con los mismos permisos y la misma bitácora (quién, qué, cuándo). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-SUPLENTE.** | Roles y bitácora (módulo de administración, futuro) |
+
+## Respuestas del documento "rptas software" (2026-10-22)
+
+| Id | Regla | Implementada en | Probada |
+|---|---|---|---|
+| R-2.15 · R4-T5 | Si el cliente está **en mora** cuando cambia la tasa (`CambioTasa` o `UsuraVigente`), la cuota nueva se recalcula **solo sobre el saldo capital vigente**: `cuota = PMT(tasa nueva; cuotas vigentes − periodo + 1; saldo − capital vencido)`. Lo vencido no entra a la cuota: sigue como capital vencido, causa mora y se cobra aparte por la prelación. Los intereses pendientes (CxC interés corriente y mora) nunca entran a la base: en Colombia está prohibido liquidar intereses sobre intereses (anatocismo). Clave `cambioTasaSobreCapitalVigente` (`true` en `config/`; `false` en `EXCEL`, que recalcula sobre el saldo total como hacía el motor desde el PR #8). Con el cliente al día las dos bases son iguales, así que el caso 2 del Excel no cambia. Con `MISMA_CUOTA` (caso 10, y la usura en NEGOCIO por USU-6) el motor ya recalculaba el plazo sobre el capital vigente: no cambia. **Fuente: respuesta de Diego 2026-10-22 (documento 'rptas software'), pregunta R4-T5.** | `MotorCartera.cambiarTasa`, `ReglasNegocio.cambioTasaSobreCapitalVigente` | `RespuestasDiegoDocumentoTest.T5CambioDeTasaConElClienteEnMora` |
+
+Queda abierta la otra mitad de la pregunta 6: el capital vencido causa mora con la tasa nueva desde el cambio (el motor usa la tasa vigente del periodo).
