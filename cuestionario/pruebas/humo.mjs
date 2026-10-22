@@ -62,13 +62,16 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
     await page.getByText('Agregar un comentario').first().click()
     await page.getByLabel('Comentario de la pregunta P5-USURA-DIA').fill('Un día hábil, como dije en la ronda 4')
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
+    // La ronda 6 (R6-*) aparece en su bloque y se puede responder.
+    await page.getByRole('button', { name: /Dación y retoma →/ }).click()
+    await page.getByRole('radio', { name: /el caso 11 se ajusta a 2 cuotas atrasadas/ }).check()
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
     const ultimo = enviados.at(-1)
     const filas = JSON.parse(ultimo.filas).filter((f) => f[3]).map((f) => [f[0], f[3], f[5], f[9]].join(' | '))
     console.log(`Guardados en la nube: ${enviados.length} (último final=${ultimo.final}, ${ultimo.completas} de ${ultimo.total})`)
     console.log(filas.join('\n'))
-    if (filas.length !== 2 || ultimo.completas !== 3 || !ultimo.final) fallas++
+    if (filas.length !== 3 || ultimo.completas !== 4 || !ultimo.final) fallas++
   }
   await contexto.close()
 }
