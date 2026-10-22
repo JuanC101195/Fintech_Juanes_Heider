@@ -1,12 +1,12 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-20**.
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-21** (ronda 4 respondida; ronda 5 abierta).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
 - **Decidida**: con su fuente (respuesta de Diego, decisión `D*` de `decisiones.md` o pregunta `P-*` del documento de Heider).
 - **Abierta**: tiene una pregunta en el cuestionario (`cuestionario/src/preguntas.ts`) y se indica su id.
-- **Reemplazada**: se volvió a preguntar en la ronda 4 con una versión concreta; la cuenta la pregunta nueva (`R4-*`).
+- **Reemplazada**: se volvió a preguntar en la ronda 4 o 5 con una versión concreta; la cuenta la pregunta nueva (`R4-*` o `P5-*`).
 - **Pendiente de un documento de Diego**: ya contestó o remitió a un archivo que aún no llega (Excel corregido, política de cobranza, PUC) o a una reunión.
 
 Solo las **decididas** cuentan como cerradas. Una pregunta respondida con una salvedad vigente (por ejemplo, PTOPE depende de la política de cobranza) cuenta como pendiente de documento.
@@ -17,23 +17,25 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 16 | 31 | 52 % |
+| Pagos, mora y cobranza | 20 | 33 | 61 % |
 | Servicios complementarios | 10 | 10 | 100 % |
-| Abonos y prepago | 11 | 14 | 79 % |
-| Cambio de tasa y usura | 10 | 13 | 77 % |
-| Dación y retoma | 10 | 13 | 77 % |
-| Contabilidad | 5 | 9 | 56 % |
-| Roles y parámetros | 4 | 5 | 80 % |
+| Abonos y prepago | 13 | 15 | 87 % |
+| Cambio de tasa y usura | 12 | 14 | 86 % |
+| Dación y retoma | 13 | 14 | 93 % |
+| Contabilidad | 7 | 9 | 78 % |
+| Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 1 | 3 | 33 % |
-| **Tabla A (preguntas del cuestionario)** | **67** | **98** | **68 %** |
+| **Tabla A (preguntas del cuestionario)** | **81** | **103** | **79 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **78** | **116** | **67 %** |
+| **Total de reglas inventariadas** | **92** | **121** | **76 %** |
 
-Las 98 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces) más las 16 de la ronda 4 (ids `R4-*`). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 103 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces) y las 6 de la ronda 5 (ids `P5-*`). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
-Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOPE, PCOB, PDIAS y COB-1 a COB-6 esperan la política de gastos de cobranza; PPER-8 y PPER-9 la política de ejecución de la dación; C2 y CON-1 el PUC; X1 y X4 el Excel corregido.
+Ronda 4 (21 oct 2026, 17:21): Diego contestó las 16 preguntas. 14 quedaron decididas (D35 a D41 de `decisiones.md`), R4-T5 sigue sin respuesta ("pendiente por dar respuesta") y R4-CASO13 cambió la regla (D37): se vuelve a validar con las cifras nuevas en P5-CASO13. Lo no seguro pasó a la ronda 5: P5-PRORRATEO, P5-LIMITE-DESDE, P5-PAGO-ANTES-PRIMERA, P5-CASO13, P5-COSTO-DACION y P5-USURA-DIA. Detalle en `respuestas-diego-2026-10-21-ronda4.md`.
+
+Hay 16 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOPE, PCOB, PDIAS y COB-1 a COB-6 esperan la política de gastos de cobranza; PPER-8 y PPER-9 la política de ejecución de la dación; C2 y CON-1 el PUC; X1 y X4 el Excel corregido; R4-T5 la respuesta de Diego.
 
 ## Tabla A · Reglas con pregunta en el cuestionario
 
@@ -69,11 +71,13 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | CAL-1 | Vencimiento los martes (1 de 3): ¿hasta qué momento del martes se paga a tiempo? | Decidida | Ronda 3 (20 oct 2026): La cuota es a tiempo hasta el fin del martes; el atraso empieza el miércoles (día 1). |
 | CAL-2 | Vencimiento los martes (2 de 3): si el martes es festivo, ¿cuándo vence la cuota? | Decidida | Ronda 3 (20 oct 2026): Sin manejo de festivos. |
 | CAL-3 | Vencimiento los martes (3 de 3): ¿cuándo vence la primera cuota y el martes es igual para todos los créditos? | Decidida | Ronda 3 (20 oct 2026): El martes es fijo para todos los créditos; la primera fecha se pacta en la oferta. |
-| R4-PLAZO-LINEA | Plazo máximo: ¿24 meses para todas las líneas o cada línea con su tope? | Abierta | Pregunta R4-PLAZO-LINEA del cuestionario (ronda 4) |
-| R4-PLAZO-LIMITE | ¿Cuántos periodos tiene el plazo límite de recuperación? | Abierta | Pregunta R4-PLAZO-LIMITE del cuestionario (ronda 4) |
+| R4-PLAZO-LINEA | Plazo máximo: ¿24 meses para todas las líneas o cada línea con su tope? | Decidida | Ronda 4 (21 oct 2026): Tope de 24 meses para todas las líneas en la primera versión, parametrizable; a futuro puede crecer. |
+| R4-PLAZO-LIMITE | ¿Cuántos periodos tiene el plazo límite de recuperación? | Decidida | Ronda 4 (21 oct 2026): El plazo límite de recuperación es de 24 meses, convertidos a periodos según la periodicidad (desde cuándo se cuenta, en la ronda 5). |
 
-| R4-QUIN | Quincenal: ¿son 24 periodos al año (y no 104)? | Abierta | Pregunta R4-QUIN del cuestionario (ronda 4) |
-| R4-MENSUAL-DIA | Mensual: ¿el día de pago es fijo para todos o se elige por crédito? | Abierta | Pregunta R4-MENSUAL-DIA del cuestionario (ronda 4) |
+| R4-QUIN | Quincenal: ¿son 24 periodos al año (y no 104)? | Decidida | Ronda 4 (21 oct 2026): La quincena tiene 24 periodos al año (el 104 era un error). |
+| R4-MENSUAL-DIA | Mensual: ¿el día de pago es fijo para todos o se elige por crédito? | Decidida | Ronda 4 (21 oct 2026): La mensual vence el día 5 de cada mes, igual para todos; la primera cuota se prorratea entre el desembolso y el próximo 5 (el cómo, en la ronda 5). |
+| P5-PRORRATEO | La primera cuota mensual se prorratea entre el desembolso y el próximo 5: ¿qué se prorratea y en qué periodicidades? | Abierta | Pregunta P5-PRORRATEO del cuestionario (ronda 5) |
+| P5-LIMITE-DESDE | El plazo límite de recuperación (24 meses): ¿desde el desembolso o desde el primer atraso? | Abierta | Pregunta P5-LIMITE-DESDE del cuestionario (ronda 5) |
 ### Servicios complementarios
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -105,10 +109,12 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | ABN-4 | Un abono extra recibido entre cuotas, ¿se aplica de una vez o junto con la siguiente cuota? | Decidida | Ronda 3 (20 oct 2026): Pagar antes del martes el valor exacto de una cuota ya causada es pago corriente, no anticipo; lo que supere ese valor es abono extra. |
 | ABN-5 | Con varios abonos a menor cuota, ¿cada uno recalcula la cuota hasta la cuota pactada? | Decidida | Ronda 3 (20 oct 2026): Cada abono a menor cuota recalcula la cuota sobre las cuotas restantes. |
 | ABN-6 | En un prepago total, ¿hay algún costo y cuándo se entrega el paz y salvo? | Decidida | Ronda 3 (20 oct 2026): El prepago no tiene costo; paz y salvo y liberación de la prenda en 30 días. |
-| R4-PAGO-SIN-CUOTA | Pago sin cuota causada: ¿todo es abono extra o saldo a favor? | Abierta | Pregunta R4-PAGO-SIN-CUOTA del cuestionario (ronda 4) |
-| R4-CASO13 | Caso 13 (abono extra con pendientes): ¿los valores son correctos? | Abierta | Pregunta R4-CASO13 del cuestionario (ronda 4) |
+| R4-PAGO-SIN-CUOTA | Pago sin cuota causada: ¿todo es abono extra o saldo a favor? | Decidida | Ronda 4 (21 oct 2026): Solo antes de la primera cuota no hay cuota causada; después un pago cubre la cuota causada y lo que sobre es abono extra (ABN-4). |
+| R4-CASO13 | Caso 13 (abono extra con pendientes): ¿los valores son correctos? | Reemplazada por P5-CASO13 | Ronda 4 (21 oct 2026): Se paga todo lo vencido, pero el sobrante (1.182.645,20) vuelve a pasar por la prelación de las 7 líneas; solo el resto va a capital. Cambia D21/D30. No cuenta en el total: la cuenta P5-CASO13. |
 
-| R4-A3 | ¿Se acepta cualquier abono extra o hay un valor mínimo? | Abierta | Pregunta R4-A3 del cuestionario (ronda 4) |
+| R4-A3 | ¿Se acepta cualquier abono extra o hay un valor mínimo? | Decidida | Ronda 4 (21 oct 2026): No hay valor mínimo para el abono extra. |
+| P5-PAGO-ANTES-PRIMERA | Un pago antes de la primera cuota: ¿abono extra a capital o se guarda para la primera cuota? | Abierta | Pregunta P5-PAGO-ANTES-PRIMERA del cuestionario (ronda 5) |
+| P5-CASO13 | Caso 13 recalculado con el sobrante por la prelación: ¿las cifras nuevas son correctas? | Abierta | Pregunta P5-CASO13 del cuestionario (ronda 5) |
 ### Cambio de tasa y usura
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -127,9 +133,10 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | USU-7 | ¿Qué otras causas externas, además de la usura, pueden cambiar la tasa de un crédito? | Decidida | Ronda 3 (20 oct 2026): Solo cambian la tasa la usura y la ley o regulación. |
 | USU-8 | Tras un cambio de tasa, ¿cambian el fondo de garantías, la asistencia y el seguro? ¿Se avisa al cliente? | Reemplazada por R4-AVISO-CLIENTE | Ronda 3 (20 oct 2026): Los servicios (fondo, asistencia, seguro) no cambian con la tasa. Dijo que no se avisa al cliente; falta confirmarlo con legal. No cuenta en el total: la cuenta R4-AVISO-CLIENTE. |
 
-| R4-T5 | Con el cliente en mora, ¿sobre qué saldo se recalcula la cuota al cambiar la tasa? | Abierta | Pregunta R4-T5 del cuestionario (ronda 4) |
-| R4-USURA-PLAZO | Si nadie autoriza la usura, ¿a los cuántos días hábiles se aplica sola y vale para el lote de vigentes? | Abierta | Pregunta R4-USURA-PLAZO del cuestionario (ronda 4) |
-| R4-AVISO-CLIENTE | ¿Se avisa al cliente cuando cambia la tasa o se valida con legal? | Abierta | Pregunta R4-AVISO-CLIENTE del cuestionario (ronda 4) |
+| R4-T5 | Con el cliente en mora, ¿sobre qué saldo se recalcula la cuota al cambiar la tasa? | Pendiente de un documento de Diego | Ronda 4 (21 oct 2026): Pendiente: Diego aún no responde. Dijo "pendiente por dar respuesta"; no se vuelve a preguntar. |
+| R4-USURA-PLAZO | Si nadie autoriza la usura, ¿a los cuántos días hábiles se aplica sola y vale para el lote de vigentes? | Decidida | Ronda 4 (21 oct 2026): Si nadie autoriza, la usura se aplica sola 1 día hábil después de su publicación, también al lote de vigentes. |
+| R4-AVISO-CLIENTE | ¿Se avisa al cliente cuando cambia la tasa o se valida con legal? | Decidida | Ronda 4 (21 oct 2026): No se avisa al cliente cuando cambia la tasa (decisión del dueño de producto; conviene validarla con legal). |
+| P5-USURA-DIA | Si nadie autoriza la usura, ¿se aplica sola a 1 día hábil de su publicación? | Abierta | Pregunta P5-USURA-DIA del cuestionario (ronda 5) |
 ### Dación y retoma
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -146,10 +153,11 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | REC-6 | ¿Quién fija el valor de la dación o la retoma? | Reemplazada por R4-PERITO | Ronda 3 (20 oct 2026): Valor de dación o retoma = guía Fasecolda × 65 %, con perito externo como segunda opción; falta cuándo aplica el perito. No cuenta en el total: la cuenta R4-PERITO. |
 | REC-7 | Si el cliente nunca se pone al día y llega al plazo límite con saldo, ¿qué ocurre? | Decidida | Ronda 3 (20 oct 2026): Al llegar al plazo límite con saldo, la recuperación (dación o retoma) es obligatoria. |
 | REC-8 | La semana del siniestro o de la recuperación, ¿cuenta como cuota vencida? | Decidida | Ronda 3 (20 oct 2026): La semana del evento cuenta como vencida. |
-| R4-FONDO-TOPE | ¿El fondo de garantías tiene un tope que el motor deba controlar? | Abierta | Pregunta R4-FONDO-TOPE del cuestionario (ronda 4) |
+| R4-FONDO-TOPE | ¿El fondo de garantías tiene un tope que el motor deba controlar? | Decidida | Ronda 4 (21 oct 2026): El fondo de garantías no tiene tope por crédito. |
 
-| R4-R2 | Al recuperar la moto, ¿se descuenta el costo real con soporte? | Abierta | Pregunta R4-R2 del cuestionario (ronda 4) |
-| R4-PERITO | Valor Fasecolda × 65 %: ¿cuándo se usa el perito externo? | Abierta | Pregunta R4-PERITO del cuestionario (ronda 4) |
+| R4-R2 | Al recuperar la moto, ¿se descuenta el costo real con soporte? | Decidida | Ronda 4 (21 oct 2026): En la recuperación se descuenta el costo real con soporte (grúa, bodegaje, avalúo, trámites), en dación y en retoma. |
+| R4-PERITO | Valor Fasecolda × 65 %: ¿cuándo se usa el perito externo? | Decidida | Ronda 4 (21 oct 2026): El perito externo se usa cuando la moto está en Fasecolda pero su estado real es de alto deterioro; en lo demás, Fasecolda × 65 %. |
+| P5-COSTO-DACION | En la dación, el costo real de la recuperación: ¿lo cubre el fondo de garantías o la financiera? | Abierta | Pregunta P5-COSTO-DACION del cuestionario (ronda 5) |
 ### Contabilidad
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -164,8 +172,8 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | CON-3 | ¿Por cuáles canales llegan los pagos y cómo se sabe a qué crédito pertenecen? | Decidida | Ronda 3 (20 oct 2026): El CRM entrega cada pago asociado a su crédito. |
 | CON-4 | Los gastos de cobranza, ¿son ingreso de la financiera o se giran a un tercero? | Reemplazada por R4-COBRANZA-CONTABLE | Ronda 3 (20 oct 2026): Los gastos de cobranza no son ingreso: son compensación de gastos reales; falta el tratamiento contable. No cuenta en el total: la cuenta R4-COBRANZA-CONTABLE. |
 
-| R4-C5 | ¿El GPS y los gastos comerciales son parte del alistamiento? | Abierta | Pregunta R4-C5 del cuestionario (ronda 4) |
-| R4-COBRANZA-CONTABLE | Los gastos de cobranza son compensación de gastos reales: ¿cómo se registran? | Abierta | Pregunta R4-COBRANZA-CONTABLE del cuestionario (ronda 4) |
+| R4-C5 | ¿El GPS y los gastos comerciales son parte del alistamiento? | Decidida | Ronda 4 (21 oct 2026): El pago inicial se resta del valor total (moto + alistamiento + GPS + gastos comerciales); el GPS y los gastos comerciales son parte del alistamiento. |
+| R4-COBRANZA-CONTABLE | Los gastos de cobranza son compensación de gastos reales: ¿cómo se registran? | Decidida | Ronda 4 (21 oct 2026): Los gastos de cobranza se registran como ingresos no operacionales, para que no se imputen como mayor interés de financiación (PUC clase 42). |
 ### Roles y parámetros
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -176,7 +184,7 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | ROL-4 | ¿Un cambio de parámetro sensible necesita segundo aprobador y queda en bitácora? | Decidida | Ronda 3 (20 oct 2026): El administrador cambia de inmediato, con bitácora (quién, qué, cuándo), sin segundo aprobador. |
 | ROL-5 | Después del simulador y el motor de abonos, ¿cuál es el siguiente alcance? | Decidida | Ronda 3 (20 oct 2026): El siguiente alcance es el motor de scoring, antes de la fábrica de créditos. |
 
-| R4-SUPLENTE | Un solo administrador sin suplente: ¿qué pasa si no está? | Abierta | Pregunta R4-SUPLENTE del cuestionario (ronda 4) |
+| R4-SUPLENTE | Un solo administrador sin suplente: ¿qué pasa si no está? | Decidida | Ronda 4 (21 oct 2026): Se nombra un suplente con los mismos permisos y la misma bitácora. |
 ### Ajustes al Excel
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -192,12 +200,12 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 |---|---|---|
 | Arquitectura: monolito modular en Java 21 con Spring Modulith | Decidida | D1, `adr/0001-monolito-modular.md` |
 | Tasas efectivas: semanal = (1+EA)^(1/52) − 1 y diaria = (1+EA)^(1/365) − 1, en doble precisión como el Excel | Decidida | D9 |
-| Pago inicial opcional que digita el asesor y se resta del total | Decidida | D10, P-09 (la base del total sigue abierta en C5) |
+| Pago inicial opcional que digita el asesor y se resta del total | Decidida | D10, D41, P-09 (la base del total quedó cerrada en R4-C5) |
 | «FCC» se llama fondo de garantías en el código y en la cuenta contable | Decidida | D14, P-07 |
 | Fuente de verdad: Excel del 11 de octubre; línea CPPU 87,62 % E.A. con 104 cuotas semanales; catálogo de líneas | Decidida | D15, P-10 |
 | Casos 10 (cambio de tasa conservando la cuota), 11 (pago inferior + dación) y 12 (normalización) | Decidida | D18 |
 | Servicios sobre el monto financiado inicial, hasta la cuota pactada; en mora solo se causa el seguro | Decidida | D7, D17, P-07 |
-| Periodicidad configurable por crédito (semanal, quincenal, mensual); las reglas de cálculo están en PPER y PPER-1 a PPER-10; la quincena se confirma en R4-QUIN | Decidida (principio) | D24, `adr/0002-periodicidad-configurable.md` |
+| Periodicidad configurable por crédito (semanal, quincenal, mensual); las reglas de cálculo están en PPER y PPER-1 a PPER-10; la quincena con 24 periodos quedó confirmada en R4-QUIN; la mensual vence el día 5 y la primera cuota se prorratea (P5-PRORRATEO) | Decidida (principio) | D24, `adr/0002-periodicidad-configurable.md` |
 | IVA del 19 % en fondo de garantías y asistencia; el seguro está exento | Decidida | P-08 |
 | Los estados del Excel son la lista oficial (ampliable) | Decidida | P-21 |
 | Las cuotas vencen los martes; sin manejo de festivos por ahora (el detalle del atraso está en CAL-1 a CAL-3) | Decidida | P-06 |
@@ -205,8 +213,8 @@ Hay 15 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTO
 | P-15 y P10: pagos que combinan eventos (tardío e incompleto a la vez); no hay caso de referencia | Pendiente de un documento de Diego | Remitió al Excel corregido; `pendientes-tecnicos.md` n.º 7 |
 | P-25: el indicador del caso 9 está escrito a mano | Pendiente de un documento de Diego | Sin respuesta; se espera el Excel corregido |
 | Definición de «cuotas eliminadas» (caso 6) y de «periodos adicionales» (caso 8, validación 28) | Pendiente de un documento de Diego | El Excel no las define; se esperan en el Excel corregido |
-| Política de gastos de cobranza completa | Pendiente de un documento de Diego | Política que enviará Diego; cubre PTOPE, PCOB, R4-R2 y COB-1 a COB-6 |
-| P-04: plan de cuentas (PUC), por línea y por cuenta | Pendiente de un documento de Diego | Lo enviará por correo; cubre C2 y CON-1 |
+| Política de gastos de cobranza completa | Pendiente de un documento de Diego | Política que enviará Diego; cubre PTOPE, PCOB, PDIAS y COB-1 a COB-6; el registro contable como ingreso no operacional ya está decidido en R4-COBRANZA-CONTABLE |
+| P-04: plan de cuentas (PUC), por línea y por cuenta | Pendiente de un documento de Diego | Lo enviará por correo; cubre C2 y CON-1 (la clase 42 de la cobranza en R4-COBRANZA-CONTABLE espera la cuenta exacta) |
 | P-23: reglas sin caso en el Excel (idempotencia, reversos, trazabilidad, clasificación de pagos) | Pendiente de un documento de Diego | Va a reunión; sin fecha |
 
 ## Cómo se mide el avance
