@@ -115,3 +115,9 @@ Las preguntas nuevas llevan id local (P-C1.x) para no chocar con los otros casos
 - **P-C1.d** (nueva) Para la contabilidad real, ¿hay que separar "CxP servicios a terceros" por tercero (fondo de garantías, asistencia, aseguradora) y el IVA generado?
 - **P-C1.e** (nueva) ¿Cómo se contabiliza y quién recauda la cuota inicial? ¿Se exige antes del desembolso?
 - **P-C1.f** (nueva) Plazos permitidos del producto: ¿hay mínimo y máximo (las invariantes prueban de 6 a 36 meses y EA de 20 % a 120 %)? ¿Cuál es el horizonte máximo de proyección con saldo pendiente?
+
+## Respuestas del documento "rptas software" (2026-10-22)
+
+| Id | Regla | Implementada en | Probada |
+|---|---|---|---|
+| X1 | **Todas las operaciones tienen servicios complementarios** (fondo de garantías, asistencia y seguro); la hoja Casos decía que solo se simulaban en el caso 1, pero era un ejemplo. El motor ya los causaba en todos los casos, con los dos perfiles: la causación (`MotorCartera.causar`) no depende del caso, y en el Excel del 11 de octubre las 12 hojas traen las columnas de servicios. En los periodos pagados al día se causan los tres; en atraso, sin pago o en la semana de la recuperación solo el seguro (D17). Lo único sin servicios son los "Periodo adicional" después de la última cuota (o del plazo que acortó un abono, SRV-2), que es la pregunta P6, no X1. Sin cambios en el código. **Fuente: respuesta de Diego 2026-10-22 (documento 'rptas software'), pregunta X1.** | `MotorCartera.causar` (sin cambios) | `RespuestasDiegoDocumentoTest.X1ServiciosEnTodosLosCasos` (los 13 casos con EXCEL y NEGOCIO) |
