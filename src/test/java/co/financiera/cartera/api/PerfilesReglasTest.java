@@ -12,7 +12,8 @@ class PerfilesReglasTest {
     void lasReglasDeNegocioVanEmpaquetadasEnElClasspath() {
         assertThat(PerfilesReglas.leerDelClasspath("config/reglas-negocio.properties"))
                 .containsEntry("modalidadUsura", "MISMA_CUOTA")
-                .containsEntry("aplicacionAbono", "PRIMERO_PENDIENTES");
+                .containsEntry("aplicacionAbono", "PRELACION_COMPLETA")
+                .containsEntry("plazoLimiteMeses", "24");
     }
 
     @Test

@@ -3,7 +3,6 @@ package co.financiera.cartera.nucleo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import co.financiera.cartera.nucleo.CalendarioPagos.DiaPagoMensual;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -62,11 +61,11 @@ class CalendarioPagosTest {
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("5 y el 20");
     }
 
+    /** R4-MENSUAL-DIA (Diego, ronda 4, 2026-10-21): la mensual vence el día 5, fijo para todos. */
     @Test
-    void mensualAdmiteElDia1YElDia5ComoOpcion() {
-        CalendarioPagos dia1 = CalendarioPagos.mensual(f("2026-10-20"), DiaPagoMensual.DIA_1, f("2026-11-01"));
-        CalendarioPagos dia5 = CalendarioPagos.mensual(f("2026-10-20"), DiaPagoMensual.DIA_5, f("2026-11-05"));
-        assertThat(dia1.vencimiento(24)).isEqualTo(f("2028-10-01"));
+    void mensualVenceElDia5DeCadaMes() {
+        CalendarioPagos dia5 = CalendarioPagos.mensual(f("2026-10-20"), f("2026-11-05"));
+        assertThat(CalendarioPagos.DIA_PAGO_MENSUAL).isEqualTo(5);
         assertThat(dia5.vencimiento(24)).isEqualTo(f("2028-10-05"));
         assertThat(dia5.vencimiento(4)).isEqualTo(f("2027-02-05"));
     }
@@ -74,21 +73,22 @@ class CalendarioPagosTest {
     @Test
     void mensualCuentaLosDiasRealesDelMes() {
         // PPER-5: un mes sin pago son 28, 29, 30 o 31 días según el mes.
-        CalendarioPagos c = CalendarioPagos.mensual(f("2026-12-15"), DiaPagoMensual.DIA_1, f("2027-01-01"));
+        CalendarioPagos c = CalendarioPagos.mensual(f("2026-12-15"), f("2027-01-05"));
         assertThat(c.diasDelPeriodo(2)).isEqualTo(31); // enero
         assertThat(c.diasDelPeriodo(3)).isEqualTo(28); // febrero 2027
         assertThat(c.diasDelPeriodo(4)).isEqualTo(31); // marzo
         assertThat(c.diasDelPeriodo(5)).isEqualTo(30); // abril
         assertThat(c.diasDelPeriodo(15)).isEqualTo(29); // febrero 2028, bisiesto
-        assertThat(c.diasAtraso(2, f("2027-02-02"))).isEqualTo(1);
+        assertThat(c.diasAtraso(2, f("2027-02-06"))).isEqualTo(1);
     }
 
     @Test
-    void mensualNoTieneDiaPorDefectoYLaFechaDebeCoincidir() {
-        assertThatThrownBy(() -> CalendarioPagos.mensual(f("2026-10-20"), null, f("2026-11-01")))
-                .isInstanceOf(NullPointerException.class).hasMessageContaining("día de pago");
-        assertThatThrownBy(() -> CalendarioPagos.mensual(f("2026-10-20"), DiaPagoMensual.DIA_5, f("2026-11-01")))
-                .isInstanceOf(IllegalArgumentException.class);
+    void mensualRechazaUnaPrimeraFechaQueNoSeaUn5() {
+        // La opción del día 1 se retiró (R4-MENSUAL-DIA).
+        assertThatThrownBy(() -> CalendarioPagos.mensual(f("2026-10-20"), f("2026-11-01")))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("día 5");
+        assertThatThrownBy(() -> CalendarioPagos.mensual(f("2026-10-20"), null))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test

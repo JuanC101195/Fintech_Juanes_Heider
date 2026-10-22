@@ -8,6 +8,7 @@ import co.financiera.cartera.contabilidad.reglas.RecaudoConVencidos;
 import co.financiera.cartera.contabilidad.reglas.RecaudoCuota;
 import co.financiera.cartera.contabilidad.reglas.Retoma;
 import co.financiera.cartera.nucleo.motor.Movimiento;
+import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +28,30 @@ public final class Contabilizador {
      * paralelo no choquen).
      */
     public static Contabilizador estandar() {
+        return new Contabilizador(reglas(Cuenta.INGRESOS_COBRANZA));
+    }
+
+    /**
+     * Las reglas contables según el perfil de negocio. Hoy cambia una cosa: con
+     * {@code cobranzaIngresoNoOperacional} (Diego, R4-COBRANZA-CONTABLE, ronda 4) la cobranza causada va a
+     * {@link Cuenta#INGRESOS_NO_OPERACIONALES_COBRANZA} (PUC clase 42) en lugar de "Ingresos por cobranza"
+     * del Excel. Con {@code ReglasNegocio.EXCEL} es igual a {@link #estandar()}.
+     */
+    public static Contabilizador para(ReglasNegocio reglasNegocio) {
+        return new Contabilizador(reglas(reglasNegocio.cobranzaIngresoNoOperacional()
+                ? Cuenta.INGRESOS_NO_OPERACIONALES_COBRANZA : Cuenta.INGRESOS_COBRANZA));
+    }
+
+    private static List<ReglaContable> reglas(Cuenta ingresoCobranza) {
         List<ReglaContable> reglas = new ArrayList<>();
         reglas.add(new RecaudoCuota());        // caso 1: cuota pagada completa y a tiempo
         reglas.add(new AbonoExtraordinario()); // casos 5, 6 y 7: prepago y abono extra
         reglas.add(new PagoInferior());        // caso 8: pago incompleto y reclasificación a vencida
-        reglas.add(new CobranzaYMora());       // caso 9: pago tardío con cobranza y mora
+        reglas.add(new CobranzaYMora(ingresoCobranza)); // caso 9: pago tardío con cobranza y mora
         reglas.add(new RecaudoConVencidos());  // casos 8 y 12: semanas que recuperan vencidos
         reglas.add(new DacionEnPago());        // caso 3: moto recibida por menos que la deuda
         reglas.add(new Retoma());              // caso 4: moto recibida por más que la deuda
-        return new Contabilizador(reglas);
+        return reglas;
     }
 
     public List<Asiento> contabilizar(Movimiento movimiento) {

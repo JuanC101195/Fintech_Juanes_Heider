@@ -56,8 +56,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServicioCartera {
 
-    /** Periodicidades cuyo número de periodos por año falta confirmar con Diego (QUINCENAL: 24 o 104). */
-    static final Set<Periodicidad> POR_CONFIRMAR = Set.of(Periodicidad.QUINCENAL);
+    /**
+     * Periodicidades cuyo número de periodos por año falta confirmar con Diego. Vacío desde la ronda 4: la
+     * quincenal son 24 periodos por año (R4-QUIN, 2026-10-21). Los campos {@code porConfirmar} del API se
+     * conservan (en {@code false} y vacío) para no romper a quien ya los lee.
+     */
+    static final Set<Periodicidad> POR_CONFIRMAR = Set.of();
 
     private static final Map<LineaCredito, String> NOMBRES_LINEAS = Map.of(
             LineaCredito.CPPU, "Crédito popular productivo urbano",
@@ -77,11 +81,19 @@ public class ServicioCartera {
             new ClaveDto("aplicacionAbono", "Cómo se aplica un abono extra o un prepago cuando hay pendientes", "A4"),
             new ClaveDto("interesPrepagoPorDias", "Si el prepago cobra el interés de los días desde la última cuota", "A6"),
             new ClaveDto("margenUsura", "Puntos de EA por debajo de la usura a los que se lleva un crédito que la supera", "T2"),
-            new ClaveDto("modalidadUsura", "Qué se conserva cuando la usura obliga a bajar la tasa", "USU-6"));
+            new ClaveDto("modalidadUsura", "Qué se conserva cuando la usura obliga a bajar la tasa", "USU-6"),
+            new ClaveDto("costoRecuperacionAlFondo",
+                    "En la dación, si el costo real de la recuperación se suma al faltante que cubre el fondo (provisional)",
+                    "R4-R2 / P5-COSTO-DACION"),
+            new ClaveDto("cobranzaIngresoNoOperacional",
+                    "Si los gastos de cobranza se contabilizan como ingreso no operacional (PUC clase 42)",
+                    "R4-COBRANZA-CONTABLE"),
+            new ClaveDto("plazoLimiteMeses",
+                    "Plazo límite de recuperación en meses para créditos nuevos y simulaciones; vacío = el del producto",
+                    "R4-PLAZO-LIMITE"));
 
     private final PerfilesReglas perfiles;
     private final MotorCartera motor = new MotorCartera();
-    private final Contabilizador contabilizador = Contabilizador.estandar();
 
     public ServicioCartera(PerfilesReglas perfiles) {
         this.perfiles = perfiles;
@@ -96,7 +108,7 @@ public class ServicioCartera {
                 .toList();
         List<PeriodicidadDto> pers = Arrays.stream(Periodicidad.values())
                 .map(p -> new PeriodicidadDto(p.name(), p.periodosPorAnio(), p.adjetivo(), POR_CONFIRMAR.contains(p),
-                        p.diasNominales(), p.unidadCuota(), p.cuotasEnMeses(ParametrosProducto.PLAZO_MAXIMO_MESES)))
+                        p.diasNominales(), p.unidadCuota(), p.cuotasEnMeses(plazoMaximoCatalogo())))
                 .toList();
         Operacion o = Operacion.ejemploExcel();
         ParametrosProducto p = ParametrosProducto.replicaExcel();
@@ -104,7 +116,7 @@ public class ServicioCartera {
         defecto.put("linea", LineaCredito.CPPU.name());
         defecto.put("periodicidad", p.periodicidad().name());
         defecto.put("cuotas", String.valueOf(p.numeroCuotas()));
-        defecto.put("plazoMaximoMeses", String.valueOf(ParametrosProducto.PLAZO_MAXIMO_MESES));
+        defecto.put("plazoMaximoMeses", String.valueOf(LineaCredito.CPPU.plazoMaximoMeses()));
         defecto.put("valorMoto", texto(o.valorMoto()));
         defecto.put("matriculaRunt", texto(o.matriculaRunt()));
         defecto.put("soat", texto(o.soat()));
@@ -124,6 +136,11 @@ public class ServicioCartera {
         return new CatalogoResponse(lineas, pers, Instrucciones.tipos(), nombres(Instruccion.ModalidadAbono.values()),
                 nombres(Instruccion.ModalidadCambioTasa.values()), nombres(Instruccion.TipoRecuperacion.values()),
                 nombres(Perfil.values()), defecto);
+    }
+
+    /** El mayor plazo máximo del catálogo de líneas (R4-PLAZO-LINEA: hoy 24 en todas). */
+    private static int plazoMaximoCatalogo() {
+        return Arrays.stream(LineaCredito.values()).mapToInt(LineaCredito::plazoMaximoMeses).max().orElseThrow();
     }
 
     private static List<String> nombres(Enum<?>[] valores) {
@@ -164,7 +181,7 @@ public class ServicioCartera {
             throw ApiException.validacion("Falta el crédito");
         }
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
-        ParametrosProducto p = parametros(c);
+        ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Operacion o = operacion(c);
         List<Movimiento> movs = motor.ejecutar(new Escenario(o, p).conReglas(perfiles.reglas(perfil)));
         List<FilaPlan> plan = new ArrayList<>();
@@ -204,7 +221,7 @@ public class ServicioCartera {
         }
         CreditoRequest c = r.credito();
         Perfil perfil = perfil(r.perfilReglas() != null ? r.perfilReglas() : c.perfilReglas(), Perfil.NEGOCIO);
-        ParametrosProducto p = parametros(c);
+        ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil));
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
         if (r.instrucciones() != null) {
@@ -259,7 +276,7 @@ public class ServicioCartera {
         ResumenEjecucion resumen = new ResumenEjecucion(ultimo.periodo(), ultimo.estado().name(), texto(ultimo.saldoFinal()),
                 texto(totalPagado), vencidasMax, texto(e.operacion().montoFinanciado()), perfil.name());
         List<AsientoDto> asientos = incluirAsientos
-                ? contabilizador.contabilizar(movs).stream().map(ServicioCartera::asiento).toList()
+                ? Contabilizador.para(e.reglas()).contabilizar(movs).stream().map(ServicioCartera::asiento).toList()
                 : List.of();
         return new EjecucionResponse(resumen, movs.stream().map(ServicioCartera::movimiento).toList(), asientos);
     }
@@ -285,10 +302,15 @@ public class ServicioCartera {
         return Enumeraciones.leer(LineaCredito.class, c.linea(), LineaCredito.CPPU, "linea");
     }
 
-    static ParametrosProducto parametros(CreditoRequest c) {
+    /**
+     * Parámetros del crédito del request. Si el request no trae {@code plazoLimitePeriodos} y el perfil fija
+     * {@code plazoLimiteMeses} (R4-PLAZO-LIMITE: 24 meses en NEGOCIO), el plazo límite son esos meses en
+     * periodos del crédito; con EXCEL queda el del producto (120 semanas convertidas).
+     */
+    static ParametrosProducto parametros(CreditoRequest c, ReglasNegocio reglas) {
         LineaCredito linea = linea(c);
         Periodicidad per = Enumeraciones.leer(Periodicidad.class, c.periodicidad(), Periodicidad.SEMANAL, "periodicidad");
-        int maxMeses = Math.min(linea.plazoMaximoMeses(), ParametrosProducto.PLAZO_MAXIMO_MESES);
+        int maxMeses = linea.plazoMaximoMeses();
         int maxCuotas = per.cuotasEnMeses(maxMeses);
         if (c.cuotas() == null && c.meses() == null) {
             throw ApiException.validacion("Mande cuotas o meses", "cuotas");
@@ -326,6 +348,11 @@ public class ServicioCartera {
                 throw ApiException.validacion("El plazo límite debe ser al menos 1 periodo", "plazoLimitePeriodos");
             }
             p = p.conPlazoLimite(c.plazoLimitePeriodos());
+        } else {
+            java.util.OptionalInt limite = reglas.plazoLimitePeriodos(per, n);
+            if (limite.isPresent()) {
+                p = p.conPlazoLimite(limite.getAsInt());
+            }
         }
         return p;
     }
@@ -372,7 +399,8 @@ public class ServicioCartera {
                 texto(m.inventario()), texto(m.cxcFondoGarantias()), texto(m.cxpDeudor()), servicios(m.pagoTerceros()),
                 servicios(m.pagosServicios()), servicios(m.cxcServiciosPorConcepto()), deuda(m.extinguido()),
                 texto(m.capitalVencidoInicial()), deuda(m.pendientesPagadosExtra()), texto(m.interesPrepago()),
-                texto(m.pagoTotalCliente()), texto(m.pagoExtraordinario()));
+                texto(m.costoRecuperacion()), texto(m.costoRecuperacionAsumido()), texto(m.pagoTotalCliente()),
+                texto(m.pagoExtraordinario()));
     }
 
     static AsientoDto asiento(Asiento a) {

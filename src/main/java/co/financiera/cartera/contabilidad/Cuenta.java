@@ -21,7 +21,20 @@ public enum Cuenta {
     CXC_SEGUROS("CxC seguros"),
     INVENTARIO_MOTOS("Inventario de motos"),
     CXC_FONDO_GARANTIAS("CxC Fondo de garantías"),
-    CXP_DEUDOR("CxP deudor");
+    CXP_DEUDOR("CxP deudor"),
+    /**
+     * R4-COBRANZA-CONTABLE (Diego, ronda 4, 2026-10-21): los gastos de cobranza son ingreso no operacional
+     * (PUC clase 42), para que no se imputen como mayor interés de financiación. La subcuenta exacta la fija
+     * contabilidad con el PUC (C2). Solo la usa el perfil de negocio ({@code Contabilizador.para}).
+     */
+    INGRESOS_NO_OPERACIONALES_COBRANZA("Ingresos no operacionales por gastos de cobranza (PUC 42)"),
+    /**
+     * R4-R2: costo real de la recuperación con soporte (grúa, bodegaje, avalúo, trámites) que se paga a los
+     * proveedores y se descuenta en la dación o la retoma. Provisional hasta que contabilidad defina el PUC.
+     */
+    CXP_COSTOS_RECUPERACION("CxP costos de recuperación (grúa, bodegaje, avalúo, trámites)"),
+    /** R4-R2: la parte del costo de recuperación que asume la financiera (dación sin cargo al fondo). */
+    GASTO_COSTOS_RECUPERACION("Gasto por costos de recuperación asumidos");
 
     private final String nombreExcel;
 

@@ -30,9 +30,6 @@ public record ParametrosProducto(
         BigDecimal cobranzaDiaria,
         int plazoLimitePeriodos) {
 
-    /** Plazo máximo de cualquier crédito, sin importar la línea ni la periodicidad (Diego, PPER-2). */
-    public static final int PLAZO_MAXIMO_MESES = 24;
-
     /**
      * Horizonte de proyección por defecto de un crédito con saldo pendiente: las 120 semanas del Excel
      * (Inputs C72) convertidas a periodos del crédito con ROUNDDOWN(semanas × ppa / 52), como hace el
@@ -55,10 +52,23 @@ public record ParametrosProducto(
     /**
      * Producto de una línea de crédito con la periodicidad y el número de cuotas que se pacten (Diego,
      * PPER-2: el plazo se pacta en cuotas). Las cuotas no pueden pasar ROUNDDOWN(plazo máximo × ppa / 12),
-     * con plazo máximo = el menor entre el de la línea y 24 meses: semanal 104, quincenal 48, mensual 24.
+     * con el plazo máximo de la línea (R4-PLAZO-LINEA: 24 meses en todas): semanal 104, quincenal 48,
+     * mensual 24.
      */
     public static ParametrosProducto de(LineaCredito linea, Periodicidad periodicidad, int numeroCuotas) {
-        int maximo = periodicidad.cuotasEnMeses(Math.min(linea.plazoMaximoMeses(), PLAZO_MAXIMO_MESES));
+        return de(linea, periodicidad, numeroCuotas, linea.plazoMaximoMeses());
+    }
+
+    /**
+     * Como {@link #de(LineaCredito, Periodicidad, int)} con un tope de plazo en meses que no es el del catálogo
+     * de líneas (R4-PLAZO-LINEA: el tope es parametrizable y puede crecer a futuro).
+     */
+    public static ParametrosProducto de(LineaCredito linea, Periodicidad periodicidad, int numeroCuotas,
+            int plazoMaximoMeses) {
+        if (plazoMaximoMeses < 1) {
+            throw new IllegalArgumentException("El plazo máximo debe ser de al menos 1 mes: " + plazoMaximoMeses);
+        }
+        int maximo = periodicidad.cuotasEnMeses(plazoMaximoMeses);
         if (numeroCuotas < 1 || numeroCuotas > maximo) {
             throw new IllegalArgumentException("La línea " + linea + " admite de 1 a " + maximo + " "
                     + periodicidad.unidadCuota() + "; se pidieron " + numeroCuotas);

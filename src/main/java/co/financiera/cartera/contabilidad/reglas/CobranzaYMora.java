@@ -28,6 +28,18 @@ import java.util.Optional;
  */
 public final class CobranzaYMora implements ReglaContable {
 
+    /** Cuenta de ingreso de la cobranza causada: la del Excel o la no operacional de Diego (R4-COBRANZA-CONTABLE). */
+    private final Cuenta ingresoCobranza;
+
+    /** Como el Excel (Caso9_Cobranza AE15:AG16): crédito a "Ingresos por cobranza". */
+    public CobranzaYMora() {
+        this(Cuenta.INGRESOS_COBRANZA);
+    }
+
+    public CobranzaYMora(Cuenta ingresoCobranza) {
+        this.ingresoCobranza = java.util.Objects.requireNonNull(ingresoCobranza, "ingresoCobranza");
+    }
+
     /** Verdadero si el movimiento es un pago tardío con gastos de cobranza (columna H &gt; 0). */
     public static boolean aplica(Movimiento m) {
         return m.cobranzaCausada().signum() > 0;
@@ -41,7 +53,7 @@ public final class CobranzaYMora implements ReglaContable {
         return ReglaContable.asiento(m, List.of(
                 // Causación (AE15:AG18)
                 debito(Cuenta.CXC_GASTOS_COBRANZA, m.cobranzaCausada(), "Causación de cobranza por días de atraso"),
-                credito(Cuenta.INGRESOS_COBRANZA, m.cobranzaCausada(), "Contrapartida de la cobranza causada"),
+                credito(ingresoCobranza, m.cobranzaCausada(), "Contrapartida de la cobranza causada"),
                 debito(Cuenta.CXC_INTERES_MORA, m.interesMora(), "Causación de mora"),
                 credito(Cuenta.INGRESOS_MORA, m.interesMora(), "Contrapartida del interés de mora"),
                 // Aplicación del recaudo (AE19:AG24)

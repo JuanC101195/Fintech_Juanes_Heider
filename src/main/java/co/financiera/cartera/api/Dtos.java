@@ -32,12 +32,13 @@ public final class Dtos {
      * Una instrucción del escenario. Los campos son los del record de {@code Instruccion}; solo se usan los
      * del {@code tipo}. {@code modalidad} es la del abono (MENOR_PLAZO / MENOR_CUOTA) o la del cambio de tasa
      * (MISMA_FECHA_FINAL / MISMA_CUOTA). En {@code CIERRE_POR_RECUPERACION} el tipo de recuperación va en
-     * {@code tipoRecuperacion} porque {@code tipo} ya es el de la instrucción.
+     * {@code tipoRecuperacion} porque {@code tipo} ya es el de la instrucción. {@code costoRecuperacion} es
+     * opcional (0 por defecto): el costo real de la recuperación con soporte (R4-R2).
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record InstruccionDto(Integer periodo, String tipo, Integer diasAtraso, String fraccion, String valor,
             Boolean causaMoraYServicios, String modalidad, Integer diasDesdeUltimaCuota, String usuraEA,
-            String nuevaTasaEA, String tipoRecuperacion, String valorMoto) {
+            String nuevaTasaEA, String tipoRecuperacion, String valorMoto, String costoRecuperacion) {
     }
 
     public record EjecutarRequest(CreditoRequest credito, String perfilReglas, List<InstruccionDto> instrucciones,
@@ -112,8 +113,8 @@ public final class Dtos {
             String capitalVigente, String saldoFinal, int cuotasVencidas, String deudaAExtinguir, String inventario,
             String cxcFondoGarantias, String cxpDeudor, ServiciosDto pagoTerceros, ServiciosDto pagosServicios,
             ServiciosDto cxcServiciosPorConcepto, DeudaDto extinguido, String capitalVencidoInicial,
-            DeudaDto pendientesPagadosExtra, String interesPrepago, String pagoTotalCliente,
-            String pagoExtraordinario) {
+            DeudaDto pendientesPagadosExtra, String interesPrepago, String costoRecuperacion,
+            String costoRecuperacionAsumido, String pagoTotalCliente, String pagoExtraordinario) {
     }
 
     public record AsientoDto(int periodo, String evento, List<LineaAsientoDto> lineas, String totalDebitos,

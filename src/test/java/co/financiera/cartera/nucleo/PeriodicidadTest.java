@@ -51,8 +51,24 @@ class PeriodicidadTest {
         assertThatThrownBy(() -> ParametrosProducto.de(LineaCredito.CPPU, per, maximo + 1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(per.unidadCuota());
-        // La línea ORDINARIO permite 36 meses, pero ningún crédito pasa de 24 (PPER-2).
+        // R4-PLAZO-LINEA: todas las líneas, incluida ORDINARIO (36 en Inputs), quedan en 24 meses.
         assertThatThrownBy(() -> ParametrosProducto.de(LineaCredito.ORDINARIO, per, maximo + 1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * R4-PLAZO-LINEA. Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-PLAZO-LINEA. Tope de 24
+     * meses para todas las líneas, parametrizable: está en el catálogo de líneas y se puede pasar otro tope.
+     */
+    @ParameterizedTest
+    @CsvSource({"SEMANAL, 156", "QUINCENAL, 72", "MENSUAL, 36"})
+    void elTopeDePlazoEs24MesesEnTodasLasLineasPeroEsUnParametro(Periodicidad per, int cuotas36Meses) {
+        for (LineaCredito linea : LineaCredito.values()) {
+            assertThat(linea.plazoMaximoMeses()).isEqualTo(24);
+        }
+        assertThat(ParametrosProducto.de(LineaCredito.ORDINARIO, per, cuotas36Meses, 36).numeroCuotas())
+                .isEqualTo(cuotas36Meses);
+        assertThatThrownBy(() -> ParametrosProducto.de(LineaCredito.ORDINARIO, per, cuotas36Meses))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

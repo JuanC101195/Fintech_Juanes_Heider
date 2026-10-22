@@ -21,6 +21,10 @@ import java.util.Optional;
  *   Crédito cada concepto extinguido      = capital, interés corriente, mora, fondo, asistencia, seguro
  * </pre>
  *
+ * <p>R4-R2 (Diego, ronda 4): si hay costo real de la recuperación, crédito a CxP costos de recuperación por
+ * el costo; con {@code costoRecuperacionAlFondo} (provisional) el costo ya está dentro de la CxC al fondo, y si
+ * no, la parte que no cubre la moto se debita al gasto de la financiera.
+ *
  * <p>Aplica solo a cierres con faltante (CxC FCC &gt; 0). El cierre con excedente (CxP deudor) es la
  * retoma del caso 4 y tiene su propia regla.
  */
@@ -35,6 +39,8 @@ public final class DacionEnPago implements ReglaContable {
         lineas.add(Linea.debito(Cuenta.INVENTARIO_MOTOS, m.inventario(), "Ingreso de la moto por el valor definido para el evento"));
         lineas.add(Linea.debito(Cuenta.CXC_FONDO_GARANTIAS, m.cxcFondoGarantias(), "Residual de la deuda no cubierto por la moto"));
         lineas.addAll(ReglaContable.extincion(m.extinguido()));
+        // R4-R2: costo real de la recuperación (con costoRecuperacionAlFondo ya va dentro de la CxC al fondo).
+        lineas.addAll(ReglaContable.costosRecuperacion(m));
         return ReglaContable.asiento(m, lineas);
     }
 }

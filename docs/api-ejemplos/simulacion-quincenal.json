@@ -13,7 +13,7 @@
     "totalIntereses" : "4612060.908610093074622669702568407",
     "totalServicios" : "6555553.92",
     "periodicidad" : "QUINCENAL",
-    "porConfirmar" : [ "QUINCENAL: 24 periodos/año por confirmar con Diego" ]
+    "porConfirmar" : [ ]
   },
   "plan" : [ {
     "periodo" : 1,

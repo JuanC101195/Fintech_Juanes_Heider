@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  */
 public enum Periodicidad {
     SEMANAL(52, 7, "semanal", "cuotas semanales"),
-    // 24 periodos por año (2 por mes). Por confirmar con Diego (dijo 104): 104 sería un pago cada 3,5 días.
+    // 24 periodos por año (2 por mes). Confirmado por Diego (R4-QUIN, ronda 4, 2026-10-21).
     QUINCENAL(24, 15, "quincenal", "cuotas quincenales"),
     MENSUAL(12, 30, "mensual", "cuotas mensuales");
 

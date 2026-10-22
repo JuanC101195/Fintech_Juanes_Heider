@@ -67,7 +67,8 @@ final class Instrucciones {
             case CIERRE_POR_RECUPERACION -> new CierrePorRecuperacion(
                     obligatorio(Enumeraciones.leer(TipoRecuperacion.class, d.tipoRecuperacion(), null, "tipoRecuperacion"),
                             "tipoRecuperacion"),
-                    Decimales.obligatorio(d.valorMoto(), "valorMoto"));
+                    Decimales.obligatorio(d.valorMoto(), "valorMoto"),
+                    Decimales.leer(d.costoRecuperacion(), "costoRecuperacion", java.math.BigDecimal.ZERO));
         };
     }
 
@@ -90,7 +91,7 @@ final class Instrucciones {
             case UsuraVigente u -> dto(periodo, Tipo.USURA_VIGENTE).usura(u.usuraEA()).fin();
             case CambioTasa c -> dto(periodo, Tipo.CAMBIO_TASA).nuevaTasa(c.nuevaTasaEA()).modalidad(c.modalidad()).fin();
             case PagoAlDia p -> dto(periodo, Tipo.PAGO_AL_DIA).fin();
-            case CierrePorRecuperacion c -> dto(periodo, Tipo.CIERRE_POR_RECUPERACION).recuperacion(c.tipo(), c.valorMoto())
+            case CierrePorRecuperacion c -> dto(periodo, Tipo.CIERRE_POR_RECUPERACION).recuperacion(c.tipo(), c.valorMoto(), c.costoRecuperacion())
                     .fin();
         };
     }
@@ -113,6 +114,7 @@ final class Instrucciones {
         private String nuevaTasa;
         private String tipoRecuperacion;
         private String valorMoto;
+        private String costoRecuperacion;
 
         Constructor(int periodo, Tipo tipo) {
             this.periodo = periodo;
@@ -159,15 +161,16 @@ final class Instrucciones {
             return this;
         }
 
-        Constructor recuperacion(TipoRecuperacion t, java.math.BigDecimal moto) {
+        Constructor recuperacion(TipoRecuperacion t, java.math.BigDecimal moto, java.math.BigDecimal costo) {
             tipoRecuperacion = t.name();
             valorMoto = Decimales.texto(moto);
+            costoRecuperacion = Decimales.texto(costo);
             return this;
         }
 
         InstruccionDto fin() {
             return new InstruccionDto(periodo, tipo.name(), diasAtraso, fraccion, valor, causaMora, modalidad, diasDesde,
-                    usura, nuevaTasa, tipoRecuperacion, valorMoto);
+                    usura, nuevaTasa, tipoRecuperacion, valorMoto, costoRecuperacion);
         }
     }
 }

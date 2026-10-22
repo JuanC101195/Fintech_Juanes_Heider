@@ -46,8 +46,10 @@ final class CatalogoCasos {
                     EXCEL + "Caso12_PagoInfNormaliza", EscenariosExcel::caso12),
             caso(13, "Abono extra con pendientes",
                     "La semana 40 no paga, la 41 paga 5.000 con 3 días de atraso y la 42 abona 1.500.000 a menor plazo. "
-                            + "Con NEGOCIO el abono paga primero los pendientes (A4); con EXCEL va todo a capital.",
-                    "Propuesto por el equipo; Diego aún debe validar los valores (pregunta R4-CASO13). No está en el Excel",
+                            + "Con NEGOCIO el abono paga primero lo vencido (A4) y el sobrante vuelve a pasar por la prelación "
+                            + "sobre lo causado de la semana 42 (R4-CASO13); con EXCEL va todo a capital.",
+                    "Propuesto por el equipo; regla de la ronda 4 (R4-CASO13); Diego debe validar las cifras nuevas "
+                            + "(pregunta P5-CASO13). No está en el Excel",
                     EscenariosExcel::caso13));
 
     private CatalogoCasos() {

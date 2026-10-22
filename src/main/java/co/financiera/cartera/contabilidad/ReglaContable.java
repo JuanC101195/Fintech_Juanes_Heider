@@ -23,6 +23,20 @@ public interface ReglaContable {
     }
 
     /**
+     * R4-R2 (Diego, ronda 4): costo real de la recuperación con soporte (grúa, bodegaje, avalúo, trámites)
+     * descontado en una dación o una retoma. Crédito a la CxP de los proveedores por el costo completo; la
+     * parte que asume la financiera (dación sin cargo al fondo) se debita al gasto. Con costo 0 no hay líneas.
+     * Provisional: las cuentas las define contabilidad con el PUC.
+     */
+    static List<Asiento.Linea> costosRecuperacion(Movimiento m) {
+        return List.of(
+                Asiento.Linea.debito(Cuenta.GASTO_COSTOS_RECUPERACION, m.costoRecuperacionAsumido(),
+                        "Costo de recuperación que asume la financiera"),
+                Asiento.Linea.credito(Cuenta.CXP_COSTOS_RECUPERACION, m.costoRecuperacion(),
+                        "Costo real de la recuperación con soporte (R4-R2)"));
+    }
+
+    /**
      * Créditos que extinguen la deuda en una dación o retoma, uno por concepto y en el orden del panel
      * del Excel (casos 3, 4 y 11): capital (prelación 7), interés corriente (3), mora (2), fondo de
      * garantías (4), asistencias (5), seguros (6) y cobranza (1). Los conceptos en cero no generan línea.
