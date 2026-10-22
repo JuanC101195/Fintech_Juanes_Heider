@@ -90,7 +90,15 @@ public class ServicioCartera {
                     "R4-COBRANZA-CONTABLE"),
             new ClaveDto("plazoLimiteMeses",
                     "Plazo límite de recuperación en meses para créditos nuevos y simulaciones; vacío = el del producto",
-                    "R4-PLAZO-LIMITE"));
+                    "R4-PLAZO-LIMITE"),
+            new ClaveDto("cambioTasaSobreCapitalVigente",
+                    "Con el cliente en mora, si la cuota nueva de un cambio de tasa va solo sobre el capital vigente", "R4-T5"),
+            new ClaveDto("cobranzaDiaria",
+                    "Valor diario de la cobranza para créditos nuevos y simulaciones; vacío = el del producto (3.000)",
+                    "COB-6"),
+            new ClaveDto("cuotasVencidasParaRecuperacion",
+                    "Cuotas atrasadas desde las que el crédito queda listo para recuperación; vacío = no se marca",
+                    "PPER-9"));
 
     private final PerfilesReglas perfiles;
     private final MotorCartera motor = new MotorCartera();
@@ -183,7 +191,8 @@ public class ServicioCartera {
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Operacion o = operacion(c);
-        List<Movimiento> movs = motor.ejecutar(new Escenario(o, p).conReglas(perfiles.reglas(perfil)));
+        List<Movimiento> movs = motor.ejecutar(new Escenario(o, p).conReglas(perfiles.reglas(perfil))
+                .conCobranzaActiva(cobranzaActiva(c)));
         List<FilaPlan> plan = new ArrayList<>();
         BigDecimal totalPagado = Calc.CERO;
         BigDecimal totalIntereses = Calc.CERO;
@@ -222,7 +231,8 @@ public class ServicioCartera {
         CreditoRequest c = r.credito();
         Perfil perfil = perfil(r.perfilReglas() != null ? r.perfilReglas() : c.perfilReglas(), Perfil.NEGOCIO);
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
-        Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil));
+        Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil))
+                .conCobranzaActiva(cobranzaActiva(c));
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
         if (r.instrucciones() != null) {
             for (InstruccionDto i : r.instrucciones()) {
@@ -246,7 +256,8 @@ public class ServicioCartera {
                         + CatalogoCasos.CASOS.size(),
                 Map.of("numero", numero)));
         ParametrosProducto p = ParametrosProducto.replicaExcel();
-        Escenario e = caso.escenario().apply(p).conReglas(perfiles.reglas(perfil));
+        ReglasNegocio reglas = perfiles.reglas(perfil);
+        Escenario e = caso.escenario().apply(p, reglas).conReglas(reglas);
         EjecucionResponse r = correr(e, perfil, true);
         List<InstruccionDto> instrucciones = new ArrayList<>();
         for (int periodo = 1; periodo <= r.resumen().periodoFinal(); periodo++) {
@@ -258,7 +269,7 @@ public class ServicioCartera {
         CreditoRequest credito = new CreditoRequest(LineaCredito.CPPU.name(), p.periodicidad().name(), p.numeroCuotas(),
                 null, texto(o.valorMoto()), texto(o.pagoInicial()), perfil.name(), texto(o.matriculaRunt()),
                 texto(o.soat()), texto(o.prenda()), texto(o.gpsPlataforma()), texto(o.gastosComerciales()),
-                e.parametros().plazoLimitePeriodos());
+                e.parametros().plazoLimitePeriodos(), e.cobranzaActiva());
         return new CasoResponse(caso.resumen(), perfil.name(), credito, instrucciones, r.resumen(), r.movimientos(),
                 r.asientos());
     }
@@ -269,12 +280,17 @@ public class ServicioCartera {
         Movimiento ultimo = movs.getLast();
         BigDecimal totalPagado = Calc.CERO;
         int vencidasMax = 0;
+        Integer periodoListo = null;
         for (Movimiento m : movs) {
             totalPagado = Calc.sumar(totalPagado, m.pagoTotalCliente());
             vencidasMax = Math.max(vencidasMax, m.cuotasVencidas());
+            if (periodoListo == null && m.listoParaRecuperacion()) {
+                periodoListo = m.periodo();
+            }
         }
         ResumenEjecucion resumen = new ResumenEjecucion(ultimo.periodo(), ultimo.estado().name(), texto(ultimo.saldoFinal()),
-                texto(totalPagado), vencidasMax, texto(e.operacion().montoFinanciado()), perfil.name());
+                texto(totalPagado), vencidasMax, texto(e.operacion().montoFinanciado()), perfil.name(),
+                ultimo.listoParaRecuperacion(), periodoListo);
         List<AsientoDto> asientos = incluirAsientos
                 ? Contabilizador.para(e.reglas()).contabilizar(movs).stream().map(ServicioCartera::asiento).toList()
                 : List.of();
@@ -342,6 +358,10 @@ public class ServicioCartera {
         }
         int n = c.cuotas() != null ? c.cuotas() : cuotasMeses;
         ParametrosProducto p = ParametrosProducto.de(linea, per, n);
+        if (reglas.cobranzaDiaria() != null) {
+            // COB-6: el valor diario vigente de la cobranza queda fijo en los parámetros del crédito nuevo.
+            p = p.conCobranzaDiaria(reglas.cobranzaDiaria());
+        }
         if (c.plazoLimitePeriodos() != null) {
             // Puede ser menor que las cuotas: el caso 8 proyecta 100 semanas de un crédito de 104.
             if (c.plazoLimitePeriodos() < 1) {
@@ -361,6 +381,11 @@ public class ServicioCartera {
         return new ApiException(HttpStatus.BAD_REQUEST, ApiException.PLAZO_MAXIMO,
                 pedido + " supera el máximo de " + maxMeses + " meses (" + maxCuotas + " " + per.unidadCuota() + ")",
                 Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, "periodicidad", per.name()));
+    }
+
+    /** COB-6: la cobranza del crédito está activa salvo que el request diga {@code false}. */
+    static boolean cobranzaActiva(CreditoRequest c) {
+        return c.cobranzaActiva() == null || c.cobranzaActiva();
     }
 
     static Operacion operacion(CreditoRequest c) {
@@ -400,7 +425,7 @@ public class ServicioCartera {
                 servicios(m.pagosServicios()), servicios(m.cxcServiciosPorConcepto()), deuda(m.extinguido()),
                 texto(m.capitalVencidoInicial()), deuda(m.pendientesPagadosExtra()), texto(m.interesPrepago()),
                 texto(m.costoRecuperacion()), texto(m.costoRecuperacionAsumido()), texto(m.pagoTotalCliente()),
-                texto(m.pagoExtraordinario()));
+                texto(m.pagoExtraordinario()), m.listoParaRecuperacion());
     }
 
     static AsientoDto asiento(Asiento a) {

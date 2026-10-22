@@ -18,7 +18,8 @@
     "prenda" : "120000",
     "gpsPlataforma" : "80000",
     "gastosComerciales" : "60000",
-    "plazoLimitePeriodos" : 120
+    "plazoLimitePeriodos" : 120,
+    "cobranzaActiva" : true
   },
   "instrucciones" : [ {
     "periodo" : 40,
@@ -46,7 +47,9 @@
     "totalPagadoCliente" : "14649641.8342334327853078495298363",
     "cuotasVencidasMax" : 2,
     "montoFinanciado" : "5904400",
-    "perfilReglas" : "NEGOCIO"
+    "perfilReglas" : "NEGOCIO",
+    "listoParaRecuperacion" : false,
+    "periodoListoParaRecuperacion" : 41
   },
   "movimientos" : [ {
     "periodo" : 0,
@@ -136,7 +139,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "0",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 1,
     "mes" : 1,
@@ -225,7 +229,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 2,
     "mes" : 1,
@@ -314,7 +319,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 3,
     "mes" : 1,
@@ -403,7 +409,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 4,
     "mes" : 1,
@@ -492,7 +499,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 5,
     "mes" : 2,
@@ -581,7 +589,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 6,
     "mes" : 2,
@@ -670,7 +679,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 7,
     "mes" : 2,
@@ -759,7 +769,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 8,
     "mes" : 2,
@@ -848,7 +859,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 9,
     "mes" : 3,
@@ -937,7 +949,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 10,
     "mes" : 3,
@@ -1026,7 +1039,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 11,
     "mes" : 3,
@@ -1115,7 +1129,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 12,
     "mes" : 3,
@@ -1204,7 +1219,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 13,
     "mes" : 3,
@@ -1293,7 +1309,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 14,
     "mes" : 4,
@@ -1382,7 +1399,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 15,
     "mes" : 4,
@@ -1471,7 +1489,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 16,
     "mes" : 4,
@@ -1560,7 +1579,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 17,
     "mes" : 4,
@@ -1649,7 +1669,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 18,
     "mes" : 5,
@@ -1738,7 +1759,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 19,
     "mes" : 5,
@@ -1827,7 +1849,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 20,
     "mes" : 5,
@@ -1916,7 +1939,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 21,
     "mes" : 5,
@@ -2005,7 +2029,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 22,
     "mes" : 6,
@@ -2094,7 +2119,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 23,
     "mes" : 6,
@@ -2183,7 +2209,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 24,
     "mes" : 6,
@@ -2272,7 +2299,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 25,
     "mes" : 6,
@@ -2361,7 +2389,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 26,
     "mes" : 6,
@@ -2450,7 +2479,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 27,
     "mes" : 7,
@@ -2539,7 +2569,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 28,
     "mes" : 7,
@@ -2628,7 +2659,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 29,
     "mes" : 7,
@@ -2717,7 +2749,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 30,
     "mes" : 7,
@@ -2806,7 +2839,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 31,
     "mes" : 8,
@@ -2895,7 +2929,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 32,
     "mes" : 8,
@@ -2984,7 +3019,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 33,
     "mes" : 8,
@@ -3073,7 +3109,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 34,
     "mes" : 8,
@@ -3162,7 +3199,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 35,
     "mes" : 9,
@@ -3251,7 +3289,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 36,
     "mes" : 9,
@@ -3340,7 +3379,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 37,
     "mes" : 9,
@@ -3429,7 +3469,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 38,
     "mes" : 9,
@@ -3518,7 +3559,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 39,
     "mes" : 9,
@@ -3607,7 +3649,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 40,
     "mes" : 10,
@@ -3696,7 +3739,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "0",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 41,
     "mes" : 10,
@@ -3785,7 +3829,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "5000",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : true
   }, {
     "periodo" : 42,
     "mes" : 10,
@@ -3874,7 +3919,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "1499999.9999999999999999999999999996",
-    "pagoExtraordinario" : "1499999.9999999999999999999999999996"
+    "pagoExtraordinario" : "1499999.9999999999999999999999999996",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 43,
     "mes" : 10,
@@ -3963,7 +4009,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 44,
     "mes" : 11,
@@ -4052,7 +4099,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 45,
     "mes" : 11,
@@ -4141,7 +4189,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 46,
     "mes" : 11,
@@ -4230,7 +4279,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 47,
     "mes" : 11,
@@ -4319,7 +4369,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 48,
     "mes" : 12,
@@ -4408,7 +4459,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 49,
     "mes" : 12,
@@ -4497,7 +4549,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 50,
     "mes" : 12,
@@ -4586,7 +4639,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 51,
     "mes" : 12,
@@ -4675,7 +4729,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 52,
     "mes" : 12,
@@ -4764,7 +4819,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 53,
     "mes" : 13,
@@ -4853,7 +4909,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 54,
     "mes" : 13,
@@ -4942,7 +4999,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 55,
     "mes" : 13,
@@ -5031,7 +5089,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 56,
     "mes" : 13,
@@ -5120,7 +5179,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 57,
     "mes" : 14,
@@ -5209,7 +5269,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 58,
     "mes" : 14,
@@ -5298,7 +5359,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 59,
     "mes" : 14,
@@ -5387,7 +5449,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 60,
     "mes" : 14,
@@ -5476,7 +5539,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 61,
     "mes" : 15,
@@ -5565,7 +5629,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 62,
     "mes" : 15,
@@ -5654,7 +5719,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 63,
     "mes" : 15,
@@ -5743,7 +5809,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 64,
     "mes" : 15,
@@ -5832,7 +5899,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 65,
     "mes" : 15,
@@ -5921,7 +5989,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 66,
     "mes" : 16,
@@ -6010,7 +6079,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 67,
     "mes" : 16,
@@ -6099,7 +6169,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 68,
     "mes" : 16,
@@ -6188,7 +6259,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 69,
     "mes" : 16,
@@ -6277,7 +6349,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 70,
     "mes" : 17,
@@ -6366,7 +6439,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 71,
     "mes" : 17,
@@ -6455,7 +6529,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 72,
     "mes" : 17,
@@ -6544,7 +6619,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 73,
     "mes" : 17,
@@ -6633,7 +6709,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 74,
     "mes" : 18,
@@ -6722,7 +6799,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 75,
     "mes" : 18,
@@ -6811,7 +6889,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 76,
     "mes" : 18,
@@ -6900,7 +6979,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 77,
     "mes" : 18,
@@ -6989,7 +7069,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 78,
     "mes" : 18,
@@ -7078,7 +7159,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 79,
     "mes" : 19,
@@ -7167,7 +7249,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 80,
     "mes" : 19,
@@ -7256,7 +7339,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 81,
     "mes" : 19,
@@ -7345,7 +7429,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 82,
     "mes" : 19,
@@ -7434,7 +7519,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 83,
     "mes" : 20,
@@ -7523,7 +7609,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "163440.4464896808099663932290635905",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 84,
     "mes" : 20,
@@ -7612,7 +7699,8 @@
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "69406.1150589679879963912047490986",
-    "pagoExtraordinario" : "0"
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : false
   } ],
   "asientos" : [ {
     "periodo" : 1,

@@ -21,11 +21,14 @@ public final class Dtos {
      *
      * @param plazoLimitePeriodos periodos que se proyecta un crédito con saldo pendiente (opcional; los casos
      *                            8 y 9 usan 100 y 120)
+     * @param cobranzaActiva      si al crédito se le causan gastos de cobranza (COB-6, opcional; {@code true}
+     *                            por defecto, como el Excel). En {@code false} los pagos tardíos no causan
+     *                            cobranza
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CreditoRequest(String linea, String periodicidad, Integer cuotas, Integer meses, String valorMoto,
             String pagoInicial, String perfilReglas, String matriculaRunt, String soat, String prenda,
-            String gpsPlataforma, String gastosComerciales, Integer plazoLimitePeriodos) {
+            String gpsPlataforma, String gastosComerciales, Integer plazoLimitePeriodos, Boolean cobranzaActiva) {
     }
 
     /**
@@ -92,8 +95,14 @@ public final class Dtos {
             List<AsientoDto> asientos) {
     }
 
+    /**
+     * @param listoParaRecuperacion         PPER-9: el último periodo quedó marcado listo para dación o retoma
+     * @param periodoListoParaRecuperacion  PPER-9: primer periodo en que el crédito quedó listo para recuperación;
+     *                                      {@code null} si nunca llegó al umbral (o el perfil no lo fija)
+     */
     public record ResumenEjecucion(int periodoFinal, String estadoFinal, String saldoFinal, String totalPagadoCliente,
-            int cuotasVencidasMax, String montoFinanciado, String perfilReglas) {
+            int cuotasVencidasMax, String montoFinanciado, String perfilReglas, boolean listoParaRecuperacion,
+            Integer periodoListoParaRecuperacion) {
     }
 
     public record ServiciosDto(String fondoGarantias, String asistencia, String seguro, String total) {
@@ -114,7 +123,8 @@ public final class Dtos {
             String cxcFondoGarantias, String cxpDeudor, ServiciosDto pagoTerceros, ServiciosDto pagosServicios,
             ServiciosDto cxcServiciosPorConcepto, DeudaDto extinguido, String capitalVencidoInicial,
             DeudaDto pendientesPagadosExtra, String interesPrepago, String costoRecuperacion,
-            String costoRecuperacionAsumido, String pagoTotalCliente, String pagoExtraordinario) {
+            String costoRecuperacionAsumido, String pagoTotalCliente, String pagoExtraordinario,
+            boolean listoParaRecuperacion) {
     }
 
     public record AsientoDto(int periodo, String evento, List<LineaAsientoDto> lineas, String totalDebitos,

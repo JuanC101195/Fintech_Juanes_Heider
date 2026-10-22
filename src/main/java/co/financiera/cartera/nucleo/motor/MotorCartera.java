@@ -111,7 +111,7 @@ public final class MotorCartera {
             return new Movimiento(0, 0, "Desembolso", saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
                     CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, saldo, saldo, 0, CERO, CERO, CERO, CERO,
                     Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
-                    CERO, DeudaExtinguida.NINGUNA, CERO, CERO, CERO);
+                    CERO, DeudaExtinguida.NINGUNA, CERO, CERO, CERO, false);
         }
 
         // ADR 0002 paso 4: antes "semana"; el ciclo es por periodo de la periodicidad pactada.
@@ -167,6 +167,10 @@ public final class MotorCartera {
             String evento = evento(ordenes, periodo, pagoCompleto, dias, recibido);
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
             Servicios serviciosDelPeriodo = causado.servicios().mas(serviciosCorrientesExtra);
+            // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación; solo se
+            // marca, no se ejecuta la dación ni la retoma (R6-RECUP-AUTO).
+            boolean listoParaRecuperacion = estado == EstadoCredito.EN_MORA
+                    && escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas);
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),
@@ -174,7 +178,7 @@ public final class MotorCartera {
                     vencidoReportado, max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(),
                     cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
                     cxcServicios, cierre.extinguido(), vencidoInicial, pendientesPagadosExtra, interesPrepago,
-                    cierre.costo(), cierre.costoAsumido());
+                    cierre.costo(), cierre.costoAsumido(), listoParaRecuperacion);
         }
 
         /** 1. Lee las instrucciones del periodo; el cambio de tasa se aplica al leerlo (casos 2 y 10). */
@@ -236,7 +240,12 @@ public final class MotorCartera {
             tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
             saldoPlan = restar(saldo, capitalVencido);
             if (modalidad == ModalidadCambioTasa.MISMA_FECHA_FINAL) {
-                cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasVigentes - periodo + 1, saldo);
+                // R4-T5 (Diego 2026-10-22): con el cliente en mora la cuota nueva va solo sobre el capital vigente;
+                // el vencido se sigue cobrando aparte (prelación) y los intereses pendientes nunca entran a la base
+                // (no hay anatocismo). Sin vencido las dos bases son iguales, como en el Excel.
+                BigDecimal base = escenario.reglas().cambioTasaSobreCapitalVigente() && !esCero(capitalVencido)
+                        ? saldoPlan : saldo;
+                cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasVigentes - periodo + 1, base);
                 return;
             }
             cuotasVigentes = periodo - 1 + cuotasHastaSaldoCero(saldoPlan);
@@ -299,7 +308,15 @@ public final class MotorCartera {
             return mora;
         }
 
+        /**
+         * Gastos de cobranza = días de atraso × valor diario del producto. COB-4 (Diego 2026-10-22): solo se
+         * causan cuando el pago llega en mora (días de atraso &gt; 0); al día, cancelado o prepagado no se liquidan.
+         * COB-6: solo si la cobranza está activa en el crédito ({@link Escenario#cobranzaActiva()}).
+         */
         private BigDecimal cobranza(BigDecimal saldoInicial, int dias) {
+            if (!escenario.cobranzaActiva()) {
+                return CERO;
+            }
             BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), p.cobranzaDiaria()) : CERO;
             BigDecimal tope = escenario.reglas().topeCobranzaPorPago();
             return tope == null ? cobranza : min(cobranza, tope);

@@ -20,6 +20,8 @@ public final class Escenario {
     /** Desde este periodo, todo periodo sin instrucción propia usa esta (pagos tardíos recurrentes, caso 9). */
     private final Map<Integer, Instruccion> porDefectoDesde = new TreeMap<>();
     private ReglasNegocio reglas = ReglasNegocio.EXCEL;
+    /** COB-6: si a este crédito se le causan gastos de cobranza; el Excel los causa siempre. */
+    private boolean cobranzaActiva = true;
 
     public Escenario(Operacion operacion, ParametrosProducto parametros) {
         this.operacion = operacion;
@@ -34,6 +36,19 @@ public final class Escenario {
 
     public ReglasNegocio reglas() {
         return reglas;
+    }
+
+    /**
+     * COB-6 (Diego 2026-10-22): la cobranza se activa o no crédito por crédito (lo decide un responsable; quién,
+     * en R6-COBRANZA-ACTIVA). Por defecto activa, que es lo que hace el Excel (caso 9).
+     */
+    public Escenario conCobranzaActiva(boolean activa) {
+        this.cobranzaActiva = activa;
+        return this;
+    }
+
+    public boolean cobranzaActiva() {
+        return cobranzaActiva;
     }
 
     public Escenario en(int periodo, Instruccion instruccion) {

@@ -64,7 +64,11 @@ public record Movimiento(
         // Costo real de la recuperación con soporte que se descontó en la dación o la retoma (R4-R2)
         BigDecimal costoRecuperacion,
         // La parte de ese costo que asume la financiera (dación con costoRecuperacionAlFondo = false)
-        BigDecimal costoRecuperacionAsumido) {
+        BigDecimal costoRecuperacionAsumido,
+        // PPER-9 (Diego 2026-10-22): el crédito llegó a ReglasNegocio.cuotasVencidasParaRecuperacion cuotas
+        // atrasadas y sigue en mora: queda listo para dación o retoma. Solo es una marca: el motor no ejecuta
+        // la recuperación (R6-RECUP-AUTO). Siempre false con ReglasNegocio.EXCEL.
+        boolean listoParaRecuperacion) {
 
     /**
      * Pago total del cliente en el periodo: pago recibido + abonos extraordinarios (lo que fue a capital

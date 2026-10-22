@@ -84,7 +84,17 @@ public final class EscenariosExcel {
      * en periodos del crédito, ROUNDDOWN(100 × ppa / 52) como Inputs C66 (semanal 100).
      */
     public static Escenario caso8(ParametrosProducto p) {
-        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(p.periodicidad().periodosDesdeSemanas(100)))
+        return caso8(p, java.util.OptionalInt.empty());
+    }
+
+    /**
+     * Caso 8 con el plazo límite del perfil de reglas. X4 (Diego 2026-10-22, documento "rptas software"): el
+     * plazo límite del caso 8 se amplía a 104 cuotas, que es {@code plazoLimiteMeses = 24} (R4-PLAZO-LIMITE) en
+     * periodos del crédito. Vacío = las 100 semanas del Excel (Inputs C61), como {@link #caso8(ParametrosProducto)}.
+     */
+    public static Escenario caso8(ParametrosProducto p, java.util.OptionalInt plazoLimitePeriodos) {
+        int limite = plazoLimitePeriodos.orElse(p.periodicidad().periodosDesdeSemanas(100));
+        return new Escenario(Operacion.ejemploExcel(), p.conPlazoLimite(limite))
                 .en(Calendario.periodoDelMes(10, p), new PagoParcial(bd("0.4"), 0));
     }
 

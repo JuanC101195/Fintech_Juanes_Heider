@@ -3,9 +3,11 @@ package co.financiera.cartera.api;
 import co.financiera.cartera.api.Dtos.CasoResumenDto;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.Escenario;
+import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import co.financiera.cartera.simulaciones.EscenariosExcel;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -14,7 +16,8 @@ import java.util.function.Function;
  */
 final class CatalogoCasos {
 
-    record Caso(CasoResumenDto resumen, Function<ParametrosProducto, Escenario> escenario) {
+    /** El escenario recibe el perfil de reglas: el caso 8 toma de él su plazo límite (X4). */
+    record Caso(CasoResumenDto resumen, BiFunction<ParametrosProducto, ReglasNegocio, Escenario> escenario) {
     }
 
     private static final String EXCEL = "Excel 11-oct, hoja ";
@@ -34,8 +37,11 @@ final class CatalogoCasos {
                     EXCEL + "Caso6_MenorPlazo", EscenariosExcel::caso6),
             caso(7, "Abono extra como menor cuota", "Abono de 2.000.000 en el mes 10: se mantiene el plazo y baja la cuota.",
                     EXCEL + "Caso7_MenorCuota", EscenariosExcel::caso7),
-            caso(8, "Pago inferior", "En el mes 10 paga el 40 % de la cuota y luego vuelve a la cuota pactada; plazo límite de 100 semanas.",
-                    EXCEL + "Caso8_PagoInferior", EscenariosExcel::caso8),
+            new Caso(new CasoResumenDto(8, "Pago inferior",
+                    "En el mes 10 paga el 40 % de la cuota y luego vuelve a la cuota pactada; plazo límite de 100 semanas "
+                            + "con EXCEL y de 104 cuotas (24 meses) con NEGOCIO (X4).",
+                    EXCEL + "Caso8_PagoInferior"),
+                    (p, reglas) -> EscenariosExcel.caso8(p, reglas.plazoLimitePeriodos(p.periodicidad(), p.numeroCuotas()))),
             caso(9, "Pago tardío y gastos de cobranza", "Desde el mes 10 paga todas las cuotas con 14 días de atraso; plazo límite de 120 semanas.",
                     EXCEL + "Caso9_Cobranza", EscenariosExcel::caso9),
             caso(10, "Cambio de tasa con cuota fija", "Desde el mes 11 la tasa pasa a 80 % EA; se conserva la cuota y cambia el número de cuotas.",
@@ -57,7 +63,7 @@ final class CatalogoCasos {
 
     private static Caso caso(int numero, String nombre, String descripcion, String fuente,
             Function<ParametrosProducto, Escenario> escenario) {
-        return new Caso(new CasoResumenDto(numero, nombre, descripcion, fuente), escenario);
+        return new Caso(new CasoResumenDto(numero, nombre, descripcion, fuente), (p, reglas) -> escenario.apply(p));
     }
 
     static Optional<Caso> buscar(int numero) {

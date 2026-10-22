@@ -16,7 +16,10 @@ import java.math.BigDecimal;
  * @param asistenciaMensual               valor mensual de la asistencia (40.000)
  * @param seguroPorcentajeMensual         seguro de vida: % mensual sobre el monto financiado (0,0025)
  * @param iva                             IVA de servicios gravados: fondo de garantías y asistencia (0,19); el seguro es exento (P-08)
- * @param cobranzaDiaria                  gasto de cobranza por día de atraso (3.000)
+ * @param cobranzaDiaria                  gasto de cobranza por día de atraso (3.000 en Inputs, solo un ejemplo: el
+ *                                        valor real está pendiente y puede cambiar en el tiempo, Diego COB-6). Queda
+ *                                        fijo en los parámetros con que se origina el crédito; el API lo toma de
+ *                                        {@code ReglasNegocio.cobranzaDiaria} para los créditos nuevos
  * @param plazoLimitePeriodos             periodos del crédito (no semanas) que se proyecta un crédito con saldo pendiente
  */
 public record ParametrosProducto(
@@ -94,6 +97,15 @@ public record ParametrosProducto(
     public ParametrosProducto conNumeroCuotas(int cuotas) {
         return new ParametrosProducto(cuotas, periodicidad, tasaEA, fondoGarantiasPorcentajeMensual,
                 asistenciaMensual, seguroPorcentajeMensual, iva, cobranzaDiaria, Math.max(plazoLimitePeriodos, cuotas));
+    }
+
+    /** COB-6: valor diario de la cobranza vigente cuando se origina el crédito; no puede ser negativo. */
+    public ParametrosProducto conCobranzaDiaria(BigDecimal valor) {
+        if (valor == null || valor.signum() < 0) {
+            throw new IllegalArgumentException("La cobranza diaria debe ser cero o positiva: " + valor);
+        }
+        return new ParametrosProducto(numeroCuotas, periodicidad, tasaEA, fondoGarantiasPorcentajeMensual,
+                asistenciaMensual, seguroPorcentajeMensual, iva, valor, plazoLimitePeriodos);
     }
 
     public ParametrosProducto conPlazoLimite(int periodos) {
