@@ -5,7 +5,6 @@ import type { Reglas as TipoReglas } from '../tipos'
 
 /** Lo que sigue por confirmar (además de las reglas cuya referencia dice "por confirmar" en el API). */
 export const POR_CONFIRMAR = [
-  'Pago quincenal: el motor supone 24 quincenas al año; falta que Diego lo confirme.',
   'Reglas que Diego ya respondió en el cuestionario pero que el motor todavía no aplica: están en desarrollo.',
 ]
 
@@ -25,6 +24,7 @@ const VALORES: Record<string, string> = {
   SALDO: 'Sobre el saldo de capital de cada periodo',
   SOLO_CAPITAL: 'Todo el abono va a capital; lo pendiente sigue pendiente',
   PRIMERO_PENDIENTES: 'Primero paga lo pendiente y el resto va a capital',
+  PRELACION_COMPLETA: 'Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)',
   MISMA_FECHA_FINAL: 'Se conserva la fecha final y cambia la cuota',
   MISMA_CUOTA: 'Se conserva la cuota y cambia el número de cuotas',
   true: 'Sí',

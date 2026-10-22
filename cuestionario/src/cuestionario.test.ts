@@ -6,7 +6,7 @@ import { previsualizacion } from './escenarios'
 import { ENCABEZADOS, construirLibro } from './exportar'
 import { cop } from './formato'
 import { envioDe, guardarEnLaNube } from './nube'
-import { BLOQUES, BLOQUES_ABIERTOS, CODIGO_PENDIENTE, completitudPorBloque, MARCADOR_CIFRAS_CASO13, PREGUNTAS, RESPONDIDAS, TODAS } from './preguntas'
+import { BLOQUES, BLOQUES_ABIERTOS, CODIGO_PENDIENTE, completitudPorBloque, PREGUNTAS, RESPONDIDAS, TODAS } from './preguntas'
 import { ajustesDe, avance, estaCompleta, type Estado } from './respuestas'
 
 describe('preguntas', () => {
@@ -49,12 +49,14 @@ describe('preguntas', () => {
     expect(ronda4.find((p) => p.id === 'R4-CASO13')!.respondida!.reemplazadaPor).toBe('P5-CASO13')
   })
 
-  it('P5-CASO13 compara el antes y el ahora y deja el marcador de las cifras del motor', () => {
+  it('P5-CASO13 compara el antes y el ahora con las cifras del motor', () => {
     const p = PREGUNTAS.find((x) => x.id === 'P5-CASO13')!
     expect(p.contexto).toContain('1.182.645,20')
     expect(p.contexto).toContain('Antes')
     expect(p.contexto).toContain('Ahora')
-    expect(p.contexto).toContain(MARCADOR_CIFRAS_CASO13)
+    expect(p.contexto).toContain('1.123.017,41')
+    expect(p.contexto).toContain('3.229.537,12')
+    expect(p.contexto).not.toContain('{{')
   })
 
   it('las reemplazadas apuntan a una pregunta que existe y las que esperan un documento no se vuelven a preguntar', () => {

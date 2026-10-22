@@ -19,6 +19,7 @@ const MOVIMIENTO: Record<keyof Movimiento, Forma> = {
   saldoFinal: 'dinero', cuotasVencidas: 'entero', deudaAExtinguir: 'dinero', inventario: 'dinero', cxcFondoGarantias: 'dinero', cxpDeudor: 'dinero',
   pagoTerceros: 'servicios', pagosServicios: 'servicios', cxcServiciosPorConcepto: 'servicios', extinguido: 'deuda', capitalVencidoInicial: 'dinero',
   pendientesPagadosExtra: 'deuda', interesPrepago: 'dinero', pagoTotalCliente: 'dinero', pagoExtraordinario: 'dinero',
+  costoRecuperacion: 'dinero', costoRecuperacionAsumido: 'dinero',
 }
 const SERVICIOS: Record<keyof Servicios, Forma> = { fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', total: 'dinero' }
 const DEUDA: Record<keyof DeudaExtinguida, Forma> = { cobranza: 'dinero', mora: 'dinero', interesCorriente: 'dinero', servicios: 'servicios', capital: 'dinero', total: 'dinero' }

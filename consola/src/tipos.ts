@@ -130,6 +130,7 @@ export interface Instruccion {
   nuevaTasaEA?: string
   tipoRecuperacion?: string
   valorMoto?: string
+  costoRecuperacion?: string
 }
 
 export interface PeticionEjecucion {
@@ -206,6 +207,10 @@ export interface Movimiento {
   /** Todo lo que pagó el cliente en el periodo (cuota + extraordinario). */
   pagoTotalCliente: string
   pagoExtraordinario: string
+  /** Costo real de la recuperación (grúa, bodegaje, avalúo, trámites) descontado en la dación o la retoma. */
+  costoRecuperacion: string
+  /** Parte de ese costo que asume la financiera (0 si se suma al faltante que cubre el fondo). */
+  costoRecuperacionAsumido: string
 }
 
 export interface LineaAsiento {

@@ -80,6 +80,7 @@ export const CAMPOS_POR_TIPO: Record<TipoInstruccion, Campo[]> = {
   CIERRE_POR_RECUPERACION: [
     { nombre: 'tipoRecuperacion', etiqueta: '¿Cómo se recibe la moto?', tipo: 'opcion', opciones: 'tiposRecuperacion', obligatorio: true, defecto: 'DACION_EN_PAGO' },
     { nombre: 'valorMoto', etiqueta: 'Valor en que se recibe la moto', tipo: 'dinero', obligatorio: true },
+    { nombre: 'costoRecuperacion', etiqueta: 'Costo de la recuperación', ayuda: 'Costo real de la recuperación (grúa, bodegaje, avalúo, trámites), con soporte', tipo: 'dinero', obligatorio: false },
   ],
 }
 
@@ -212,7 +213,7 @@ export function describir(i: Instruccion): string {
     case 'CAMBIO_TASA':
       return `${etiqueta} a ${porcentaje(i.nuevaTasaEA)} EA · ${o(i.modalidad)}`
     case 'CIERRE_POR_RECUPERACION':
-      return `${o(i.tipoRecuperacion) || etiqueta} por ${cop(i.valorMoto)}`
+      return `${o(i.tipoRecuperacion) || etiqueta} por ${cop(i.valorMoto)}${i.costoRecuperacion && Number(i.costoRecuperacion) > 0 ? ` · costo de recuperación ${cop(i.costoRecuperacion)}` : ''}`
     default:
       return etiqueta
   }

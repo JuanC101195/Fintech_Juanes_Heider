@@ -1485,9 +1485,11 @@ const RONDA_4: Pregunta[] = [
 ]
 
 // Ronda 5: confirmaciones cortas de lo que la ronda 4 dejó abierto o cambió.
-// Las cifras del caso 13 las calcula el motor (rama reglas/motor-ronda4); mientras no se pongan queda el marcador.
-export const MARCADOR_CIFRAS_CASO13 = '{{CIFRAS_CASO13}}'
-const CIFRAS_CASO13 = MARCADOR_CIFRAS_CASO13
+// Cifras del caso 13 calculadas por el motor con aplicacionAbono=PRELACION_COMPLETA (docs/reglas/caso-13.md).
+export const CIFRAS_CASO13 =
+  'Ahora el motor paga lo vencido (317.354,81) y con el sobrante cobra también el fondo de garantías (48.643,17) y la asistencia (10.984,62) de la semana 42, que no se habían causado por estar en atraso: en total 376.982,59. ' +
+  'A capital vigente van 1.123.017,41 y el saldo queda en 3.229.537,12. A menor cuota, la cuota desde la semana 43 es 74.500,11 (termina en la 104); a menor plazo, el crédito termina en la semana 84 (última cuota 69.406,12). ' +
+  'Nunca se cobran conceptos de la semana 43 en adelante.'
 
 const RONDA_5: Pregunta[] = [
   // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
