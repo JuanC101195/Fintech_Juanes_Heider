@@ -83,3 +83,11 @@ La validación 28 no trae fórmula ni periodo en la hoja. Se tomó como **últim
 6. ¿Qué asiento lleva el interés corriente: crédito directo a ingresos (caso 1) o a la CxC causada antes (caso 8)? ¿"Servicios complementarios" es la misma cuenta que "CxP servicios a terceros"?
 7. ¿Qué asiento esperan en los periodos posteriores (pago de mora, recuperación de vencidos y nuevas reclasificaciones)?
 8. "Periodos adicionales" (validación 28): ¿es último periodo − 86 (= 3)?
+
+## Respuestas de la ronda 4 (2026-10-21)
+
+| Id | Regla | Implementada en | Probada |
+|---|---|---|---|
+| R4-PLAZO-LIMITE | El plazo límite de recuperación es de **24 meses**, convertidos a periodos según la periodicidad: ROUNDDOWN(24 × ppa / 12) = 104 semanas, 48 quincenas o 24 meses (nunca menos que las cuotas pactadas). Clave nueva `plazoLimiteMeses` en `ReglasNegocio` (24 en `config/`; vacía en `EXCEL`). **Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-PLAZO-LIMITE.** | `ReglasNegocio.plazoLimitePeriodos`; el API la aplica a los créditos nuevos y las simulaciones (`ServicioCartera.parametros`) cuando el request no trae `plazoLimitePeriodos` | `RespuestasDiegoRonda4Test.elPlazoLimiteDe24MesesSeConvierteAPeriodosDelCredito`, `RespuestasRonda4ApiTest.elPlazoLimiteDeUnCreditoNuevoSonVeinticuatroMeses` |
+
+**Por qué no se aplica a los casos del Excel.** Los casos 8 y 9 proyectan 100 y 120 semanas (Inputs C65 y C72) y sus pruebas comparan celda por celda hasta esas semanas: con 104 semanas el caso 9 se cortaría antes de la fila 120 del Excel. Por eso la clave no la aplica el motor sino quien crea el crédito: los escenarios del Excel (`EscenariosExcel`, `/casos/{n}`) conservan su `conPlazoLimite(100 | 120)` con cualquier perfil, y el límite de 24 meses rige para los créditos nuevos y las simulaciones del API con el perfil `NEGOCIO`. Queda abierta P5-LIMITE-DESDE (ronda 5): ¿los 24 meses se cuentan desde el desembolso, como hoy, o desde el primer atraso? Con un crédito de 24 meses, contado desde el desembolso, el límite coincide con la última cuota y no deja periodos adicionales.

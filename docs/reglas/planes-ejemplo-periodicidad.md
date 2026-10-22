@@ -6,7 +6,7 @@ ADR 0002, paso 6. No existe un Excel de referencia para quincenal ni para mensua
 
 **Reglas aplicadas:**
 
-- Tasa del periodo = (1 + EA)^(1/periodos por año) − 1, con 52, 24 y 12 periodos por año (PPER). La quincenal usa **24**. Diego escribió "104 para quincena", y lo tomamos como error: 104 periodos al año sería un pago cada 3,5 días. **Hay que confirmarlo.**
+- Tasa del periodo = (1 + EA)^(1/periodos por año) − 1, con 52, 24 y 12 periodos por año (PPER). La quincenal usa **24**: Diego había escrito "104 para quincena" y en la ronda 4 confirmó que son 24 periodos al año (R4-QUIN). Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-QUIN.
 - Número de cuotas = ROUNDDOWN(meses × periodos por año / 12) (PPER-2 y PPER-3): 104, 48 y 24.
 - Cuota financiera = PAGO(tasa del periodo; cuotas; −monto), igual que Excel. `PeriodicidadInvariantesTest` la compara con la fórmula cerrada.
 - Servicios por cuota = valor mensual × 12 / periodos por año: en mensual cada cuota lleva el valor mensual completo y en quincenal la mitad. Fondo de garantías 3 % del monto + IVA, asistencia 40.000 + IVA y seguro 0,25 % del monto, sin IVA.
@@ -60,14 +60,14 @@ Las cuotas vencen el 5 y el 20 de cada mes (PPER-1). El giro a terceros de los s
 | 24 | 24 | 421.324 | 22.683 | 421.324 | 444.006 | 210.787 | 47.600 | 14.761 | 717.154 | 0 |
 | **Total (24 cuotas)** | | | **4.751.748** | **5.904.400** | **10.656.148** | **5.058.890** | **1.142.400** | **354.264** | **17.211.702** | |
 
-Cada cuota cierra un mes, así que el giro a terceros se hace en todas. El día de pago (el 1 o el 5) no está decidido; el plan no depende de él porque el motor causa por periodo y no por fechas.
+Cada cuota cierra un mes, así que el giro a terceros se hace en todas. La mensual vence el **día 5 de cada mes, fijo para todos** (R4-MENSUAL-DIA; Fuente: respuesta de Diego 2026-10-21 (ronda 4), pregunta R4-MENSUAL-DIA). El plan no depende del día porque el motor causa por periodo y no por fechas. La primera cuota se prorratea según los días entre el desembolso y el primer 5; cómo, es la pregunta P5-PRORRATEO de la ronda 5 y este plan todavía no lo refleja.
 
 ## Lo que Diego debe revisar
 
-1. ¿La quincenal tiene **24** periodos por año (2 por mes)? Diego escribió 104.
+1. ~~¿La quincenal tiene 24 periodos por año?~~ Confirmado en la ronda 4 (R4-QUIN).
 2. ¿La cuota mensual de 444.006 más 273.148 de servicios (717.154 en total) es la que espera negocio para esta operación?
 3. En mensual, ¿cada cuota lleva el valor mensual completo de los servicios (210.787 + 47.600 + 14.761)? ¿Y en quincenal, la mitad?
-4. El día de pago de la mensual: ¿el 1 o el 5? (sigue abierto desde PPER-1.)
+4. ~~El día de pago de la mensual~~: el 5 (R4-MENSUAL-DIA). Queda el prorrateo de la primera cuota (P5-PRORRATEO).
 5. La mora de un mes sin pago se va a contar por los días reales del mes (PPER-5). El calendario ya da los días de cada mes (`CalendarioPagos.diasDelPeriodo`), pero el motor todavía causa la mora del periodo con la tasa periódica, que equivale a unos 30,4 días. Ese cambio es el paso 8 del ADR.
 
 Los planes se regeneran desde el motor: `ParametrosProducto.deMeses(LineaCredito.CPPU, periodicidad, 24)` con `Operacion.ejemploExcel()`. `PeriodicidadInvariantesTest` verifica estas cifras: saldo final 0, capital pagado igual al monto, interés igual a saldo × tasa y cuota igual a PAGO().
