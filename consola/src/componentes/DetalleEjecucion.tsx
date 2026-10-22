@@ -255,6 +255,12 @@ export function DetalleEjecucion({ ejecucion, instrucciones }: Readonly<{ ejecuc
         <Tarjeta etiqueta="Total pagado por el cliente" valor={cop(r.totalPagadoCliente)} />
         <Tarjeta etiqueta="Cuotas vencidas (máx.)" valor={String(r.cuotasVencidasMax)} />
       </dl>
+      {r.listoParaRecuperacion && (
+        <p role="status" className="rounded-xl border border-outline-variant bg-error-container px-4 py-3 text-on-error-container">
+          <strong>Listo para dación o retoma desde el periodo {r.periodoListoParaRecuperacion}:</strong> el crédito llegó a 2 cuotas
+          atrasadas, que es la política de recuperación. El motor no la ejecuta solo; la ordena una persona.
+        </p>
+      )}
       <section aria-labelledby="h-eventos">
         <h2 id="h-eventos" className="mb-2 text-lg font-bold">Eventos</h2>
         <LineaTiempo instrucciones={instrucciones} />

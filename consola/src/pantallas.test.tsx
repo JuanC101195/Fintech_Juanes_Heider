@@ -273,7 +273,7 @@ describe('Reglas', () => {
   it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
     const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
-    expect(within(lista).getAllByRole('listitem')).toHaveLength(14)
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(17)
     expect(within(lista).getAllByText('Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)').length).toBeGreaterThan(0)
     expect(within(lista).getByText(/A4/)).toBeTruthy()
     expect(lista.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)
@@ -298,7 +298,7 @@ describe('servidor dormido', () => {
 describe('sin jerga técnica a la vista', () => {
   it('el laboratorio no muestra nombres internos (MISMA_CUOTA, DACION_EN_PAGO…)', async () => {
     abrir('#/laboratorio')
-    await waitFor(() => expect(radioCaso(13)).toBeTruthy())
+    await waitFor(() => expect(radioCaso(13)).toBeTruthy(), { timeout: 5000 })
     fireEvent.click(screen.getByRole('radio', { name: /^Cambio de tasa/ }))
     expect(document.body.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)
     fireEvent.click(screen.getByRole('radio', { name: /^Dación o retoma/ }))

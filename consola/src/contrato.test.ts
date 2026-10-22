@@ -19,7 +19,7 @@ const MOVIMIENTO: Record<keyof Movimiento, Forma> = {
   saldoFinal: 'dinero', cuotasVencidas: 'entero', deudaAExtinguir: 'dinero', inventario: 'dinero', cxcFondoGarantias: 'dinero', cxpDeudor: 'dinero',
   pagoTerceros: 'servicios', pagosServicios: 'servicios', cxcServiciosPorConcepto: 'servicios', extinguido: 'deuda', capitalVencidoInicial: 'dinero',
   pendientesPagadosExtra: 'deuda', interesPrepago: 'dinero', pagoTotalCliente: 'dinero', pagoExtraordinario: 'dinero',
-  costoRecuperacion: 'dinero', costoRecuperacionAsumido: 'dinero',
+  costoRecuperacion: 'dinero', costoRecuperacionAsumido: 'dinero', listoParaRecuperacion: 'booleano',
 }
 const SERVICIOS: Record<keyof Servicios, Forma> = { fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', total: 'dinero' }
 const DEUDA: Record<keyof DeudaExtinguida, Forma> = { cobranza: 'dinero', mora: 'dinero', interesCorriente: 'dinero', servicios: 'servicios', capital: 'dinero', total: 'dinero' }
@@ -83,7 +83,7 @@ describe('caso 13 (docs/api-ejemplos/caso-13-negocio.json) contra los tipos', ()
   it('credito trae plazoLimitePeriodos y el resumen los campos agregados', () => {
     expect(caso.credito.plazoLimitePeriodos).toBe(120)
     expect(caso.perfilReglas).toBe('NEGOCIO')
-    expect(Object.keys(caso.resumen).sort()).toEqual(['cuotasVencidasMax', 'estadoFinal', 'montoFinanciado', 'perfilReglas', 'periodoFinal', 'saldoFinal', 'totalPagadoCliente'])
+    expect(Object.keys(caso.resumen).sort()).toEqual(['cuotasVencidasMax', 'estadoFinal', 'listoParaRecuperacion', 'montoFinanciado', 'perfilReglas', 'periodoFinal', 'periodoListoParaRecuperacion', 'saldoFinal', 'totalPagadoCliente'])
   })
 
   it('el dinero llega sin redondear: más de 2 decimales', () => {
