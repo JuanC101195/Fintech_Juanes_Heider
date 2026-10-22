@@ -262,7 +262,8 @@ public final class MotorCartera {
             if (proporcion >= 1) {
                 throw new IllegalArgumentException("Con la tasa nueva la cuota no alcanza para cubrir el interés: no amortiza");
             }
-            return (int) Math.ceil(-Math.log(1 - proporcion) / Math.log(1 + r) - 1e-9);
+            // StrictMath: mismo resultado bit a bit en cualquier máquina (ver Calc.potencia).
+            return (int) Math.ceil(-StrictMath.log(1 - proporcion) / StrictMath.log(1 + r) - 1e-9);
         }
 
         /** FCC y asistencia solo se causan en periodos pagados al día (Inputs ⑥, P-07). */
