@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 /** Autenticación opcional por X-API-Key con dos claves: una CONSUMIDOR y una LECTURA. */
 @WebMvcTest(CarteraController.class)
-@Import({ServicioCartera.class, PerfilesReglas.class})
+@Import({ServicioCartera.class, PerfilesReglas.class, ConfiguracionFiltros.class})
 @TestPropertySource(properties = "cartera.api.claves=" + AutenticacionApiTest.CONFIG)
 class AutenticacionApiTest {
 
