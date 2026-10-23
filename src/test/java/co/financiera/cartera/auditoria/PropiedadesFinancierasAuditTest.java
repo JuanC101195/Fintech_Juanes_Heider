@@ -38,7 +38,6 @@ import java.io.FileReader;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -139,7 +138,7 @@ class PropiedadesFinancierasAuditTest {
                 CalendarioPagos cal = switch (per) {
                     case SEMANAL -> {
                         LocalDate d = des.plusDays(3);
-                        while (d.getDayOfWeek() != DayOfWeek.TUESDAY) {
+                        while (!DayOfWeek.TUESDAY.equals(d.getDayOfWeek())) {
                             d = d.plusDays(1);
                         }
                         yield CalendarioPagos.semanal(des, d);

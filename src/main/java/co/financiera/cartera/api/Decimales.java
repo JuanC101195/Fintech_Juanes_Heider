@@ -7,6 +7,7 @@ import java.math.BigDecimal;
  * valor completo, sin ceros sobrantes a la derecha y sin notación científica.
  */
 final class Decimales {
+    private static final String PREFIJO_CAMPO = "El campo ";
 
     private Decimales() {
     }
@@ -44,16 +45,16 @@ final class Decimales {
         }
         String limpio = valor.trim();
         if (limpio.length() > MAX_LARGO_TEXTO) {
-            throw ApiException.datoInvalido("El campo " + campo + " es demasiado largo para ser un número", campo);
+            throw ApiException.datoInvalido(PREFIJO_CAMPO + campo + " es demasiado largo para ser un número", campo);
         }
         BigDecimal numero;
         try {
             numero = new BigDecimal(limpio);
         } catch (NumberFormatException e) {
-            throw ApiException.datoInvalido("El campo " + campo + " no es un número decimal", campo);
+            throw ApiException.datoInvalido(PREFIJO_CAMPO + campo + " no es un número decimal", campo);
         }
         if (numero.precision() > MAX_PRECISION || Math.abs((long) numero.scale()) > MAX_ESCALA) {
-            throw ApiException.datoInvalido("El campo " + campo + " tiene demasiados dígitos o una escala fuera de rango"
+            throw ApiException.datoInvalido(PREFIJO_CAMPO + campo + " tiene demasiados dígitos o una escala fuera de rango"
                     + " (máximo " + MAX_PRECISION + " dígitos y escala de " + MAX_ESCALA + ")", campo);
         }
         return numero;
@@ -93,11 +94,11 @@ final class Decimales {
             return null;
         }
         if (v.signum() < 0 || positivo && v.signum() == 0) {
-            throw ApiException.datoInvalido("El campo " + campo + (positivo ? " debe ser mayor que cero"
+            throw ApiException.datoInvalido(PREFIJO_CAMPO + campo + (positivo ? " debe ser mayor que cero"
                     : " no puede ser negativo"), campo);
         }
         if (v.compareTo(tope) > 0) {
-            throw ApiException.datoInvalido("El campo " + campo + " supera el máximo permitido de "
+            throw ApiException.datoInvalido(PREFIJO_CAMPO + campo + " supera el máximo permitido de "
                     + tope.toPlainString(), campo);
         }
         return v;
