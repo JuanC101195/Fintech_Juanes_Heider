@@ -29,6 +29,7 @@ import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
 import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
 import co.financiera.cartera.nucleo.motor.Instruccion.UsuraVigente;
+import co.financiera.cartera.nucleo.motor.Recuperacion.Cierre;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio.AplicacionAbono;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -63,17 +64,15 @@ public final class MotorCartera {
         private Servicios recaudadoDelMes = Servicios.NINGUNO;
         /** Usura publicada la semana anterior: rige desde esta cuota (T1, Diego 2026-10-20). */
         private BigDecimal usuraPorAplicar;
-        /**
-         * R6-RECUP-AUTO (Diego): una vez el crédito llega al umbral de recuperación queda marcado en los periodos
-         * siguientes aunque el cliente se ponga al día; el motor no ejecuta nada, una persona decide.
-         */
-        private boolean marcadoParaRecuperacion;
+        /** Paso 5 (dación / retoma) y la marca de listo para recuperación (R6-RECUP-AUTO). */
+        private final Recuperacion recuperacion;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
             this.p = escenario.parametros();
             this.s = new EstadoCorrida(escenario, Calendario.numeroCuotas(p));
             this.serviciosPorCuota = s.serviciosPorCuota;
+            this.recuperacion = new Recuperacion(s);
         }
 
         List<Movimiento> correr() {
@@ -133,7 +132,7 @@ public final class MotorCartera {
             // 5. Cierre por recuperación de la moto: su valor extingue lo pendiente por prelación. La fila
             // del cierre reporta el capital vencido que se extinguió (Caso3 Z del evento).
             BigDecimal vencidoReportado = s.capitalVencido;
-            Cierre cierre = ordenes.cierre == null ? Cierre.NINGUNO : cerrar(ordenes.cierre);
+            Cierre cierre = ordenes.cierre == null ? Cierre.NINGUNO : recuperacion.cerrar(ordenes.cierre);
 
             // 6. Estado, cuotas vencidas y giro a terceros de lo recaudado.
             BigDecimal pendiente = sumar(s.capitalVencido, s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios.total());
@@ -149,15 +148,8 @@ public final class MotorCartera {
             String evento = DescriptorEventos.evento(ordenes, periodo, s.cuotasVigentes, pagoCompleto, dias, recibido);
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
             Servicios serviciosDelPeriodo = causado.servicios().mas(s.serviciosCorrientesExtra);
-            // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación. R6-RECUP-AUTO
-            // (Diego): el motor solo marca, nunca ejecuta la dación ni la retoma, y la marca persiste aunque el
-            // cliente se ponga al día: una persona decide. Solo se apaga cuando el crédito termina (cancelado o
-            // cerrado por evento), porque ya no hay nada que recuperar.
-            if (estado == EstadoCredito.EN_MORA && escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas)) {
-                marcadoParaRecuperacion = true;
-            }
-            boolean termino = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO;
-            boolean listoParaRecuperacion = marcadoParaRecuperacion && !termino;
+            // PPER-9 / R6-RECUP-AUTO: el motor solo marca el crédito; la marca persiste hasta que termina.
+            boolean listoParaRecuperacion = recuperacion.listoParaRecuperacion(estado, cuotasVencidas);
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),
@@ -610,55 +602,6 @@ public final class MotorCartera {
             return calendario.diasAtraso(periodo, fecha);
         }
 
-        /**
-         * 5. Recibe la moto: su valor se aplica por prelación a lo pendiente (cobranza, mora, interés,
-         * fondo, asistencia, seguro, capital). Lo no cubierto es CxC al fondo de garantías; lo que
-         * sobra, CxP al deudor (casos 3, 4 y 11).
-         *
-         * <p>R4-R2 (Diego, ronda 4): se descuenta el costo real de la recuperación con soporte. En la retoma
-         * reduce el excedente que se devuelve. En la dación, con {@code costoRecuperacionAlFondo} (confirmado por
-         * Diego en P5-COSTO-DACION) se suma al faltante que cubre el fondo; si no, lo asume la financiera.
-         * Con costo 0 (el Excel) todo queda como antes.
-         */
-        private Cierre cerrar(CierrePorRecuperacion orden) {
-            BigDecimal inventario = orden.valorMoto();
-            BigDecimal costo = orden.costoRecuperacion();
-            BigDecimal deuda = sumar(s.saldo, s.cxcInteres, s.cxcMora, s.cxcServicios.total(), s.cxcCobranza);
-            boolean costoAlFondo = escenario.reglas().costoRecuperacionAlFondo();
-            BigDecimal neto = restar(restar(inventario, deuda), costo);
-            BigDecimal cxpDeudor = noNegativo(neto);
-            BigDecimal cxcFondo;
-            BigDecimal costoAsumido;
-            BigDecimal disponible;
-            if (costoAlFondo) {
-                // La moto paga primero el costo y el resto va a la deuda; el faltante (con el costo) lo cubre el fondo.
-                cxcFondo = noNegativo(restar(CERO, neto));
-                costoAsumido = CERO;
-                disponible = noNegativo(restar(inventario, costo));
-            } else {
-                // La moto paga primero la deuda; el costo solo se descuenta del excedente y el resto lo asume la financiera.
-                cxcFondo = noNegativo(restar(deuda, inventario));
-                costoAsumido = restar(costo, min(costo, noNegativo(restar(inventario, deuda))));
-                disponible = inventario;
-            }
-            BigDecimal restante = restar(disponible, min(disponible, sumar(s.cxcCobranza, s.cxcMora, s.cxcInteres)));
-            BigDecimal fondo = min(restante, s.cxcServicios.fondoGarantias());
-            restante = restar(restante, fondo);
-            BigDecimal asistencia = min(restante, s.cxcServicios.asistencia());
-            restante = restar(restante, asistencia);
-            BigDecimal seguro = min(restante, s.cxcServicios.seguro());
-            Cierre cierre = new Cierre(deuda, inventario, cxcFondo, cxpDeudor, new Servicios(fondo, asistencia, seguro),
-                    new DeudaExtinguida(s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios, s.saldo), costo, costoAsumido);
-            s.saldo = CERO;
-            s.saldoPlan = CERO;
-            s.capitalVencido = CERO;
-            s.cxcInteres = CERO;
-            s.cxcMora = CERO;
-            s.cxcServicios = Servicios.NINGUNO;
-            s.cxcCobranza = CERO;
-            return cierre;
-        }
-
         private EstadoCredito estado(boolean cerrado, BigDecimal pendiente) {
             if (cerrado) {
                 return EstadoCredito.CERRADO_POR_EVENTO;
@@ -721,11 +664,5 @@ public final class MotorCartera {
                 BigDecimal capital) {
         }
 
-        /** Resultado de un cierre por recuperación de la moto. */
-        private record Cierre(BigDecimal deuda, BigDecimal inventario, BigDecimal cxcFondoGarantias, BigDecimal cxpDeudor,
-                Servicios servicios, DeudaExtinguida extinguido, BigDecimal costo, BigDecimal costoAsumido) {
-            private static final Cierre NINGUNO = new Cierre(CERO, CERO, CERO, CERO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
-                    CERO, CERO);
-        }
     }
 }
