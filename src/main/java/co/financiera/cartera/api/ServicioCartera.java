@@ -64,131 +64,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServicioCartera {
 
-    /**
-     * Periodicidades cuyo número de periodos por año falta confirmar con Diego. Vacío desde la ronda 4: la
-     * quincenal son 24 periodos por año (R4-QUIN, 2026-10-21). Los campos {@code porConfirmar} del API se
-     * conservan (en {@code false} y vacío) para no romper a quien ya los lee.
-     */
-    static final Set<Periodicidad> POR_CONFIRMAR = Set.of();
-
-    private static final Map<LineaCredito, String> NOMBRES_LINEAS = Map.of(
-            LineaCredito.CPPU, "Crédito popular productivo urbano",
-            LineaCredito.CPPR, "Crédito popular productivo rural",
-            LineaCredito.BAJO_MONTO, "Consumo de bajo monto",
-            LineaCredito.ORDINARIO, "Consumo y ordinario");
-
-    /** Descripción y pregunta de origen de cada clave de {@link ReglasNegocio#CLAVES}. */
-    private static final List<ClaveDto> CLAVES = List.of(
-            new ClaveDto("prelacion", "Orden de aplicación de un pago", "P1 / D16"),
-            new ClaveDto("formulaMora", "Cómo se causa el interés de mora", "P3"),
-            new ClaveDto("baseInteres", "Sobre qué saldo se causa el interés corriente", "P-03"),
-            new ClaveDto("topeCobranzaPorPago", "Máximo de gastos de cobranza por pago; vacío = sin tope", "PTOPE"),
-            new ClaveDto("baseServicios", "Base del fondo de garantías y del seguro", "P-07"),
-            new ClaveDto("serviciosDespuesDelPlazo", "Si se causan servicios después de la última cuota pactada", "P6"),
-            new ClaveDto("moraAntesDeRecuperacion", "Si las semanas sin pago antes de una dación o retoma causan mora y servicios", "P-16"),
-            new ClaveDto("aplicacionAbono", "Cómo se aplica un abono extra o un prepago cuando hay pendientes", "A4"),
-            new ClaveDto("interesPrepagoPorDias", "Si el prepago cobra el interés de los días desde la última cuota", "A6"),
-            new ClaveDto("margenUsura", "Puntos de EA por debajo de la usura a los que se lleva un crédito que la supera", "T2"),
-            new ClaveDto("modalidadUsura", "Qué se conserva cuando la usura obliga a bajar la tasa", "USU-6"),
-            new ClaveDto("costoRecuperacionAlFondo",
-                    "En la dación, si el costo real de la recuperación se suma al faltante que cubre el fondo",
-                    "R4-R2 / P5-COSTO-DACION"),
-            new ClaveDto("cobranzaIngresoNoOperacional",
-                    "Si los gastos de cobranza se contabilizan como ingreso no operacional (PUC clase 42)",
-                    "R4-COBRANZA-CONTABLE"),
-            new ClaveDto("plazoLimiteMeses",
-                    "Tope del plazo límite de recuperación en meses para créditos nuevos y simulaciones: el límite es min(plazo del crédito, tope); vacío = el del producto",
-                    "R4-PLAZO-LIMITE / R6-LIMITE-CORTO"),
-            new ClaveDto("cambioTasaSobreCapitalVigente",
-                    "Con el cliente en mora, si la cuota nueva de un cambio de tasa va solo sobre el capital vigente", "R4-T5"),
-            new ClaveDto("cobranzaDiaria",
-                    "Valor diario de la cobranza para créditos nuevos y simulaciones; vacío = el del producto (3.000)",
-                    "COB-6"),
-            new ClaveDto("cuotasVencidasParaRecuperacion",
-                    "Cuotas atrasadas desde las que el crédito queda marcado listo para recuperación (solo se marca y la marca persiste); vacío = no se marca",
-                    "PPER-9 / R6-RECUP-AUTO"),
-            new ClaveDto("prorrateoPrimeraCuota",
-                    "Si el interés de la primera cuota se prorratea por los días reales entre el desembolso y la primera fecha de pago",
-                    "P5-PRORRATEO"),
-            new ClaveDto("diasMora",
-                    "Días de mora del capital vencido: los nominales del periodo o, en mensual con fechas, los días reales del mes",
-                    "PPER-5 / D27"));
-
     private final PerfilesReglas perfiles;
+    private final CatalogoServicio catalogo;
     private final MotorCartera motor = new MotorCartera();
 
     public ServicioCartera(PerfilesReglas perfiles) {
         this.perfiles = perfiles;
+        this.catalogo = new CatalogoServicio(perfiles);
     }
-
-    // ---------------------------------------------------------------- Catálogo y reglas
 
     public CatalogoResponse catalogo() {
-        List<String> periodicidades = Arrays.stream(Periodicidad.values()).map(Enum::name).toList();
-        List<LineaDto> lineas = Arrays.stream(LineaCredito.values())
-                .map(l -> new LineaDto(l.name(), NOMBRES_LINEAS.get(l), texto(l.tasaEA()), l.plazoMaximoMeses(), periodicidades))
-                .toList();
-        List<PeriodicidadDto> pers = Arrays.stream(Periodicidad.values())
-                .map(p -> new PeriodicidadDto(p.name(), p.periodosPorAnio(), p.adjetivo(), POR_CONFIRMAR.contains(p),
-                        p.diasNominales(), p.unidadCuota(), p.cuotasEnMeses(ValidadorCredito.plazoMaximoCatalogo())))
-                .toList();
-        Operacion o = Operacion.ejemploExcel();
-        ParametrosProducto p = ParametrosProducto.replicaExcel();
-        Map<String, String> defecto = new LinkedHashMap<>();
-        defecto.put("linea", LineaCredito.CPPU.name());
-        defecto.put("periodicidad", p.periodicidad().name());
-        defecto.put("cuotas", String.valueOf(p.numeroCuotas()));
-        defecto.put("plazoMaximoMeses", String.valueOf(LineaCredito.CPPU.plazoMaximoMeses()));
-        defecto.put("valorMoto", texto(o.valorMoto()));
-        defecto.put("matriculaRunt", texto(o.matriculaRunt()));
-        defecto.put("soat", texto(o.soat()));
-        defecto.put("prenda", texto(o.prenda()));
-        defecto.put("alistamiento", texto(o.alistamiento()));
-        defecto.put("gpsPlataforma", texto(o.gpsPlataforma()));
-        defecto.put("gastosComerciales", texto(o.gastosComerciales()));
-        defecto.put("pagoInicial", texto(o.pagoInicial()));
-        defecto.put("valorTotal", texto(o.valorTotal()));
-        defecto.put("montoFinanciado", texto(o.montoFinanciado()));
-        defecto.put("fondoGarantiasPorcentajeMensual", texto(p.fondoGarantiasPorcentajeMensual()));
-        defecto.put("asistenciaMensual", texto(p.asistenciaMensual()));
-        defecto.put("seguroPorcentajeMensual", texto(p.seguroPorcentajeMensual()));
-        defecto.put("iva", texto(p.iva()));
-        defecto.put("cobranzaDiaria", texto(p.cobranzaDiaria()));
-        defecto.put("perfilReglas", Perfil.NEGOCIO.name());
-        return new CatalogoResponse(lineas, pers, Instrucciones.tipos(), nombres(Instruccion.ModalidadAbono.values()),
-                nombres(Instruccion.ModalidadCambioTasa.values()), nombres(Instruccion.TipoRecuperacion.values()),
-                nombres(Perfil.values()), defecto);
-    }
-
-    private static List<String> nombres(Enum<?>[] valores) {
-        return Arrays.stream(valores).map(Enum::name).toList();
+        return catalogo.catalogo();
     }
 
     public ReglasResponse reglas() {
-        Map<String, Map<String, String>> mapa = new LinkedHashMap<>();
-        for (Perfil perfil : Perfil.values()) {
-            mapa.put(perfil.name(), valores(perfiles.reglas(perfil)));
-        }
-        return new ReglasResponse(mapa, CLAVES, perfiles.archivo());
-    }
-
-    private static Map<String, String> valores(ReglasNegocio r) {
-        Map<String, String> m = new LinkedHashMap<>();
-        for (RecordComponent c : ReglasNegocio.class.getRecordComponents()) {
-            Object v;
-            try {
-                v = c.getAccessor().invoke(r);
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(e);
-            }
-            m.put(c.getName(), switch (v) {
-                case null -> null;
-                case BigDecimal b -> texto(b);
-                case Enum<?> e -> e.name();
-                default -> String.valueOf(v);
-            });
-        }
-        return m;
+        return catalogo.reglas();
     }
 
     // ---------------------------------------------------------------- Simulación
@@ -227,7 +117,7 @@ public class ServicioCartera {
         ProrrateoDto prorrateo = fechas == null ? null : fechas.prorrateo(escenario, primero);
         // Con fechas la cuota del resumen es la regular (periodo 2): la primera puede venir prorrateada (P5-PRORRATEO).
         Movimiento regular = fechas != null && p.numeroCuotas() > 1 ? periodo(movs, 2) : primero;
-        List<String> porConfirmar = POR_CONFIRMAR.contains(p.periodicidad())
+        List<String> porConfirmar = CatalogoServicio.POR_CONFIRMAR.contains(p.periodicidad())
                 ? List.of(p.periodicidad().name() + ": " + p.periodosPorAnio() + " periodos/año por confirmar con Diego")
                 : List.of();
         ResumenSimulacion resumen = new ResumenSimulacion(ValidadorCredito.linea(c).name(), perfil.name(), texto(o.montoFinanciado()),
