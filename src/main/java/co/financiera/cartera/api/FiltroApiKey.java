@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
@@ -35,10 +36,26 @@ public class FiltroApiKey extends OncePerRequestFilter {
     enum Rol { CONSUMIDOR, LECTURA }
 
     private record Clave(byte[] hash, Rol rol) {
+
+        @Override
+        public boolean equals(Object otra) {
+            return otra instanceof Clave c && Arrays.equals(hash, c.hash) && rol == c.rol;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Arrays.hashCode(hash) + rol.hashCode();
+        }
+
+        /** Sin el hash: aunque no sea la clave en claro, no tiene por qué salir en un log. */
+        @Override
+        public String toString() {
+            return "Clave[rol=" + rol + "]";
+        }
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(FiltroApiKey.class);
-    private static final Pattern RUTA_LECTURA = Pattern.compile("^/api/v1/(catalogo|reglas|casos(/[0-9]{1,4})?)/?$");
+    private static final Pattern RUTA_LECTURA = Pattern.compile("^/api/v1/(catalogo|reglas|casos(/\\d{1,4})?)/?$");
     private static final int MAX_LARGO_CLAVE = 256;
     private static final int LARGO_HEX_SHA256 = 64;
 
