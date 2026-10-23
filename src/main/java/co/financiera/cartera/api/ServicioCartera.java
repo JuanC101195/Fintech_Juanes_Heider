@@ -205,7 +205,7 @@ public class ServicioCartera {
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Operacion o = operacion(c);
-        Fechas fechas = fechas(c, p.periodicidad());
+        FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
         Escenario escenario = new Escenario(o, p).conReglas(perfiles.reglas(perfil)).conCobranzaActiva(cobranzaActiva(c));
         if (fechas != null) {
             escenario.conCalendario(fechas.calendario());
@@ -229,7 +229,7 @@ public class ServicioCartera {
             totalServicios = Calc.sumar(totalServicios, m.pagoServicios());
         }
         Movimiento primero = periodo(movs, 1);
-        ProrrateoDto prorrateo = fechas == null ? null : prorrateo(fechas, escenario, primero);
+        ProrrateoDto prorrateo = fechas == null ? null : fechas.prorrateo(escenario, primero);
         // Con fechas la cuota del resumen es la regular (periodo 2): la primera puede venir prorrateada (P5-PRORRATEO).
         Movimiento regular = fechas != null && p.numeroCuotas() > 1 ? periodo(movs, 2) : primero;
         List<String> porConfirmar = POR_CONFIRMAR.contains(p.periodicidad())
@@ -254,7 +254,7 @@ public class ServicioCartera {
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil))
                 .conCobranzaActiva(cobranzaActiva(c));
-        Fechas fechas = fechas(c, p.periodicidad());
+        FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
         if (fechas != null) {
             e.conCalendario(fechas.calendario());
         }
@@ -330,7 +330,7 @@ public class ServicioCartera {
         ParametrosProducto p = ParametrosProducto.replicaExcel();
         ReglasNegocio reglas = perfiles.reglas(perfil);
         Escenario e = caso.escenario().apply(p, reglas).conReglas(reglas);
-        Fechas fechas = fechas(fechaDesembolso, primerVencimiento, p.periodicidad());
+        FechasCredito fechas = FechasCredito.de(fechaDesembolso, primerVencimiento, p.periodicidad());
         if (fechas != null) {
             e.conCalendario(fechas.calendario());
         }
@@ -357,7 +357,7 @@ public class ServicioCartera {
         return correr(e, perfil, incluirAsientos, null);
     }
 
-    private EjecucionResponse correr(Escenario e, Perfil perfil, boolean incluirAsientos, Fechas fechas) {
+    private EjecucionResponse correr(Escenario e, Perfil perfil, boolean incluirAsientos, FechasCredito fechas) {
         List<Movimiento> movs = motor.ejecutar(e);
         Movimiento ultimo = movs.getLast();
         BigDecimal totalPagado = Calc.CERO;
@@ -373,7 +373,7 @@ public class ServicioCartera {
         ResumenEjecucion resumen = new ResumenEjecucion(ultimo.periodo(), ultimo.estado().name(), texto(ultimo.saldoFinal()),
                 texto(totalPagado), vencidasMax, texto(e.operacion().montoFinanciado()), perfil.name(),
                 ultimo.listoParaRecuperacion(), periodoListo,
-                fechas == null ? null : prorrateo(fechas, e, periodo(movs, 1)));
+                fechas == null ? null : fechas.prorrateo(e, periodo(movs, 1)));
         List<AsientoDto> asientos = incluirAsientos
                 ? Contabilizador.para(e.reglas()).contabilizar(movs).stream().map(MapeadorDto::asiento).toList()
                 : List.of();
@@ -408,8 +408,6 @@ public class ServicioCartera {
     /** El doble de las cuotas máximas del catálogo (hoy 2 × 104 semanas). */
     static final int MAX_PLAZO_LIMITE_PERIODOS = 2 * Arrays.stream(Periodicidad.values())
             .mapToInt(per -> per.cuotasEnMeses(plazoMaximoCatalogo())).max().orElseThrow();
-    private static final LocalDate FECHA_MINIMA = LocalDate.of(2000, 1, 1);
-    private static final LocalDate FECHA_MAXIMA = LocalDate.of(2100, 12, 31);
 
     /**
      * Parámetros del crédito del request. Si el request no trae {@code plazoLimitePeriodos} y el perfil fija
@@ -480,97 +478,8 @@ public class ServicioCartera {
                 Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, "periodicidad", per.name()));
     }
 
-    /** Fechas del crédito validadas y su calendario (ADR 0002 paso 7). */
-    record Fechas(LocalDate desembolso, LocalDate primerVencimiento, CalendarioPagos calendario) {
-    }
-
-    private static final String FECHA_DESEMBOLSO = "fechaDesembolso";
-    private static final String PRIMER_VENCIMIENTO = "primerVencimiento";
-
-    static Fechas fechas(CreditoRequest c, Periodicidad per) {
-        return fechas(c.fechaDesembolso(), c.primerVencimiento(), per);
-    }
-
-    /**
-     * P5-PRORRATEO: valida las fechas opcionales del crédito contra la periodicidad y arma su {@link CalendarioPagos}.
-     * Sin ninguna de las dos devuelve {@code null} (el comportamiento de siempre, sin fechas). Van juntas: con una sola
-     * es un 400. El primer vencimiento cae martes en semanal (D28), el 5 o el 20 en quincenal (D27) y el 5 en mensual
-     * (D35), y es posterior al desembolso. No hay tope a los días del primer periodo: Diego no lo ha fijado.
-     */
-    static Fechas fechas(String fechaDesembolso, String primerVencimiento, Periodicidad per) {
-        boolean sinDesembolso = fechaDesembolso == null || fechaDesembolso.isBlank();
-        boolean sinVencimiento = primerVencimiento == null || primerVencimiento.isBlank();
-        if (sinDesembolso && sinVencimiento) {
-            return null;
-        }
-        if (sinDesembolso || sinVencimiento) {
-            String falta = sinDesembolso ? FECHA_DESEMBOLSO : PRIMER_VENCIMIENTO;
-            throw ApiException.datoInvalido("Las fechas van juntas: falta " + falta
-                    + " (mande fechaDesembolso y primerVencimiento, o ninguna de las dos)", falta);
-        }
-        LocalDate desembolso = fecha(fechaDesembolso, FECHA_DESEMBOLSO);
-        LocalDate vencimiento = fecha(primerVencimiento, PRIMER_VENCIMIENTO);
-        if (!vencimiento.isAfter(desembolso)) {
-            throw ApiException.datoInvalido("El primer vencimiento (" + vencimiento + ") debe ser posterior a la fecha de "
-                    + "desembolso (" + desembolso + ")", PRIMER_VENCIMIENTO);
-        }
-        CalendarioPagos calendario = switch (per) {
-            case SEMANAL -> {
-                if (!DayOfWeek.TUESDAY.equals(vencimiento.getDayOfWeek())) {
-                    throw ApiException.datoInvalido("En un crédito semanal la cuota vence los martes; el " + vencimiento
-                            + " es " + vencimiento.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.of("es", "CO")),
-                            PRIMER_VENCIMIENTO);
-                }
-                yield CalendarioPagos.semanal(desembolso, vencimiento);
-            }
-            case QUINCENAL -> {
-                if (vencimiento.getDayOfMonth() != 5 && vencimiento.getDayOfMonth() != 20) {
-                    throw ApiException.datoInvalido("En un crédito quincenal la cuota vence el 5 y el 20 de cada mes; el "
-                            + vencimiento + " no es ninguno de los dos", PRIMER_VENCIMIENTO);
-                }
-                yield CalendarioPagos.quincenal(desembolso, vencimiento);
-            }
-            case MENSUAL -> {
-                if (vencimiento.getDayOfMonth() != CalendarioPagos.DIA_PAGO_MENSUAL) {
-                    throw ApiException.datoInvalido("En un crédito mensual la cuota vence el día "
-                            + CalendarioPagos.DIA_PAGO_MENSUAL + " de cada mes; el " + vencimiento + " no lo es",
-                            PRIMER_VENCIMIENTO);
-                }
-                yield CalendarioPagos.mensual(desembolso, vencimiento);
-            }
-        };
-        return new Fechas(desembolso, vencimiento, calendario);
-    }
-
-    private static LocalDate fecha(String valor, String campo) {
-        LocalDate fecha;
-        try {
-            fecha = LocalDate.parse(valor.trim());
-        } catch (DateTimeParseException e) {
-            throw ApiException.datoInvalido(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03)",
-                    campo);
-        }
-        if (fecha.isBefore(FECHA_MINIMA) || fecha.isAfter(FECHA_MAXIMA)) {
-            throw ApiException.datoInvalido(campo + " debe estar entre el año 2000 y el 2100", campo);
-        }
-        return fecha;
-    }
-
     private static Movimiento periodo(List<Movimiento> movs, int periodo) {
         return movs.stream().filter(m -> m.periodo() == periodo).findFirst().orElseThrow();
-    }
-
-    /**
-     * P5-PRORRATEO visible en la respuesta: el interés que causó el motor en el periodo 1 contra el de un periodo
-     * completo (saldo inicial × tasa del periodo, como lo causa el motor sin fechas).
-     */
-    static ProrrateoDto prorrateo(Fechas fechas, Escenario e, Movimiento primero) {
-        boolean aplicado = e.reglas().prorrateoPrimeraCuota();
-        BigDecimal causado = Objects.requireNonNull(primero.interesCorriente(), "interesCorriente");
-        BigDecimal completo = aplicado ? Calc.multiplicar(primero.saldoInicial(), primero.tasaPeriodica()) : causado;
-        return new ProrrateoDto(fechas.desembolso().toString(), fechas.primerVencimiento().toString(),
-                fechas.calendario().diasDelPeriodo(1), e.parametros().periodicidad().diasNominales(), aplicado,
-                texto(completo), texto(causado), texto(Calc.restar(causado, completo)));
     }
 
     /** COB-6: la cobranza del crédito está activa salvo que el request diga {@code false}. */
