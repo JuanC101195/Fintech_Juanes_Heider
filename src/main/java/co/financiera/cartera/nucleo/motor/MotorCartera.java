@@ -54,34 +54,15 @@ public final class MotorCartera {
     private static final class Corrida {
         private final Escenario escenario;
         private final ParametrosProducto p;
-        private final int cuotasPactadas;
         private final Servicios serviciosPorCuota;
         private final List<Movimiento> filas = new ArrayList<>();
+        /** Saldos del crédito, compartidos con las piezas extraídas del motor (contexto explícito). */
+        private final EstadoCorrida s;
 
-        private Tasas tasas;
-        private BigDecimal cuota;
-        private BigDecimal saldo;
-        /** Cuotas del plan vigente: cambian cuando un cambio de tasa conserva la cuota (caso 10). */
-        private int cuotasVigentes;
-        private BigDecimal capitalVencido = CERO;
-        private BigDecimal cxcInteres = CERO;
-        private BigDecimal cxcMora = CERO;
-        private Servicios cxcServicios = Servicios.NINGUNO;
-        private BigDecimal cxcCobranza = CERO;
-        /** Saldo del plan vigente si el cliente pagara siempre a tiempo: de él sale el capital contractual. */
-        private BigDecimal saldoPlan;
         private int cuotasVencidas;
         private Servicios recaudadoDelMes = Servicios.NINGUNO;
         /** Usura publicada la semana anterior: rige desde esta cuota (T1, Diego 2026-10-20). */
         private BigDecimal usuraPorAplicar;
-        /** Lo que el abono extra o el prepago de la semana pagó de pendientes (A4). */
-        private DeudaExtinguida pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
-        private BigDecimal interesPrepago = CERO;
-        /**
-         * R4-CASO13 (PRELACION_COMPLETA): fondo y asistencia del periodo corriente que no se causaron porque
-         * el periodo no se pagó al día y que el excedente del abono pagó por prelación.
-         */
-        private Servicios serviciosCorrientesExtra = Servicios.NINGUNO;
         /**
          * R6-RECUP-AUTO (Diego): una vez el crédito llega al umbral de recuperación queda marcado en los periodos
          * siguientes aunque el cliente se ponga al día; el motor no ejecuta nada, una persona decide.
@@ -91,14 +72,8 @@ public final class MotorCartera {
         Corrida(Escenario escenario) {
             this.escenario = escenario;
             this.p = escenario.parametros();
-            this.cuotasPactadas = Calendario.numeroCuotas(p);
-            this.cuotasVigentes = cuotasPactadas;
-            BigDecimal monto = escenario.operacion().montoFinanciado();
-            this.serviciosPorCuota = Servicios.porCuota(monto, p);
-            this.tasas = Tasas.de(p);
-            this.cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasPactadas, monto);
-            this.saldo = monto;
-            this.saldoPlan = monto;
+            this.s = new EstadoCorrida(escenario, Calendario.numeroCuotas(p));
+            this.serviciosPorCuota = s.serviciosPorCuota;
         }
 
         List<Movimiento> correr() {
@@ -114,8 +89,8 @@ public final class MotorCartera {
         }
 
         private Movimiento desembolso() {
-            return new Movimiento(0, 0, "Desembolso", saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
-                    CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, saldo, saldo, 0, CERO, CERO, CERO, CERO,
+            return new Movimiento(0, 0, "Desembolso", s.saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
+                    CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, s.saldo, s.saldo, 0, CERO, CERO, CERO, CERO,
                     Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
                     CERO, DeudaExtinguida.NINGUNA, CERO, CERO, CERO, false);
         }
@@ -124,9 +99,9 @@ public final class MotorCartera {
         private Movimiento procesarPeriodo(int periodo, List<Instruccion> instrucciones) {
             Ordenes ordenes = leer(periodo, instrucciones);
             Instruccion pago = ordenes.pago;
-            BigDecimal tasa = tasas.periodica();
-            BigDecimal saldoInicial = saldo;
-            BigDecimal vencidoInicial = capitalVencido;
+            BigDecimal tasa = s.tasas.periodica();
+            BigDecimal saldoInicial = s.saldo;
+            BigDecimal vencidoInicial = s.capitalVencido;
             // P7 / P-16: con moraAntesDeRecuperacion (el Excel) toda semana sin pago causa mora y seguro.
             boolean sinPagoSinMora = pago instanceof SinPago(boolean causaMora) && !causaMora
                     && !escenario.reglas().moraAntesDeRecuperacion();
@@ -138,7 +113,7 @@ public final class MotorCartera {
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
             // prorrateo de la primera cuota (P5-PRORRATEO) es su capital completo más el interés de los días reales.
-            BigDecimal cuotaDelPeriodo = causado.prorrateada() ? sumar(causado.capitalContractual(), causado.interes()) : cuota;
+            BigDecimal cuotaDelPeriodo = causado.prorrateada() ? sumar(causado.capitalContractual(), causado.interes()) : s.cuota;
 
             // 3. Pago y prelación.
             BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
@@ -149,31 +124,31 @@ public final class MotorCartera {
 
             // 4. Abono extraordinario o prepago, después de la cuota del periodo. Con PRIMERO_PENDIENTES (A4)
             // pagan antes lo pendiente de semanas anteriores; nunca adelantan intereses ni servicios futuros.
-            pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
-            interesPrepago = CERO;
-            serviciosCorrientesExtra = Servicios.NINGUNO;
+            s.pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
+            s.interesPrepago = CERO;
+            s.serviciosCorrientesExtra = Servicios.NINGUNO;
             BigDecimal abonoAplicado = ordenes.abono == null ? CERO : aplicarAbono(periodo, ordenes.abono, tasa, causado);
             BigDecimal prepagoCapital = ordenes.prepago == null ? CERO : prepagar(periodo, ordenes.prepago);
 
             // 5. Cierre por recuperación de la moto: su valor extingue lo pendiente por prelación. La fila
             // del cierre reporta el capital vencido que se extinguió (Caso3 Z del evento).
-            BigDecimal vencidoReportado = capitalVencido;
+            BigDecimal vencidoReportado = s.capitalVencido;
             Cierre cierre = ordenes.cierre == null ? Cierre.NINGUNO : cerrar(ordenes.cierre);
 
             // 6. Estado, cuotas vencidas y giro a terceros de lo recaudado.
-            BigDecimal pendiente = sumar(capitalVencido, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total());
+            BigDecimal pendiente = sumar(s.capitalVencido, s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios.total());
             EstadoCredito estado = estado(ordenes.cierre != null, pendiente);
             contarCuotasVencidas(pagoCompleto, pago, pendiente);
             // A4: un abono o prepago que pagó todo lo pendiente deja al cliente al día.
-            if (pendientesPagadosExtra.total().signum() > 0 && esCero(pendiente)) {
+            if (s.pendientesPagadosExtra.total().signum() > 0 && esCero(pendiente)) {
                 cuotasVencidas = 0;
             }
             Servicios recaudado = reparto.servicios().mas(cierre.servicios());
-            Servicios giro = girar(periodo, recaudado.mas(pendientesPagadosExtra.servicios()), estado);
+            Servicios giro = girar(periodo, recaudado.mas(s.pendientesPagadosExtra.servicios()), estado);
 
-            String evento = DescriptorEventos.evento(ordenes, periodo, cuotasVigentes, pagoCompleto, dias, recibido);
+            String evento = DescriptorEventos.evento(ordenes, periodo, s.cuotasVigentes, pagoCompleto, dias, recibido);
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
-            Servicios serviciosDelPeriodo = causado.servicios().mas(serviciosCorrientesExtra);
+            Servicios serviciosDelPeriodo = causado.servicios().mas(s.serviciosCorrientesExtra);
             // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación. R6-RECUP-AUTO
             // (Diego): el motor solo marca, nunca ejecuta la dación ni la retoma, y la marca persiste aunque el
             // cliente se ponga al día: una persona decide. Solo se apaga cuando el crédito termina (cancelado o
@@ -186,10 +161,10 @@ public final class MotorCartera {
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),
-                    reparto.capital(), abonoAplicado, prepagoCapital, cxcCobranza, cxcMora, cxcInteres, cxcServicios.total(),
-                    vencidoReportado, max(CERO, restar(saldo, capitalVencido)), saldo, cuotasVencidas, cierre.deuda(),
+                    reparto.capital(), abonoAplicado, prepagoCapital, s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios.total(),
+                    vencidoReportado, max(CERO, restar(s.saldo, s.capitalVencido)), s.saldo, cuotasVencidas, cierre.deuda(),
                     cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
-                    cxcServicios, cierre.extinguido(), vencidoInicial, pendientesPagadosExtra, interesPrepago,
+                    s.cxcServicios, cierre.extinguido(), vencidoInicial, s.pendientesPagadosExtra, s.interesPrepago,
                     cierre.costo(), cierre.costoAsumido(), listoParaRecuperacion);
         }
 
@@ -262,7 +237,7 @@ public final class MotorCartera {
          * caso 2. Devuelve si la tasa cambió.
          */
         private boolean ajustarPorUsura(int periodo, BigDecimal usuraEA) {
-            BigDecimal actual = tasas.efectivaAnual();
+            BigDecimal actual = s.tasas.efectivaAnual();
             BigDecimal nueva = Usura.tasaAjustada(actual, usuraEA, escenario.reglas().margenUsura());
             if (nueva.compareTo(actual) == 0) {
                 return false;
@@ -276,9 +251,9 @@ public final class MotorCartera {
          * el número de cuotas hasta saldo cero, NPER = −ln(1 − r·S/C) / ln(1 + r); la última se ajusta.
          */
         private void cambiarTasa(int periodo, BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) {
-            tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
-            saldoPlan = restar(saldo, capitalVencido);
-            if (periodo > cuotasVigentes) {
+            s.tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
+            s.saldoPlan = restar(s.saldo, s.capitalVencido);
+            if (periodo > s.cuotasVigentes) {
                 // Auditoría 2026-10-23 (H6): después de la última cuota pactada no quedan cuotas por recalcular
                 // (PMT con 0 o menos periodos lanzaba excepción y tumbaba, p. ej., un lote de usura con créditos en
                 // mora fuera de plazo). Decisión conservadora, pendiente de Diego: la tasa nueva queda registrada
@@ -290,35 +265,12 @@ public final class MotorCartera {
                 // R4-T5 (Diego 2026-10-22): con el cliente en mora la cuota nueva va solo sobre el capital vigente;
                 // el vencido se sigue cobrando aparte (prelación) y los intereses pendientes nunca entran a la base
                 // (no hay anatocismo). Sin vencido las dos bases son iguales, como en el Excel.
-                BigDecimal base = escenario.reglas().cambioTasaSobreCapitalVigente() && !esCero(capitalVencido)
-                        ? saldoPlan : saldo;
-                cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasVigentes - periodo + 1, base);
+                BigDecimal base = escenario.reglas().cambioTasaSobreCapitalVigente() && !esCero(s.capitalVencido)
+                        ? s.saldoPlan : s.saldo;
+                s.cuota = Amortizacion.cuotaFija(s.tasas.periodica(), s.cuotasVigentes - periodo + 1, base);
                 return;
             }
-            cuotasVigentes = periodo - 1 + cuotasHastaSaldoCero(saldoPlan);
-        }
-
-        /**
-         * Cuotas de valor {@code cuota} que hacen falta para llevar {@code base} a cero con la tasa vigente,
-         * NPER = −ln(1 − r·S/C) / ln(1 + r) redondeado hacia arriba (la última se ajusta). Lo usan el caso 10
-         * y el abono a menor plazo (SRV-2).
-         */
-        private int cuotasHastaSaldoCero(BigDecimal base) {
-            if (base.signum() <= 0 || esCero(base)) {
-                return 0;
-            }
-            if (tasas.periodica().signum() == 0) {
-                // Auditoría 2026-10-23 (H9): con tasa 0 la fórmula da 0/0 = NaN y (int) NaN = 0 cuotas, lo que
-                // cortaba el plan. Sin interés el número de cuotas es saldo / cuota redondeado hacia arriba.
-                return Calc.dividir(base, cuota).setScale(0, java.math.RoundingMode.CEILING).intValueExact();
-            }
-            double r = tasas.periodica().doubleValue();
-            double proporcion = r * base.doubleValue() / cuota.doubleValue();
-            if (proporcion >= 1) {
-                throw new IllegalArgumentException("Con la tasa nueva la cuota no alcanza para cubrir el interés: no amortiza");
-            }
-            // StrictMath: mismo resultado bit a bit en cualquier máquina (ver Calc.potencia).
-            return (int) Math.ceil(-StrictMath.log(1 - proporcion) / StrictMath.log(1 + r) - 1e-9);
+            s.cuotasVigentes = periodo - 1 + s.cuotasHastaSaldoCero(s.saldoPlan);
         }
 
         /** FCC y asistencia solo se causan en periodos pagados al día (Inputs ⑥, P-07). */
@@ -333,19 +285,19 @@ public final class MotorCartera {
          */
         private Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
             ReglasNegocio reglas = escenario.reglas();
-            BigDecimal tasa = tasas.periodica();
-            boolean dentroDelPlazo = periodo <= cuotasVigentes;
+            BigDecimal tasa = s.tasas.periodica();
+            boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
             BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
-                    ? noNegativo(restar(saldoInicial, capitalVencido)) : saldoInicial;
+                    ? noNegativo(restar(saldoInicial, s.capitalVencido)) : saldoInicial;
             BigDecimal capitalContractual = CERO;
-            if (dentroDelPlazo && !sinPagoSinMora && !esCero(saldoPlan)) {
+            if (dentroDelPlazo && !sinPagoSinMora && !esCero(s.saldoPlan)) {
                 // Auditoría 2026-10-23 (H3): nunca negativo, aunque el saldo del plan lo fuera por un error aguas arriba.
-                capitalContractual = noNegativo(min(saldoPlan, restar(cuota, multiplicar(saldoPlan, tasa))));
+                capitalContractual = noNegativo(min(s.saldoPlan, restar(s.cuota, multiplicar(s.saldoPlan, tasa))));
                 // Auditoría 2026-10-23 (I8): el plan puede ir por encima del capital que de verdad queda vigente (un pago
                 // mayor que la cuota baja el saldo pero no el plan). Sin este tope la cuota del plan vencía más capital
                 // del que existe y el capital vencido superaba al saldo. Solo actúa si la diferencia supera el medio
                 // centavo, así los residuos DECIMAL128 de los casos del Excel no cambian.
-                BigDecimal vigente = noNegativo(restar(saldoInicial, capitalVencido));
+                BigDecimal vigente = noNegativo(restar(saldoInicial, s.capitalVencido));
                 if (restar(capitalContractual, vigente).compareTo(Calc.EPSILON_SALDO) > 0) {
                     capitalContractual = vigente;
                 }
@@ -368,16 +320,16 @@ public final class MotorCartera {
             BigDecimal interes = multiplicar(baseInteres, tasa);
             if (prorrateada) {
                 int diasReales = escenario.diasPrimerPeriodo().getAsInt();
-                interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), diasReales), Calc.UNO));
+                interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
             }
             return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
                     cobranza(saldoInicial, dias), serviciosAlDia, prorrateada);
         }
 
         private BigDecimal mora(int periodo, BigDecimal capitalContractual, int dias) {
-            BigDecimal mora = multiplicar(capitalVencido, factorMoraDelPeriodo(periodo));
+            BigDecimal mora = multiplicar(s.capitalVencido, factorMoraDelPeriodo(periodo));
             if (dias > 0 && escenario.reglas().formulaMora() == ReglasNegocio.FormulaMora.VENCIDO_MAS_DIAS) {
-                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
+                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), dias), Calc.UNO);
                 mora = sumar(mora, multiplicar(capitalContractual, factorDias));
             }
             return mora;
@@ -395,10 +347,10 @@ public final class MotorCartera {
                     && p.periodicidad() == Periodicidad.MENSUAL) {
                 java.util.OptionalInt diasReales = escenario.diasDelPeriodo(periodo);
                 if (diasReales.isPresent()) {
-                    return restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), diasReales.getAsInt()), Calc.UNO);
+                    return restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales.getAsInt()), Calc.UNO);
                 }
             }
-            return tasas.periodica();
+            return s.tasas.periodica();
         }
 
         /**
@@ -418,8 +370,8 @@ public final class MotorCartera {
         /** 3. Lo que entra este periodo, limitado a lo exigible. */
         private BigDecimal recibido(Instruccion pago, BigDecimal cuotaTotal, BigDecimal cuotaDelPeriodo,
                 BigDecimal saldoInicial, Causacion c) {
-            BigDecimal pendienteSinCapital = sumar(cxcCobranza, c.cobranza(), cxcMora, c.mora(), cxcInteres, c.interes(),
-                    cxcServicios.total(), c.servicios().total());
+            BigDecimal pendienteSinCapital = sumar(s.cxcCobranza, c.cobranza(), s.cxcMora, c.mora(), s.cxcInteres, c.interes(),
+                    s.cxcServicios.total(), c.servicios().total());
             BigDecimal exigible = sumar(saldoInicial, pendienteSinCapital);
             return switch (pago) {
                 case PagoContractual x -> min(cuotaTotal, exigible);
@@ -427,7 +379,7 @@ public final class MotorCartera {
                 // en la primera cuota prorrateada (P5-PRORRATEO), de la cuota de ese periodo.
                 case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuotaDelPeriodo, serviciosPorCuota.total())), exigible);
                 case PagoValor x -> min(x.valor(), exigible);
-                case PagoAlDia x -> min(sumar(pendienteSinCapital, capitalVencido, c.capitalContractual()), exigible);
+                case PagoAlDia x -> min(sumar(pendienteSinCapital, s.capitalVencido, c.capitalContractual()), exigible);
                 case SinPago x -> CERO;
                 default -> throw new IllegalStateException("Instrucción de pago no soportada: " + pago);
             };
@@ -440,17 +392,17 @@ public final class MotorCartera {
          */
         private Reparto repartir(BigDecimal recibido, BigDecimal saldoInicial, Causacion c) {
             BigDecimal restante = recibido;
-            BigDecimal pagoCobranza = min(restante, sumar(cxcCobranza, c.cobranza()));
+            BigDecimal pagoCobranza = min(restante, sumar(s.cxcCobranza, c.cobranza()));
             restante = restar(restante, pagoCobranza);
-            BigDecimal pagoMora = min(restante, sumar(cxcMora, c.mora()));
+            BigDecimal pagoMora = min(restante, sumar(s.cxcMora, c.mora()));
             restante = restar(restante, pagoMora);
-            BigDecimal pagoInteres = min(restante, sumar(cxcInteres, c.interes()));
+            BigDecimal pagoInteres = min(restante, sumar(s.cxcInteres, c.interes()));
             restante = restar(restante, pagoInteres);
-            Servicios porCobrar = cxcServicios.mas(c.servicios());
+            Servicios porCobrar = s.cxcServicios.mas(c.servicios());
             BigDecimal pagoCapital = CERO;
             if (escenario.reglas().prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS) {
                 // Solo se adelanta el capital de la cuota (contractual + vencido); el excedente pasa a servicios.
-                pagoCapital = min(restante, min(saldoInicial, sumar(capitalVencido, c.capitalContractual())));
+                pagoCapital = min(restante, min(saldoInicial, sumar(s.capitalVencido, c.capitalContractual())));
                 restante = restar(restante, pagoCapital);
             }
             BigDecimal pagoFondo = min(restante, porCobrar.fondoGarantias());
@@ -465,18 +417,18 @@ public final class MotorCartera {
         }
 
         private void actualizarSaldos(BigDecimal saldoInicial, Causacion c, Reparto r, boolean sinPagoSinMora) {
-            cxcCobranza = noNegativo(restar(sumar(cxcCobranza, c.cobranza()), r.cobranza()));
-            cxcMora = noNegativo(restar(sumar(cxcMora, c.mora()), r.mora()));
-            cxcInteres = noNegativo(restar(sumar(cxcInteres, c.interes()), r.interes()));
-            cxcServicios = cxcServicios.mas(c.servicios()).menos(r.servicios()).noNegativo();
-            saldo = noNegativo(restar(saldoInicial, r.capital()));
+            s.cxcCobranza = noNegativo(restar(sumar(s.cxcCobranza, c.cobranza()), r.cobranza()));
+            s.cxcMora = noNegativo(restar(sumar(s.cxcMora, c.mora()), r.mora()));
+            s.cxcInteres = noNegativo(restar(sumar(s.cxcInteres, c.interes()), r.interes()));
+            s.cxcServicios = s.cxcServicios.mas(c.servicios()).menos(r.servicios()).noNegativo();
+            s.saldo = noNegativo(restar(saldoInicial, r.capital()));
             if (!sinPagoSinMora) {
-                capitalVencido = noNegativo(restar(sumar(capitalVencido, c.capitalContractual()), r.capital()));
-                if (esCero(capitalVencido)) {
-                    capitalVencido = CERO;
+                s.capitalVencido = noNegativo(restar(sumar(s.capitalVencido, c.capitalContractual()), r.capital()));
+                if (esCero(s.capitalVencido)) {
+                    s.capitalVencido = CERO;
                 }
             }
-            saldoPlan = noNegativo(restar(saldoPlan, c.capitalContractual()));
+            s.saldoPlan = noNegativo(restar(s.saldoPlan, c.capitalContractual()));
         }
 
         /**
@@ -494,44 +446,44 @@ public final class MotorCartera {
                     ? causado.serviciosNoCausados() : Servicios.NINGUNO;
             // P-14: Diego (2026-10-16) no acepta abonos mayores que el saldo; el Excel los recortaba. Con
             // pendientes, el saldo del crédito incluye lo que se debe de semanas anteriores.
-            BigDecimal maximo = primeroPendientes ? sumar(saldo, pendientesSinCapital(), corrientePorPagar.total()) : saldo;
+            BigDecimal maximo = primeroPendientes ? sumar(s.saldo, s.pendientesSinCapital(), corrientePorPagar.total()) : s.saldo;
             if (abono.valor().compareTo(sumar(maximo, Calc.EPSILON_SALDO)) > 0) {
                 throw new AbonoMayorQueElSaldoException(periodo, abono.valor(), maximo);
             }
             BigDecimal restante = abono.valor();
             if (primeroPendientes) {
-                pendientesPagadosExtra = pagarPendientes(restante);
-                restante = noNegativo(restar(restante, pendientesPagadosExtra.total()));
+                s.pendientesPagadosExtra = pagarPendientes(restante);
+                restante = noNegativo(restar(restante, s.pendientesPagadosExtra.total()));
             }
             if (restante.signum() > 0 && corrientePorPagar.total().signum() > 0) {
-                serviciosCorrientesExtra = pagarServiciosCorrientes(restante, corrientePorPagar);
-                pendientesPagadosExtra = pendientesPagadosExtra.mas(
-                        new DeudaExtinguida(CERO, CERO, CERO, serviciosCorrientesExtra, CERO));
-                restante = noNegativo(restar(restante, serviciosCorrientesExtra.total()));
+                s.serviciosCorrientesExtra = pagarServiciosCorrientes(restante, corrientePorPagar);
+                s.pendientesPagadosExtra = s.pendientesPagadosExtra.mas(
+                        new DeudaExtinguida(CERO, CERO, CERO, s.serviciosCorrientesExtra, CERO));
+                restante = noNegativo(restar(restante, s.serviciosCorrientesExtra.total()));
             }
             // Auditoría 2026-10-23 (H3): el abono va primero al capital vigente (con un abono menor que el vigente nada
             // cambia) y lo que lo supere extingue capital vencido. Antes se descontaba del saldo (que incluye el
             // vencido) sin reducir el vencido: el saldo del plan quedaba negativo, el capital contractual salía
             // negativo y el vencido seguía causando mora sobre capital ya pagado.
-            BigDecimal aplicado = min(restante, noNegativo(restar(saldo, capitalVencido)));
-            saldo = restar(saldo, aplicado);
+            BigDecimal aplicado = min(restante, noNegativo(restar(s.saldo, s.capitalVencido)));
+            s.saldo = restar(s.saldo, aplicado);
             pagarVencidoConExtra(noNegativo(restar(restante, aplicado)));
-            if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasVigentes - periodo > 0 && !esCero(saldo)) {
+            if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && s.cuotasVigentes - periodo > 0 && !esCero(s.saldo)) {
                 // A5 (Diego 2026-10-20): la cuota nueva usa la tasa vigente; el abono no cambia la tasa (D-7.1).
                 // Con PRIMERO_PENDIENTES la cuota nueva amortiza solo el capital vigente: el vencido que el
                 // abono no alcanzó a cubrir sigue cobrándose aparte.
-                BigDecimal base = primeroPendientes ? noNegativo(restar(saldo, capitalVencido)) : saldo;
-                cuota = Amortizacion.cuotaFija(tasaVigente, cuotasVigentes - periodo, base);
+                BigDecimal base = primeroPendientes ? noNegativo(restar(s.saldo, s.capitalVencido)) : s.saldo;
+                s.cuota = Amortizacion.cuotaFija(tasaVigente, s.cuotasVigentes - periodo, base);
             }
-            saldoPlan = restar(saldo, capitalVencido);
+            s.saldoPlan = restar(s.saldo, s.capitalVencido);
             // SRV-2 (Diego, ronda 3, 2026-10-20): si el abono acorta el plazo, la cobertura de los servicios
             // termina con el nuevo plazo. Se recalcula el número de cuotas como en el caso 10 (NPER con la misma
             // cuota) para que causar() deje de causar servicios y capital contractual después de la última. En
             // el caso 6 del Excel el crédito ya terminaba en la cuota 71 porque el saldo llega a cero; esto solo
             // cambia algo si el cliente se atrasa después del abono.
-            if (abono.modalidad() == ModalidadAbono.MENOR_PLAZO && periodo < cuotasVigentes && saldoPlan.signum() > 0
-                    && !esCero(saldoPlan)) {
-                cuotasVigentes = Math.min(cuotasVigentes, periodo + cuotasHastaSaldoCero(saldoPlan));
+            if (abono.modalidad() == ModalidadAbono.MENOR_PLAZO && periodo < s.cuotasVigentes && s.saldoPlan.signum() > 0
+                    && !esCero(s.saldoPlan)) {
+                s.cuotasVigentes = Math.min(s.cuotasVigentes, periodo + s.cuotasHastaSaldoCero(s.saldoPlan));
             }
             return aplicado;
         }
@@ -560,22 +512,17 @@ public final class MotorCartera {
          * pagados por fuera de la cuota, para que la contabilidad lo acredite a Cartera capital vencida.
          */
         private void pagarVencidoConExtra(BigDecimal disponible) {
-            BigDecimal vencido = min(disponible, capitalVencido);
+            BigDecimal vencido = min(disponible, s.capitalVencido);
             if (vencido.signum() <= 0) {
                 return;
             }
-            pendientesPagadosExtra = pendientesPagadosExtra.mas(
+            s.pendientesPagadosExtra = s.pendientesPagadosExtra.mas(
                     new DeudaExtinguida(CERO, CERO, CERO, Servicios.NINGUNO, vencido));
-            capitalVencido = noNegativo(restar(capitalVencido, vencido));
-            if (esCero(capitalVencido)) {
-                capitalVencido = CERO;
+            s.capitalVencido = noNegativo(restar(s.capitalVencido, vencido));
+            if (esCero(s.capitalVencido)) {
+                s.capitalVencido = CERO;
             }
-            saldo = noNegativo(restar(saldo, vencido));
-        }
-
-        /** Pendientes de semanas anteriores distintos del capital: cobranza, mora, interés y servicios. */
-        private BigDecimal pendientesSinCapital() {
-            return sumar(cxcCobranza, cxcMora, cxcInteres, cxcServicios.total());
+            s.saldo = noNegativo(restar(s.saldo, vencido));
         }
 
         /**
@@ -585,37 +532,37 @@ public final class MotorCartera {
          */
         private DeudaExtinguida pagarPendientes(BigDecimal disponible) {
             BigDecimal restante = disponible;
-            BigDecimal cobranza = min(restante, cxcCobranza);
+            BigDecimal cobranza = min(restante, s.cxcCobranza);
             restante = restar(restante, cobranza);
-            BigDecimal mora = min(restante, cxcMora);
+            BigDecimal mora = min(restante, s.cxcMora);
             restante = restar(restante, mora);
-            BigDecimal interes = min(restante, cxcInteres);
+            BigDecimal interes = min(restante, s.cxcInteres);
             restante = restar(restante, interes);
             BigDecimal vencido = CERO;
             boolean capitalAntes = escenario.reglas().prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS;
             if (capitalAntes) {
-                vencido = min(restante, capitalVencido);
+                vencido = min(restante, s.capitalVencido);
                 restante = restar(restante, vencido);
             }
-            BigDecimal fondo = min(restante, cxcServicios.fondoGarantias());
+            BigDecimal fondo = min(restante, s.cxcServicios.fondoGarantias());
             restante = restar(restante, fondo);
-            BigDecimal asistencia = min(restante, cxcServicios.asistencia());
+            BigDecimal asistencia = min(restante, s.cxcServicios.asistencia());
             restante = restar(restante, asistencia);
-            BigDecimal seguro = min(restante, cxcServicios.seguro());
+            BigDecimal seguro = min(restante, s.cxcServicios.seguro());
             restante = restar(restante, seguro);
             if (!capitalAntes) {
-                vencido = min(restante, capitalVencido);
+                vencido = min(restante, s.capitalVencido);
             }
             Servicios servicios = new Servicios(fondo, asistencia, seguro);
-            cxcCobranza = noNegativo(restar(cxcCobranza, cobranza));
-            cxcMora = noNegativo(restar(cxcMora, mora));
-            cxcInteres = noNegativo(restar(cxcInteres, interes));
-            cxcServicios = cxcServicios.menos(servicios).noNegativo();
-            capitalVencido = noNegativo(restar(capitalVencido, vencido));
-            if (esCero(capitalVencido)) {
-                capitalVencido = CERO;
+            s.cxcCobranza = noNegativo(restar(s.cxcCobranza, cobranza));
+            s.cxcMora = noNegativo(restar(s.cxcMora, mora));
+            s.cxcInteres = noNegativo(restar(s.cxcInteres, interes));
+            s.cxcServicios = s.cxcServicios.menos(servicios).noNegativo();
+            s.capitalVencido = noNegativo(restar(s.capitalVencido, vencido));
+            if (esCero(s.capitalVencido)) {
+                s.capitalVencido = CERO;
             }
-            saldo = noNegativo(restar(saldo, vencido));
+            s.saldo = noNegativo(restar(s.saldo, vencido));
             return new DeudaExtinguida(cobranza, mora, interes, servicios, vencido);
         }
 
@@ -630,19 +577,19 @@ public final class MotorCartera {
             int dias = prepago.fecha() == null ? prepago.diasDesdeUltimaCuota() : diasHastaPrepago(periodo, prepago.fecha());
             if (reglas.interesPrepagoPorDias() && dias > 0) {
                 BigDecimal base = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
-                        ? noNegativo(restar(saldo, capitalVencido)) : saldo;
-                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
-                interesPrepago = multiplicar(base, factorDias);
+                        ? noNegativo(restar(s.saldo, s.capitalVencido)) : s.saldo;
+                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), dias), Calc.UNO);
+                s.interesPrepago = multiplicar(base, factorDias);
             }
             if (reglas.aplicacionAbono().pagaPendientes()) {
-                pendientesPagadosExtra = pendientesPagadosExtra.mas(pagarPendientes(sumar(saldo, pendientesSinCapital())));
+                s.pendientesPagadosExtra = s.pendientesPagadosExtra.mas(pagarPendientes(sumar(s.saldo, s.pendientesSinCapital())));
             }
             // Auditoría 2026-10-23 (H3): el prepago total extingue el capital completo, también el vencido (con SOLO_CAPITAL
             // antes quedaba vivo con saldo 0 y seguía causando mora y servicios por más de 100 periodos).
-            pagarVencidoConExtra(capitalVencido);
-            BigDecimal prepagado = saldo;
-            saldo = CERO;
-            saldoPlan = CERO;
+            pagarVencidoConExtra(s.capitalVencido);
+            BigDecimal prepagado = s.saldo;
+            s.saldo = CERO;
+            s.saldoPlan = CERO;
             return prepagado;
         }
 
@@ -676,7 +623,7 @@ public final class MotorCartera {
         private Cierre cerrar(CierrePorRecuperacion orden) {
             BigDecimal inventario = orden.valorMoto();
             BigDecimal costo = orden.costoRecuperacion();
-            BigDecimal deuda = sumar(saldo, cxcInteres, cxcMora, cxcServicios.total(), cxcCobranza);
+            BigDecimal deuda = sumar(s.saldo, s.cxcInteres, s.cxcMora, s.cxcServicios.total(), s.cxcCobranza);
             boolean costoAlFondo = escenario.reglas().costoRecuperacionAlFondo();
             BigDecimal neto = restar(restar(inventario, deuda), costo);
             BigDecimal cxpDeudor = noNegativo(neto);
@@ -694,21 +641,21 @@ public final class MotorCartera {
                 costoAsumido = restar(costo, min(costo, noNegativo(restar(inventario, deuda))));
                 disponible = inventario;
             }
-            BigDecimal restante = restar(disponible, min(disponible, sumar(cxcCobranza, cxcMora, cxcInteres)));
-            BigDecimal fondo = min(restante, cxcServicios.fondoGarantias());
+            BigDecimal restante = restar(disponible, min(disponible, sumar(s.cxcCobranza, s.cxcMora, s.cxcInteres)));
+            BigDecimal fondo = min(restante, s.cxcServicios.fondoGarantias());
             restante = restar(restante, fondo);
-            BigDecimal asistencia = min(restante, cxcServicios.asistencia());
+            BigDecimal asistencia = min(restante, s.cxcServicios.asistencia());
             restante = restar(restante, asistencia);
-            BigDecimal seguro = min(restante, cxcServicios.seguro());
+            BigDecimal seguro = min(restante, s.cxcServicios.seguro());
             Cierre cierre = new Cierre(deuda, inventario, cxcFondo, cxpDeudor, new Servicios(fondo, asistencia, seguro),
-                    new DeudaExtinguida(cxcCobranza, cxcMora, cxcInteres, cxcServicios, saldo), costo, costoAsumido);
-            saldo = CERO;
-            saldoPlan = CERO;
-            capitalVencido = CERO;
-            cxcInteres = CERO;
-            cxcMora = CERO;
-            cxcServicios = Servicios.NINGUNO;
-            cxcCobranza = CERO;
+                    new DeudaExtinguida(s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios, s.saldo), costo, costoAsumido);
+            s.saldo = CERO;
+            s.saldoPlan = CERO;
+            s.capitalVencido = CERO;
+            s.cxcInteres = CERO;
+            s.cxcMora = CERO;
+            s.cxcServicios = Servicios.NINGUNO;
+            s.cxcCobranza = CERO;
             return cierre;
         }
 
@@ -716,7 +663,7 @@ public final class MotorCartera {
             if (cerrado) {
                 return EstadoCredito.CERRADO_POR_EVENTO;
             }
-            if (esCero(sumar(saldo, pendiente))) {
+            if (esCero(sumar(s.saldo, pendiente))) {
                 return EstadoCredito.CANCELADO;
             }
             return esCero(pendiente) ? EstadoCredito.VIGENTE_AL_DIA : EstadoCredito.EN_MORA;
