@@ -83,22 +83,25 @@ public class ServicioCartera {
             new ClaveDto("margenUsura", "Puntos de EA por debajo de la usura a los que se lleva un crédito que la supera", "T2"),
             new ClaveDto("modalidadUsura", "Qué se conserva cuando la usura obliga a bajar la tasa", "USU-6"),
             new ClaveDto("costoRecuperacionAlFondo",
-                    "En la dación, si el costo real de la recuperación se suma al faltante que cubre el fondo (provisional)",
+                    "En la dación, si el costo real de la recuperación se suma al faltante que cubre el fondo",
                     "R4-R2 / P5-COSTO-DACION"),
             new ClaveDto("cobranzaIngresoNoOperacional",
                     "Si los gastos de cobranza se contabilizan como ingreso no operacional (PUC clase 42)",
                     "R4-COBRANZA-CONTABLE"),
             new ClaveDto("plazoLimiteMeses",
-                    "Plazo límite de recuperación en meses para créditos nuevos y simulaciones; vacío = el del producto",
-                    "R4-PLAZO-LIMITE"),
+                    "Tope del plazo límite de recuperación en meses para créditos nuevos y simulaciones: el límite es min(plazo del crédito, tope); vacío = el del producto",
+                    "R4-PLAZO-LIMITE / R6-LIMITE-CORTO"),
             new ClaveDto("cambioTasaSobreCapitalVigente",
                     "Con el cliente en mora, si la cuota nueva de un cambio de tasa va solo sobre el capital vigente", "R4-T5"),
             new ClaveDto("cobranzaDiaria",
                     "Valor diario de la cobranza para créditos nuevos y simulaciones; vacío = el del producto (3.000)",
                     "COB-6"),
             new ClaveDto("cuotasVencidasParaRecuperacion",
-                    "Cuotas atrasadas desde las que el crédito queda listo para recuperación; vacío = no se marca",
-                    "PPER-9"));
+                    "Cuotas atrasadas desde las que el crédito queda marcado listo para recuperación (solo se marca y la marca persiste); vacío = no se marca",
+                    "PPER-9 / R6-RECUP-AUTO"),
+            new ClaveDto("prorrateoPrimeraCuota",
+                    "Si el interés de la primera cuota se prorratea por los días reales entre el desembolso y la primera fecha de pago",
+                    "P5-PRORRATEO"));
 
     private final PerfilesReglas perfiles;
     private final MotorCartera motor = new MotorCartera();

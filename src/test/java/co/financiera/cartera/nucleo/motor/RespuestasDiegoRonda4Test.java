@@ -185,9 +185,10 @@ class RespuestasDiegoRonda4Test {
         assertThat(diego.plazoLimiteMeses()).isEqualTo(24);
         assertThat(diego.plazoLimitePeriodos(Periodicidad.SEMANAL, 104)).hasValue(104);
         assertThat(diego.plazoLimitePeriodos(Periodicidad.QUINCENAL, 48)).hasValue(48);
-        assertThat(diego.plazoLimitePeriodos(Periodicidad.MENSUAL, 12)).hasValue(24);
-        // Nunca menos que las cuotas pactadas.
-        assertThat(ReglasNegocio.EXCEL.conPlazoLimiteMeses(6).plazoLimitePeriodos(Periodicidad.MENSUAL, 12)).hasValue(12);
+        // R6-LIMITE-CORTO (Diego): el límite es min(plazo del crédito, 24 meses); antes un mensual de 12 daba 24.
+        assertThat(diego.plazoLimitePeriodos(Periodicidad.MENSUAL, 12)).hasValue(12);
+        // Con un tope menor que el plazo manda el tope (min literal de R6-LIMITE-CORTO); antes daba las 12 cuotas.
+        assertThat(ReglasNegocio.EXCEL.conPlazoLimiteMeses(6).plazoLimitePeriodos(Periodicidad.MENSUAL, 12)).hasValue(6);
         // El Excel no lo fija: quedan los 100 y 120 semanas de los casos 8 y 9.
         assertThat(ReglasNegocio.EXCEL.plazoLimitePeriodos(Periodicidad.SEMANAL, 104)).isEmpty();
         assertThat(EscenariosExcel.caso9(P).conReglas(diego).parametros().plazoLimitePeriodos()).isEqualTo(120);

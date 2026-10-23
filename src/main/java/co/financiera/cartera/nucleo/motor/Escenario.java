@@ -1,5 +1,6 @@
 package co.financiera.cartera.nucleo.motor;
 
+import co.financiera.cartera.nucleo.CalendarioPagos;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import java.util.ArrayList;
@@ -22,6 +23,11 @@ public final class Escenario {
     private ReglasNegocio reglas = ReglasNegocio.EXCEL;
     /** COB-6: si a este crédito se le causan gastos de cobranza; el Excel los causa siempre. */
     private boolean cobranzaActiva = true;
+    /**
+     * P5-PRORRATEO: días reales entre el desembolso y la primera fecha de pago
+     * ({@link CalendarioPagos#diasDelPeriodo(int) diasDelPeriodo(1)}); {@code null} si el escenario no tiene fechas.
+     */
+    private Integer diasPrimerPeriodo;
 
     public Escenario(Operacion operacion, ParametrosProducto parametros) {
         this.operacion = operacion;
@@ -49,6 +55,25 @@ public final class Escenario {
 
     public boolean cobranzaActiva() {
         return cobranzaActiva;
+    }
+
+    /**
+     * Fechas del crédito (ADR 0002 paso 7): de su calendario sale cuántos días reales tiene la primera cuota, que
+     * es lo que usa el prorrateo del interés (P5-PRORRATEO) cuando las reglas lo activan. La periodicidad del
+     * calendario debe ser la del producto.
+     */
+    public Escenario conCalendario(CalendarioPagos calendario) {
+        if (calendario.periodicidad() != parametros.periodicidad()) {
+            throw new IllegalArgumentException("El calendario es " + calendario.periodicidad().adjetivo()
+                    + " y el crédito " + parametros.periodicidad().adjetivo());
+        }
+        this.diasPrimerPeriodo = calendario.diasDelPeriodo(1);
+        return this;
+    }
+
+    /** Días reales de la primera cuota, si el escenario tiene fechas ({@link #conCalendario}). */
+    public java.util.OptionalInt diasPrimerPeriodo() {
+        return diasPrimerPeriodo == null ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(diasPrimerPeriodo);
     }
 
     public Escenario en(int periodo, Instruccion instruccion) {

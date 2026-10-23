@@ -16,9 +16,12 @@ import java.util.Objects;
  *       oferta y debe ser martes.</li>
  *   <li><b>Quincenal</b>: el 5 y el 20 de cada mes (Diego, PPER-1).</li>
  *   <li><b>Mensual</b>: el día 5 de cada mes, fijo para todos (Diego, R4-MENSUAL-DIA, ronda 4,
- *       2026-10-21). La opción del día 1 se retiró. La primera cuota se prorratea según los días entre el
- *       desembolso y el primer 5; cómo, es pregunta de la ronda 5 (P5-PRORRATEO) y no está implementado.</li>
+ *       2026-10-21). La opción del día 1 se retiró.</li>
  * </ul>
+ *
+ * <p>En las tres periodicidades la primera cuota se prorratea por {@link #diasDelPeriodo(int) diasDelPeriodo(1)}
+ * (Diego, P5-PRORRATEO): solo el interés, por los días reales; capital y servicios van completos. Lo aplica el
+ * motor con {@code ReglasNegocio.prorrateoPrimeraCuota} cuando el escenario trae este calendario.</p>
  *
  * <p>Una cuota es a tiempo hasta el fin del día de vencimiento; el atraso empieza el día siguiente
  * como día 1 (CAL-1). En mensual la mora se cuenta por los días reales del mes (PPER-5): para eso

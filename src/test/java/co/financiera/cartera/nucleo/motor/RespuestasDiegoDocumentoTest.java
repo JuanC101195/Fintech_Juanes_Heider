@@ -318,7 +318,7 @@ class RespuestasDiegoDocumentoTest {
         }
 
         @Test
-        void unaSolaCuotaAtrasadaNoLoMarcaYPonerseAlDiaLoDesmarca() {
+        void unaSolaCuotaAtrasadaNoLoMarcaYPonerseAlDiaNoLoDesmarca() {
             assertThat(motor.ejecutar(EscenariosExcel.caso8(P).conReglas(negocio())))
                     .noneMatch(Movimiento::listoParaRecuperacion);
             Escenario e = new Escenario(Operacion.ejemploExcel(), P).entre(30, 31, new SinPago(true))
@@ -326,7 +326,8 @@ class RespuestasDiegoDocumentoTest {
             List<Movimiento> m = motor.ejecutar(e);
             assertThat(fila(m, 30).listoParaRecuperacion()).isFalse();
             assertThat(fila(m, 31).listoParaRecuperacion()).isTrue();
-            assertThat(fila(m, 32).listoParaRecuperacion()).isFalse();
+            // R6-RECUP-AUTO (Diego): la marca persiste aunque el cliente se ponga al día; una persona decide.
+            assertThat(fila(m, 32).listoParaRecuperacion()).isTrue();
             assertThat(fila(m, 32).estado()).isEqualTo(EstadoCredito.VIGENTE_AL_DIA);
         }
 

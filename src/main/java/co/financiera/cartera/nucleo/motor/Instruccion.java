@@ -104,7 +104,8 @@ public sealed interface Instruccion {
      * <p>{@code costoRecuperacion} es el costo real de la recuperación con soporte (grúa, bodegaje, avalúo,
      * trámites), 0 por defecto (el Excel no lo tiene). Diego (R4-R2, ronda 4, 2026-10-21) pide descontarlo en
      * la dación y en la retoma: en la retoma reduce el excedente que se devuelve; en la dación lo decide
-     * {@code ReglasNegocio.costoRecuperacionAlFondo} (provisional, P5-COSTO-DACION).
+     * {@code ReglasNegocio.costoRecuperacionAlFondo} (Diego confirmó en P5-COSTO-DACION que se suma al faltante
+     * que cubre el fondo).
      */
     record CierrePorRecuperacion(TipoRecuperacion tipo, BigDecimal valorMoto, BigDecimal costoRecuperacion)
             implements Instruccion {
