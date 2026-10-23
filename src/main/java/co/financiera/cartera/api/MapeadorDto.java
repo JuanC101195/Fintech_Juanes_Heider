@@ -4,10 +4,12 @@ import static co.financiera.cartera.api.Decimales.texto;
 
 import co.financiera.cartera.api.Dtos.AsientoDto;
 import co.financiera.cartera.api.Dtos.DeudaDto;
+import co.financiera.cartera.api.Dtos.FilaPlan;
 import co.financiera.cartera.api.Dtos.LineaAsientoDto;
 import co.financiera.cartera.api.Dtos.MovimientoDto;
 import co.financiera.cartera.api.Dtos.ServiciosDto;
 import co.financiera.cartera.contabilidad.Asiento;
+import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.motor.DeudaExtinguida;
 import co.financiera.cartera.nucleo.motor.Movimiento;
@@ -46,6 +48,15 @@ final class MapeadorDto {
                 texto(m.capitalVencidoInicial()), deuda(m.pendientesPagadosExtra()), texto(m.interesPrepago()),
                 texto(m.costoRecuperacion()), texto(m.costoRecuperacionAsumido()), texto(m.pagoTotalCliente()),
                 texto(m.pagoExtraordinario()), m.listoParaRecuperacion());
+    }
+
+    /** Fila del plan de pagos de una simulación: cuota financiera más servicios del periodo. */
+    static FilaPlan filaPlan(Movimiento m) {
+        Servicios s = m.serviciosCausados();
+        return new FilaPlan(m.periodo(), m.mes(), texto(m.saldoInicial()), texto(m.interesCorriente()),
+                texto(m.capitalContractual()), texto(m.cuotaFinanciera()), texto(s.fondoGarantias()),
+                texto(s.asistencia()), texto(s.seguro()), texto(Calc.sumar(m.cuotaFinanciera(), s.total())),
+                texto(m.saldoFinal()));
     }
 
     static AsientoDto asiento(Asiento a) {

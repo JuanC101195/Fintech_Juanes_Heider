@@ -25,7 +25,6 @@ import co.financiera.cartera.nucleo.ClasificacionPago;
 import co.financiera.cartera.nucleo.LineaCredito;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
-import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.Instruccion;
@@ -83,11 +82,7 @@ public class ServicioCartera {
             if (m.periodo() < 1) {
                 continue;
             }
-            Servicios s = m.serviciosCausados();
-            plan.add(new FilaPlan(m.periodo(), m.mes(), texto(m.saldoInicial()), texto(m.interesCorriente()),
-                    texto(m.capitalContractual()), texto(m.cuotaFinanciera()), texto(s.fondoGarantias()),
-                    texto(s.asistencia()), texto(s.seguro()), texto(Calc.sumar(m.cuotaFinanciera(), s.total())),
-                    texto(m.saldoFinal())));
+            plan.add(MapeadorDto.filaPlan(m));
             totalPagado = Calc.sumar(totalPagado, m.pagoTotalCliente());
             totalIntereses = Calc.sumar(totalIntereses, m.pagoInteresCorriente());
             totalServicios = Calc.sumar(totalServicios, m.pagoServicios());
