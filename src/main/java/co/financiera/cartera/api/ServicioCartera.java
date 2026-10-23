@@ -130,7 +130,7 @@ public class ServicioCartera {
                 .toList();
         List<PeriodicidadDto> pers = Arrays.stream(Periodicidad.values())
                 .map(p -> new PeriodicidadDto(p.name(), p.periodosPorAnio(), p.adjetivo(), POR_CONFIRMAR.contains(p),
-                        p.diasNominales(), p.unidadCuota(), p.cuotasEnMeses(plazoMaximoCatalogo())))
+                        p.diasNominales(), p.unidadCuota(), p.cuotasEnMeses(ValidadorCredito.plazoMaximoCatalogo())))
                 .toList();
         Operacion o = Operacion.ejemploExcel();
         ParametrosProducto p = ParametrosProducto.replicaExcel();
@@ -158,11 +158,6 @@ public class ServicioCartera {
         return new CatalogoResponse(lineas, pers, Instrucciones.tipos(), nombres(Instruccion.ModalidadAbono.values()),
                 nombres(Instruccion.ModalidadCambioTasa.values()), nombres(Instruccion.TipoRecuperacion.values()),
                 nombres(Perfil.values()), defecto);
-    }
-
-    /** El mayor plazo máximo del catálogo de líneas (R4-PLAZO-LINEA: hoy 24 en todas). */
-    private static int plazoMaximoCatalogo() {
-        return Arrays.stream(LineaCredito.values()).mapToInt(LineaCredito::plazoMaximoMeses).max().orElseThrow();
     }
 
     private static List<String> nombres(Enum<?>[] valores) {
@@ -203,10 +198,10 @@ public class ServicioCartera {
             throw ApiException.datoInvalido("Falta el crédito");
         }
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
-        ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
-        Operacion o = operacion(c);
+        ParametrosProducto p = ValidadorCredito.parametros(c, perfiles.reglas(perfil));
+        Operacion o = ValidadorCredito.operacion(c);
         FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
-        Escenario escenario = new Escenario(o, p).conReglas(perfiles.reglas(perfil)).conCobranzaActiva(cobranzaActiva(c));
+        Escenario escenario = new Escenario(o, p).conReglas(perfiles.reglas(perfil)).conCobranzaActiva(ValidadorCredito.cobranzaActiva(c));
         if (fechas != null) {
             escenario.conCalendario(fechas.calendario());
         }
@@ -235,7 +230,7 @@ public class ServicioCartera {
         List<String> porConfirmar = POR_CONFIRMAR.contains(p.periodicidad())
                 ? List.of(p.periodicidad().name() + ": " + p.periodosPorAnio() + " periodos/año por confirmar con Diego")
                 : List.of();
-        ResumenSimulacion resumen = new ResumenSimulacion(linea(c).name(), perfil.name(), texto(o.montoFinanciado()),
+        ResumenSimulacion resumen = new ResumenSimulacion(ValidadorCredito.linea(c).name(), perfil.name(), texto(o.montoFinanciado()),
                 texto(p.tasaEA()), texto(Tasas.de(p).periodica()), p.numeroCuotas(), texto(regular.cuotaFinanciera()),
                 texto(regular.serviciosCausados().total()),
                 texto(Calc.sumar(regular.cuotaFinanciera(), regular.serviciosCausados().total())), texto(totalPagado),
@@ -251,9 +246,9 @@ public class ServicioCartera {
         }
         CreditoRequest c = r.credito();
         Perfil perfil = perfil(r.perfilReglas() != null ? r.perfilReglas() : c.perfilReglas(), Perfil.NEGOCIO);
-        ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
-        Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil))
-                .conCobranzaActiva(cobranzaActiva(c));
+        ParametrosProducto p = ValidadorCredito.parametros(c, perfiles.reglas(perfil));
+        Escenario e = new Escenario(ValidadorCredito.operacion(c), p).conReglas(perfiles.reglas(perfil))
+                .conCobranzaActiva(ValidadorCredito.cobranzaActiva(c));
         FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
         if (fechas != null) {
             e.conCalendario(fechas.calendario());
@@ -397,105 +392,12 @@ public class ServicioCartera {
         return Enumeraciones.leer(Perfil.class, valor, porDefecto, "perfilReglas");
     }
 
-    private static LineaCredito linea(CreditoRequest c) {
-        return Enumeraciones.leer(LineaCredito.class, c.linea(), LineaCredito.CPPU, "linea");
+    private static Movimiento periodo(List<Movimiento> movs, int periodo) {
+        return movs.stream().filter(m -> m.periodo() == periodo).findFirst().orElseThrow();
     }
 
     /** Máximo de instrucciones por petición. */
     static final int MAX_INSTRUCCIONES = 500;
     /** Máximo de días de atraso (o desde la última cuota) de una instrucción: 10 años. */
     static final int MAX_DIAS = 3650;
-    /** El doble de las cuotas máximas del catálogo (hoy 2 × 104 semanas). */
-    static final int MAX_PLAZO_LIMITE_PERIODOS = 2 * Arrays.stream(Periodicidad.values())
-            .mapToInt(per -> per.cuotasEnMeses(plazoMaximoCatalogo())).max().orElseThrow();
-
-    /**
-     * Parámetros del crédito del request. Si el request no trae {@code plazoLimitePeriodos} y el perfil fija
-     * {@code plazoLimiteMeses} (R4-PLAZO-LIMITE: 24 meses en NEGOCIO), el plazo límite son esos meses en
-     * periodos del crédito; con EXCEL queda el del producto (120 semanas convertidas).
-     */
-    static ParametrosProducto parametros(CreditoRequest c, ReglasNegocio reglas) {
-        LineaCredito linea = linea(c);
-        Periodicidad per = Enumeraciones.leer(Periodicidad.class, c.periodicidad(), Periodicidad.SEMANAL, "periodicidad");
-        int maxMeses = linea.plazoMaximoMeses();
-        int maxCuotas = per.cuotasEnMeses(maxMeses);
-        if (c.cuotas() == null && c.meses() == null) {
-            throw ApiException.datoInvalido("Mande cuotas o meses", "cuotas");
-        }
-        Integer cuotasMeses = null;
-        if (c.meses() != null) {
-            if (c.meses() < 1) {
-                throw ApiException.datoInvalido("Los meses deben ser al menos 1", "meses");
-            }
-            if (c.meses() > maxMeses) {
-                throw plazoMaximo(maxMeses, maxCuotas, per, "Plazo de " + c.meses() + " meses");
-            }
-            cuotasMeses = per.cuotasEnMeses(c.meses());
-            if (cuotasMeses < 1) {
-                throw ApiException.datoInvalido(c.meses() + " meses no alcanzan para una cuota " + per.adjetivo(), "meses");
-            }
-        }
-        if (c.cuotas() != null) {
-            if (c.cuotas() < 1) {
-                throw ApiException.datoInvalido("Las cuotas deben ser al menos 1", "cuotas");
-            }
-            if (c.cuotas() > maxCuotas) {
-                throw plazoMaximo(maxMeses, maxCuotas, per, c.cuotas() + " " + per.unidadCuota());
-            }
-            if (cuotasMeses != null && !cuotasMeses.equals(c.cuotas())) {
-                throw ApiException.datoInvalido(c.meses() + " meses son " + cuotasMeses + " " + per.unidadCuota()
-                        + ", no " + c.cuotas() + "; mande solo cuotas o solo meses", "cuotas");
-            }
-        }
-        int n = c.cuotas() != null ? c.cuotas() : cuotasMeses;
-        ParametrosProducto p = ParametrosProducto.de(linea, per, n);
-        if (reglas.cobranzaDiaria() != null) {
-            // COB-6: el valor diario vigente de la cobranza queda fijo en los parámetros del crédito nuevo.
-            p = p.conCobranzaDiaria(reglas.cobranzaDiaria());
-        }
-        if (c.plazoLimitePeriodos() != null) {
-            // Puede ser menor que las cuotas: el caso 8 proyecta 100 semanas de un crédito de 104.
-            if (c.plazoLimitePeriodos() < 1) {
-                throw ApiException.datoInvalido("El plazo límite debe ser al menos 1 periodo", "plazoLimitePeriodos");
-            }
-            if (c.plazoLimitePeriodos() > MAX_PLAZO_LIMITE_PERIODOS) {
-                throw ApiException.datoInvalido("El plazo límite no puede superar " + MAX_PLAZO_LIMITE_PERIODOS
-                        + " periodos (el doble de las cuotas máximas del catálogo)", "plazoLimitePeriodos");
-            }
-            p = p.conPlazoLimite(c.plazoLimitePeriodos());
-        } else {
-            java.util.OptionalInt limite = reglas.plazoLimitePeriodos(per, n);
-            if (limite.isPresent()) {
-                p = p.conPlazoLimite(limite.getAsInt());
-            }
-        }
-        return p;
-    }
-
-    private static ApiException plazoMaximo(int maxMeses, int maxCuotas, Periodicidad per, String pedido) {
-        return new ApiException(HttpStatus.BAD_REQUEST, ApiException.PLAZO_MAXIMO,
-                pedido + " supera el máximo de " + maxMeses + " meses (" + maxCuotas + " " + per.unidadCuota() + ")",
-                Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, "periodicidad", per.name()));
-    }
-
-    private static Movimiento periodo(List<Movimiento> movs, int periodo) {
-        return movs.stream().filter(m -> m.periodo() == periodo).findFirst().orElseThrow();
-    }
-
-    /** COB-6: la cobranza del crédito está activa salvo que el request diga {@code false}. */
-    static boolean cobranzaActiva(CreditoRequest c) {
-        return c.cobranzaActiva() == null || c.cobranzaActiva();
-    }
-
-    static Operacion operacion(CreditoRequest c) {
-        Operacion base = Operacion.ejemploExcel();
-        return new Operacion(Decimales.dinero(c.valorMoto(), "valorMoto", base.valorMoto(), true),
-                Decimales.dinero(c.matriculaRunt(), "matriculaRunt", base.matriculaRunt(), false),
-                Decimales.dinero(c.soat(), "soat", base.soat(), false),
-                Decimales.dinero(c.prenda(), "prenda", base.prenda(), false),
-                Decimales.dinero(c.gpsPlataforma(), "gpsPlataforma", base.gpsPlataforma(), false),
-                Decimales.dinero(c.gastosComerciales(), "gastosComerciales", base.gastosComerciales(), false),
-                Decimales.dinero(c.pagoInicial(), "pagoInicial", Calc.CERO, false));
-    }
-
 }
