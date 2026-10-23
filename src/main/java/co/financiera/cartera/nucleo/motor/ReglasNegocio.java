@@ -105,8 +105,17 @@ public record ReglasNegocio(
     /** Clave de {@link #modalidadUsura}; se repite en la validación y en {@link #desde}. */
     private static final String MODALIDAD_USURA = "modalidadUsura";
 
+    /**
+     * Único punto de validación: todo pasa por aquí (el {@link Constructor}, los métodos {@code conX} y
+     * {@link #desde}). Los chequeos van en el orden de los componentes para que, con varios valores inválidos, falle
+     * primero el mismo que fallaba cuando cada {@code conX} validaba por su cuenta.
+     */
     public ReglasNegocio {
         java.util.Objects.requireNonNull(diasMora, DIAS_MORA);
+        java.util.Objects.requireNonNull(modalidadUsura, MODALIDAD_USURA);
+        if (margenUsura == null || margenUsura.signum() < 0) {
+            throw new IllegalArgumentException("El margen bajo la usura debe ser cero o positivo: " + margenUsura);
+        }
         if (plazoLimiteMeses != null && plazoLimiteMeses < 1) {
             throw new IllegalArgumentException("El plazo límite debe ser de al menos 1 mes: " + plazoLimiteMeses);
         }
@@ -128,11 +137,27 @@ public record ReglasNegocio(
      * abono extra va 100 % a capital (en el Excel nadie abona con pendientes) y el prepago se hace el día
      * de la cuota (sin días).
      */
-    public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
-            FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true,
-            AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO,
-            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL, true, false, null, false, null, null, false,
-            DiasMora.PERIODO_NOMINAL);
+    public static final ReglasNegocio EXCEL = new Constructor()
+            .prelacion(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL)
+            .formulaMora(FormulaMora.VENCIDO_MAS_DIAS)
+            .baseInteres(BaseInteres.SALDO_VIGENTE)
+            .topeCobranzaPorPago(null)
+            .baseServicios(BaseServicios.MONTO_INICIAL)
+            .serviciosDespuesDelPlazo(false)
+            .moraAntesDeRecuperacion(true)
+            .aplicacionAbono(AplicacionAbono.SOLO_CAPITAL)
+            .interesPrepagoPorDias(false)
+            .margenUsura(MARGEN_USURA_POR_DEFECTO)
+            .modalidadUsura(Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL)
+            .costoRecuperacionAlFondo(true)
+            .cobranzaIngresoNoOperacional(false)
+            .plazoLimiteMeses(null)
+            .cambioTasaSobreCapitalVigente(false)
+            .cobranzaDiaria(null)
+            .cuotasVencidasParaRecuperacion(null)
+            .prorrateoPrimeraCuota(false)
+            .diasMora(DiasMora.PERIODO_NOMINAL)
+            .construir();
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -297,151 +322,253 @@ public record ReglasNegocio(
         return r;
     }
 
+    /** Constructor con todos los valores de estas reglas, para cambiar los que haga falta con su nombre. */
+    public Constructor copia() {
+        return new Constructor(this);
+    }
+
     public ReglasNegocio conPrelacion(OrdenPrelacion valor) {
-        return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().prelacion(valor).construir();
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
-        return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().formulaMora(valor).construir();
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
-        return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().baseInteres(valor).construir();
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().topeCobranzaPorPago(valor).construir();
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().baseServicios(valor).construir();
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().serviciosDespuesDelPlazo(valor).construir();
     }
 
     public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                valor, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().moraAntesDeRecuperacion(valor).construir();
     }
 
     public ReglasNegocio conAplicacionAbono(AplicacionAbono valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().aplicacionAbono(valor).construir();
     }
 
     public ReglasNegocio conInteresPrepagoPorDias(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().interesPrepagoPorDias(valor).construir();
     }
 
     /** Margen bajo la usura en puntos porcentuales de EA (1 = 100 pb); no puede ser negativo. */
     public ReglasNegocio conMargenUsura(BigDecimal valor) {
-        if (valor == null || valor.signum() < 0) {
-            throw new IllegalArgumentException("El margen bajo la usura debe ser cero o positivo: " + valor);
-        }
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor, modalidadUsura, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().margenUsura(valor).construir();
     }
 
     /** Qué se conserva cuando la usura obliga a bajar la tasa (USU-6): la cuota o la fecha final. */
     public ReglasNegocio conModalidadUsura(Instruccion.ModalidadCambioTasa valor) {
-        java.util.Objects.requireNonNull(valor, MODALIDAD_USURA);
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, valor, costoRecuperacionAlFondo,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().modalidadUsura(valor).construir();
     }
 
     /** R4-R2 / P5-COSTO-DACION: en la dación, si el costo de la recuperación se suma al faltante que cubre el fondo. */
     public ReglasNegocio conCostoRecuperacionAlFondo(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, valor,
-                cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().costoRecuperacionAlFondo(valor).construir();
     }
 
     /** R4-COBRANZA-CONTABLE: gastos de cobranza como ingreso no operacional (PUC clase 42). */
     public ReglasNegocio conCobranzaIngresoNoOperacional(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, valor, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().cobranzaIngresoNoOperacional(valor).construir();
     }
 
     /** R4-PLAZO-LIMITE: plazo límite de recuperación en meses; {@code null} = el del producto. */
     public ReglasNegocio conPlazoLimiteMeses(Integer valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, valor, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().plazoLimiteMeses(valor).construir();
     }
 
     /** R4-T5: con el cliente en mora, la cuota nueva de un cambio de tasa va solo sobre el capital vigente. */
     public ReglasNegocio conCambioTasaSobreCapitalVigente(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, valor, cobranzaDiaria,
-                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().cambioTasaSobreCapitalVigente(valor).construir();
     }
 
     /** COB-6: valor diario de la cobranza para los créditos nuevos; {@code null} = el del producto. */
     public ReglasNegocio conCobranzaDiaria(BigDecimal valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente, valor,
-                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        return copia().cobranzaDiaria(valor).construir();
     }
 
     /** PPER-9: cuotas atrasadas desde las que el crédito queda listo para recuperación; {@code null} = no se marca. */
     public ReglasNegocio conCuotasVencidasParaRecuperacion(Integer valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, valor, prorrateoPrimeraCuota, diasMora);
+        return copia().cuotasVencidasParaRecuperacion(valor).construir();
     }
 
     /** P5-PRORRATEO: si el interés de la primera cuota se prorratea por los días reales desde el desembolso. */
     public ReglasNegocio conProrrateoPrimeraCuota(boolean valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, valor, diasMora);
+        return copia().prorrateoPrimeraCuota(valor).construir();
     }
 
     /** PPER-5 / D27: días de mora del capital vencido (nominales o reales del mes en mensual). */
     public ReglasNegocio conDiasMora(DiasMora valor) {
-        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
-                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
-                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, valor);
+        return copia().diasMora(valor).construir();
+    }
+
+    /**
+     * Arma unas reglas por nombre de componente, sin depender del orden de los argumentos (dos booleanos cruzados
+     * compilan). Es el único sitio, aparte de la cabecera del record, que lista los componentes en orden.
+     */
+    public static final class Constructor {
+
+        private OrdenPrelacion prelacion;
+        private FormulaMora formulaMora;
+        private BaseInteres baseInteres;
+        private BigDecimal topeCobranzaPorPago;
+        private BaseServicios baseServicios;
+        private boolean serviciosDespuesDelPlazo;
+        private boolean moraAntesDeRecuperacion;
+        private AplicacionAbono aplicacionAbono;
+        private boolean interesPrepagoPorDias;
+        private BigDecimal margenUsura;
+        private Instruccion.ModalidadCambioTasa modalidadUsura;
+        private boolean costoRecuperacionAlFondo;
+        private boolean cobranzaIngresoNoOperacional;
+        private Integer plazoLimiteMeses;
+        private boolean cambioTasaSobreCapitalVigente;
+        private BigDecimal cobranzaDiaria;
+        private Integer cuotasVencidasParaRecuperacion;
+        private boolean prorrateoPrimeraCuota;
+        private DiasMora diasMora;
+
+        /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
+        public Constructor() {
+            // sin valores
+        }
+
+        private Constructor(ReglasNegocio r) {
+            prelacion = r.prelacion;
+            formulaMora = r.formulaMora;
+            baseInteres = r.baseInteres;
+            topeCobranzaPorPago = r.topeCobranzaPorPago;
+            baseServicios = r.baseServicios;
+            serviciosDespuesDelPlazo = r.serviciosDespuesDelPlazo;
+            moraAntesDeRecuperacion = r.moraAntesDeRecuperacion;
+            aplicacionAbono = r.aplicacionAbono;
+            interesPrepagoPorDias = r.interesPrepagoPorDias;
+            margenUsura = r.margenUsura;
+            modalidadUsura = r.modalidadUsura;
+            costoRecuperacionAlFondo = r.costoRecuperacionAlFondo;
+            cobranzaIngresoNoOperacional = r.cobranzaIngresoNoOperacional;
+            plazoLimiteMeses = r.plazoLimiteMeses;
+            cambioTasaSobreCapitalVigente = r.cambioTasaSobreCapitalVigente;
+            cobranzaDiaria = r.cobranzaDiaria;
+            cuotasVencidasParaRecuperacion = r.cuotasVencidasParaRecuperacion;
+            prorrateoPrimeraCuota = r.prorrateoPrimeraCuota;
+            diasMora = r.diasMora;
+        }
+
+        public Constructor prelacion(OrdenPrelacion valor) {
+            prelacion = valor;
+            return this;
+        }
+
+        public Constructor formulaMora(FormulaMora valor) {
+            formulaMora = valor;
+            return this;
+        }
+
+        public Constructor baseInteres(BaseInteres valor) {
+            baseInteres = valor;
+            return this;
+        }
+
+        public Constructor topeCobranzaPorPago(BigDecimal valor) {
+            topeCobranzaPorPago = valor;
+            return this;
+        }
+
+        public Constructor baseServicios(BaseServicios valor) {
+            baseServicios = valor;
+            return this;
+        }
+
+        public Constructor serviciosDespuesDelPlazo(boolean valor) {
+            serviciosDespuesDelPlazo = valor;
+            return this;
+        }
+
+        public Constructor moraAntesDeRecuperacion(boolean valor) {
+            moraAntesDeRecuperacion = valor;
+            return this;
+        }
+
+        public Constructor aplicacionAbono(AplicacionAbono valor) {
+            aplicacionAbono = valor;
+            return this;
+        }
+
+        public Constructor interesPrepagoPorDias(boolean valor) {
+            interesPrepagoPorDias = valor;
+            return this;
+        }
+
+        public Constructor margenUsura(BigDecimal valor) {
+            margenUsura = valor;
+            return this;
+        }
+
+        public Constructor modalidadUsura(Instruccion.ModalidadCambioTasa valor) {
+            modalidadUsura = valor;
+            return this;
+        }
+
+        public Constructor costoRecuperacionAlFondo(boolean valor) {
+            costoRecuperacionAlFondo = valor;
+            return this;
+        }
+
+        public Constructor cobranzaIngresoNoOperacional(boolean valor) {
+            cobranzaIngresoNoOperacional = valor;
+            return this;
+        }
+
+        public Constructor plazoLimiteMeses(Integer valor) {
+            plazoLimiteMeses = valor;
+            return this;
+        }
+
+        public Constructor cambioTasaSobreCapitalVigente(boolean valor) {
+            cambioTasaSobreCapitalVigente = valor;
+            return this;
+        }
+
+        public Constructor cobranzaDiaria(BigDecimal valor) {
+            cobranzaDiaria = valor;
+            return this;
+        }
+
+        public Constructor cuotasVencidasParaRecuperacion(Integer valor) {
+            cuotasVencidasParaRecuperacion = valor;
+            return this;
+        }
+
+        public Constructor prorrateoPrimeraCuota(boolean valor) {
+            prorrateoPrimeraCuota = valor;
+            return this;
+        }
+
+        public Constructor diasMora(DiasMora valor) {
+            diasMora = valor;
+            return this;
+        }
+
+        public ReglasNegocio construir() {
+            return new ReglasNegocio(
+                    prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
+                    serviciosDespuesDelPlazo, moraAntesDeRecuperacion, aplicacionAbono,
+                    interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
+                    cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
+                    cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+        }
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */
