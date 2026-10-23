@@ -3,9 +3,6 @@ package co.financiera.cartera.nucleo.motor;
 import static co.financiera.cartera.nucleo.Calc.CERO;
 import static co.financiera.cartera.nucleo.Calc.esCero;
 import static co.financiera.cartera.nucleo.Calc.max;
-import static co.financiera.cartera.nucleo.Calc.min;
-import static co.financiera.cartera.nucleo.Calc.multiplicar;
-import static co.financiera.cartera.nucleo.Calc.noNegativo;
 import static co.financiera.cartera.nucleo.Calc.restar;
 import static co.financiera.cartera.nucleo.Calc.sumar;
 
@@ -13,7 +10,6 @@ import co.financiera.cartera.nucleo.Amortizacion;
 import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.ParametrosProducto;
-import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.Usura;
@@ -21,7 +17,6 @@ import co.financiera.cartera.nucleo.motor.Instruccion.AbonoExtra;
 import co.financiera.cartera.nucleo.motor.Instruccion.CambioTasa;
 import co.financiera.cartera.nucleo.motor.Instruccion.CierrePorRecuperacion;
 import co.financiera.cartera.nucleo.motor.Instruccion.ModalidadCambioTasa;
-import co.financiera.cartera.nucleo.motor.Instruccion.PagoAlDia;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoContractual;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
@@ -54,7 +49,6 @@ public final class MotorCartera {
     private static final class Corrida {
         private final Escenario escenario;
         private final ParametrosProducto p;
-        private final Servicios serviciosPorCuota;
         private final List<Movimiento> filas = new ArrayList<>();
         /** Saldos del crédito, compartidos con las piezas extraídas del motor (contexto explícito). */
         private final EstadoCorrida s;
@@ -69,15 +63,17 @@ public final class MotorCartera {
         private final Abonos abonos;
         /** Paso 3: pago recibido, reparto por prelación y saldos al cierre de la cuota. */
         private final RepartoPrelacion prelacion;
+        /** Paso 2: causación de interés, capital contractual, servicios, mora y cobranza. */
+        private final Causador causador;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
             this.p = escenario.parametros();
             this.s = new EstadoCorrida(escenario, Calendario.numeroCuotas(p));
-            this.serviciosPorCuota = s.serviciosPorCuota;
             this.recuperacion = new Recuperacion(s);
             this.abonos = new Abonos(s);
             this.prelacion = new RepartoPrelacion(s);
+            this.causador = new Causador(s);
         }
 
         List<Movimiento> correr() {
@@ -112,7 +108,7 @@ public final class MotorCartera {
             int dias = diasAtraso(pago);
 
             // 2. Causación del periodo.
-            Causacion causado = causar(periodo, saldoInicial, sinPagoSinMora, dias, alDia(pago, dias));
+            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias));
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
@@ -270,100 +266,6 @@ public final class MotorCartera {
             s.cuotasVigentes = periodo - 1 + s.cuotasHastaSaldoCero(s.saldoPlan);
         }
 
-        /** FCC y asistencia solo se causan en periodos pagados al día (Inputs ⑥, P-07). */
-        private boolean alDia(Instruccion pago, int dias) {
-            return (pago instanceof PagoContractual || pago instanceof PagoAlDia || pago instanceof PagoValor) && dias == 0;
-        }
-
-        /**
-         * 2. Interés corriente, capital contractual, servicios, mora y cobranza del periodo. Las
-         * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
-         * el Excel tal cual.
-         */
-        private Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
-            ReglasNegocio reglas = escenario.reglas();
-            BigDecimal tasa = s.tasas.periodica();
-            boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
-            BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
-                    ? noNegativo(restar(saldoInicial, s.capitalVencido)) : saldoInicial;
-            BigDecimal capitalContractual = CERO;
-            if (dentroDelPlazo && !sinPagoSinMora && !esCero(s.saldoPlan)) {
-                // Auditoría 2026-10-23 (H3): nunca negativo, aunque el saldo del plan lo fuera por un error aguas arriba.
-                capitalContractual = noNegativo(min(s.saldoPlan, restar(s.cuota, multiplicar(s.saldoPlan, tasa))));
-                // Auditoría 2026-10-23 (I8): el plan puede ir por encima del capital que de verdad queda vigente (un pago
-                // mayor que la cuota baja el saldo pero no el plan). Sin este tope la cuota del plan vencía más capital
-                // del que existe y el capital vencido superaba al saldo. Solo actúa si la diferencia supera el medio
-                // centavo, así los residuos DECIMAL128 de los casos del Excel no cambian.
-                BigDecimal vigente = noNegativo(restar(saldoInicial, s.capitalVencido));
-                if (restar(capitalContractual, vigente).compareTo(Calc.EPSILON_SALDO) > 0) {
-                    capitalContractual = vigente;
-                }
-            }
-            boolean causaServicios = !sinPagoSinMora
-                    && (dentroDelPlazo || (reglas.serviciosDespuesDelPlazo() && !esCero(saldoInicial)));
-            Servicios servicios = Servicios.NINGUNO;
-            Servicios serviciosAlDia = Servicios.NINGUNO;
-            if (causaServicios) {
-                Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
-                        ? Servicios.porCuota(saldoInicial, p) : serviciosPorCuota;
-                servicios = alDia ? base : base.soloSeguro();
-                serviciosAlDia = base;
-            }
-            // P5-PRORRATEO (Diego, ronda 5; ADR 0002 paso 7): en la primera cuota solo el interés se prorratea por
-            // los días reales entre el desembolso y la primera fecha de pago, con la tasa diaria como el prepago por
-            // días (A6); capital contractual y servicios van completos. Con 365/ppa días daría exactamente la tasa
-            // periódica. Sin fechas en el escenario, o con el Excel, no cambia nada.
-            boolean prorrateada = periodo == 1 && reglas.prorrateoPrimeraCuota() && escenario.diasPrimerPeriodo().isPresent();
-            BigDecimal interes = multiplicar(baseInteres, tasa);
-            if (prorrateada) {
-                int diasReales = escenario.diasPrimerPeriodo().getAsInt();
-                interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
-            }
-            return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
-                    cobranza(saldoInicial, dias), serviciosAlDia, prorrateada);
-        }
-
-        private BigDecimal mora(int periodo, BigDecimal capitalContractual, int dias) {
-            BigDecimal mora = multiplicar(s.capitalVencido, factorMoraDelPeriodo(periodo));
-            if (dias > 0 && escenario.reglas().formulaMora() == ReglasNegocio.FormulaMora.VENCIDO_MAS_DIAS) {
-                BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), dias), Calc.UNO);
-                mora = sumar(mora, multiplicar(capitalContractual, factorDias));
-            }
-            return mora;
-        }
-
-        /**
-         * Factor de mora del capital vencido en el periodo. Con el Excel (PERIODO_NOMINAL) es la tasa periódica:
-         * el periodo dura 365/ppa días. PPER-5 / D27 (Diego, ADR 0002 paso 8): en mensual la mora cuenta los días
-         * reales del mes; con DIAS_CALENDARIO_MENSUAL y fechas en el escenario el factor es (1 + diaria)^días − 1 con
-         * los días del vencimiento anterior al de esta cuota (28 a 31). Quincenal y semanal siguen nominales: Diego
-         * solo decidió la mensual.
-         */
-        private BigDecimal factorMoraDelPeriodo(int periodo) {
-            if (escenario.reglas().diasMora() == ReglasNegocio.DiasMora.DIAS_CALENDARIO_MENSUAL
-                    && p.periodicidad() == Periodicidad.MENSUAL) {
-                java.util.OptionalInt diasReales = escenario.diasDelPeriodo(periodo);
-                if (diasReales.isPresent()) {
-                    return restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales.getAsInt()), Calc.UNO);
-                }
-            }
-            return s.tasas.periodica();
-        }
-
-        /**
-         * Gastos de cobranza = días de atraso × valor diario del producto. COB-4 (Diego 2026-10-22): solo se
-         * causan cuando el pago llega en mora (días de atraso &gt; 0); al día, cancelado o prepagado no se liquidan.
-         * COB-6: solo si la cobranza está activa en el crédito ({@link Escenario#cobranzaActiva()}).
-         */
-        private BigDecimal cobranza(BigDecimal saldoInicial, int dias) {
-            if (!escenario.cobranzaActiva()) {
-                return CERO;
-            }
-            BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), p.cobranzaDiaria()) : CERO;
-            BigDecimal tope = escenario.reglas().topeCobranzaPorPago();
-            return tope == null ? cobranza : min(cobranza, tope);
-        }
-
         private EstadoCredito estado(boolean cerrado, BigDecimal pendiente) {
             if (cerrado) {
                 return EstadoCredito.CERRADO_POR_EVENTO;
@@ -407,6 +309,5 @@ public final class MotorCartera {
                 default -> 0;
             };
         }
-
     }
 }
