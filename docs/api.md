@@ -24,7 +24,7 @@ curl localhost:8080/api/v1/catalogo
 |---|---|---|
 | 400 | `ABONO_MAYOR_QUE_SALDO` | Un abono extra supera el saldo de capital (P-14, D12). `detalle`: `periodo`, `abono`, `saldo`. |
 | 400 | `PLAZO_MAXIMO` | Más de 24 meses o más cuotas que el máximo de la periodicidad (104 / 48 / 24). `detalle`: `maximoMeses`, `maximoCuotas`, `periodicidad`. |
-| 400 | `VALIDACION` | Campo faltante o mal formado, enum desconocido (`detalle.valoresValidos`), JSON inválido o validación del núcleo (pago inicial negativo, etc.). `detalle.campo` cuando se sabe. |
+| 400 | `VALIDACION` | Campo faltante o mal formado, enum desconocido (`detalle.valoresValidos`), JSON inválido o validación del núcleo (pago inicial negativo, etc.). También fechas del crédito incoherentes (ver "Fechas y prorrateo de la primera cuota"). `detalle.campo` cuando se sabe. |
 | 404 | `CASO_INEXISTENTE` | `/casos/{numero}` fuera de 1 a 13. |
 | 500 | `ASIENTO_DESCUADRADO` | Error interno: el `Contabilizador` generó un asiento descuadrado (HT-06). No depende del request. |
 
@@ -103,7 +103,7 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
   -d '{"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"meses":null,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO"}'
 ```
 
-Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs), `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente) y `cobranzaActiva` (COB-6: si al crédito se le causan gastos de cobranza; `true` por defecto, como el Excel; en `false` un pago tardío causa mora pero no cobranza). Con el perfil NEGOCIO el valor diario de la cobranza sale de la clave `cobranzaDiaria`. Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
+Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs), `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente) y `cobranzaActiva` (COB-6: si al crédito se le causan gastos de cobranza; `true` por defecto, como el Excel; en `false` un pago tardío causa mora pero no cobranza) y `fechaDesembolso` + `primerVencimiento` (juntas; ver "Fechas y prorrateo de la primera cuota" abajo). Con el perfil NEGOCIO el valor diario de la cobranza sale de la clave `cobranzaDiaria`. Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
 
 ```json
 {"resumen": {"linea": "CPPU", "perfilReglas": "NEGOCIO", "montoFinanciado": "5904400", "tasaEA": "0.8762",
@@ -124,6 +124,54 @@ Al peso da 219.093 / 355.667 / 17.072.015, como [`reglas/planes-ejemplo-periodic
 # 25 meses → 400 PLAZO_MAXIMO
 curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/json' -d '{"periodicidad":"MENSUAL","meses":25}'
 ```
+
+#### Fechas y prorrateo de la primera cuota (P5-PRORRATEO, D48)
+
+`CreditoRequest` acepta dos campos opcionales, **juntos o ninguno**: `fechaDesembolso` y `primerVencimiento`, en ISO `yyyy-MM-dd`. Valen en `/simulaciones`, en el `credito` de `/escenarios/ejecutar` y como parámetros de `/casos/{numero}`. Con ellos el API arma el `CalendarioPagos` del crédito y se lo pasa al motor (`Escenario.conCalendario`); si el perfil tiene `prorrateoPrimeraCuota = true` (NEGOCIO), el **interés** del periodo 1 se cobra por los días reales entre las dos fechas con la tasa diaria: saldo × ((1 + tasa diaria)^días − 1). El capital y los servicios de esa cuota van completos y desde el periodo 2 todo sigue igual. Con EXCEL las fechas se aceptan y se validan, pero no cambian nada.
+
+**Sin las fechas la respuesta es idéntica a la de antes**: no aparece ningún campo nuevo (los ejemplos `catalogo.json`, `simulacion-quincenal.json` y `caso-13-negocio.json` no cambian).
+
+Validación (400 `VALIDACION`, `detalle.campo` = el campo culpable):
+
+| Regla | Ejemplo de mensaje |
+|---|---|
+| Van juntas | `Las fechas van juntas: falta primerVencimiento (mande fechaDesembolso y primerVencimiento, o ninguna de las dos)` |
+| Formato ISO | `fechaDesembolso debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03); llegó "23/10/2026"` |
+| Vencimiento después del desembolso | `El primer vencimiento (2026-12-05) debe ser posterior a la fecha de desembolso (2026-12-10)` |
+| Semanal: martes (D28) | `En un crédito semanal la cuota vence los martes; el 2026-11-04 es miércoles` |
+| Quincenal: 5 o 20 (D27) | `En un crédito quincenal la cuota vence el 5 y el 20 de cada mes; el 2026-11-15 no es ninguno de los dos` |
+| Mensual: día 5 (D35) | `En un crédito mensual la cuota vence el día 5 de cada mes; el 2026-11-06 no lo es` |
+
+No hay tope a los días del primer periodo (Diego no lo ha fijado): un primer vencimiento lejano da un interés alto, no un error. El API nunca usa la fecha de hoy: las dos fechas las manda quien llama.
+
+Con fechas, el `resumen` de `/simulaciones` y de `/escenarios/ejecutar` (y de `/casos/{numero}`) trae `prorrateoPrimeraCuota`:
+
+```bash
+curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/json' -d '{"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,
+  "valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-12-05"}'
+```
+
+```json
+{"resumen": {"cuotaFinanciera": "444006.1668296752041287889940113958", "cuotaTotal": "717154.2468296752041287889940113958", "...": "...",
+             "prorrateoPrimeraCuota": {"fechaDesembolso": "2026-10-23", "primerVencimiento": "2026-12-05",
+                                       "diasPrimerPeriodo": 43, "diasNominales": 30, "aplicado": true,
+                                       "interesSinProrrateo": "317872.58202876262136",
+                                       "interesProrrateado": "454328.7516096464392",
+                                       "diferencia": "136456.16958088381784"}},
+ "plan": [{"periodo": 1, "interes": "454328.7516096464392", "capital": "126133.5848009125827687889940113958",
+           "cuotaFinanciera": "580462.3364105590219687889940113958", "...": "..."}]}
+```
+
+| Campo | Qué es |
+|---|---|
+| `diasPrimerPeriodo` | Días reales del desembolso al primer vencimiento (`CalendarioPagos.diasDelPeriodo(1)`). |
+| `diasNominales` | Días nominales de la periodicidad (7, 15 o 30), como referencia. |
+| `aplicado` | Si el perfil prorratea (`prorrateoPrimeraCuota`): `true` con NEGOCIO, `false` con EXCEL. |
+| `interesSinProrrateo` | Interés de un periodo completo: saldo inicial × tasa del periodo (lo que cobraría sin fechas). |
+| `interesProrrateado` | Interés que causó el motor en el periodo 1 (igual a `plan[0].interes` y a `movimientos[1].interesCorriente`). |
+| `diferencia` | `interesProrrateado − interesSinProrrateo`: positiva si el primer periodo es más largo que uno normal, negativa si es más corto, 0 si no se aplicó. |
+
+Con fechas, `resumen.cuotaFinanciera`, `serviciosPorCuota` y `cuotaTotal` de `/simulaciones` son los de una **cuota regular** (la del periodo 2); la primera, prorrateada, está en `plan[0]`. `totalPagado` y `totalIntereses` ya incluyen el prorrateo. Ejemplos completos: [`api-ejemplos/simulacion-mensual-prorrateo.json`](api-ejemplos/simulacion-mensual-prorrateo.json) y [`api-ejemplos/escenario-semanal-prorrateo.json`](api-ejemplos/escenario-semanal-prorrateo.json).
 
 ### POST /api/v1/escenarios/ejecutar
 
@@ -201,7 +249,11 @@ Los casos 1 a 12 salen de `simulaciones.EscenariosExcel` (hojas Caso1 a Caso12) 
 ```bash
 curl 'localhost:8080/api/v1/casos/1?perfilReglas=EXCEL'
 curl 'localhost:8080/api/v1/casos/13?perfilReglas=NEGOCIO'
+# Con fechas (opcionales, juntas): los casos son semanales, el primer vencimiento debe ser martes
+curl 'localhost:8080/api/v1/casos/13?perfilReglas=NEGOCIO&fechaDesembolso=2026-10-23&primerVencimiento=2026-11-03'
 ```
+
+Con `fechaDesembolso` y `primerVencimiento` el caso corre con su calendario (ver "Fechas y prorrateo de la primera cuota"): el `credito` devuelto las trae y el `resumen` trae `prorrateoPrimeraCuota`. Sin ellas el caso es el del Excel tal cual.
 
 La respuesta de `/escenarios/ejecutar` (`resumen`, `movimientos`, `asientos`) más:
 
@@ -231,6 +283,8 @@ Respuestas reales del API, generadas por `EjemplosApiTest` en cada `./mvnw test`
 | `catalogo.json` | `GET /api/v1/catalogo` |
 | `simulacion-quincenal.json` | `POST /api/v1/simulaciones` con CPPU, quincenal, 48 cuotas, NEGOCIO |
 | `caso-13-negocio.json` | `GET /api/v1/casos/13?perfilReglas=NEGOCIO` |
+| `simulacion-mensual-prorrateo.json` | `POST /api/v1/simulaciones` con CPPU, mensual, 24 cuotas, NEGOCIO, desembolso 2026-10-23 y primer vencimiento 2026-12-05 (43 días) |
+| `escenario-semanal-prorrateo.json` | `POST /api/v1/escenarios/ejecutar` con CPPU, semanal, 104 cuotas, NEGOCIO, sin instrucciones ni asientos, desembolso 2026-10-23 y primer vencimiento 2026-11-03 (11 días) |
 
 ## Desviaciones del contrato (`contrato-api-cartera.md`)
 
@@ -239,7 +293,7 @@ Respuestas reales del API, generadas por `EjemplosApiTest` en cada `./mvnw test`
 3. **`modalidad`** es un solo campo para `ABONO_EXTRA` (ModalidadAbono) y `CAMBIO_TASA` (ModalidadCambioTasa), porque los dos records lo llaman igual.
 4. **Dinero sin redondear**: el contrato muestra `"219093.00"`; el API manda el valor completo del motor (`"219092.9355960436…"`) para no perder precisión, sin ceros sobrantes (`"5904400"`, `"0"`). Las tasas igual (`"0.0265654190161528"`, no `"0.0265"`).
 5. **`cuadra`** compara débitos y créditos **al centavo**, no con `==` exacto: con DECIMAL128 las sumas de un asiento cuadrado difieren en residuos de 1e-28 y la igualdad exacta daba `false` en asientos correctos.
-6. **Campos agregados** (no rompen el contrato): `catalogo.perfilesReglas`, `lineas[].periodicidades`, `periodicidades[].diasNominales/unidadCuota/cuotasMaximas`; `reglas.archivoNegocio`; `simulacion.resumen.linea/perfilReglas/serviciosPorCuota` y `plan[].mes/saldoInicial/cuotaFinanciera`; `ejecucion.resumen.montoFinanciado/perfilReglas`; en los movimientos `evento` (además de `etiqueta`), `pagoTotalCliente` y `pagoExtraordinario`; en los asientos `totalDebitos`, `totalCreditos` y en cada línea `nombreCuenta` y `explicacion`; en `/casos/{numero}` `perfilReglas` y `credito`; en `CreditoRequest` los costos de la operación, `plazoLimitePeriodos` y `cobranzaActiva` (COB-6); en los movimientos `listoParaRecuperacion` y en `ejecucion.resumen` `listoParaRecuperacion` y `periodoListoParaRecuperacion` (PPER-9).
+6. **Campos agregados** (no rompen el contrato): `catalogo.perfilesReglas`, `lineas[].periodicidades`, `periodicidades[].diasNominales/unidadCuota/cuotasMaximas`; `reglas.archivoNegocio`; `simulacion.resumen.linea/perfilReglas/serviciosPorCuota` y `plan[].mes/saldoInicial/cuotaFinanciera`; `ejecucion.resumen.montoFinanciado/perfilReglas`; en los movimientos `evento` (además de `etiqueta`), `pagoTotalCliente` y `pagoExtraordinario`; en los asientos `totalDebitos`, `totalCreditos` y en cada línea `nombreCuenta` y `explicacion`; en `/casos/{numero}` `perfilReglas` y `credito`; en `CreditoRequest` los costos de la operación, `plazoLimitePeriodos` y `cobranzaActiva` (COB-6); en los movimientos `listoParaRecuperacion` y en `ejecucion.resumen` `listoParaRecuperacion` y `periodoListoParaRecuperacion` (PPER-9); en `CreditoRequest` (y como parámetros de `/casos/{numero}`) `fechaDesembolso` y `primerVencimiento`, y en `simulacion.resumen` y `ejecucion.resumen` `prorrateoPrimeraCuota`, que solo aparece si el crédito trae fechas (P5-PRORRATEO).
 7. **Perfil por defecto**: `NEGOCIO` en simulaciones y escenarios, `EXCEL` en `/casos/{numero}` (el contrato no lo fija).
 8. **Error 500 `ASIENTO_DESCUADRADO`**: el contrato solo habla de 400 y 404; este es un error interno.
 

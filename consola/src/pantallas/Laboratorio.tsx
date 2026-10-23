@@ -25,8 +25,10 @@ import { lineaCaso } from '../casosResumen'
 import { Campo, Cargando, MensajeError, Segmentado, SelectorPerfil, Titulo } from '../componentes/comunes'
 import { DetalleEjecucion } from '../componentes/DetalleEjecucion'
 import { EntradaDinero, EntradaPasos, EntradaPorcentaje } from '../componentes/entradas'
+import { CamposFechas } from '../componentes/FechasCredito'
 import { useCarga, useDatos } from '../datos'
 import { aMicros, esDecimal } from '../dinero'
+import { fechasDelCredito, validarFechas } from '../fechas'
 import type { Catalogo, CasoResumen, Credito, Ejecucion, Instruccion, Perfil, Periodicidad, TipoInstruccion } from '../tipos'
 
 const NOMBRES: Record<Periodicidad, string> = { SEMANAL: 'Semanal', QUINCENAL: 'Quincenal', MENSUAL: 'Mensual' }
@@ -116,7 +118,12 @@ export default function Laboratorio() {
     setError(null)
     try {
       const enviadas = ordenarInstrucciones(instrucciones)
-      setResultado(await fuente.ejecutar({ credito: { ...credito, perfilReglas: perfil }, perfilReglas: perfil, instrucciones: enviadas, incluirAsientos: true }))
+      // Las fechas van las dos o ninguna (P5-PRORRATEO); vacías no se mandan.
+      const enviado: Credito = { ...credito, perfilReglas: perfil }
+      delete enviado.fechaDesembolso
+      delete enviado.primerVencimiento
+      Object.assign(enviado, fechasDelCredito(fechas))
+      setResultado(await fuente.ejecutar({ credito: enviado, perfilReglas: perfil, instrucciones: enviadas, incluirAsientos: true }))
       setEjecutado({ instrucciones: enviadas, firma: firmaActual })
     } catch (e) {
       setResultado(null)
@@ -126,7 +133,9 @@ export default function Laboratorio() {
     }
   }
 
-  const errCredito: Partial<Record<'valorMoto' | 'pagoInicial' | 'cuotas', string>> = {}
+  const fechas = { fechaDesembolso: credito.fechaDesembolso ?? '', primerVencimiento: credito.primerVencimiento ?? '' }
+  const errFechas = validarFechas(credito.periodicidad, fechas)
+  const errCredito: Partial<Record<'valorMoto' | 'pagoInicial' | 'cuotas' | 'fechaDesembolso' | 'primerVencimiento', string>> = { ...errFechas }
   if (!esDecimal(credito.valorMoto) || aMicros(credito.valorMoto) <= 0n) errCredito.valorMoto = 'Escribe un valor mayor que cero'
   if (!esDecimal(credito.pagoInicial)) errCredito.pagoInicial = 'Escribe un valor, o 0 si no hay pago inicial'
   if (!credito.cuotas || credito.cuotas < 1) errCredito.cuotas = 'Escribe cuántas cuotas, desde 1'
@@ -222,6 +231,9 @@ export default function Laboratorio() {
           </Campo>
           <div className="md:col-span-2">
             <SelectorPerfil valor={perfil} alCambiar={setPerfil} />
+          </div>
+          <div className="md:col-span-2 xl:col-span-4">
+            <CamposFechas valores={fechas} alCambiar={(f) => setCredito({ ...credito, ...f })} periodicidad={credito.periodicidad} errores={errFechas} modoDemo={fuente.modo === 'demo'} />
           </div>
         </div>
       </section>

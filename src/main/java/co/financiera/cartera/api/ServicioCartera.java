@@ -19,6 +19,7 @@ import co.financiera.cartera.api.Dtos.LineaAsientoDto;
 import co.financiera.cartera.api.Dtos.LineaDto;
 import co.financiera.cartera.api.Dtos.MovimientoDto;
 import co.financiera.cartera.api.Dtos.PeriodicidadDto;
+import co.financiera.cartera.api.Dtos.ProrrateoDto;
 import co.financiera.cartera.api.Dtos.ReglasResponse;
 import co.financiera.cartera.api.Dtos.ResumenEjecucion;
 import co.financiera.cartera.api.Dtos.ResumenSimulacion;
@@ -28,6 +29,7 @@ import co.financiera.cartera.api.PerfilesReglas.Perfil;
 import co.financiera.cartera.contabilidad.Asiento;
 import co.financiera.cartera.contabilidad.Contabilizador;
 import co.financiera.cartera.nucleo.Calc;
+import co.financiera.cartera.nucleo.CalendarioPagos;
 import co.financiera.cartera.nucleo.ClasificacionPago;
 import co.financiera.cartera.nucleo.LineaCredito;
 import co.financiera.cartera.nucleo.Operacion;
@@ -43,10 +45,15 @@ import co.financiera.cartera.nucleo.motor.Movimiento;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -197,8 +204,12 @@ public class ServicioCartera {
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Operacion o = operacion(c);
-        List<Movimiento> movs = motor.ejecutar(new Escenario(o, p).conReglas(perfiles.reglas(perfil))
-                .conCobranzaActiva(cobranzaActiva(c)));
+        Fechas fechas = fechas(c, p.periodicidad());
+        Escenario escenario = new Escenario(o, p).conReglas(perfiles.reglas(perfil)).conCobranzaActiva(cobranzaActiva(c));
+        if (fechas != null) {
+            escenario.conCalendario(fechas.calendario());
+        }
+        List<Movimiento> movs = motor.ejecutar(escenario);
         List<FilaPlan> plan = new ArrayList<>();
         BigDecimal totalPagado = Calc.CERO;
         BigDecimal totalIntereses = Calc.CERO;
@@ -216,15 +227,18 @@ public class ServicioCartera {
             totalIntereses = Calc.sumar(totalIntereses, m.pagoInteresCorriente());
             totalServicios = Calc.sumar(totalServicios, m.pagoServicios());
         }
-        Movimiento primero = movs.stream().filter(m -> m.periodo() == 1).findFirst().orElseThrow();
+        Movimiento primero = periodo(movs, 1);
+        ProrrateoDto prorrateo = fechas == null ? null : prorrateo(fechas, escenario, primero);
+        // Con fechas la cuota del resumen es la regular (periodo 2): la primera puede venir prorrateada (P5-PRORRATEO).
+        Movimiento regular = fechas != null && p.numeroCuotas() > 1 ? periodo(movs, 2) : primero;
         List<String> porConfirmar = POR_CONFIRMAR.contains(p.periodicidad())
                 ? List.of(p.periodicidad().name() + ": " + p.periodosPorAnio() + " periodos/año por confirmar con Diego")
                 : List.of();
         ResumenSimulacion resumen = new ResumenSimulacion(linea(c).name(), perfil.name(), texto(o.montoFinanciado()),
-                texto(p.tasaEA()), texto(Tasas.de(p).periodica()), p.numeroCuotas(), texto(primero.cuotaFinanciera()),
-                texto(primero.serviciosCausados().total()),
-                texto(Calc.sumar(primero.cuotaFinanciera(), primero.serviciosCausados().total())), texto(totalPagado),
-                texto(totalIntereses), texto(totalServicios), p.periodicidad().name(), porConfirmar);
+                texto(p.tasaEA()), texto(Tasas.de(p).periodica()), p.numeroCuotas(), texto(regular.cuotaFinanciera()),
+                texto(regular.serviciosCausados().total()),
+                texto(Calc.sumar(regular.cuotaFinanciera(), regular.serviciosCausados().total())), texto(totalPagado),
+                texto(totalIntereses), texto(totalServicios), p.periodicidad().name(), porConfirmar, prorrateo);
         return new SimulacionResponse(resumen, plan);
     }
 
@@ -239,6 +253,10 @@ public class ServicioCartera {
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
         Escenario e = new Escenario(operacion(c), p).conReglas(perfiles.reglas(perfil))
                 .conCobranzaActiva(cobranzaActiva(c));
+        Fechas fechas = fechas(c, p.periodicidad());
+        if (fechas != null) {
+            e.conCalendario(fechas.calendario());
+        }
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
         if (r.instrucciones() != null) {
             for (InstruccionDto i : r.instrucciones()) {
@@ -249,7 +267,7 @@ public class ServicioCartera {
                 e.en(i.periodo(), Instrucciones.aMotor(i));
             }
         }
-        return correr(e, perfil, r.incluirAsientos() == null || r.incluirAsientos());
+        return correr(e, perfil, r.incluirAsientos() == null || r.incluirAsientos(), fechas);
     }
 
     public List<CasoResumenDto> casos() {
@@ -257,6 +275,14 @@ public class ServicioCartera {
     }
 
     public CasoResponse caso(int numero, Perfil perfil) {
+        return caso(numero, perfil, null, null);
+    }
+
+    /**
+     * El caso con fechas opcionales (P5-PRORRATEO). Los casos son semanales: el primer vencimiento debe ser martes.
+     * Sin fechas es el caso del Excel tal cual.
+     */
+    public CasoResponse caso(int numero, Perfil perfil, String fechaDesembolso, String primerVencimiento) {
         CatalogoCasos.Caso caso = CatalogoCasos.buscar(numero).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
                 ApiException.CASO_INEXISTENTE, "No existe el caso " + numero + "; los casos van del 1 al "
                         + CatalogoCasos.CASOS.size(),
@@ -264,7 +290,11 @@ public class ServicioCartera {
         ParametrosProducto p = ParametrosProducto.replicaExcel();
         ReglasNegocio reglas = perfiles.reglas(perfil);
         Escenario e = caso.escenario().apply(p, reglas).conReglas(reglas);
-        EjecucionResponse r = correr(e, perfil, true);
+        Fechas fechas = fechas(fechaDesembolso, primerVencimiento, p.periodicidad());
+        if (fechas != null) {
+            e.conCalendario(fechas.calendario());
+        }
+        EjecucionResponse r = correr(e, perfil, true, fechas);
         List<InstruccionDto> instrucciones = new ArrayList<>();
         for (int periodo = 1; periodo <= r.resumen().periodoFinal(); periodo++) {
             for (Instruccion i : e.instruccionesDe(periodo)) {
@@ -275,13 +305,19 @@ public class ServicioCartera {
         CreditoRequest credito = new CreditoRequest(LineaCredito.CPPU.name(), p.periodicidad().name(), p.numeroCuotas(),
                 null, texto(o.valorMoto()), texto(o.pagoInicial()), perfil.name(), texto(o.matriculaRunt()),
                 texto(o.soat()), texto(o.prenda()), texto(o.gpsPlataforma()), texto(o.gastosComerciales()),
-                e.parametros().plazoLimitePeriodos(), e.cobranzaActiva());
+                e.parametros().plazoLimitePeriodos(), e.cobranzaActiva(),
+                fechas == null ? null : fechas.desembolso().toString(),
+                fechas == null ? null : fechas.primerVencimiento().toString());
         return new CasoResponse(caso.resumen(), perfil.name(), credito, instrucciones, r.resumen(), r.movimientos(),
                 r.asientos());
     }
 
     /** Corre el escenario y lo traduce. Público en el paquete para comparar con el motor directo. */
     EjecucionResponse correr(Escenario e, Perfil perfil, boolean incluirAsientos) {
+        return correr(e, perfil, incluirAsientos, null);
+    }
+
+    private EjecucionResponse correr(Escenario e, Perfil perfil, boolean incluirAsientos, Fechas fechas) {
         List<Movimiento> movs = motor.ejecutar(e);
         Movimiento ultimo = movs.getLast();
         BigDecimal totalPagado = Calc.CERO;
@@ -296,7 +332,8 @@ public class ServicioCartera {
         }
         ResumenEjecucion resumen = new ResumenEjecucion(ultimo.periodo(), ultimo.estado().name(), texto(ultimo.saldoFinal()),
                 texto(totalPagado), vencidasMax, texto(e.operacion().montoFinanciado()), perfil.name(),
-                ultimo.listoParaRecuperacion(), periodoListo);
+                ultimo.listoParaRecuperacion(), periodoListo,
+                fechas == null ? null : prorrateo(fechas, e, periodo(movs, 1)));
         List<AsientoDto> asientos = incluirAsientos
                 ? Contabilizador.para(e.reglas()).contabilizar(movs).stream().map(ServicioCartera::asiento).toList()
                 : List.of();
@@ -387,6 +424,94 @@ public class ServicioCartera {
         return new ApiException(HttpStatus.BAD_REQUEST, ApiException.PLAZO_MAXIMO,
                 pedido + " supera el máximo de " + maxMeses + " meses (" + maxCuotas + " " + per.unidadCuota() + ")",
                 Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, "periodicidad", per.name()));
+    }
+
+    /** Fechas del crédito validadas y su calendario (ADR 0002 paso 7). */
+    record Fechas(LocalDate desembolso, LocalDate primerVencimiento, CalendarioPagos calendario) {
+    }
+
+    private static final String FECHA_DESEMBOLSO = "fechaDesembolso";
+    private static final String PRIMER_VENCIMIENTO = "primerVencimiento";
+
+    static Fechas fechas(CreditoRequest c, Periodicidad per) {
+        return fechas(c.fechaDesembolso(), c.primerVencimiento(), per);
+    }
+
+    /**
+     * P5-PRORRATEO: valida las fechas opcionales del crédito contra la periodicidad y arma su {@link CalendarioPagos}.
+     * Sin ninguna de las dos devuelve {@code null} (el comportamiento de siempre, sin fechas). Van juntas: con una sola
+     * es un 400. El primer vencimiento cae martes en semanal (D28), el 5 o el 20 en quincenal (D27) y el 5 en mensual
+     * (D35), y es posterior al desembolso. No hay tope a los días del primer periodo: Diego no lo ha fijado.
+     */
+    static Fechas fechas(String fechaDesembolso, String primerVencimiento, Periodicidad per) {
+        boolean sinDesembolso = fechaDesembolso == null || fechaDesembolso.isBlank();
+        boolean sinVencimiento = primerVencimiento == null || primerVencimiento.isBlank();
+        if (sinDesembolso && sinVencimiento) {
+            return null;
+        }
+        if (sinDesembolso || sinVencimiento) {
+            String falta = sinDesembolso ? FECHA_DESEMBOLSO : PRIMER_VENCIMIENTO;
+            throw ApiException.validacion("Las fechas van juntas: falta " + falta
+                    + " (mande fechaDesembolso y primerVencimiento, o ninguna de las dos)", falta);
+        }
+        LocalDate desembolso = fecha(fechaDesembolso, FECHA_DESEMBOLSO);
+        LocalDate vencimiento = fecha(primerVencimiento, PRIMER_VENCIMIENTO);
+        if (!vencimiento.isAfter(desembolso)) {
+            throw ApiException.validacion("El primer vencimiento (" + vencimiento + ") debe ser posterior a la fecha de "
+                    + "desembolso (" + desembolso + ")", PRIMER_VENCIMIENTO);
+        }
+        CalendarioPagos calendario = switch (per) {
+            case SEMANAL -> {
+                if (vencimiento.getDayOfWeek() != DayOfWeek.TUESDAY) {
+                    throw ApiException.validacion("En un crédito semanal la cuota vence los martes; el " + vencimiento
+                            + " es " + vencimiento.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.of("es", "CO")),
+                            PRIMER_VENCIMIENTO);
+                }
+                yield CalendarioPagos.semanal(desembolso, vencimiento);
+            }
+            case QUINCENAL -> {
+                if (vencimiento.getDayOfMonth() != 5 && vencimiento.getDayOfMonth() != 20) {
+                    throw ApiException.validacion("En un crédito quincenal la cuota vence el 5 y el 20 de cada mes; el "
+                            + vencimiento + " no es ninguno de los dos", PRIMER_VENCIMIENTO);
+                }
+                yield CalendarioPagos.quincenal(desembolso, vencimiento);
+            }
+            case MENSUAL -> {
+                if (vencimiento.getDayOfMonth() != CalendarioPagos.DIA_PAGO_MENSUAL) {
+                    throw ApiException.validacion("En un crédito mensual la cuota vence el día "
+                            + CalendarioPagos.DIA_PAGO_MENSUAL + " de cada mes; el " + vencimiento + " no lo es",
+                            PRIMER_VENCIMIENTO);
+                }
+                yield CalendarioPagos.mensual(desembolso, vencimiento);
+            }
+        };
+        return new Fechas(desembolso, vencimiento, calendario);
+    }
+
+    private static LocalDate fecha(String valor, String campo) {
+        try {
+            return LocalDate.parse(valor.trim());
+        } catch (DateTimeParseException e) {
+            throw ApiException.validacion(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03); "
+                    + "llegó \"" + valor + "\"", campo);
+        }
+    }
+
+    private static Movimiento periodo(List<Movimiento> movs, int periodo) {
+        return movs.stream().filter(m -> m.periodo() == periodo).findFirst().orElseThrow();
+    }
+
+    /**
+     * P5-PRORRATEO visible en la respuesta: el interés que causó el motor en el periodo 1 contra el de un periodo
+     * completo (saldo inicial × tasa del periodo, como lo causa el motor sin fechas).
+     */
+    static ProrrateoDto prorrateo(Fechas fechas, Escenario e, Movimiento primero) {
+        boolean aplicado = e.reglas().prorrateoPrimeraCuota();
+        BigDecimal causado = primero.interesCorriente();
+        BigDecimal completo = aplicado ? Calc.multiplicar(primero.saldoInicial(), primero.tasaPeriodica()) : causado;
+        return new ProrrateoDto(fechas.desembolso().toString(), fechas.primerVencimiento().toString(),
+                fechas.calendario().diasDelPeriodo(1), e.parametros().periodicidad().diasNominales(), aplicado,
+                texto(completo), texto(causado), texto(Calc.restar(causado, completo)));
     }
 
     /** COB-6: la cobranza del crédito está activa salvo que el request diga {@code false}. */

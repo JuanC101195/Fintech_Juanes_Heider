@@ -76,6 +76,30 @@ export interface Credito {
   plazoLimitePeriodos?: number | null
   /** Si al crédito se le cobran gastos de cobranza (los activa un responsable, D44). */
   cobranzaActiva?: boolean
+  /** Fecha de desembolso ISO yyyy-MM-dd (opcional, va junto con `primerVencimiento`; P5-PRORRATEO). */
+  fechaDesembolso?: string
+  /** Primera fecha de pago ISO yyyy-MM-dd: martes en semanal, 5 o 20 en quincenal, 5 en mensual. */
+  primerVencimiento?: string
+}
+
+/**
+ * Prorrateo de la primera cuota (P5-PRORRATEO, D48). Solo llega si el crédito trae las dos fechas: el interés del
+ * periodo 1 se cobra por los días reales; capital y servicios van completos.
+ */
+export interface ProrrateoPrimeraCuota {
+  fechaDesembolso: string
+  primerVencimiento: string
+  diasPrimerPeriodo: number
+  /** 7, 15 o 30, como referencia. */
+  diasNominales: number
+  /** `false` con el perfil EXCEL: las fechas no cambian el interés. */
+  aplicado: boolean
+  /** Interés de un periodo completo (saldo × tasa del periodo). */
+  interesSinProrrateo: string
+  /** Interés que cobró el motor en el periodo 1. */
+  interesProrrateado: string
+  /** interesProrrateado − interesSinProrrateo. */
+  diferencia: string
 }
 
 export interface ResumenSimulacion {
@@ -93,6 +117,8 @@ export interface ResumenSimulacion {
   totalServicios: string
   periodicidad: Periodicidad
   porConfirmar: string[]
+  /** Solo con fechas. Entonces `cuotaFinanciera` y `cuotaTotal` son los de una cuota regular (periodo 2). */
+  prorrateoPrimeraCuota?: ProrrateoPrimeraCuota
 }
 
 export interface FilaPlan {
@@ -247,6 +273,8 @@ export interface ResumenEjecucion {
   /** Si en algún periodo llegó al umbral de recuperación (D46) y desde cuál. */
   listoParaRecuperacion: boolean
   periodoListoParaRecuperacion: number | null
+  /** Solo si el crédito trae fechas (P5-PRORRATEO). */
+  prorrateoPrimeraCuota?: ProrrateoPrimeraCuota
 }
 
 export interface Ejecucion {

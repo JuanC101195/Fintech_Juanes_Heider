@@ -56,10 +56,16 @@ public class CarteraController {
         return servicio.casos();
     }
 
-    /** Sin perfil corre con las reglas del Excel, que es de donde salen los casos 1 a 12. */
+    /**
+     * Sin perfil corre con las reglas del Excel, que es de donde salen los casos 1 a 12. Con {@code fechaDesembolso}
+     * y {@code primerVencimiento} (opcionales, juntas) el caso corre con fechas (P5-PRORRATEO).
+     */
     @GetMapping("/casos/{numero}")
-    public CasoResponse caso(@PathVariable int numero, @RequestParam(required = false) String perfilReglas) {
-        return servicio.caso(numero, ServicioCartera.perfil(perfilReglas, Perfil.EXCEL));
+    public CasoResponse caso(@PathVariable int numero, @RequestParam(required = false) String perfilReglas,
+            @RequestParam(required = false) String fechaDesembolso,
+            @RequestParam(required = false) String primerVencimiento) {
+        return servicio.caso(numero, ServicioCartera.perfil(perfilReglas, Perfil.EXCEL), fechaDesembolso,
+                primerVencimiento);
     }
 
     @PostMapping("/pagos/clasificar")

@@ -6,9 +6,9 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { esDecimal } from './dinero'
-import type { Asiento, Catalogo, CasoDetalle, DeudaExtinguida, FilaPlan, LineaAsiento, Movimiento, Servicios, Simulacion } from './tipos'
+import type { Asiento, Catalogo, CasoDetalle, DeudaExtinguida, Ejecucion, FilaPlan, LineaAsiento, Movimiento, ProrrateoPrimeraCuota, Servicios, Simulacion } from './tipos'
 
-type Forma = 'dinero' | 'texto' | 'entero' | 'booleano' | 'servicios' | 'deuda'
+type Forma = 'dinero' | 'texto' | 'entero' | 'booleano' | 'servicios' | 'deuda' | 'fecha'
 
 const MOVIMIENTO: Record<keyof Movimiento, Forma> = {
   periodo: 'entero', mes: 'entero', estado: 'texto', evento: 'texto', etiqueta: 'texto',
@@ -28,6 +28,11 @@ const ASIENTO: Record<keyof Asiento, Forma> = { periodo: 'entero', evento: 'text
 const FILA_PLAN: Record<Exclude<keyof FilaPlan, never>, Forma> = {
   periodo: 'entero', mes: 'entero', saldoInicial: 'dinero', cuotaFinanciera: 'dinero', interes: 'dinero', capital: 'dinero',
   fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', cuotaTotal: 'dinero', saldo: 'dinero',
+}
+
+const PRORRATEO: Record<keyof ProrrateoPrimeraCuota, Forma> = {
+  fechaDesembolso: 'fecha', primerVencimiento: 'fecha', diasPrimerPeriodo: 'entero', diasNominales: 'entero', aplicado: 'booleano',
+  interesSinProrrateo: 'dinero', interesProrrateado: 'dinero', diferencia: 'dinero',
 }
 
 const raiz = path.resolve(__dirname, '..', '..')
@@ -53,6 +58,9 @@ function validar(objeto: unknown, plantilla: Record<string, Forma>, donde: strin
         break
       case 'booleano':
         expect(typeof v, aqui).toBe('boolean')
+        break
+      case 'fecha':
+        expect(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v), `${aqui} debe ser fecha yyyy-MM-dd`).toBe(true)
         break
       case 'servicios':
         validar(v, SERVICIOS, aqui)
@@ -112,6 +120,35 @@ describe('catálogo y simulación reales contra los tipos', () => {
     const s = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-quincenal.json')
     expect(s.plan).toHaveLength(48)
     for (const f of s.plan) validar(f, FILA_PLAN, `fila ${f.periodo}`)
+  })
+})
+
+describe('prorrateo de la primera cuota (P5-PRORRATEO) contra los tipos', () => {
+  it('sin fechas el resumen no trae prorrateoPrimeraCuota (compatibilidad total)', () => {
+    expect(leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-quincenal.json').resumen).not.toHaveProperty('prorrateoPrimeraCuota')
+    const caso = leer<CasoDetalle>('docs', 'api-ejemplos', 'caso-13-negocio.json')
+    expect(caso.resumen).not.toHaveProperty('prorrateoPrimeraCuota')
+    expect(caso.credito).not.toHaveProperty('fechaDesembolso')
+  })
+
+  it('la simulación mensual con fechas trae el prorrateo y el interés de la fila 1 es el prorrateado', () => {
+    const s = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-mensual-prorrateo.json')
+    const p = s.resumen.prorrateoPrimeraCuota!
+    validar(p, PRORRATEO, 'prorrateoPrimeraCuota')
+    expect(p).toMatchObject({ fechaDesembolso: '2026-10-23', primerVencimiento: '2026-12-05', diasPrimerPeriodo: 43, diasNominales: 30, aplicado: true })
+    expect(s.plan[0].interes).toBe(p.interesProrrateado)
+    for (const f of s.plan) validar(f, FILA_PLAN, `fila ${f.periodo}`)
+    // El resumen muestra la cuota regular (periodo 2), no la prorrateada.
+    expect(s.resumen.cuotaFinanciera).toBe(s.plan[1].cuotaFinanciera)
+  })
+
+  it('el escenario semanal con fechas trae el prorrateo en el resumen y el interés en el movimiento 1', () => {
+    const e = leer<Ejecucion>('docs', 'api-ejemplos', 'escenario-semanal-prorrateo.json')
+    const p = e.resumen.prorrateoPrimeraCuota!
+    validar(p, PRORRATEO, 'prorrateoPrimeraCuota')
+    expect(p.diasPrimerPeriodo).toBe(11)
+    expect(e.movimientos[1].interesCorriente).toBe(p.interesProrrateado)
+    for (const m of e.movimientos.slice(0, 5)) validar(m, MOVIMIENTO, `movimiento ${m.periodo}`)
   })
 })
 

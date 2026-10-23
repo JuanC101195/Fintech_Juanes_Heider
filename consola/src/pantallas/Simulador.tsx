@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Campo, Cargando, MensajeError, Segmentado, SelectorPerfil, sinJerga, Tarjeta, Titulo } from '../componentes/comunes'
 import { EntradaDinero, EntradaPasos } from '../componentes/entradas'
+import { AvisoProrrateo, CamposFechas } from '../componentes/FechasCredito'
 import { GraficoSeries } from '../componentes/GraficoSeries'
 import { useCarga, useDatos } from '../datos'
 import { aMicros, cop, esDecimal, porcentaje, sumar } from '../dinero'
+import { fechasDelCredito, validarFechas } from '../fechas'
 import type { Catalogo, Credito, Perfil, Periodicidad, Simulacion } from '../tipos'
 
 const PERIODOS_POR_ANIO: Record<Periodicidad, number> = { SEMANAL: 52, QUINCENAL: 24, MENSUAL: 12 }
@@ -17,9 +19,14 @@ interface Formulario {
   valorMoto: string
   pagoInicial: string
   perfil: Perfil
+  /** Opcionales (P5-PRORRATEO): vacías = sin fechas. */
+  fechaDesembolso?: string
+  primerVencimiento?: string
 }
 
-type Errores = Partial<Record<'plazo' | 'valorMoto' | 'pagoInicial', string>>
+type Errores = Partial<Record<'plazo' | 'valorMoto' | 'pagoInicial' | 'fechaDesembolso' | 'primerVencimiento', string>>
+
+const fechasDe = (f: Formulario) => ({ fechaDesembolso: f.fechaDesembolso ?? '', primerVencimiento: f.primerVencimiento ?? '' })
 
 /** Valida el formulario del simulador. Máximo de meses de la línea (24). */
 export function validarSimulador(f: Formulario, maxMeses: number): Errores {
@@ -32,7 +39,7 @@ export function validarSimulador(f: Formulario, maxMeses: number): Errores {
   if (!esDecimal(f.valorMoto) || aMicros(f.valorMoto) <= 0n) e.valorMoto = 'Escribe un valor mayor que cero, por ejemplo 5.100.000'
   if (!esDecimal(f.pagoInicial)) e.pagoInicial = 'Escribe un valor, o 0 si no hay pago inicial'
   else if (!e.valorMoto && aMicros(f.pagoInicial) >= aMicros(f.valorMoto)) e.pagoInicial = 'El pago inicial debe ser menor que el valor de la moto'
-  return e
+  return { ...e, ...validarFechas(f.periodicidad, fechasDe(f)) }
 }
 
 export function aCredito(f: Formulario): Credito {
@@ -44,6 +51,7 @@ export function aCredito(f: Formulario): Credito {
     valorMoto: f.valorMoto.trim(),
     pagoInicial: f.pagoInicial.trim(),
     perfilReglas: f.perfil,
+    ...fechasDelCredito(fechasDe(f)),
   }
 }
 
@@ -149,6 +157,15 @@ export default function Simulador() {
             {(p) => <EntradaDinero {...p} valor={f.pagoInicial} alCambiar={(pagoInicial) => setF({ ...f, pagoInicial })} />}
           </Campo>
           <div className="md:col-span-2 xl:col-span-3">
+            <CamposFechas
+              valores={fechasDe(f)}
+              alCambiar={(fechas) => setF({ ...f, ...fechas })}
+              periodicidad={f.periodicidad}
+              errores={{ fechaDesembolso: verErrores.fechaDesembolso, primerVencimiento: verErrores.primerVencimiento }}
+              modoDemo={fuente.modo === 'demo'}
+            />
+          </div>
+          <div className="md:col-span-2 xl:col-span-3">
             <SelectorPerfil valor={f.perfil} alCambiar={(perfil) => setF({ ...f, perfil })} />
           </div>
 
@@ -192,13 +209,14 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
         </ul>
       )}
       <dl className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
-        <Tarjeta destacada etiqueta="Cuota total" valor={cop(r.cuotaTotal)} ayuda={`${r.cuotas} cuotas ${NOMBRES[r.periodicidad].toLowerCase()}s`} />
+        <Tarjeta destacada etiqueta="Cuota total" valor={cop(r.cuotaTotal)} ayuda={`${r.cuotas} cuotas ${NOMBRES[r.periodicidad].toLowerCase()}s${r.prorrateoPrimeraCuota?.aplicado ? '; la primera va prorrateada' : ''}`} />
         <Tarjeta etiqueta="Cuota financiera" valor={cop(r.cuotaFinanciera)} ayuda="Capital más interés, sin servicios" />
         <Tarjeta etiqueta="Tasa del periodo" valor={porcentaje(r.tasaPeriodo)} ayuda={`Equivale a ${porcentaje(r.tasaEA)} efectivo anual`} />
         <Tarjeta etiqueta="Total pagado" valor={cop(r.totalPagado)} ayuda={`Sobre ${cop(r.montoFinanciado)} financiados`} />
         <Tarjeta etiqueta="Intereses" valor={cop(r.totalIntereses)} />
         <Tarjeta etiqueta="Servicios" valor={cop(r.totalServicios)} ayuda="Fondo de garantías, asistencia y seguro" />
       </dl>
+      {r.prorrateoPrimeraCuota && <AvisoProrrateo prorrateo={r.prorrateoPrimeraCuota} />}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <GraficoSeries titulo="Saldo de capital" descripcion="Cuánto capital queda por pagar al cierre de cada periodo." periodos={periodos} apilado={false} series={[{ nombre: 'Saldo', color: 'var(--c-primary)', valores: plan.map((p) => p.saldo) }]} />
