@@ -18,7 +18,7 @@ final class Enumeraciones {
             return Enum.valueOf(tipo, valor.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new ApiException(org.springframework.http.HttpStatus.BAD_REQUEST, ApiException.VALIDACION,
-                    "Valor no válido para " + campo + ": " + valor,
+                    "Valor no válido para " + campo,
                     Map.of("campo", campo, "valoresValidos", Arrays.stream(tipo.getEnumConstants()).map(Enum::name).toList()));
         }
     }
