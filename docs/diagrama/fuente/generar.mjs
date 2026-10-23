@@ -111,7 +111,7 @@ const arquitectura = {
       'contabilidad: Contabilizador y una regla por evento; simulaciones: los 13 casos',
     ] },
     { dot: 'orange', title: 'Pruebas y calidad', items: [
-      '602 pruebas de Java; cobertura de ramas cercana al 92 %',
+      '602 pruebas de Java; cobertura de ramas del 91 %',
       'Huellas de regresión (caracterizacion/) y prueba de propiedades con 3.000 escenarios',
       'ArquitecturaTest (ArchUnit), ModularidadTest y ArranqueRealTest',
       'CI con jobs separados: motor, cuestionario, consola, herramientas y humo/e2e; análisis de SonarCloud',
@@ -286,7 +286,7 @@ const fases = {
       'Ola 1: correcciones de la auditoría financiera, API endurecido (topes, cuerpo, cabeceras, clave opcional) y CI en jobs separados',
       'Ola 2: MotorCartera y ServicioCartera se parten en clases pequeñas, sin cambiar comportamiento y con la red de huellas',
       'Ola 3: estado reanudable del motor, recálculo por usura, versiones de reglas y bitácora; persistencia solo diseñada (ADR 0004)',
-      'Al cierre: 602 pruebas de Java y cobertura de ramas cercana al 92 %',
+      'Al cierre: 602 pruebas de Java y cobertura de ramas del 91 %',
     ] },
     { dot: 'slate', title: 'Pendiente', items: [
       'Ronda 7: 2 preguntas abiertas con negocio',

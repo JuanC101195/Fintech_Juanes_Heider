@@ -1491,7 +1491,7 @@
         "Ola 1: correcciones de la auditoría financiera, API endurecido (topes, cuerpo, cabeceras, clave opcional) y CI en jobs separados",
         "Ola 2: MotorCartera y ServicioCartera se parten en clases pequeñas, sin cambiar comportamiento y con la red de huellas",
         "Ola 3: estado reanudable del motor, recálculo por usura, versiones de reglas y bitácora; persistencia solo diseñada (ADR 0004)",
-        "Al cierre: 602 pruebas de Java y cobertura de ramas cercana al 92 %"
+        "Al cierre: 602 pruebas de Java y cobertura de ramas del 91 %"
       ]
     },
     {

@@ -1015,7 +1015,7 @@
       "dot": "orange",
       "title": "Pruebas y calidad",
       "items": [
-        "602 pruebas de Java; cobertura de ramas cercana al 92 %",
+        "602 pruebas de Java; cobertura de ramas del 91 %",
         "Huellas de regresión (caracterizacion/) y prueba de propiedades con 3.000 escenarios",
         "ArquitecturaTest (ArchUnit), ModularidadTest y ArranqueRealTest",
         "CI con jobs separados: motor, cuestionario, consola, herramientas y humo/e2e; análisis de SonarCloud"
