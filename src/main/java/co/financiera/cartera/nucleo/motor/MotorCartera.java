@@ -81,6 +81,11 @@ public final class MotorCartera {
          * el periodo no se pagó al día y que el excedente del abono pagó por prelación.
          */
         private Servicios serviciosCorrientesExtra = Servicios.NINGUNO;
+        /**
+         * R6-RECUP-AUTO (Diego): una vez el crédito llega al umbral de recuperación queda marcado en los periodos
+         * siguientes aunque el cliente se ponga al día; el motor no ejecuta nada, una persona decide.
+         */
+        private boolean marcadoParaRecuperacion;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
@@ -129,16 +134,17 @@ public final class MotorCartera {
             // 2. Causación del periodo.
             Causacion causado = causar(periodo, saldoInicial, sinPagoSinMora, dias, alDia(pago, dias));
 
+            // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
+            // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
+            // prorrateo de la primera cuota (P5-PRORRATEO) es su capital completo más el interés de los días reales.
+            BigDecimal cuotaDelPeriodo = causado.prorrateada() ? sumar(causado.capitalContractual(), causado.interes()) : cuota;
+
             // 3. Pago y prelación.
-            BigDecimal cuotaTotal = sumar(cuota, causado.servicios().total());
-            BigDecimal recibido = recibido(pago, cuotaTotal, saldoInicial, causado);
+            BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
+            BigDecimal recibido = recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
             Reparto reparto = repartir(recibido, saldoInicial, causado);
             actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
             boolean pagoCompleto = recibido.compareTo(restar(cuotaTotal, Calc.EPSILON_SALDO)) >= 0;
-
-            // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
-            // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)).
-            BigDecimal cuotaDelPeriodo = cuota;
 
             // 4. Abono extraordinario o prepago, después de la cuota del periodo. Con PRIMERO_PENDIENTES (A4)
             // pagan antes lo pendiente de semanas anteriores; nunca adelantan intereses ni servicios futuros.
@@ -167,10 +173,15 @@ public final class MotorCartera {
             String evento = evento(ordenes, periodo, pagoCompleto, dias, recibido);
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
             Servicios serviciosDelPeriodo = causado.servicios().mas(serviciosCorrientesExtra);
-            // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación; solo se
-            // marca, no se ejecuta la dación ni la retoma (R6-RECUP-AUTO).
-            boolean listoParaRecuperacion = estado == EstadoCredito.EN_MORA
-                    && escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas);
+            // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación. R6-RECUP-AUTO
+            // (Diego): el motor solo marca, nunca ejecuta la dación ni la retoma, y la marca persiste aunque el
+            // cliente se ponga al día: una persona decide. Solo se apaga cuando el crédito termina (cancelado o
+            // cerrado por evento), porque ya no hay nada que recuperar.
+            if (estado == EstadoCredito.EN_MORA && escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas)) {
+                marcadoParaRecuperacion = true;
+            }
+            boolean termino = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO;
+            boolean listoParaRecuperacion = marcadoParaRecuperacion && !termino;
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),
@@ -296,8 +307,18 @@ public final class MotorCartera {
                 servicios = alDia ? base : base.soloSeguro();
                 serviciosAlDia = base;
             }
-            return new Causacion(multiplicar(baseInteres, tasa), capitalContractual, servicios, mora(capitalContractual, dias),
-                    cobranza(saldoInicial, dias), serviciosAlDia);
+            // P5-PRORRATEO (Diego, ronda 5; ADR 0002 paso 7): en la primera cuota solo el interés se prorratea por
+            // los días reales entre el desembolso y la primera fecha de pago, con la tasa diaria como el prepago por
+            // días (A6); capital contractual y servicios van completos. Con 365/ppa días daría exactamente la tasa
+            // periódica. Sin fechas en el escenario, o con el Excel, no cambia nada.
+            boolean prorrateada = periodo == 1 && reglas.prorrateoPrimeraCuota() && escenario.diasPrimerPeriodo().isPresent();
+            BigDecimal interes = multiplicar(baseInteres, tasa);
+            if (prorrateada) {
+                int diasReales = escenario.diasPrimerPeriodo().getAsInt();
+                interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), diasReales), Calc.UNO));
+            }
+            return new Causacion(interes, capitalContractual, servicios, mora(capitalContractual, dias),
+                    cobranza(saldoInicial, dias), serviciosAlDia, prorrateada);
         }
 
         private BigDecimal mora(BigDecimal capitalContractual, int dias) {
@@ -324,14 +345,16 @@ public final class MotorCartera {
         }
 
         /** 3. Lo que entra este periodo, limitado a lo exigible. */
-        private BigDecimal recibido(Instruccion pago, BigDecimal cuotaTotal, BigDecimal saldoInicial, Causacion c) {
+        private BigDecimal recibido(Instruccion pago, BigDecimal cuotaTotal, BigDecimal cuotaDelPeriodo,
+                BigDecimal saldoInicial, Causacion c) {
             BigDecimal pendienteSinCapital = sumar(cxcCobranza, c.cobranza(), cxcMora, c.mora(), cxcInteres, c.interes(),
                     cxcServicios.total(), c.servicios().total());
             BigDecimal exigible = sumar(saldoInicial, pendienteSinCapital);
             return switch (pago) {
                 case PagoContractual x -> min(cuotaTotal, exigible);
-                // El pago parcial es una fracción de la cuota total pactada (Inputs B36: cuota + los tres servicios).
-                case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuota, serviciosPorCuota.total())), exigible);
+                // El pago parcial es una fracción de la cuota total pactada (Inputs B36: cuota + los tres servicios);
+                // en la primera cuota prorrateada (P5-PRORRATEO), de la cuota de ese periodo.
+                case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuotaDelPeriodo, serviciosPorCuota.total())), exigible);
                 case PagoValor x -> min(x.valor(), exigible);
                 case PagoAlDia x -> min(sumar(pendienteSinCapital, capitalVencido, c.capitalContractual()), exigible);
                 case SinPago x -> CERO;
@@ -531,8 +554,8 @@ public final class MotorCartera {
          * sobra, CxP al deudor (casos 3, 4 y 11).
          *
          * <p>R4-R2 (Diego, ronda 4): se descuenta el costo real de la recuperación con soporte. En la retoma
-         * reduce el excedente que se devuelve. En la dación, con {@code costoRecuperacionAlFondo} (provisional,
-         * la opción más conservadora) se suma al faltante que cubre el fondo; si no, lo asume la financiera.
+         * reduce el excedente que se devuelve. En la dación, con {@code costoRecuperacionAlFondo} (confirmado por
+         * Diego en P5-COSTO-DACION) se suma al faltante que cubre el fondo; si no, lo asume la financiera.
          * Con costo 0 (el Excel) todo queda como antes.
          */
         private Cierre cerrar(CierrePorRecuperacion orden) {
@@ -663,7 +686,7 @@ public final class MotorCartera {
 
         /** Lo causado en un periodo. */
         private record Causacion(BigDecimal interes, BigDecimal capitalContractual, Servicios servicios, BigDecimal mora,
-                BigDecimal cobranza, Servicios serviciosAlDia) {
+                BigDecimal cobranza, Servicios serviciosAlDia, boolean prorrateada) {
 
             /**
              * Servicios que el periodo no causó porque no se pagó al día (fondo y asistencia, D17) y que causaría

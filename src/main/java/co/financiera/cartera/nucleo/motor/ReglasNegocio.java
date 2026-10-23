@@ -31,16 +31,18 @@ import java.math.BigDecimal;
  * @param costoRecuperacionAlFondo en una dación, si el costo real de la recuperación (grúa, bodegaje,
  *                                 avalúo, trámites, con soporte) se suma al faltante que cubre el fondo de
  *                                 garantías ({@code true}) o lo asume la financiera ({@code false}). Diego
- *                                 (R4-R2, ronda 4) pide descontarlo en dación y retoma; cómo se trata frente
- *                                 al fondo en la dación es pregunta de la ronda 5 (P5-COSTO-DACION). Por
- *                                 ahora va la opción más conservadora, {@code true}: es <b>provisional</b>.
- *                                 En la retoma el costo siempre reduce el excedente que se devuelve.
+ *                                 (R4-R2, ronda 4) pide descontarlo en dación y retoma y confirmó en la ronda 5
+ *                                 (P5-COSTO-DACION) que en la dación el costo se suma al faltante que cubre el
+ *                                 fondo de garantías ({@code true}). En la retoma el costo siempre reduce el
+ *                                 excedente que se devuelve.
  * @param cobranzaIngresoNoOperacional si los gastos de cobranza se contabilizan como ingreso no
  *                                 operacional (PUC clase 42) en lugar de la cuenta "Ingresos por cobranza"
  *                                 del Excel (Diego, R4-COBRANZA-CONTABLE). Lo aplica la contabilidad
  *                                 ({@code Contabilizador.para(reglas)}); el motor no lo usa.
- * @param plazoLimiteMeses         plazo límite de recuperación en meses, que se convierte a periodos del
- *                                 crédito con ROUNDDOWN(meses × ppa / 12) (Diego, R4-PLAZO-LIMITE: 24 meses).
+ * @param plazoLimiteMeses         tope del plazo límite de recuperación en meses, que se convierte a periodos del
+ *                                 crédito con ROUNDDOWN(meses × ppa / 12) (Diego, R4-PLAZO-LIMITE: 24 meses). El
+ *                                 límite de cada crédito es min(plazo propio del crédito, este tope) en periodos
+ *                                 (Diego, R6-LIMITE-CORTO: un crédito de 12 meses tiene límite de 12 meses).
  *                                 {@code null} = el que traiga el producto (el Excel: 100 y 120 semanas en
  *                                 los casos 8 y 9). Lo aplica quien crea el crédito (el API, para créditos
  *                                 nuevos y simulaciones, con {@link #plazoLimitePeriodos}), no el motor, para
@@ -60,8 +62,16 @@ import java.math.BigDecimal;
  * @param cuotasVencidasParaRecuperacion cuotas atrasadas (en periodos de la periodicidad pactada) desde las
  *                                 que el crédito queda marcado "listo para recuperación" (dación o retoma) en
  *                                 {@link Movimiento#listoParaRecuperacion()} (Diego, PPER-9: 2 cuotas). El
- *                                 motor NO ejecuta la recuperación sola (pregunta R6-RECUP-AUTO). {@code null}
- *                                 = no se marca (el Excel).
+ *                                 motor NO ejecuta la recuperación: solo marca y una persona decide (Diego,
+ *                                 R6-RECUP-AUTO). La marca persiste aunque el cliente se ponga al día, hasta que
+ *                                 el crédito termina. {@code null} = no se marca (el Excel).
+ * @param prorrateoPrimeraCuota    si el interés corriente de la primera cuota se prorratea por los días reales
+ *                                 entre el desembolso y la primera fecha de pago (Diego, P5-PRORRATEO; ADR 0002
+ *                                 paso 7): interés = saldo × ((1 + tasa diaria)^días − 1), con los días de
+ *                                 {@code CalendarioPagos.diasDelPeriodo(1)} que trae el escenario
+ *                                 ({@link Escenario#conCalendario}). Capital y servicios complementarios van
+ *                                 completos. Aplica en semanal (primer martes), quincenal (5 y 20) y mensual
+ *                                 (día 5). Sin fechas en el escenario no cambia nada. {@code false} en el Excel.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -80,7 +90,8 @@ public record ReglasNegocio(
         Integer plazoLimiteMeses,
         boolean cambioTasaSobreCapitalVigente,
         BigDecimal cobranzaDiaria,
-        Integer cuotasVencidasParaRecuperacion) {
+        Integer cuotasVencidasParaRecuperacion,
+        boolean prorrateoPrimeraCuota) {
 
     public ReglasNegocio {
         if (plazoLimiteMeses != null && plazoLimiteMeses < 1) {
@@ -107,7 +118,7 @@ public record ReglasNegocio(
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
             FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true,
             AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO,
-            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL, true, false, null, false, null, null);
+            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL, true, false, null, false, null, null, false);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -163,15 +174,17 @@ public record ReglasNegocio(
     }
 
     /**
-     * Periodos del plazo límite según {@link #plazoLimiteMeses} (R4-PLAZO-LIMITE): ROUNDDOWN(meses × ppa /
-     * 12), nunca menos que las cuotas pactadas. Vacío si el perfil no lo fija (queda el del producto).
+     * Periodos del plazo límite según {@link #plazoLimiteMeses}: min(cuotas pactadas, ROUNDDOWN(meses × ppa /
+     * 12)). R4-PLAZO-LIMITE fija el tope en 24 meses y R6-LIMITE-CORTO (Diego) dice que un crédito más corto
+     * tiene como límite su propio plazo (12 meses → 12 meses en periodos). Antes era el máximo de los dos: un
+     * crédito mensual de 12 cuotas proyectaba 24. Vacío si el perfil no lo fija (queda el del producto).
      */
     public java.util.OptionalInt plazoLimitePeriodos(co.financiera.cartera.nucleo.Periodicidad periodicidad,
             int cuotasPactadas) {
         if (plazoLimiteMeses == null) {
             return java.util.OptionalInt.empty();
         }
-        return java.util.OptionalInt.of(Math.max(cuotasPactadas, periodicidad.cuotasEnMeses(plazoLimiteMeses)));
+        return java.util.OptionalInt.of(Math.min(cuotasPactadas, periodicidad.cuotasEnMeses(plazoLimiteMeses)));
     }
 
     /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
@@ -179,7 +192,7 @@ public record ReglasNegocio(
             "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
             "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura", "costoRecuperacionAlFondo",
             "cobranzaIngresoNoOperacional", "plazoLimiteMeses", "cambioTasaSobreCapitalVigente", "cobranzaDiaria",
-            "cuotasVencidasParaRecuperacion");
+            "cuotasVencidasParaRecuperacion", "prorrateoPrimeraCuota");
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -239,6 +252,9 @@ public record ReglasNegocio(
         if ((v = config.get("cuotasVencidasParaRecuperacion")) != null && !v.isBlank()) {
             r = r.conCuotasVencidasParaRecuperacion(Integer.valueOf(v.trim()));
         }
+        if ((v = config.get("prorrateoPrimeraCuota")) != null) {
+            r = r.conProrrateoPrimeraCuota(Boolean.parseBoolean(v.trim()));
+        }
         return r;
     }
 
@@ -246,63 +262,63 @@ public record ReglasNegocio(
         return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
         return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
         return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 valor, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conAplicacionAbono(AplicacionAbono valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     public ReglasNegocio conInteresPrepagoPorDias(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** Margen bajo la usura en puntos porcentuales de EA (1 = 100 pb); no puede ser negativo. */
@@ -313,7 +329,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** Qué se conserva cuando la usura obliga a bajar la tasa (USU-6): la cuota o la fecha final. */
@@ -322,15 +338,15 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, valor, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
-    /** R4-R2: en la dación, si el costo de la recuperación se suma al faltante que cubre el fondo (provisional). */
+    /** R4-R2 / P5-COSTO-DACION: en la dación, si el costo de la recuperación se suma al faltante que cubre el fondo. */
     public ReglasNegocio conCostoRecuperacionAlFondo(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, valor,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** R4-COBRANZA-CONTABLE: gastos de cobranza como ingreso no operacional (PUC clase 42). */
@@ -338,7 +354,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, valor, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** R4-PLAZO-LIMITE: plazo límite de recuperación en meses; {@code null} = el del producto. */
@@ -346,7 +362,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, valor, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** R4-T5: con el cliente en mora, la cuota nueva de un cambio de tasa va solo sobre el capital vigente. */
@@ -354,7 +370,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, valor, cobranzaDiaria,
-                cuotasVencidasParaRecuperacion);
+                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** COB-6: valor diario de la cobranza para los créditos nuevos; {@code null} = el del producto. */
@@ -362,7 +378,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente, valor,
-                cuotasVencidasParaRecuperacion);
+                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
     }
 
     /** PPER-9: cuotas atrasadas desde las que el crédito queda listo para recuperación; {@code null} = no se marca. */
@@ -370,7 +386,15 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, valor);
+                cobranzaDiaria, valor, prorrateoPrimeraCuota);
+    }
+
+    /** P5-PRORRATEO: si el interés de la primera cuota se prorratea por los días reales desde el desembolso. */
+    public ReglasNegocio conProrrateoPrimeraCuota(boolean valor) {
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
+                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, valor);
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */

@@ -22,7 +22,7 @@ import java.util.Optional;
  * </pre>
  *
  * <p>R4-R2 (Diego, ronda 4): si hay costo real de la recuperación, crédito a CxP costos de recuperación por
- * el costo; con {@code costoRecuperacionAlFondo} (provisional) el costo ya está dentro de la CxC al fondo, y si
+ * el costo; con {@code costoRecuperacionAlFondo} (confirmado en P5-COSTO-DACION) el costo ya está dentro de la CxC al fondo, y si
  * no, la parte que no cubre la moto se debita al gasto de la financiera.
  *
  * <p>Aplica solo a cierres con faltante (CxC FCC &gt; 0). El cierre con excedente (CxP deudor) es la
