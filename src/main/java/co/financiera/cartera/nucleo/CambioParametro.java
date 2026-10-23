@@ -17,7 +17,7 @@ public record CambioParametro(
         BigDecimal valorNuevo,
         String administrador,
         LocalDateTime registradoEn,
-        String justificacion) {
+        String justificacion) implements EventoBitacora {
 
     public CambioParametro {
         Objects.requireNonNull(parametro, "parametro");
@@ -30,5 +30,10 @@ public record CambioParametro(
         if (justificacion == null || justificacion.isBlank()) {
             throw new IllegalArgumentException("El cambio de un parámetro debe llevar justificación");
         }
+    }
+
+    @Override
+    public String quien() {
+        return administrador;
     }
 }

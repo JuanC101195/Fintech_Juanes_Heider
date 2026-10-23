@@ -84,6 +84,18 @@ public final class VigenciasCobranza {
         return nueva;
     }
 
+    /**
+     * Como {@link #cambiar(LocalDate, BigDecimal, String, LocalDateTime, String, BitacoraParametros)}, pero con el rol
+     * de quien cambia: solo el administrador o su suplente (D26, D33, D41); si no, {@link PermisoInsuficienteException}
+     * y no se cambia ni se registra nada.
+     */
+    public VigenciasCobranza cambiar(LocalDate desde, BigDecimal valorDiario, Responsable responsable,
+            LocalDateTime registradoEn, String justificacion, BitacoraParametros bitacora) {
+        Objects.requireNonNull(responsable, "responsable")
+                .exigirAdministrador("cambiar la cobranza diaria");
+        return cambiar(desde, valorDiario, responsable.nombre(), registradoEn, justificacion, bitacora);
+    }
+
     /** Valor vigente en {@code fecha}; vacío si no hay ninguna vigencia que haya empezado para entonces. */
     public Optional<BigDecimal> valorEn(LocalDate fecha) {
         Objects.requireNonNull(fecha, "fecha");

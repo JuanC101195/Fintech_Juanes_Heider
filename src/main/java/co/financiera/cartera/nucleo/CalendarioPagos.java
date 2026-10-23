@@ -80,6 +80,26 @@ public final class CalendarioPagos {
         return periodicidad;
     }
 
+    /** Fecha del desembolso. La usa el formato de la instantánea del motor para guardar y reconstruir el calendario. */
+    public LocalDate desembolso() {
+        return desembolso;
+    }
+
+    /** Primera fecha de pago (vencimiento de la cuota 1). */
+    public LocalDate primerVencimiento() {
+        return primerVencimiento;
+    }
+
+    /** Reconstruye el calendario con la fábrica de su periodicidad (y sus mismas validaciones). */
+    public static CalendarioPagos de(Periodicidad periodicidad, LocalDate desembolso, LocalDate primerVencimiento) {
+        Objects.requireNonNull(periodicidad, "periodicidad");
+        return switch (periodicidad) {
+            case SEMANAL -> semanal(desembolso, primerVencimiento);
+            case QUINCENAL -> quincenal(desembolso, primerVencimiento);
+            case MENSUAL -> mensual(desembolso, primerVencimiento);
+        };
+    }
+
     /** Fecha de vencimiento de la cuota {@code periodo} (1, 2, …). */
     public LocalDate vencimiento(int periodo) {
         if (periodo < 1) {

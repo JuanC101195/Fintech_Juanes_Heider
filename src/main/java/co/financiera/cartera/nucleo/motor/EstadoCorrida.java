@@ -54,6 +54,27 @@ final class EstadoCorrida {
         this.saldoPlan = monto;
     }
 
+    /**
+     * Saldos restaurados de una {@link Instantanea} (escala: reanudar sin volver a correr desde el desembolso). Lo
+     * transitorio de un periodo (pendientes pagados con el abono, interés del prepago, servicios corrientes del
+     * excedente) no se guarda: el periodo lo reinicia antes de usarlo.
+     */
+    EstadoCorrida(Escenario escenario, Instantanea i) {
+        this.escenario = escenario;
+        this.p = escenario.parametros();
+        this.serviciosPorCuota = Servicios.porCuota(escenario.operacion().montoFinanciado(), p);
+        this.tasas = i.tasas();
+        this.cuota = i.cuota();
+        this.saldo = i.saldo();
+        this.saldoPlan = i.saldoPlan();
+        this.cuotasVigentes = i.cuotasVigentes();
+        this.capitalVencido = i.capitalVencido();
+        this.cxcInteres = i.cxcInteres();
+        this.cxcMora = i.cxcMora();
+        this.cxcServicios = i.cxcServicios();
+        this.cxcCobranza = i.cxcCobranza();
+    }
+
     ReglasNegocio reglas() {
         return escenario.reglas();
     }

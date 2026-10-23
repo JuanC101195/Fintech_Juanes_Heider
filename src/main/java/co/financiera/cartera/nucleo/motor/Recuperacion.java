@@ -25,7 +25,17 @@ final class Recuperacion {
     private boolean marcadoParaRecuperacion;
 
     Recuperacion(EstadoCorrida s) {
+        this(s, false);
+    }
+
+    /** Con la marca que traía el crédito (reanudación desde una {@link Instantanea}). */
+    Recuperacion(EstadoCorrida s, boolean marcadoParaRecuperacion) {
         this.s = s;
+        this.marcadoParaRecuperacion = marcadoParaRecuperacion;
+    }
+
+    boolean marcadoParaRecuperacion() {
+        return marcadoParaRecuperacion;
     }
 
     /**
