@@ -3,6 +3,7 @@ import { categoria, describir, type CategoriaEvento } from '../api/instrucciones
 import { cop, copCentavos, esCero } from '../dinero'
 import type { Asiento, Ejecucion, Instruccion, Movimiento } from '../tipos'
 import { Tarjeta } from './comunes'
+import { AvisoProrrateo } from './FechasCredito'
 
 const ETIQUETA_ESTADO: Record<string, string> = {
   DESEMBOLSADO: 'Desembolsado',
@@ -255,6 +256,7 @@ export function DetalleEjecucion({ ejecucion, instrucciones }: Readonly<{ ejecuc
         <Tarjeta etiqueta="Total pagado por el cliente" valor={cop(r.totalPagadoCliente)} />
         <Tarjeta etiqueta="Cuotas vencidas (máx.)" valor={String(r.cuotasVencidasMax)} />
       </dl>
+      {r.prorrateoPrimeraCuota && <AvisoProrrateo prorrateo={r.prorrateoPrimeraCuota} />}
       {r.periodoListoParaRecuperacion != null && (
         <p role="status" className="rounded-xl border border-outline-variant bg-error-container px-4 py-3 text-on-error-container">
           <strong>Quedó listo para dación o retoma en el periodo {r.periodoListoParaRecuperacion}:</strong> llegó a las cuotas

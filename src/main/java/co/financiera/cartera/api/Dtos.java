@@ -24,11 +24,18 @@ public final class Dtos {
      * @param cobranzaActiva      si al crédito se le causan gastos de cobranza (COB-6, opcional; {@code true}
      *                            por defecto, como el Excel). En {@code false} los pagos tardíos no causan
      *                            cobranza
+     * @param fechaDesembolso     fecha del desembolso, ISO {@code yyyy-MM-dd} (opcional; va junto con
+     *                            {@code primerVencimiento}). Con las dos fechas el motor recibe el
+     *                            {@code CalendarioPagos} y, si el perfil tiene {@code prorrateoPrimeraCuota}, prorratea
+     *                            el interés de la primera cuota por los días reales (P5-PRORRATEO, D48)
+     * @param primerVencimiento   primera fecha de pago, ISO {@code yyyy-MM-dd} (opcional): martes en semanal (D28), 5 o
+     *                            20 en quincenal (D27), día 5 en mensual (D35); posterior al desembolso
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record CreditoRequest(String linea, String periodicidad, Integer cuotas, Integer meses, String valorMoto,
             String pagoInicial, String perfilReglas, String matriculaRunt, String soat, String prenda,
-            String gpsPlataforma, String gastosComerciales, Integer plazoLimitePeriodos, Boolean cobranzaActiva) {
+            String gpsPlataforma, String gastosComerciales, Integer plazoLimitePeriodos, Boolean cobranzaActiva,
+            String fechaDesembolso, String primerVencimiento) {
     }
 
     /**
@@ -78,10 +85,34 @@ public final class Dtos {
     public record SimulacionResponse(ResumenSimulacion resumen, List<FilaPlan> plan) {
     }
 
+    /**
+     * Con fechas en el crédito, {@code cuotaFinanciera} y {@code cuotaTotal} son las de una cuota regular (la del
+     * periodo 2); la primera, prorrateada, está en {@code plan[0]} y en {@code prorrateoPrimeraCuota}.
+     *
+     * @param prorrateoPrimeraCuota solo si el crédito trae fechas (P5-PRORRATEO); sin fechas no aparece en el JSON
+     */
     public record ResumenSimulacion(String linea, String perfilReglas, String montoFinanciado, String tasaEA,
             String tasaPeriodo, int cuotas, String cuotaFinanciera, String serviciosPorCuota, String cuotaTotal,
             String totalPagado, String totalIntereses, String totalServicios, String periodicidad,
-            List<String> porConfirmar) {
+            List<String> porConfirmar,
+            @JsonInclude(JsonInclude.Include.NON_NULL) ProrrateoDto prorrateoPrimeraCuota) {
+    }
+
+    /**
+     * Prorrateo de la primera cuota (P5-PRORRATEO, D48): solo el interés del periodo 1 se cobra por los días reales
+     * entre el desembolso y la primera fecha de pago, con la tasa diaria; capital y servicios van completos.
+     *
+     * @param diasPrimerPeriodo     días reales del periodo 1 ({@code CalendarioPagos.diasDelPeriodo(1)})
+     * @param diasNominales         días nominales de la periodicidad (7, 15 o 30), como referencia
+     * @param aplicado              si el perfil tiene {@code prorrateoPrimeraCuota} (NEGOCIO sí, EXCEL no); en
+     *                              {@code false} el interés del periodo 1 es el de un periodo completo
+     * @param interesSinProrrateo   interés de un periodo completo: saldo inicial × tasa del periodo
+     * @param interesProrrateado    interés que causó el motor en el periodo 1
+     * @param diferencia            interesProrrateado − interesSinProrrateo (negativo si el periodo es corto)
+     */
+    public record ProrrateoDto(String fechaDesembolso, String primerVencimiento, int diasPrimerPeriodo,
+            int diasNominales, boolean aplicado, String interesSinProrrateo, String interesProrrateado,
+            String diferencia) {
     }
 
     public record FilaPlan(int periodo, int mes, String saldoInicial, String interes, String capital,
@@ -99,10 +130,12 @@ public final class Dtos {
      * @param listoParaRecuperacion         PPER-9: el último periodo quedó marcado listo para dación o retoma
      * @param periodoListoParaRecuperacion  PPER-9: primer periodo en que el crédito quedó listo para recuperación;
      *                                      {@code null} si nunca llegó al umbral (o el perfil no lo fija)
+     * @param prorrateoPrimeraCuota         solo si el crédito trae fechas (P5-PRORRATEO); sin fechas no aparece
      */
     public record ResumenEjecucion(int periodoFinal, String estadoFinal, String saldoFinal, String totalPagadoCliente,
             int cuotasVencidasMax, String montoFinanciado, String perfilReglas, boolean listoParaRecuperacion,
-            Integer periodoListoParaRecuperacion) {
+            Integer periodoListoParaRecuperacion,
+            @JsonInclude(JsonInclude.Include.NON_NULL) ProrrateoDto prorrateoPrimeraCuota) {
     }
 
     public record ServiciosDto(String fondoGarantias, String asistencia, String seguro, String total) {

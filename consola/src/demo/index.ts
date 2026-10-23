@@ -1,5 +1,6 @@
 import { ErrorDeApi, type FuenteDatos } from '../api/cliente'
 import { aMicros, comparar } from '../dinero'
+import { validarFechas } from '../fechas'
 import type { Catalogo, CasoDetalle, CasoResumen, Credito, Ejecucion, Perfil, PeticionEjecucion, Reglas, Simulacion } from '../tipos'
 
 // Los fixtures viven en ./fixtures/*.json con el mismo formato que el API. Para usar los JSON reales de
@@ -65,6 +66,14 @@ function validarPlazo(credito: Credito, maxMeses: number): void {
     throw new ErrorDeApi(400, { codigo: 'PLAZO_MAXIMO', mensaje: `El plazo máximo es de ${maxMeses} meses`, detalle: { meses, maximoMeses: maxMeses } })
   }
   if (aMicros(credito.valorMoto) <= 0n) throw new ErrorDeApi(400, { codigo: 'VALOR_MOTO_INVALIDO', mensaje: 'El valor de la moto debe ser positivo' })
+  validarFechasDemo(credito)
+}
+
+function validarFechasDemo(credito: Credito): void {
+  // Las fechas (P5-PRORRATEO) se validan como en el API, pero los fixtures no cambian con ellas: no traen prorrateo.
+  const errores = validarFechas(credito.periodicidad, { fechaDesembolso: credito.fechaDesembolso ?? '', primerVencimiento: credito.primerVencimiento ?? '' })
+  const [campo, mensaje] = Object.entries(errores)[0] ?? []
+  if (campo && mensaje) throw new ErrorDeApi(400, { codigo: 'VALIDACION', mensaje, detalle: { campo } })
 }
 
 /** Fuente de demostración: sirve los fixtures; las cifras no cambian con los parámetros (solo se validan). */
@@ -88,6 +97,7 @@ export const demo: FuenteDatos = {
   },
   async ejecutar(peticion): Promise<Ejecucion> {
     const base = await elegirCaso(peticion)
+    validarFechasDemo(peticion.credito)
     validarAbonos(peticion, base)
     const { resumen, movimientos, asientos } = base
     return { resumen, movimientos, ...(peticion.incluirAsientos ? { asientos } : {}) }
