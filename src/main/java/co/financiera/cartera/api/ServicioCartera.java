@@ -8,55 +8,34 @@ import co.financiera.cartera.api.Dtos.CasoResumenDto;
 import co.financiera.cartera.api.Dtos.CatalogoResponse;
 import co.financiera.cartera.api.Dtos.ClasificacionResponse;
 import co.financiera.cartera.api.Dtos.ClasificarRequest;
-import co.financiera.cartera.api.Dtos.ClaveDto;
 import co.financiera.cartera.api.Dtos.CreditoRequest;
-import co.financiera.cartera.api.Dtos.DeudaDto;
 import co.financiera.cartera.api.Dtos.EjecucionResponse;
 import co.financiera.cartera.api.Dtos.EjecutarRequest;
 import co.financiera.cartera.api.Dtos.FilaPlan;
 import co.financiera.cartera.api.Dtos.InstruccionDto;
-import co.financiera.cartera.api.Dtos.LineaAsientoDto;
-import co.financiera.cartera.api.Dtos.LineaDto;
-import co.financiera.cartera.api.Dtos.MovimientoDto;
-import co.financiera.cartera.api.Dtos.PeriodicidadDto;
 import co.financiera.cartera.api.Dtos.ProrrateoDto;
 import co.financiera.cartera.api.Dtos.ReglasResponse;
 import co.financiera.cartera.api.Dtos.ResumenEjecucion;
 import co.financiera.cartera.api.Dtos.ResumenSimulacion;
-import co.financiera.cartera.api.Dtos.ServiciosDto;
 import co.financiera.cartera.api.Dtos.SimulacionResponse;
 import co.financiera.cartera.api.PerfilesReglas.Perfil;
-import co.financiera.cartera.contabilidad.Asiento;
 import co.financiera.cartera.contabilidad.Contabilizador;
 import co.financiera.cartera.nucleo.Calc;
-import co.financiera.cartera.nucleo.CalendarioPagos;
 import co.financiera.cartera.nucleo.ClasificacionPago;
 import co.financiera.cartera.nucleo.LineaCredito;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
-import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.Tasas;
-import co.financiera.cartera.nucleo.motor.DeudaExtinguida;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.Instruccion;
 import co.financiera.cartera.nucleo.motor.MotorCartera;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio;
-import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -144,55 +123,8 @@ public class ServicioCartera {
             e.conCalendario(fechas.calendario());
         }
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
-        if (r.instrucciones() != null) {
-            if (r.instrucciones().size() > MAX_INSTRUCCIONES) {
-                throw ApiException.datoInvalido("Una petición admite como máximo " + MAX_INSTRUCCIONES
-                        + " instrucciones; llegaron " + r.instrucciones().size(), "instrucciones");
-            }
-            for (InstruccionDto i : r.instrucciones()) {
-                if (i == null || i.periodo() == null || i.periodo() < 1 || i.periodo() > ultimoPeriodo) {
-                    throw ApiException.datoInvalido("Cada instrucción necesita un periodo entre 1 y "
-                            + ultimoPeriodo + ": " + (i == null ? null : i.periodo()), "periodo");
-                }
-                validarInstruccion(i);
-                e.en(i.periodo(), Instrucciones.aMotor(i));
-            }
-        }
+        ValidadorInstrucciones.cargar(e, r.instrucciones(), ultimoPeriodo);
         return correr(e, perfil, r.incluirAsientos() == null || r.incluirAsientos(), fechas);
-    }
-
-    /** Topes de los campos numéricos de una instrucción, antes de convertirla para el motor. */
-    static void validarInstruccion(InstruccionDto i) {
-        diasAcotados(i.diasAtraso(), "diasAtraso");
-        diasAcotados(i.diasDesdeUltimaCuota(), "diasDesdeUltimaCuota");
-        if (tiene(i.fraccion())) {
-            Decimales.fraccion(i.fraccion(), "fraccion");
-        }
-        if (tiene(i.valor())) {
-            Decimales.dineroObligatorio(i.valor(), "valor", false);
-        }
-        if (tiene(i.valorMoto())) {
-            Decimales.dineroObligatorio(i.valorMoto(), "valorMoto", true);
-        }
-        if (tiene(i.costoRecuperacion())) {
-            Decimales.dineroObligatorio(i.costoRecuperacion(), "costoRecuperacion", false);
-        }
-        if (tiene(i.usuraEA())) {
-            Decimales.tasa(i.usuraEA(), "usuraEA");
-        }
-        if (tiene(i.nuevaTasaEA())) {
-            Decimales.tasa(i.nuevaTasaEA(), "nuevaTasaEA");
-        }
-    }
-
-    private static boolean tiene(String valor) {
-        return valor != null && !valor.isBlank();
-    }
-
-    private static void diasAcotados(Integer dias, String campo) {
-        if (dias != null && (dias < 0 || dias > MAX_DIAS)) {
-            throw ApiException.datoInvalido("El campo " + campo + " debe estar entre 0 y " + MAX_DIAS, campo);
-        }
     }
 
     public List<CasoResumenDto> casos() {
@@ -285,9 +217,4 @@ public class ServicioCartera {
     private static Movimiento periodo(List<Movimiento> movs, int periodo) {
         return movs.stream().filter(m -> m.periodo() == periodo).findFirst().orElseThrow();
     }
-
-    /** Máximo de instrucciones por petición. */
-    static final int MAX_INSTRUCCIONES = 500;
-    /** Máximo de días de atraso (o desde la última cuota) de una instrucción: 10 años. */
-    static final int MAX_DIAS = 3650;
 }
