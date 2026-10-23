@@ -171,7 +171,7 @@ public final class MotorCartera {
             Servicios recaudado = reparto.servicios().mas(cierre.servicios());
             Servicios giro = girar(periodo, recaudado.mas(pendientesPagadosExtra.servicios()), estado);
 
-            String evento = evento(ordenes, periodo, pagoCompleto, dias, recibido);
+            String evento = DescriptorEventos.evento(ordenes, periodo, cuotasVigentes, pagoCompleto, dias, recibido);
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
             Servicios serviciosDelPeriodo = causado.servicios().mas(serviciosCorrientesExtra);
             // PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación. R6-RECUP-AUTO
@@ -747,20 +747,6 @@ public final class MotorCartera {
             return giro;
         }
 
-        /** El evento de mayor jerarquía del periodo: cierre, prepago, abono, cambio de tasa o el pago. */
-        private String evento(Ordenes o, int periodo, boolean pagoCompleto, int dias, BigDecimal recibido) {
-            if (o.cierre != null) {
-                return "Evento de cierre";
-            }
-            if (o.prepago != null) {
-                return "Cuota + prepago total";
-            }
-            if (o.abono != null) {
-                return "Cuota + abono extra";
-            }
-            return o.cambioTasa ? "Cambio de tasa" : describir(periodo, o.pago, pagoCompleto, dias, recibido);
-        }
-
         private int diasAtraso(Instruccion pago) {
             return switch (pago) {
                 case PagoContractual c -> c.diasAtraso();
@@ -768,35 +754,6 @@ public final class MotorCartera {
                 case PagoValor c -> c.diasAtraso();
                 default -> 0;
             };
-        }
-
-        private String describir(int periodo, Instruccion pago, boolean completo, int dias, BigDecimal recibido) {
-            if (pago instanceof SinPago) {
-                return "Mora - sin pago";
-            }
-            if (pago instanceof PagoAlDia) {
-                return "Normalización - paga mes + atrasado";
-            }
-            if (periodo > cuotasVigentes) {
-                return "Periodo adicional";
-            }
-            if (dias > 0) {
-                return "Pago tardío + cobranza";
-            }
-            // La última cuota contractual puede ser menor porque liquida el saldo: eso no es un pago inferior.
-            if (!completo && recibido.signum() > 0 && !(pago instanceof PagoContractual)) {
-                return "Pago inferior";
-            }
-            return periodo == cuotasVigentes ? "Pago final" : "Pago normal";
-        }
-
-        /** Lo que piden las instrucciones de un periodo. */
-        private static final class Ordenes {
-            private Instruccion pago = PagoContractual.A_TIEMPO;
-            private AbonoExtra abono;
-            private PrepagoTotal prepago;
-            private boolean cambioTasa;
-            private CierrePorRecuperacion cierre;
         }
 
         /** Lo causado en un periodo. */
