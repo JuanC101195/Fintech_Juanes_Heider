@@ -1642,6 +1642,38 @@ const RONDA_6: Pregunta[] = [
   },
 ]
 
+// Ronda 7 (22 oct 2026): las dos preguntas que Diego marcó pendientes en la ronda 6, reformuladas con opciones concretas.
+const RONDA_7: Pregunta[] = [
+  {
+    id: 'R7-COBRANZA-ACTIVA',
+    bloque: PAGOS,
+    titulo: '¿Quién activa el cobro de los gastos de cobranza en un crédito, y se hace crédito por crédito o por una regla fija?',
+    contexto:
+      'En la ronda 6 quedó pendiente de la política de cobranza. Ya sabemos que la cobranza solo se causa mientras el cliente esté en mora, que el valor puede cambiar en el tiempo y que la activa un responsable por crédito. Para que el motor guarde la activación (quién la puso, cuándo y desde qué mora) necesitamos saber dos cosas. Primero, quién tiene el permiso de activarla: el director financiero, el gerente o un comité. Segundo, cómo se decide: crédito por crédito (una persona mira cada caso) o por regla (por ejemplo, la cobranza arranca sola cuando el crédito llega a N días de mora y quien tiene el permiso puede exonerarla). Si es por regla, indique en el comentario cuántos días de mora.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso a todo crédito en mora, sin activación ni responsable.',
+    opciones: [
+      { codigo: 'director-credito', texto: 'El director financiero activa, crédito por crédito' },
+      { codigo: 'gerente-credito', texto: 'El gerente activa, crédito por crédito' },
+      { codigo: 'comite-credito', texto: 'Un comité decide, crédito por crédito' },
+      { codigo: 'regla-director', texto: 'Por regla: se activa sola tras N días de mora y el director financiero puede exonerar', detalle: 'Indique en el comentario cuántos días de mora (N).' },
+      { codigo: 'regla-gerente', texto: 'Por regla: se activa sola tras N días de mora y el gerente puede exonerar', detalle: 'Indique en el comentario cuántos días de mora (N).' },
+      { codigo: 'otro', texto: 'Otra forma', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R7-RECUP-VS-CASO11',
+    bloque: RECUPERACION,
+    titulo: 'El caso 11 espera 4 periodos antes de la dación. Con el umbral de 2 cuotas atrasadas, ¿se corrige el caso 11 a 2 periodos o se deja en 4?',
+    contexto:
+      'En la ronda 6 quedó pendiente de la política de ejecución de la dación. Ya decidió que a las 2 cuotas atrasadas el motor marca el crédito para recuperación y una persona ordena la dación o la retoma. El caso 11 del Excel (pago inferior y luego dación) espera 4 periodos. Si se corrige a 2, el Excel y el motor siguen la misma política y las pruebas del caso 11 se rehacen con 2 periodos de espera. Si se deja en 4, el caso 11 queda como ejemplo de un crédito en el que la persona esperó más de lo que marca el umbral; el motor lo reproduce igual, porque quien ordena decide cuándo.',
+    excelHoy: 'El caso 11 espera 4 periodos de atraso antes de la dación.',
+    opciones: [
+      { codigo: 'corregir-a-2', texto: 'Se corrige el caso 11 a 2 periodos de espera (el Excel se corrige)' },
+      { codigo: 'dejar-4-ejemplo', texto: 'Se deja en 4 como ejemplo de un crédito en el que se esperó más del umbral', esExcel: true },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -1776,11 +1808,28 @@ const RESPONDIDAS_22_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   X1: { referencia: REF_22_OCT, respuesta: 'Todas las operaciones tienen servicios complementarios; el Excel solo los simuló en una operación como ejemplo.' },
   'COB-4': { referencia: REF_22_OCT, respuesta: 'Los gastos de cobranza solo se cobran mientras el cliente esté en mora; si se pone al día o termina de pagar, no se liquidan.' },
   'COB-5': { referencia: REF_22_OCT, respuesta: 'Los exonera el director financiero o el gerente, con justificación y aprobando directamente en el software.' },
-  'COB-6': { referencia: REF_22_OCT, respuesta: 'La tarifa no está regulada: el cobro vale si el contrato de mutuo dice cuándo se causa y cuánto. Los 3.000 son un ejemplo; el valor real está pendiente y cambia en el tiempo. Un responsable activa la cobranza crédito por crédito (R6-COBRANZA-ACTIVA).' },
+  'COB-6': { referencia: REF_22_OCT, respuesta: 'La tarifa no está regulada: el cobro vale si el contrato de mutuo dice cuándo se causa y cuánto. Los 3.000 son un ejemplo; el valor real está pendiente y cambia en el tiempo. Un responsable activa la cobranza crédito por crédito (ronda 7: R7-COBRANZA-ACTIVA).' },
   'PPER-8': { referencia: REF_22_OCT, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Sin respuesta: dijo que este tema está pendiente de definir y es de los gastos de cobranza.' },
-  'PPER-9': { referencia: REF_22_OCT, respuesta: 'No hay días específicos: la política es ejecutar la dación o la retoma luego de 2 cuotas atrasadas, en periodos de la periodicidad pactada (R6-RECUP-AUTO y R6-RECUP-VS-CASO11).' },
+  'PPER-9': { referencia: REF_22_OCT, respuesta: 'No hay días específicos: la política es ejecutar la dación o la retoma luego de 2 cuotas atrasadas, en periodos de la periodicidad pactada (D54: el motor solo marca; el caso 11 en la ronda 7: R7-RECUP-VS-CASO11).' },
   X4: { referencia: REF_22_OCT, respuesta: 'El plazo límite del caso 8 se amplía a 104 cuotas (24 meses), según el recálculo; en cualquier momento puede darse la retoma o la dación.' },
   'P5-LIMITE-DESDE': { referencia: REF_22_OCT, reemplazadaPor: 'R6-LIMITE-CORTO', nota: 'Reemplazada por R6-LIMITE-CORTO.', respuesta: 'X4 la contesta en parte: el límite es de 104 cuotas (24 meses) desde el desembolso; falta el caso de un crédito de menos de 24 meses.' },
+}
+
+// Respondidas por el cuestionario (Diego, 22 de octubre de 2026, 19:53): las rondas 5 y 6, 9 de 9 con la opción y el
+// comentario coincidentes (docs/respuestas-diego-2026-10-22-ronda5-6.md). 7 quedan decididas (D48 a D54). Las dos que
+// marcó pendientes (política de cobranza) se reformulan en la ronda 7 y no cuentan en el total: las cuenta la nueva.
+const REF_RONDA_5 = 'Ronda 5'
+const REF_RONDA_6 = 'Ronda 6'
+const RESPONDIDAS_RONDA_5_6: Record<string, Omit<Respondida, 'fecha'>> = {
+  'P5-PRORRATEO': { referencia: REF_RONDA_5, respuesta: 'Se prorratea solo el interés por los días reales, sumándole los días previos a la primera cuota; capital y servicios completos; en las tres periodicidades.' },
+  'P5-PAGO-ANTES-PRIMERA': { referencia: REF_RONDA_5, respuesta: 'Un pago antes de la primera cuota es abono extra a capital.' },
+  'P5-CASO13': { referencia: REF_RONDA_5, respuesta: 'Las cifras nuevas son correctas: capital vigente 1.123.017,41 y saldo 3.229.537,12.' },
+  'P5-USURA-DIA': { referencia: REF_RONDA_5, respuesta: 'Sí, 1 día hábil; es un requisito del proceso de usura, no del motor.' },
+  'P5-COSTO-DACION': { referencia: REF_RONDA_5, respuesta: 'En la dación el costo real se suma al faltante y lo cubre el fondo de garantías (deja de ser provisional).' },
+  'R6-LIMITE-CORTO': { referencia: REF_RONDA_6, respuesta: 'El plazo límite es el propio plazo del crédito (un crédito de 12 meses tiene límite de 12).' },
+  'R6-RECUP-AUTO': { referencia: REF_RONDA_6, respuesta: 'El motor solo marca el crédito para recuperación; una persona ordena la dación o la retoma, y decide si se ejecuta aunque el cliente se ponga al día.' },
+  'R6-COBRANZA-ACTIVA': { referencia: REF_RONDA_6, reemplazadaPor: 'R7-COBRANZA-ACTIVA', nota: 'Pendiente: política de cobranza. Reformulada en R7-COBRANZA-ACTIVA.', respuesta: 'Sin respuesta: "pendiente de definir política de cobranza".' },
+  'R6-RECUP-VS-CASO11': { referencia: REF_RONDA_6, reemplazadaPor: 'R7-RECUP-VS-CASO11', nota: 'Pendiente: política por definir. Reformulada en R7-RECUP-VS-CASO11.', respuesta: 'Sin respuesta: "política por definir".' },
 }
 
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
@@ -1788,7 +1837,8 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7].map((p) => {
+  if (RESPONDIDAS_RONDA_5_6[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_RONDA_5_6[p.id] } }
   if (RESPONDIDAS_22_OCT[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_22_OCT[p.id] } }
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
   if (RESPONDIDAS_20_OCT[p.id]) return { ...p, respondida: { fecha: '20 oct 2026', ...RESPONDIDAS_20_OCT[p.id] } }

@@ -20,21 +20,45 @@ describe('preguntas', () => {
     expect(RESPONDIDAS.length + PREGUNTAS.length).toBe(TODAS.length)
     expect(RESPONDIDAS.map((p) => p.id)).toEqual(expect.arrayContaining(['P1', 'P7', 'A1', 'A2', 'C4', 'PTOPE', 'S3', 'X4']))
     for (const p of PREGUNTAS) expect(p.respondida, p.id).toBeUndefined()
-    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Documento 22 oct)/)
+    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Documento 22 oct)/)
     for (const b of BLOQUES_ABIERTOS) expect(PREGUNTAS.some((p) => p.bloque === b), b).toBe(true)
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
 
-  it('la ronda 5 deja abiertas 5 confirmaciones y la ronda 6 otras 4', () => {
-    const ronda5 = PREGUNTAS.filter((p) => p.id.startsWith('P5-'))
-    expect(ronda5.map((p) => p.id).sort()).toEqual(
-      ['P5-CASO13', 'P5-COSTO-DACION', 'P5-PAGO-ANTES-PRIMERA', 'P5-PRORRATEO', 'P5-USURA-DIA'].sort(),
-    )
-    const ronda6 = PREGUNTAS.filter((p) => p.id.startsWith('R6-'))
-    expect(ronda6.map((p) => p.id).sort()).toEqual(['R6-COBRANZA-ACTIVA', 'R6-LIMITE-CORTO', 'R6-RECUP-AUTO', 'R6-RECUP-VS-CASO11'].sort())
-    expect(PREGUNTAS).toHaveLength(9)
-    // Todas ofrecen al menos 2 opciones reales, sin relleno.
-    for (const p of [...ronda5, ...ronda6]) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
+  it('las rondas 5 y 6 quedaron respondidas el 22 de octubre y la ronda 7 deja abiertas solo 2 preguntas', () => {
+    const ronda56 = TODAS.filter((p) => p.id.startsWith('P5-') || p.id.startsWith('R6-'))
+    expect(ronda56).toHaveLength(10)
+    for (const p of ronda56) {
+      expect(p.respondida, p.id).toBeDefined()
+      expect(p.respondida!.fecha, p.id).toBe('22 oct 2026')
+    }
+    // Las 7 respondidas con seguridad no llevan salvedad.
+    const seguras = ['P5-PRORRATEO', 'P5-PAGO-ANTES-PRIMERA', 'P5-CASO13', 'P5-USURA-DIA', 'P5-COSTO-DACION', 'R6-LIMITE-CORTO', 'R6-RECUP-AUTO']
+    for (const id of seguras) {
+      const p = ronda56.find((x) => x.id === id)!
+      expect(p.respondida!.nota, id).toBeUndefined()
+      expect(p.respondida!.reemplazadaPor, id).toBeUndefined()
+      expect(p.respondida!.referencia, id).toBe(id.startsWith('P5-') ? 'Ronda 5' : 'Ronda 6')
+    }
+    // Las 2 que Diego marcó pendientes se reformulan en la ronda 7.
+    expect(ronda56.find((p) => p.id === 'R6-COBRANZA-ACTIVA')!.respondida!.reemplazadaPor).toBe('R7-COBRANZA-ACTIVA')
+    expect(ronda56.find((p) => p.id === 'R6-RECUP-VS-CASO11')!.respondida!.reemplazadaPor).toBe('R7-RECUP-VS-CASO11')
+    for (const id of ['R6-COBRANZA-ACTIVA', 'R6-RECUP-VS-CASO11']) expect(ronda56.find((p) => p.id === id)!.respondida!.nota, id).toMatch(/^Pendiente: /)
+
+    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R7-COBRANZA-ACTIVA', 'R7-RECUP-VS-CASO11'])
+    for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
+  })
+
+  it('la ronda 7 pregunta quién activa la cobranza (y si es por crédito o por regla) y si el caso 11 pasa a 2 periodos', () => {
+    const cobranza = PREGUNTAS.find((p) => p.id === 'R7-COBRANZA-ACTIVA')!
+    const codigos = cobranza.opciones.map((o) => o.codigo)
+    expect(codigos).toEqual(expect.arrayContaining(['director-credito', 'gerente-credito', 'comite-credito', 'regla-director', 'regla-gerente', 'otro']))
+    expect(cobranza.opciones.find((o) => o.codigo === 'otro')!.pideTexto).toBe(true)
+    expect(cobranza.titulo).toMatch(/crédito por crédito o por una regla/)
+    const caso11 = PREGUNTAS.find((p) => p.id === 'R7-RECUP-VS-CASO11')!
+    expect(caso11.opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)).toEqual(['corregir-a-2', 'dejar-4-ejemplo'])
+    expect(caso11.contexto).toContain('4 periodos')
+    expect(caso11.opciones.find((o) => o.esExcel)!.codigo).toBe('dejar-4-ejemplo')
   })
 
   it('la ronda 4 quedó respondida el 21 de octubre, salvo T5 que Diego contestó por documento el 22', () => {
@@ -51,7 +75,7 @@ describe('preguntas', () => {
   })
 
   it('el documento del 22 de octubre cierra 7 preguntas, deja PPER-8 pendiente y reemplaza P5-LIMITE-DESDE', () => {
-    const del22 = RESPONDIDAS.filter((p) => p.respondida!.fecha === '22 oct 2026')
+    const del22 = RESPONDIDAS.filter((p) => p.respondida!.referencia === 'Documento 22 oct')
     expect(del22.map((p) => p.id).sort()).toEqual(['COB-4', 'COB-5', 'COB-6', 'P5-LIMITE-DESDE', 'PPER-8', 'PPER-9', 'R4-T5', 'X1', 'X4'].sort())
     for (const p of del22) expect(p.respondida!.referencia, p.id).toBe('Documento 22 oct')
     for (const id of ['R4-T5', 'X1', 'COB-4', 'COB-5', 'COB-6', 'PPER-9', 'X4']) expect(del22.find((p) => p.id === id)!.respondida!.nota, id).toBeUndefined()
@@ -59,8 +83,8 @@ describe('preguntas', () => {
     expect(del22.find((p) => p.id === 'P5-LIMITE-DESDE')!.respondida!.reemplazadaPor).toBe('R6-LIMITE-CORTO')
   })
 
-  it('P5-CASO13 compara el antes y el ahora con las cifras del motor', () => {
-    const p = PREGUNTAS.find((x) => x.id === 'P5-CASO13')!
+  it('P5-CASO13 (ya respondida) conserva el antes y el ahora con las cifras del motor', () => {
+    const p = TODAS.find((x) => x.id === 'P5-CASO13')!
     expect(p.contexto).toContain('1.182.645,20')
     expect(p.contexto).toContain('Antes')
     expect(p.contexto).toContain('Ahora')
@@ -71,7 +95,7 @@ describe('preguntas', () => {
 
   it('las reemplazadas apuntan a una pregunta que existe y las que esperan un documento no se vuelven a preguntar', () => {
     const reemplazadas = RESPONDIDAS.filter((p) => p.respondida!.reemplazadaPor)
-    expect(reemplazadas.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'CON-4', 'P5-LIMITE-DESDE', 'PPER-1', 'R2', 'R4-CASO13', 'REC-6', 'ROL-1', 'T5', 'USU-3', 'USU-8'])
+    expect(reemplazadas.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'CON-4', 'P5-LIMITE-DESDE', 'PPER-1', 'R2', 'R4-CASO13', 'R6-COBRANZA-ACTIVA', 'R6-RECUP-VS-CASO11', 'REC-6', 'ROL-1', 'T5', 'USU-3', 'USU-8'])
     for (const p of reemplazadas) expect(TODAS.map((x) => x.id), p.id).toContain(p.respondida!.reemplazadaPor)
     for (const id of ['COB-1', 'COB-2', 'COB-3', 'PPER-8', 'CON-1']) {
       expect(RESPONDIDAS.find((p) => p.id === id)!.respondida!.nota, id).toMatch(/^Pendiente: /)
@@ -139,8 +163,8 @@ describe('completitud', () => {
 })
 
 describe('respuestas', () => {
-  const minimo = PREGUNTAS.find((p) => p.id === 'P5-USURA-DIA')!
-  const inicial = PREGUNTAS.find((p) => p.id === 'P5-PAGO-ANTES-PRIMERA')!
+  const minimo = TODAS.find((p) => p.id === 'P5-USURA-DIA')!
+  const inicial = TODAS.find((p) => p.id === 'P5-PAGO-ANTES-PRIMERA')!
 
   it('una respuesta con valor pendiente no está completa', () => {
     expect(estaCompleta(minimo, { codigo: 'otro-plazo' })).toBe(false)
@@ -167,7 +191,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ 'P5-USURA-DIA': { codigo: 'un-dia-habil' }, 'P5-COSTO-DACION': { codigo: 'financiera' }, 'P5-CASO13': { comentario: 'Depende de la cifra' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(3)
+    expect(avance({ 'R7-COBRANZA-ACTIVA': { codigo: 'director-credito' }, 'R7-RECUP-VS-CASO11': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -177,7 +201,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { 'P5-USURA-DIA': { codigo: 'otro-plazo', valor: 3 }, 'P5-CASO13': { comentario: 'Así' } },
+    respuestas: { 'R7-COBRANZA-ACTIVA': { codigo: 'otro', texto: 'Comité trimestral' }, 'R7-RECUP-VS-CASO11': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -187,9 +211,9 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'P5-USURA-DIA')).toContain(3)
-    expect(filas.find((f) => f[0] === 'P5-CASO13')).toContain('Así')
-    expect(filas.find((f) => f[0] === 'P5-CASO13')![10]).toBe('Sí')
+    expect(filas.find((f) => f[0] === 'R7-COBRANZA-ACTIVA')).toContain('Comité trimestral')
+    expect(filas.find((f) => f[0] === 'R7-RECUP-VS-CASO11')).toContain('Así')
+    expect(filas.find((f) => f[0] === 'R7-RECUP-VS-CASO11')![10]).toBe('Sí')
   })
 
   it('manda la fila a la tabla y avisa si falla', async () => {
@@ -221,10 +245,8 @@ describe('exportación a Excel', () => {
     const estado: Estado = {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
-        'P5-CASO13': { codigo: 'correctos', comentario: 'Así lo hacemos hoy' },
-        'P5-USURA-DIA': { codigo: 'otro-plazo', valor: 3 },
-        'P5-PRORRATEO': { codigo: 'otro', texto: 'Otra forma' },
-        'P5-COSTO-DACION': { codigo: CODIGO_PENDIENTE, comentario: 'Va en la política de cobranza' },
+        'R7-RECUP-VS-CASO11': { codigo: 'corregir-a-2', comentario: 'Así lo hacemos hoy' },
+        'R7-COBRANZA-ACTIVA': { codigo: 'otro', texto: 'Comité trimestral' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -243,16 +265,14 @@ describe('exportación a Excel', () => {
       })
       return encontrada!
     }
-    expect(fila('P5-CASO13').getCell(4).value).toBe('correctos')
-    expect(fila('P5-CASO13').getCell(9).value).toBe('Así lo hacemos hoy')
+    expect(fila('R7-RECUP-VS-CASO11').getCell(4).value).toBe('corregir-a-2')
+    expect(fila('R7-RECUP-VS-CASO11').getCell(9).value).toBe('Así lo hacemos hoy')
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
     expect(fila('R4-QUIN')).toBeUndefined()
-    expect(fila('P5-USURA-DIA').getCell(6).value).toBe(3)
-    expect(fila('P5-PRORRATEO').getCell(8).value).toBe('Otra forma')
-    expect(fila('P5-COSTO-DACION').getCell(4).value).toBe(CODIGO_PENDIENTE)
-    expect(fila('P5-COSTO-DACION').getCell(11).value).toBe('Sí')
-    expect(fila('R6-LIMITE-CORTO').getCell(11).value).toBe('No')
+    expect(fila('R7-COBRANZA-ACTIVA').getCell(8).value).toBe('Comité trimestral')
+    expect(fila('R7-COBRANZA-ACTIVA').getCell(11).value).toBe('Sí')
+    expect(fila('R7-RECUP-VS-CASO11').getCell(11).value).toBe('Sí')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!
     expect(efecto.rowCount).toBe(1)

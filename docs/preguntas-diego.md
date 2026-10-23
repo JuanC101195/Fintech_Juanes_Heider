@@ -2,6 +2,8 @@
 
 Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reproduce el Excel tal cual** en los 9 casos; estas preguntas son para decidir si el Excel es la regla final. El detalle de cada una está en `docs/reglas/caso-N.md`.
 
+> **Estado al 2026-10-22.** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. **Abiertas hoy (ronda 7, 2 preguntas):** R7-COBRANZA-ACTIVA (quién activa la cobranza —director financiero, gerente o comité— y si es crédito por crédito o por regla tras N días de mora) y R7-RECUP-VS-CASO11 (si el caso 11 se corrige de 4 a 2 periodos de espera antes de la dación o se deja en 4 como ejemplo).
+
 ## Bloque 1 · Las que más cambian el cálculo (resolver primero)
 
 | # | Pregunta | Por qué importa | Casos |
