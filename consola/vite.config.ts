@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'jsdom',
+    // Con --coverage (instrumentación v8) las pruebas de pantallas tardan más de 5 s en equipos lentos y en CI.
+    testTimeout: 20000,
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: { provider: 'v8', reporter: ['text-summary', 'lcov'], include: ['src/**/*.{ts,tsx}'] },
   },

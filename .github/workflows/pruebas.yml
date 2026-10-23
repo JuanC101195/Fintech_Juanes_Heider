@@ -1,7 +1,13 @@
 name: Pruebas
 
 # SonarCloud analiza cada push y cada PR por su cuenta (análisis automático, configurado en
-# .sonarcloud.properties). Este flujo corre las pruebas del motor y del cuestionario.
+# .sonarcloud.properties). Este flujo corre las pruebas de cada parte del repo en su propio job:
+#   motor        Java (JUnit + JaCoCo), incluye ContratoApiTest (Java <-> consola/src/tipos.ts) y ArchUnit
+#   cuestionario Vitest con cobertura
+#   consola      Vitest con cobertura + compilación (tsc + vite)
+#   herramientas unittest de los scripts de Python (sin red)
+#   humo         Playwright/Chromium: humo de la consola y del cuestionario, y e2e contra el API real
+# La cobertura se sube como artefacto; no llega a Sonar mientras el análisis sea el automático (docs/calidad-y-ci.md).
 on:
   push:
     branches: [main]
@@ -11,10 +17,125 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  pruebas:
-    name: Pruebas del motor y del cuestionario
+  motor:
+    name: Pruebas del motor (Java)
     runs-on: ubuntu-latest
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Pruebas del motor con cobertura
+        run: chmod +x mvnw && ./mvnw -B --no-transfer-progress verify
+
+      # Los ejemplos de docs/api-ejemplos se comparan, no se reescriben: si el motor cambió, la prueba falla y pide
+      # -Dregenerar=true. Este paso confirma que la corrida no ensució el árbol de trabajo.
+      - name: El árbol de trabajo sigue limpio
+        run: git diff --exit-code -- docs/api-ejemplos
+
+      - name: Cobertura de Java
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-java
+          path: target/site/jacoco/
+          if-no-files-found: ignore
+
+  cuestionario:
+    name: Pruebas del cuestionario
+    runs-on: ubuntu-latest
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cuestionario/package-lock.json
+
+      - name: Pruebas del cuestionario con cobertura
+        working-directory: cuestionario
+        run: |
+          npm ci
+          npx vitest run --coverage
+
+      - name: Cobertura del cuestionario
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-cuestionario
+          path: cuestionario/coverage/lcov.info
+          if-no-files-found: ignore
+
+  consola:
+    name: Pruebas de la consola
+    runs-on: ubuntu-latest
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: consola/package-lock.json
+
+      # contrato.test.ts lee docs/api-ejemplos (respuestas reales del API) y los fixtures de la demostración.
+      - name: Pruebas de la consola con cobertura
+        working-directory: consola
+        run: |
+          npm ci
+          npx vitest run --coverage
+
+      - name: Compilar la consola (tipos + build)
+        working-directory: consola
+        run: npm run build
+
+      - name: Cobertura de la consola
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-consola
+          path: consola/coverage/lcov.info
+          if-no-files-found: ignore
+
+  herramientas:
+    name: Pruebas de las herramientas (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Las pruebas no usan red ni Azure: trabajan con docs/api-ejemplos y archivos temporales.
+      - name: Dependencias
+        run: python -m pip install openpyxl
+
+      - name: Pruebas de herramientas/test_*.py
+        run: python -I -m unittest discover -s herramientas -p "test_*.py" -v
+
+  humo:
+    name: Humo y e2e en Chromium (Playwright)
+    runs-on: ubuntu-latest
+    # Primera versión en CI: se muestra como aviso y no bloquea el PR hasta que pase estable al menos una vez.
+    # Quitar continue-on-error cuando esté verde.
+    continue-on-error: true
+    timeout-minutes: 25
     steps:
       - name: Código
         uses: actions/checkout@v4
@@ -31,13 +152,66 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: cuestionario/package-lock.json
+          cache-dependency-path: |
+            cuestionario/package-lock.json
+            consola/package-lock.json
 
-      - name: Pruebas del motor con cobertura
-        run: chmod +x mvnw && ./mvnw -B --no-transfer-progress verify
+      # Los scripts de pruebas/ buscan Playwright en el front de Prestaya (solo existe en el PC de Juan Esteban);
+      # en CI se instala aparte y PLAYWRIGHT_PACKAGE_JSON apunta a esa carpeta (consola/pruebas/comun.mjs).
+      - name: Playwright y Chromium
+        run: |
+          mkdir -p "$RUNNER_TEMP/pw"
+          cd "$RUNNER_TEMP/pw"
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund @playwright/test@1.63.0
+          npx playwright install --with-deps chromium
+          echo "PLAYWRIGHT_PACKAGE_JSON=$RUNNER_TEMP/pw/package.json" >> "$GITHUB_ENV"
 
-      - name: Pruebas del cuestionario con cobertura
+      - name: Compilar la consola (apunta a localhost:8080)
+        working-directory: consola
+        run: |
+          npm ci
+          npm run build
+
+      - name: Humo de la consola (modo demostración, sin API)
+        working-directory: consola
+        run: node pruebas/humo.mjs "$RUNNER_TEMP/capturas-consola"
+
+      - name: Compilar el cuestionario
         working-directory: cuestionario
         run: |
           npm ci
-          npx vitest run --coverage
+          npm run build
+
+      - name: Humo del cuestionario
+        working-directory: cuestionario
+        run: node pruebas/humo.mjs "$RUNNER_TEMP/capturas-cuestionario"
+
+      # e2e: el API real (el jar, sin servicios externos) en localhost:8080; el CORS solo acepta http://localhost:5173,
+      # que es donde e2e.mjs sirve dist/.
+      - name: Levantar el API
+        run: |
+          chmod +x mvnw
+          ./mvnw -B --no-transfer-progress -DskipTests package
+          nohup java -jar target/motor-cartera-0.0.1-SNAPSHOT.jar > "$RUNNER_TEMP/api.log" 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/api/v1/catalogo > /dev/null && exit 0
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/api.log"
+          exit 1
+
+      - name: e2e de la consola contra el API real
+        working-directory: consola
+        run: node pruebas/e2e.mjs "$RUNNER_TEMP/capturas-e2e"
+
+      - name: Capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-humo
+          path: |
+            ${{ runner.temp }}/capturas-consola
+            ${{ runner.temp }}/capturas-cuestionario
+            ${{ runner.temp }}/capturas-e2e
+          if-no-files-found: ignore
