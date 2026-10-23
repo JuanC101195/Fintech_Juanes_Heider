@@ -48,30 +48,25 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
-  await page.getByLabel('Comentario de la pregunta P5-PRORRATEO', { exact: true }).fill('Solo el interés por días reales')
-  await page.getByRole('button', { name: /Abonos y prepago →/ }).click()
-  await page.getByRole('radio', { name: /Es abono extra a capital/ }).check()
+  await page.getByLabel('Comentario de la pregunta R7-COBRANZA-ACTIVA', { exact: true }).fill('Lo decide el director financiero')
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
   await page.screenshot({ path: path.join(salida, `cuestionario-${nombre}.png`), fullPage: true })
 
   if (nombre === 'escritorio') {
-    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa.
-    await page.getByRole('button', { name: /Cambio de tasa y usura →/ }).click()
-    await page.getByText('Agregar un comentario').first().click()
-    await page.getByLabel('Comentario de la pregunta P5-USURA-DIA').fill('Un día hábil, como dije en la ronda 4')
+    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R7-COBRANZA-ACTIVA, arriba).
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
-    // La ronda 6 (R6-*) aparece en su bloque y se puede responder.
+    // La ronda 7 (R7-*) aparece en su bloque y se puede responder escogiendo una opción.
     await page.getByRole('button', { name: /Dación y retoma →/ }).click()
-    await page.getByRole('radio', { name: /el caso 11 se ajusta a 2 cuotas atrasadas/ }).check()
+    await page.getByRole('radio', { name: /corrige el caso 11 a 2 periodos/i }).check()
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
     const ultimo = enviados.at(-1)
     const filas = JSON.parse(ultimo.filas).filter((f) => f[3]).map((f) => [f[0], f[3], f[5], f[9]].join(' | '))
     console.log(`Guardados en la nube: ${enviados.length} (último final=${ultimo.final}, ${ultimo.completas} de ${ultimo.total})`)
     console.log(filas.join('\n'))
-    if (filas.length !== 3 || ultimo.completas !== 4 || !ultimo.final) fallas++
+    if (filas.length !== 2 || ultimo.completas !== 2 || !ultimo.final) fallas++
   }
   await contexto.close()
 }

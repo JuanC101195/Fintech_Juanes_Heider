@@ -13,25 +13,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Tope del cuerpo de la petición (256 KB por defecto): responde 413 en el JSON del contrato. Con
  * {@code Content-Length} decide sin leer; con {@code Transfer-Encoding: chunked} lee hasta el tope + 1 byte.
  */
-@Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class FiltroTamanoCuerpo extends OncePerRequestFilter {
 
     static final String CODIGO = "CUERPO_DEMASIADO_GRANDE";
 
     private final int maximo;
 
-    public FiltroTamanoCuerpo(@Value("${cartera.api.cuerpo-maximo-bytes:262144}") int maximo) {
+    public FiltroTamanoCuerpo(int maximo) {
         this.maximo = maximo;
     }
 

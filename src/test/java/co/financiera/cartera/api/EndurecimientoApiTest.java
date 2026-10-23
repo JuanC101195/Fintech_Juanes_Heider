@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 /** Endurecimiento del API: topes de números, escenarios y cuerpo, cabeceras, CORS y propiedades de despliegue. */
 @WebMvcTest(CarteraController.class)
-@Import({ServicioCartera.class, PerfilesReglas.class})
+@Import({ServicioCartera.class, PerfilesReglas.class, ConfiguracionFiltros.class})
 class EndurecimientoApiTest {
 
     @Autowired
