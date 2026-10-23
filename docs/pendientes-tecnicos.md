@@ -17,7 +17,7 @@ Estado al 2026-10-16, con el Excel de Diego del 11 de octubre: **167 pruebas, 0 
 8. `creditos`: persistencia (PostgreSQL), historial inmutable de movimientos (HT-03), versionado de parámetros (HT-04).
 9. `abonos`: clasificador de abonos (HU-25), idempotencia (HT-05), API para el CRM (HU-23).
 10. `procesos`: cierre diario (HU-36); `integracion-crm`: avisos con outbox (HT-07).
-11. Herramienta que llene la columna "Resultado software" de la hoja Validaciones para devolverle el Excel a Diego (HU-17b).
+11. ~~Herramienta que llene la columna "Resultado software" de la hoja Validaciones para devolverle el Excel a Diego (HU-17b).~~ **Hecho (2026-10-23):** `herramientas/llenar_validaciones.py` (uso en `docs/api.md`); 45 de 45 pruebas OK contra el API.
 
 ## Reglas de las rondas 5 y 6 por implementar en el motor (2026-10-22)
 12. **Prorrateo de la primera cuota (D48):** solo el interés por los días reales, más los días previos a la primera cuota; capital y servicios completos; en las tres periodicidades.

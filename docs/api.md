@@ -286,6 +286,10 @@ Respuestas reales del API, generadas por `EjemplosApiTest` en cada `./mvnw test`
 | `simulacion-mensual-prorrateo.json` | `POST /api/v1/simulaciones` con CPPU, mensual, 24 cuotas, NEGOCIO, desembolso 2026-10-23 y primer vencimiento 2026-12-05 (43 días) |
 | `escenario-semanal-prorrateo.json` | `POST /api/v1/escenarios/ejecutar` con CPPU, semanal, 104 cuotas, NEGOCIO, sin instrucciones ni asientos, desembolso 2026-10-23 y primer vencimiento 2026-11-03 (11 días) |
 
+## Devolverle a Diego la hoja Validaciones llena (HU-17b)
+
+`python -I herramientas/llenar_validaciones.py` pide `GET /casos/{n}?perfilReglas=EXCEL` para los casos 1 a 12 (API local en `http://localhost:8080/api/v1`; `--api` usa el de Azure y `--url` cualquier otro) y llena la columna F "Resultado software" de las 45 pruebas de la hoja Validaciones (eran 33 hasta que el Excel agregó los casos 10 a 12). A la derecha agrega K "Valor Excel" (fórmula a la celda de la hoja del caso que tiene el valor esperado), L "Diferencia", M "Resultado (OK / FALLA)" contra la tolerancia de la columna G (1 COP en dinero, 0,000001 en tasas, exacto en conteos y estados) y N con el origen de cada lado (campo del API ↔ celda). Una prueba que no se pueda mapear con certeza queda con F vacía, M = "SIN MAPEO" y el motivo en J. Escribe un archivo nuevo en `--salida` (por defecto `<temporal del sistema>/motor-cartera-validaciones`), nunca sobre el original, con el resto del libro intacto; openpyxl no guarda los valores calculados, así que el libro queda marcado para recalcular al abrirlo en Excel. `--perfil NEGOCIO` corre los casos con las reglas de negocio. Sale con código 1 si alguna prueba no da OK. El mapeo de cada prueba está en `MAPEO` y sus pruebas (sin red, con `api-ejemplos/caso-13-negocio.json`) en `herramientas/test_llenar_validaciones.py`. Resultado del 2026-10-23: 45 de 45 OK con el API local y con el de Azure, en los dos perfiles.
+
 ## Desviaciones del contrato (`contrato-api-cartera.md`)
 
 1. **`tiposRecuperacion`** es `["DACION_EN_PAGO", "RETOMA"]`, no `["DACION", "RETOMA"]`: son los nombres reales de `Instruccion.TipoRecuperacion`, como pide el contrato.
