@@ -1,6 +1,6 @@
 // Prueba de humo del cuestionario compilado (dist/index.html) en Chromium:
 // celular y escritorio sin desbordes, respuestas y descarga del Excel leído de vuelta.
-// Usa el Playwright instalado en el front de Prestaya. Uso: node pruebas/humo.mjs <carpeta-capturas>
+// Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON (package.json de la carpeta donde se instaló @playwright/test). Uso: node pruebas/humo.mjs <carpeta-capturas>
 import { mkdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const aqui = path.dirname(fileURLToPath(import.meta.url))
 const raiz = path.resolve(aqui, '..')
-const { chromium } = createRequire('C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
+const { chromium } = createRequire(process.env.PLAYWRIGHT_PACKAGE_JSON ?? 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
 
 const archivo = pathToFileURL(path.join(raiz, 'dist', 'index.html')).href
 const salida = path.resolve(process.argv[2] ?? path.join(raiz, 'pruebas', 'capturas'))

@@ -18,14 +18,19 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Escribe en docs/api-ejemplos/ respuestas reales del API para que el front las use como fixtures. Se
- * regeneran en cada {@code ./mvnw test}; si el motor cambia, el diff de git muestra qué cambió.
+ * Las respuestas reales del API que el front usa como fixtures están comprometidas en docs/api-ejemplos/. Por
+ * defecto esta prueba las COMPARA con lo que responde el API hoy y falla si difieren, sin tocar ningún archivo
+ * (así {@code ./mvnw test} no ensucia el árbol de trabajo). Para actualizarlas tras un cambio intencional del
+ * contrato o del motor: {@code ./mvnw test -Dtest=EjemplosApiTest -Dregenerar=true} y revisar el diff.
  */
 @WebMvcTest(CarteraController.class)
 @Import({ServicioCartera.class, PerfilesReglas.class})
 class EjemplosApiTest {
 
     static final Path CARPETA = Path.of("docs", "api-ejemplos");
+
+    /** Con {@code -Dregenerar=true} reescribe los ejemplos; sin la bandera solo compara. */
+    static final boolean REGENERAR = Boolean.getBoolean("regenerar");
 
     @Autowired
     MockMvc mvc;
@@ -36,14 +41,25 @@ class EjemplosApiTest {
         ObjectMapper json = new ObjectMapper();
         String bonito = json.writerWithDefaultPrettyPrinter().writeValueAsString(json.readTree(cuerpo))
                 .replace("\r\n", "\n") + "\n";
-        Files.createDirectories(CARPETA);
         Path destino = CARPETA.resolve(archivo);
-        Files.writeString(destino, bonito, StandardCharsets.UTF_8);
-        assertThat(destino).isNotEmptyFile();
+        if (REGENERAR) {
+            Files.createDirectories(CARPETA);
+            Files.writeString(destino, bonito, StandardCharsets.UTF_8);
+            assertThat(destino).isNotEmptyFile();
+            return;
+        }
+        assertThat(destino)
+                .as("Falta el ejemplo %s. Ejecute: ./mvnw test -Dtest=EjemplosApiTest -Dregenerar=true", destino)
+                .exists();
+        String comprometido = Files.readString(destino, StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertThat(bonito)
+                .as("%s ya no coincide con la respuesta real del API. Si el cambio es intencional, ejecute: "
+                        + "./mvnw test -Dtest=EjemplosApiTest -Dregenerar=true y revise el diff", destino)
+                .isEqualTo(comprometido);
     }
 
     @Test
-    void generaLosEjemplos() throws Exception {
+    void losEjemplosComprometidosCoincidenConElApi() throws Exception {
         guardar("catalogo.json", get("/api/v1/catalogo"));
         guardar("simulacion-quincenal.json", post("/api/v1/simulaciones").contentType(MediaType.APPLICATION_JSON)
                 .content("""

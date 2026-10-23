@@ -287,7 +287,7 @@ curl -X POST localhost:8080/api/v1/pagos/clasificar -H 'Content-Type: applicatio
 
 ## Ejemplos para el front (`docs/api-ejemplos/`)
 
-Respuestas reales del API, generadas por `EjemplosApiTest` en cada `./mvnw test` (no se editan a mano):
+Respuestas reales del API (no se editan a mano). `EjemplosApiTest` las compara en cada `./mvnw test` con lo que responde el API y falla si difieren, sin modificar archivos; tras un cambio intencional se regeneran con `./mvnw test -Dtest=EjemplosApiTest -Dregenerar=true` y se revisa el diff. `ContratoApiTest` y `consola/src/contrato.test.ts` comprueban que sus claves coincidan con los DTOs de Java y con `consola/src/tipos.ts`:
 
 | Archivo | Petición |
 |---|---|

@@ -1,5 +1,5 @@
 // Piezas compartidas por humo.mjs (modo demostración) y e2e.mjs (API real): servidor de dist/, Chromium y revisión de desbordes.
-// Usa el Playwright instalado en el front de Prestaya.
+// Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON (package.json de la carpeta donde se instaló @playwright/test).
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
@@ -10,7 +10,7 @@ const aqui = path.dirname(fileURLToPath(import.meta.url))
 export const raiz = path.resolve(aqui, '..')
 const dist = path.join(raiz, 'dist')
 
-export const { chromium } = createRequire('C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
+export const { chromium } = createRequire(process.env.PLAYWRIGHT_PACKAGE_JSON ?? 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
 
 const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' }
 
