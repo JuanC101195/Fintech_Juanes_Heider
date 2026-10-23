@@ -108,6 +108,16 @@ public record ParametrosProducto(
                 asistenciaMensual, seguroPorcentajeMensual, iva, valor, plazoLimitePeriodos);
     }
 
+    /**
+     * D26 / D44: el crédito toma el valor diario de la cobranza vigente en su fecha de originación y lo deja fijo en
+     * sus parámetros; un cambio posterior de la tabla no lo afecta. Si la tabla no tiene valor para esa fecha (vacía o
+     * fecha anterior a la primera vigencia), se queda con el {@link #cobranzaDiaria} que ya tiene (el por defecto).
+     */
+    public ParametrosProducto conCobranzaVigente(VigenciasCobranza vigencias, java.time.LocalDate originacion) {
+        java.util.Objects.requireNonNull(vigencias, "vigencias");
+        return vigencias.valorEn(originacion).map(this::conCobranzaDiaria).orElse(this);
+    }
+
     public ParametrosProducto conPlazoLimite(int periodos) {
         return new ParametrosProducto(numeroCuotas, periodicidad, tasaEA, fondoGarantiasPorcentajeMensual,
                 asistenciaMensual, seguroPorcentajeMensual, iva, cobranzaDiaria, periodos);

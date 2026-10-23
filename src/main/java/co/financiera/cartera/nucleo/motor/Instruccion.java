@@ -46,18 +46,35 @@ public sealed interface Instruccion {
      * prepago se hace el mismo día de la cuota; {@code diasDesdeUltimaCuota} son los días transcurridos
      * desde esa cuota hasta el prepago, por los que se cobra interés corriente si la regla
      * {@code interesPrepagoPorDias} lo pide (Diego, A6, 2026-10-20).
+     *
+     * <p>{@code fecha} (ADR 0002 paso 8, PPER-7 / D27: "el prepago a mitad de periodo cobra los días transcurridos"):
+     * si el escenario trae calendario, los días salen de las fechas reales, desde el vencimiento de la cuota del
+     * periodo hasta esta fecha, en lugar de digitarse. Se usa uno u otro, no los dos.
      */
-    record PrepagoTotal(int diasDesdeUltimaCuota) implements Instruccion {
+    record PrepagoTotal(int diasDesdeUltimaCuota, java.time.LocalDate fecha) implements Instruccion {
 
         public PrepagoTotal {
             if (diasDesdeUltimaCuota < 0) {
                 throw new IllegalArgumentException("Los días desde la última cuota no pueden ser negativos");
             }
+            if (fecha != null && diasDesdeUltimaCuota != 0) {
+                throw new IllegalArgumentException("El prepago lleva fecha o días digitados, no los dos");
+            }
+        }
+
+        /** Prepago con los días desde la última cuota digitados (sin fechas). */
+        public PrepagoTotal(int diasDesdeUltimaCuota) {
+            this(diasDesdeUltimaCuota, null);
+        }
+
+        /** Prepago en una fecha: los días salen del calendario del escenario. */
+        public static PrepagoTotal enFecha(java.time.LocalDate fecha) {
+            return new PrepagoTotal(0, java.util.Objects.requireNonNull(fecha, "fecha"));
         }
 
         /** Prepago el mismo día de la cuota, como el Excel. */
         public PrepagoTotal() {
-            this(0);
+            this(0, null);
         }
     }
 

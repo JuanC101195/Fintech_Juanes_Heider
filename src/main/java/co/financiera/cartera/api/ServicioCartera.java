@@ -101,7 +101,10 @@ public class ServicioCartera {
                     "PPER-9 / R6-RECUP-AUTO"),
             new ClaveDto("prorrateoPrimeraCuota",
                     "Si el interés de la primera cuota se prorratea por los días reales entre el desembolso y la primera fecha de pago",
-                    "P5-PRORRATEO"));
+                    "P5-PRORRATEO"),
+            new ClaveDto("diasMora",
+                    "Días de mora del capital vencido: los nominales del periodo o, en mensual con fechas, los días reales del mes",
+                    "PPER-5 / D27"));
 
     private final PerfilesReglas perfiles;
     private final MotorCartera motor = new MotorCartera();
