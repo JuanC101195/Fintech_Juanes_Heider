@@ -114,7 +114,7 @@ class ErroresApiTest {
         assertThat(e.estado()).isEqualTo(400);
         assertThat(e.codigo()).isEqualTo("VALIDACION");
         assertThat(e.campo()).isEqualTo("numero");
-        assertThat(e.mensaje()).isEqualTo("Valor no válido para numero: uno");
+        assertThat(e.mensaje()).isEqualTo("Valor no válido para numero").doesNotContain("uno");
     }
 
     // ------------------------------------------------------------------ enums inválidos
@@ -123,7 +123,7 @@ class ErroresApiTest {
     void unaPeriodicidadInvalidaListaLasValidas() throws Exception {
         Error e = simular("{\"periodicidad\":\"TRIMESTRAL\",\"cuotas\":10}");
         esValidacion(e, "periodicidad");
-        assertThat(e.mensaje()).isEqualTo("Valor no válido para periodicidad: TRIMESTRAL");
+        assertThat(e.mensaje()).isEqualTo("Valor no válido para periodicidad").doesNotContain("TRIMESTRAL");
         List<String> validos = new ArrayList<>();
         e.detalle().get("valoresValidos").forEach(v -> validos.add(v.asString()));
         assertThat(validos).containsExactly("SEMANAL", "QUINCENAL", "MENSUAL");
@@ -133,7 +133,7 @@ class ErroresApiTest {
     void unaLineaInvalidaListaLasValidas() throws Exception {
         Error e = simular("{\"linea\":\"NO_EXISTE\",\"cuotas\":10}");
         esValidacion(e, "linea");
-        assertThat(e.mensaje()).contains("NO_EXISTE");
+        assertThat(e.mensaje()).contains("linea").doesNotContain("NO_EXISTE");
         assertThat(e.detalle().get("valoresValidos").toString()).contains("CPPU");
     }
 
@@ -148,7 +148,7 @@ class ErroresApiTest {
     void unTipoDeInstruccionInvalidoEsValidacionSobreElCampoTipo() throws Exception {
         Error e = ejecutar("{\"credito\":{\"cuotas\":104},\"instrucciones\":[{\"periodo\":10,\"tipo\":\"BAILAR\"}]}");
         esValidacion(e, "tipo");
-        assertThat(e.mensaje()).contains("BAILAR");
+        assertThat(e.mensaje()).contains("tipo").doesNotContain("BAILAR");
     }
 
     // ------------------------------------------------------------------ periodo fuera de rango
@@ -249,7 +249,7 @@ class ErroresApiTest {
 
         Error formato = simular(conFechas("SEMANAL", "\"23/10/2026\"", "\"2026-11-03\""));
         esValidacion(formato, "fechaDesembolso");
-        assertThat(formato.mensaje()).contains("yyyy-MM-dd").contains("23/10/2026");
+        assertThat(formato.mensaje()).contains("yyyy-MM-dd").doesNotContain("23/10/2026");
 
         Error anterior = simular(conFechas("SEMANAL", "\"2026-11-03\"", "\"2026-10-27\""));
         esValidacion(anterior, "primerVencimiento");
