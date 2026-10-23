@@ -257,69 +257,105 @@ public record ReglasNegocio(
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
-     * (config/reglas-negocio.properties). Lo que no venga queda como en el Excel.
+     * (config/reglas-negocio.properties). Lo que no venga queda como en el Excel. Las claves que el motor no conoce
+     * se ignoran (son respuestas que esperan desarrollo); {@link #clavesDesconocidas} las lista y
+     * {@link #desdeEstricto} las rechaza.
      */
     public static ReglasNegocio desde(java.util.Map<String, String> config) {
-        ReglasNegocio r = EXCEL;
-        String v;
-        if ((v = config.get("prelacion")) != null) {
-            r = r.conPrelacion(OrdenPrelacion.valueOf(v.trim()));
+        Constructor c = EXCEL.copia();
+        for (Clave clave : TABLA) {
+            String valor = config.get(clave.nombre());
+            if (valor != null) {
+                clave.aplicar().accept(c, valor);
+            }
         }
-        if ((v = config.get("formulaMora")) != null) {
-            r = r.conFormulaMora(FormulaMora.valueOf(v.trim()));
+        return c.construir();
+    }
+
+    /** Como {@link #desde}, pero una clave que el motor no conoce (p. ej. mal escrita) es un error. */
+    public static ReglasNegocio desdeEstricto(java.util.Map<String, String> config) {
+        java.util.List<String> desconocidas = clavesDesconocidas(config);
+        if (!desconocidas.isEmpty()) {
+            throw new IllegalArgumentException("Claves de reglas desconocidas: " + desconocidas
+                    + ". Las conocidas son " + CLAVES);
         }
-        if ((v = config.get("baseInteres")) != null) {
-            r = r.conBaseInteres(BaseInteres.valueOf(v.trim()));
+        return desde(config);
+    }
+
+    /** Claves de {@code config} que no son reglas del motor, en orden alfabético. */
+    public static java.util.List<String> clavesDesconocidas(java.util.Map<String, String> config) {
+        return config.keySet().stream().filter(k -> !CLAVES.contains(k)).sorted().toList();
+    }
+
+    /** Una clave de la configuración: su nombre y cómo se lee el texto y se aplica al {@link Constructor}. */
+    private record Clave(String nombre, java.util.function.BiConsumer<Constructor, String> aplicar) {
+    }
+
+    /** Enumeración: {@code valueOf} del texto sin espacios (vacío es un error, como antes). */
+    private static <E extends Enum<E>> Clave enumerada(String nombre, Class<E> tipo,
+            java.util.function.BiConsumer<Constructor, E> setter) {
+        return new Clave(nombre, (c, v) -> setter.accept(c, Enum.valueOf(tipo, v.trim())));
+    }
+
+    /** Booleano: {@code Boolean.parseBoolean} (vacío o cualquier otro texto = {@code false}, como antes). */
+    private static Clave booleana(String nombre, java.util.function.BiConsumer<Constructor, Boolean> setter) {
+        return new Clave(nombre, (c, v) -> setter.accept(c, Boolean.parseBoolean(v.trim())));
+    }
+
+    /** Decimal: vacío se ignora (queda el valor del Excel). */
+    private static Clave decimal(String nombre, java.util.function.BiConsumer<Constructor, BigDecimal> setter) {
+        return new Clave(nombre, (c, v) -> {
+            if (!v.isBlank()) {
+                setter.accept(c, new BigDecimal(v.trim()));
+            }
+        });
+    }
+
+    /** Entero: vacío se ignora (queda el valor del Excel). */
+    private static Clave entera(String nombre, java.util.function.BiConsumer<Constructor, Integer> setter) {
+        return new Clave(nombre, (c, v) -> {
+            if (!v.isBlank()) {
+                setter.accept(c, Integer.valueOf(v.trim()));
+            }
+        });
+    }
+
+    /**
+     * Cómo se lee cada clave, en el orden de los componentes. Una regla nueva agrega aquí su línea; si falta, la
+     * clase no carga ({@link #verificarTabla}) y fallan todas las pruebas con el nombre de la clave.
+     */
+    private static final java.util.List<Clave> TABLA = java.util.List.of(
+            enumerada("prelacion", OrdenPrelacion.class, Constructor::prelacion),
+            enumerada("formulaMora", FormulaMora.class, Constructor::formulaMora),
+            enumerada("baseInteres", BaseInteres.class, Constructor::baseInteres),
+            decimal("topeCobranzaPorPago", Constructor::topeCobranzaPorPago),
+            enumerada("baseServicios", BaseServicios.class, Constructor::baseServicios),
+            booleana("serviciosDespuesDelPlazo", Constructor::serviciosDespuesDelPlazo),
+            booleana("moraAntesDeRecuperacion", Constructor::moraAntesDeRecuperacion),
+            enumerada("aplicacionAbono", AplicacionAbono.class, Constructor::aplicacionAbono),
+            booleana("interesPrepagoPorDias", Constructor::interesPrepagoPorDias),
+            decimal("margenUsura", Constructor::margenUsura),
+            enumerada(MODALIDAD_USURA, Instruccion.ModalidadCambioTasa.class, Constructor::modalidadUsura),
+            booleana("costoRecuperacionAlFondo", Constructor::costoRecuperacionAlFondo),
+            booleana("cobranzaIngresoNoOperacional", Constructor::cobranzaIngresoNoOperacional),
+            entera("plazoLimiteMeses", Constructor::plazoLimiteMeses),
+            booleana("cambioTasaSobreCapitalVigente", Constructor::cambioTasaSobreCapitalVigente),
+            decimal("cobranzaDiaria", Constructor::cobranzaDiaria),
+            entera("cuotasVencidasParaRecuperacion", Constructor::cuotasVencidasParaRecuperacion),
+            booleana("prorrateoPrimeraCuota", Constructor::prorrateoPrimeraCuota),
+            enumerada(DIAS_MORA, DiasMora.class, Constructor::diasMora));
+
+    static {
+        verificarTabla();
+    }
+
+    /** La tabla debe tener exactamente las claves de {@link #CLAVES}, en el mismo orden. */
+    private static void verificarTabla() {
+        java.util.List<String> nombres = TABLA.stream().map(Clave::nombre).toList();
+        if (!nombres.equals(java.util.List.copyOf(CLAVES))) {
+            throw new IllegalStateException("La tabla de claves de ReglasNegocio no coincide con sus componentes: tabla "
+                    + nombres + ", componentes " + CLAVES);
         }
-        if ((v = config.get("topeCobranzaPorPago")) != null && !v.isBlank()) {
-            r = r.conTopeCobranza(new BigDecimal(v.trim()));
-        }
-        if ((v = config.get("baseServicios")) != null) {
-            r = r.conBaseServicios(BaseServicios.valueOf(v.trim()));
-        }
-        if ((v = config.get("serviciosDespuesDelPlazo")) != null) {
-            r = r.conServiciosDespuesDelPlazo(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("moraAntesDeRecuperacion")) != null) {
-            r = r.conMoraAntesDeRecuperacion(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("aplicacionAbono")) != null) {
-            r = r.conAplicacionAbono(AplicacionAbono.valueOf(v.trim()));
-        }
-        if ((v = config.get("interesPrepagoPorDias")) != null) {
-            r = r.conInteresPrepagoPorDias(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("margenUsura")) != null && !v.isBlank()) {
-            r = r.conMargenUsura(new BigDecimal(v.trim()));
-        }
-        if ((v = config.get(MODALIDAD_USURA)) != null) {
-            r = r.conModalidadUsura(Instruccion.ModalidadCambioTasa.valueOf(v.trim()));
-        }
-        if ((v = config.get("costoRecuperacionAlFondo")) != null) {
-            r = r.conCostoRecuperacionAlFondo(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("cobranzaIngresoNoOperacional")) != null) {
-            r = r.conCobranzaIngresoNoOperacional(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("plazoLimiteMeses")) != null && !v.isBlank()) {
-            r = r.conPlazoLimiteMeses(Integer.valueOf(v.trim()));
-        }
-        if ((v = config.get("cambioTasaSobreCapitalVigente")) != null) {
-            r = r.conCambioTasaSobreCapitalVigente(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get("cobranzaDiaria")) != null && !v.isBlank()) {
-            r = r.conCobranzaDiaria(new BigDecimal(v.trim()));
-        }
-        if ((v = config.get("cuotasVencidasParaRecuperacion")) != null && !v.isBlank()) {
-            r = r.conCuotasVencidasParaRecuperacion(Integer.valueOf(v.trim()));
-        }
-        if ((v = config.get("prorrateoPrimeraCuota")) != null) {
-            r = r.conProrrateoPrimeraCuota(Boolean.parseBoolean(v.trim()));
-        }
-        if ((v = config.get(DIAS_MORA)) != null) {
-            r = r.conDiasMora(DiasMora.valueOf(v.trim()));
-        }
-        return r;
     }
 
     /** Constructor con todos los valores de estas reglas, para cambiar los que haga falta con su nombre. */
