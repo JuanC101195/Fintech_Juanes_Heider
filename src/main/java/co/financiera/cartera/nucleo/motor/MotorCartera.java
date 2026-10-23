@@ -28,6 +28,9 @@ import co.financiera.cartera.nucleo.motor.RepartoPrelacion.Reparto;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
 
 /**
  * Motor de reglas de cartera: recorre el crédito periodo a periodo y aplica las reglas de los 12
@@ -41,18 +44,79 @@ import java.util.List;
  */
 public final class MotorCartera {
 
+    /**
+     * Cronograma completo del escenario, desde el desembolso. Acumula todas las filas en memoria: para lotes grandes,
+     * {@link #ejecutar(Escenario, Consumer)}.
+     */
     public List<Movimiento> ejecutar(Escenario escenario) {
-        return new Corrida(escenario).correr();
+        List<Movimiento> filas = new ArrayList<>();
+        ejecutar(escenario, filas::add);
+        return List.copyOf(filas);
+    }
+
+    /**
+     * Streaming (escala): entrega cada {@link Movimiento} al consumidor apenas se calcula, sin acumular la lista, y
+     * devuelve la instantánea final del crédito. Mismas filas, en el mismo orden, que {@link #ejecutar(Escenario)}.
+     * Si un periodo lanza una excepción (p. ej. {@link AbonoMayorQueElSaldoException}), el consumidor ya recibió las
+     * filas anteriores.
+     */
+    public Instantanea ejecutar(Escenario escenario, Consumer<Movimiento> consumidor) {
+        return ejecutarHasta(escenario, Integer.MAX_VALUE, consumidor);
+    }
+
+    /**
+     * Corre el escenario desde el desembolso hasta el periodo {@code ultimoPeriodo} inclusive (0 = solo el
+     * desembolso), o hasta que termine, y devuelve la instantánea al cierre de ese periodo para reanudar después con
+     * {@link #ejecutarDesde}.
+     */
+    public Instantanea ejecutarHasta(Escenario escenario, int ultimoPeriodo, Consumer<Movimiento> consumidor) {
+        Corrida corrida = Corrida.nueva(escenario);
+        corrida.correr(ultimoPeriodo, consumidor);
+        return corrida.instantanea();
+    }
+
+    /**
+     * Reanuda un crédito desde su instantánea y devuelve los movimientos de los periodos siguientes (sin el
+     * desembolso): los mismos que habría producido la corrida completa con esas instrucciones. Las reglas van aparte
+     * (la instantánea solo guarda la referencia {@link Instantanea#versionReglas()}); deben ser las mismas con que se
+     * corrió hasta la instantánea para que el resultado sea el de la corrida completa.
+     *
+     * @param instrucciones instrucciones de cada periodo siguiente (p. ej. {@code escenario::instruccionesDe}); los
+     *                      periodos sin instrucción, o con {@code null}, son pagos contractuales a tiempo
+     */
+    public List<Movimiento> ejecutarDesde(Instantanea desde, ReglasNegocio reglas,
+            IntFunction<List<Instruccion>> instrucciones) {
+        List<Movimiento> filas = new ArrayList<>();
+        ejecutarDesde(desde, reglas, instrucciones, Integer.MAX_VALUE, filas::add);
+        return List.copyOf(filas);
+    }
+
+    /**
+     * Como {@link #ejecutarDesde(Instantanea, ReglasNegocio, IntFunction)}, en streaming y hasta {@code ultimoPeriodo}
+     * inclusive; devuelve la instantánea al cierre del último periodo procesado (con la misma referencia de reglas).
+     * Un crédito terminado no produce filas.
+     */
+    public Instantanea ejecutarDesde(Instantanea desde, ReglasNegocio reglas, IntFunction<List<Instruccion>> instrucciones,
+            int ultimoPeriodo, Consumer<Movimiento> consumidor) {
+        Corrida corrida = Corrida.desde(desde, reglas, instrucciones);
+        corrida.correr(ultimoPeriodo, consumidor);
+        return corrida.instantanea().conVersionReglas(desde.versionReglas());
     }
 
     /** Estado mutable de una simulación. */
     private static final class Corrida {
         private final Escenario escenario;
         private final ParametrosProducto p;
-        private final List<Movimiento> filas = new ArrayList<>();
+        /** Instrucciones por periodo: las del escenario o, al reanudar, las que llegan con la instantánea. */
+        private final IntFunction<List<Instruccion>> instrucciones;
         /** Saldos del crédito, compartidos con las piezas extraídas del motor (contexto explícito). */
         private final EstadoCorrida s;
 
+        /** Último periodo procesado (0 = desembolso) y si el crédito ya terminó. */
+        private int periodoActual;
+        private boolean terminado;
+        /** Solo una corrida nueva emite la fila del desembolso; al reanudar ya se emitió. */
+        private boolean faltaDesembolso;
         private int cuotasVencidas;
         private Servicios recaudadoDelMes = Servicios.NINGUNO;
         /** Usura publicada la semana anterior: rige desde esta cuota (T1, Diego 2026-10-20). */
@@ -66,26 +130,64 @@ public final class MotorCartera {
         /** Paso 2: causación de interés, capital contractual, servicios, mora y cobranza. */
         private final Causador causador;
 
-        Corrida(Escenario escenario) {
+        private Corrida(Escenario escenario, IntFunction<List<Instruccion>> instrucciones, EstadoCorrida s,
+                boolean marcadoParaRecuperacion) {
             this.escenario = escenario;
             this.p = escenario.parametros();
-            this.s = new EstadoCorrida(escenario, Calendario.numeroCuotas(p));
-            this.recuperacion = new Recuperacion(s);
+            this.instrucciones = instrucciones;
+            this.s = s;
+            this.recuperacion = new Recuperacion(s, marcadoParaRecuperacion);
             this.abonos = new Abonos(s);
             this.prelacion = new RepartoPrelacion(s);
             this.causador = new Causador(s);
         }
 
-        List<Movimiento> correr() {
-            filas.add(desembolso());
-            for (int periodo = 1; periodo <= p.plazoLimitePeriodos(); periodo++) {
-                Movimiento fila = procesarPeriodo(periodo, escenario.instruccionesDe(periodo));
-                filas.add(fila);
-                if (fila.estado() == EstadoCredito.CANCELADO || fila.estado() == EstadoCredito.CERRADO_POR_EVENTO) {
-                    break;
-                }
+        static Corrida nueva(Escenario escenario) {
+            EstadoCorrida s = new EstadoCorrida(escenario, Calendario.numeroCuotas(escenario.parametros()));
+            Corrida c = new Corrida(escenario, escenario::instruccionesDe, s, false);
+            c.faltaDesembolso = true;
+            return c;
+        }
+
+        static Corrida desde(Instantanea i, ReglasNegocio reglas, IntFunction<List<Instruccion>> instrucciones) {
+            Objects.requireNonNull(instrucciones, "instrucciones");
+            Escenario escenario = i.escenario(reglas);
+            Corrida c = new Corrida(escenario, instrucciones, new EstadoCorrida(escenario, i), i.marcadoParaRecuperacion());
+            c.periodoActual = i.periodo();
+            c.terminado = i.terminado();
+            c.cuotasVencidas = i.cuotasVencidas();
+            c.recaudadoDelMes = i.recaudadoDelMes();
+            c.usuraPorAplicar = i.usuraPorAplicar();
+            return c;
+        }
+
+        /**
+         * Procesa los periodos siguientes hasta {@code ultimoPeriodo} inclusive, el plazo límite o hasta que el crédito
+         * termine (cancelado o cerrado por evento), y entrega cada fila al consumidor.
+         */
+        void correr(int ultimoPeriodo, Consumer<Movimiento> consumidor) {
+            if (faltaDesembolso) {
+                faltaDesembolso = false;
+                consumidor.accept(desembolso());
             }
-            return List.copyOf(filas);
+            int hasta = Math.min(ultimoPeriodo, p.plazoLimitePeriodos());
+            while (!terminado && periodoActual < hasta) {
+                int periodo = periodoActual + 1;
+                List<Instruccion> delPeriodo = instrucciones.apply(periodo);
+                Movimiento fila = procesarPeriodo(periodo, delPeriodo == null ? List.of() : delPeriodo);
+                periodoActual = periodo;
+                terminado = fila.estado() == EstadoCredito.CANCELADO || fila.estado() == EstadoCredito.CERRADO_POR_EVENTO
+                        || periodo >= p.plazoLimitePeriodos();
+                consumidor.accept(fila);
+            }
+        }
+
+        /** El estado al cierre del último periodo procesado, como valor inmutable. */
+        Instantanea instantanea() {
+            return new Instantanea(periodoActual, terminado, null, escenario.operacion(), p, escenario.cobranzaActiva(),
+                    escenario.calendario().orElse(null), s.tasas, s.cuota, s.saldo, s.saldoPlan, s.capitalVencido,
+                    s.cxcInteres, s.cxcMora, s.cxcCobranza, s.cxcServicios, s.cuotasVigentes, cuotasVencidas,
+                    recaudadoDelMes, usuraPorAplicar, recuperacion.marcadoParaRecuperacion());
         }
 
         private Movimiento desembolso() {

@@ -78,6 +78,13 @@ public final class Huellas {
         return t.toString();
     }
 
+    /** Un movimiento en el mismo formato estable {@code campo=valor} de las huellas (pruebas de equivalencia). */
+    public static String texto(Movimiento m) {
+        StringBuilder t = new StringBuilder();
+        registro(t, "", m);
+        return t.toString();
+    }
+
     private static void registro(StringBuilder t, String prefijo, Record r) {
         String nombre = r.getClass().getSimpleName();
         RecordComponent[] componentes = r.getClass().getRecordComponents();
