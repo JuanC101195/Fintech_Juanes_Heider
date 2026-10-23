@@ -115,7 +115,7 @@ final class ValidadorCredito {
     private static ApiException plazoMaximo(int maxMeses, int maxCuotas, Periodicidad per, String pedido) {
         return new ApiException(HttpStatus.BAD_REQUEST, ApiException.PLAZO_MAXIMO,
                 pedido + " supera el máximo de " + maxMeses + " meses (" + maxCuotas + " " + per.unidadCuota() + ")",
-                Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, "periodicidad", per.name()));
+                Map.of("maximoMeses", maxMeses, "maximoCuotas", maxCuotas, CAMPO_PERIODICIDAD, per.name()));
     }
 
     /** COB-6: la cobranza del crédito está activa salvo que el request diga {@code false}. */

@@ -1,6 +1,7 @@
 package co.financiera.cartera.caracterizacion;
 
 import static co.financiera.cartera.nucleo.Calc.bd;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.Escenario;
@@ -57,6 +58,6 @@ class NegocioNoCambiaTest {
 
         Map<String, String> actual = new LinkedHashMap<>();
         casos.forEach((nombre, e) -> actual.put(nombre, Huellas.huella(e.conReglas(reglas))));
-        Huellas.verificar("negocio.sha256", actual);
+        assertThatCode(() -> Huellas.verificar("negocio.sha256", actual)).doesNotThrowAnyException();
     }
 }

@@ -20,7 +20,7 @@ class ReglasNegocioClavesTest {
             return !(Boolean) actual;
         }
         if (tipo == BigDecimal.class) {
-            return new BigDecimal("7").equals(actual) ? new BigDecimal("8") : new BigDecimal("7");
+            return new BigDecimal(actual != null && new BigDecimal("7").compareTo((BigDecimal) actual) == 0 ? "8" : "7");
         }
         if (tipo == Integer.class) {
             return Integer.valueOf(5).equals(actual) ? 6 : 5;
