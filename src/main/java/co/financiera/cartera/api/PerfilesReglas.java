@@ -45,6 +45,12 @@ public class PerfilesReglas {
             LOG.log(System.Logger.Level.WARNING, "No existe {0}: el perfil NEGOCIO usa las reglas del Excel",
                     this.archivo.toAbsolutePath());
         }
+        var desconocidas = ReglasNegocio.clavesDesconocidas(valores);
+        if (!desconocidas.isEmpty()) {
+            // Se ignoran como siempre (pueden ser respuestas que esperan desarrollo), pero quedan a la vista.
+            LOG.log(System.Logger.Level.WARNING, "{0} trae claves que el motor no aplica: {1}",
+                    this.archivo, desconocidas);
+        }
         this.negocio = ReglasNegocio.desde(valores);
     }
 

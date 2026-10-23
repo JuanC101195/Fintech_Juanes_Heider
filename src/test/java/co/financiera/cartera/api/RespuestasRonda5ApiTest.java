@@ -21,12 +21,12 @@ class RespuestasRonda5ApiTest {
 
     @Test
     void elPlazoLimiteDeUnCreditoCortoEsSuPropioPlazo() {
-        assertThat(ServicioCartera.parametros(credito("MENSUAL", null, 12), NEGOCIO).plazoLimitePeriodos()).isEqualTo(12);
-        assertThat(ServicioCartera.parametros(credito("SEMANAL", null, 12), NEGOCIO).plazoLimitePeriodos()).isEqualTo(52);
-        assertThat(ServicioCartera.parametros(credito("QUINCENAL", 24, null), NEGOCIO).plazoLimitePeriodos()).isEqualTo(24);
-        assertThat(ServicioCartera.parametros(credito("SEMANAL", 104, null), NEGOCIO).plazoLimitePeriodos()).isEqualTo(104);
+        assertThat(ValidadorCredito.parametros(credito("MENSUAL", null, 12), NEGOCIO).plazoLimitePeriodos()).isEqualTo(12);
+        assertThat(ValidadorCredito.parametros(credito("SEMANAL", null, 12), NEGOCIO).plazoLimitePeriodos()).isEqualTo(52);
+        assertThat(ValidadorCredito.parametros(credito("QUINCENAL", 24, null), NEGOCIO).plazoLimitePeriodos()).isEqualTo(24);
+        assertThat(ValidadorCredito.parametros(credito("SEMANAL", 104, null), NEGOCIO).plazoLimitePeriodos()).isEqualTo(104);
         // Con el Excel queda el defecto del producto (120 semanas convertidas, nunca menos que las cuotas).
-        assertThat(ServicioCartera.parametros(credito("MENSUAL", 12, null), ReglasNegocio.EXCEL).plazoLimitePeriodos())
+        assertThat(ValidadorCredito.parametros(credito("MENSUAL", 12, null), ReglasNegocio.EXCEL).plazoLimitePeriodos())
                 .isEqualTo(27);
     }
 }
