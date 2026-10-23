@@ -29,6 +29,7 @@ import co.financiera.cartera.nucleo.motor.Instruccion.PrepagoTotal;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
 import co.financiera.cartera.nucleo.motor.Instruccion.UsuraVigente;
 import co.financiera.cartera.nucleo.motor.Recuperacion.Cierre;
+import co.financiera.cartera.nucleo.motor.RepartoPrelacion.Reparto;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,8 @@ public final class MotorCartera {
         private final Recuperacion recuperacion;
         /** Paso 4: abono extraordinario y prepago total. */
         private final Abonos abonos;
+        /** Paso 3: pago recibido, reparto por prelación y saldos al cierre de la cuota. */
+        private final RepartoPrelacion prelacion;
 
         Corrida(Escenario escenario) {
             this.escenario = escenario;
@@ -74,6 +77,7 @@ public final class MotorCartera {
             this.serviciosPorCuota = s.serviciosPorCuota;
             this.recuperacion = new Recuperacion(s);
             this.abonos = new Abonos(s);
+            this.prelacion = new RepartoPrelacion(s);
         }
 
         List<Movimiento> correr() {
@@ -117,9 +121,9 @@ public final class MotorCartera {
 
             // 3. Pago y prelación.
             BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
-            BigDecimal recibido = recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
-            Reparto reparto = repartir(recibido, saldoInicial, causado);
-            actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
+            BigDecimal recibido = prelacion.recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
+            Reparto reparto = prelacion.repartir(recibido, saldoInicial, causado);
+            prelacion.actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
             boolean pagoCompleto = recibido.compareTo(restar(cuotaTotal, Calc.EPSILON_SALDO)) >= 0;
 
             // 4. Abono extraordinario o prepago, después de la cuota del periodo. Con PRIMERO_PENDIENTES (A4)
@@ -360,70 +364,6 @@ public final class MotorCartera {
             return tope == null ? cobranza : min(cobranza, tope);
         }
 
-        /** 3. Lo que entra este periodo, limitado a lo exigible. */
-        private BigDecimal recibido(Instruccion pago, BigDecimal cuotaTotal, BigDecimal cuotaDelPeriodo,
-                BigDecimal saldoInicial, Causacion c) {
-            BigDecimal pendienteSinCapital = sumar(s.cxcCobranza, c.cobranza(), s.cxcMora, c.mora(), s.cxcInteres, c.interes(),
-                    s.cxcServicios.total(), c.servicios().total());
-            BigDecimal exigible = sumar(saldoInicial, pendienteSinCapital);
-            return switch (pago) {
-                case PagoContractual x -> min(cuotaTotal, exigible);
-                // El pago parcial es una fracción de la cuota total pactada (Inputs B36: cuota + los tres servicios);
-                // en la primera cuota prorrateada (P5-PRORRATEO), de la cuota de ese periodo.
-                case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuotaDelPeriodo, serviciosPorCuota.total())), exigible);
-                case PagoValor x -> min(x.valor(), exigible);
-                case PagoAlDia x -> min(sumar(pendienteSinCapital, s.capitalVencido, c.capitalContractual()), exigible);
-                case SinPago x -> CERO;
-                default -> throw new IllegalStateException("Instrucción de pago no soportada: " + pago);
-            };
-        }
-
-        /**
-         * 3. Prelación (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías →
-         * asistencia → seguro → capital. Con CAPITAL_ANTES_DE_SERVICIOS el capital de la cuota va antes
-         * de los servicios.
-         */
-        private Reparto repartir(BigDecimal recibido, BigDecimal saldoInicial, Causacion c) {
-            BigDecimal restante = recibido;
-            BigDecimal pagoCobranza = min(restante, sumar(s.cxcCobranza, c.cobranza()));
-            restante = restar(restante, pagoCobranza);
-            BigDecimal pagoMora = min(restante, sumar(s.cxcMora, c.mora()));
-            restante = restar(restante, pagoMora);
-            BigDecimal pagoInteres = min(restante, sumar(s.cxcInteres, c.interes()));
-            restante = restar(restante, pagoInteres);
-            Servicios porCobrar = s.cxcServicios.mas(c.servicios());
-            BigDecimal pagoCapital = CERO;
-            if (escenario.reglas().prelacion() == ReglasNegocio.OrdenPrelacion.CAPITAL_ANTES_DE_SERVICIOS) {
-                // Solo se adelanta el capital de la cuota (contractual + vencido); el excedente pasa a servicios.
-                pagoCapital = min(restante, min(saldoInicial, sumar(s.capitalVencido, c.capitalContractual())));
-                restante = restar(restante, pagoCapital);
-            }
-            BigDecimal pagoFondo = min(restante, porCobrar.fondoGarantias());
-            restante = restar(restante, pagoFondo);
-            BigDecimal pagoAsistencia = min(restante, porCobrar.asistencia());
-            restante = restar(restante, pagoAsistencia);
-            BigDecimal pagoSeguro = min(restante, porCobrar.seguro());
-            restante = restar(restante, pagoSeguro);
-            pagoCapital = sumar(pagoCapital, min(restante, restar(saldoInicial, pagoCapital)));
-            return new Reparto(pagoCobranza, pagoMora, pagoInteres, new Servicios(pagoFondo, pagoAsistencia, pagoSeguro),
-                    pagoCapital);
-        }
-
-        private void actualizarSaldos(BigDecimal saldoInicial, Causacion c, Reparto r, boolean sinPagoSinMora) {
-            s.cxcCobranza = noNegativo(restar(sumar(s.cxcCobranza, c.cobranza()), r.cobranza()));
-            s.cxcMora = noNegativo(restar(sumar(s.cxcMora, c.mora()), r.mora()));
-            s.cxcInteres = noNegativo(restar(sumar(s.cxcInteres, c.interes()), r.interes()));
-            s.cxcServicios = s.cxcServicios.mas(c.servicios()).menos(r.servicios()).noNegativo();
-            s.saldo = noNegativo(restar(saldoInicial, r.capital()));
-            if (!sinPagoSinMora) {
-                s.capitalVencido = noNegativo(restar(sumar(s.capitalVencido, c.capitalContractual()), r.capital()));
-                if (esCero(s.capitalVencido)) {
-                    s.capitalVencido = CERO;
-                }
-            }
-            s.saldoPlan = noNegativo(restar(s.saldoPlan, c.capitalContractual()));
-        }
-
         private EstadoCredito estado(boolean cerrado, BigDecimal pendiente) {
             if (cerrado) {
                 return EstadoCredito.CERRADO_POR_EVENTO;
@@ -466,11 +406,6 @@ public final class MotorCartera {
                 case PagoValor c -> c.diasAtraso();
                 default -> 0;
             };
-        }
-
-        /** Cómo se repartió el pago por prelación. */
-        private record Reparto(BigDecimal cobranza, BigDecimal mora, BigDecimal interes, Servicios servicios,
-                BigDecimal capital) {
         }
 
     }
