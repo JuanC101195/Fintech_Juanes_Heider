@@ -100,8 +100,13 @@ public record ReglasNegocio(
         boolean prorrateoPrimeraCuota,
         DiasMora diasMora) {
 
+    /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
+    private static final String DIAS_MORA = "diasMora";
+    /** Clave de {@link #modalidadUsura}; se repite en la validación y en {@link #desde}. */
+    private static final String MODALIDAD_USURA = "modalidadUsura";
+
     public ReglasNegocio {
-        java.util.Objects.requireNonNull(diasMora, "diasMora");
+        java.util.Objects.requireNonNull(diasMora, DIAS_MORA);
         if (plazoLimiteMeses != null && plazoLimiteMeses < 1) {
             throw new IllegalArgumentException("El plazo límite debe ser de al menos 1 mes: " + plazoLimiteMeses);
         }
@@ -211,11 +216,19 @@ public record ReglasNegocio(
     }
 
     /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
-    public static final java.util.Set<String> CLAVES = java.util.Set.of("prelacion", "formulaMora", "baseInteres",
-            "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
-            "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura", "costoRecuperacionAlFondo",
-            "cobranzaIngresoNoOperacional", "plazoLimiteMeses", "cambioTasaSobreCapitalVigente", "cobranzaDiaria",
-            "cuotasVencidasParaRecuperacion", "prorrateoPrimeraCuota", "diasMora");
+    /**
+     * Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. Son los nombres
+     * de los componentes del record, en su orden (el mismo de {@code /reglas}), así que una regla nueva entra sola.
+     */
+    public static final java.util.Set<String> CLAVES = nombresDeComponentes();
+
+    private static java.util.Set<String> nombresDeComponentes() {
+        java.util.Set<String> nombres = new java.util.LinkedHashSet<>();
+        for (java.lang.reflect.RecordComponent c : ReglasNegocio.class.getRecordComponents()) {
+            nombres.add(c.getName());
+        }
+        return java.util.Collections.unmodifiableSet(nombres);
+    }
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -254,7 +267,7 @@ public record ReglasNegocio(
         if ((v = config.get("margenUsura")) != null && !v.isBlank()) {
             r = r.conMargenUsura(new BigDecimal(v.trim()));
         }
-        if ((v = config.get("modalidadUsura")) != null) {
+        if ((v = config.get(MODALIDAD_USURA)) != null) {
             r = r.conModalidadUsura(Instruccion.ModalidadCambioTasa.valueOf(v.trim()));
         }
         if ((v = config.get("costoRecuperacionAlFondo")) != null) {
@@ -278,7 +291,7 @@ public record ReglasNegocio(
         if ((v = config.get("prorrateoPrimeraCuota")) != null) {
             r = r.conProrrateoPrimeraCuota(Boolean.parseBoolean(v.trim()));
         }
-        if ((v = config.get("diasMora")) != null) {
+        if ((v = config.get(DIAS_MORA)) != null) {
             r = r.conDiasMora(DiasMora.valueOf(v.trim()));
         }
         return r;
@@ -360,7 +373,7 @@ public record ReglasNegocio(
 
     /** Qué se conserva cuando la usura obliga a bajar la tasa (USU-6): la cuota o la fecha final. */
     public ReglasNegocio conModalidadUsura(Instruccion.ModalidadCambioTasa valor) {
-        java.util.Objects.requireNonNull(valor, "modalidadUsura");
+        java.util.Objects.requireNonNull(valor, MODALIDAD_USURA);
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, valor, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
