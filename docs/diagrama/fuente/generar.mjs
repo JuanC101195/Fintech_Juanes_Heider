@@ -22,7 +22,7 @@ const arquitectura = {
   diagram_type: 'architecture',
   meta: {
     title: 'Motor de cartera · arquitectura',
-    subtitle: 'Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 21 oct 2026',
+    subtitle: 'Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 23 oct 2026',
     locale: 'es',
     translations: es,
     output: 'arquitectura.html',
@@ -40,23 +40,32 @@ const arquitectura = {
   },
   components: [
     { id: 'diego', type: 'external', label: 'Negocio', sublabel: 'responde las reglas', pos: [20, 60], size: [150, 60] },
-    { id: 'equipo', type: 'external', label: 'Equipo de cartera', sublabel: 'simula y revisa', pos: [20, 404], size: [150, 60] },
-    { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'cuestionario/ · React', tag: 'ronda 4', pos: [240, 56], size: [200, 68] },
-    { id: 'diagrama', type: 'frontend', label: 'Diagrama del proyecto', sublabel: 'docs/diagrama/ · archify', pos: [240, 228], size: [200, 68] },
-    { id: 'consola', type: 'frontend', label: 'Consola', sublabel: 'consola/ · React', tag: 'usa el API', pos: [240, 400], size: [200, 68] },
-    { id: 'funcion', type: 'cloud', label: 'Azure Function', sublabel: 'nube/ · guarda respuestas', pos: [530, 56], size: [200, 68] },
-    { id: 'tabla', type: 'database', label: 'Table Storage', sublabel: 'tabla respuestas', pos: [790, 56], size: [180, 68] },
-    { id: 'importador', type: 'backend', label: 'Importador', sublabel: 'importar_respuestas.py', tag: 'herramientas/', pos: [1060, 56], size: [200, 68] },
-    { id: 'reglas', type: 'database', label: 'reglas-negocio.properties', sublabel: 'config/ · va en el jar', pos: [1060, 228], size: [200, 68] },
-    { id: 'api', type: 'backend', label: 'api', sublabel: 'REST /api/v1', tag: 'PerfilesReglas', pos: [530, 400], size: [200, 68] },
-    { id: 'simulaciones', type: 'backend', label: 'simulaciones', sublabel: 'EscenariosExcel · 13 casos', pos: [790, 310], size: [200, 68] },
-    { id: 'contabilidad', type: 'backend', label: 'contabilidad', sublabel: 'Contabilizador · reglas', pos: [790, 490], size: [200, 68] },
-    { id: 'nucleo', type: 'backend', label: 'nucleo', sublabel: 'MotorCartera · cálculo puro', tag: 'Periodicidad', pos: [1060, 400], size: [200, 68] },
+    { id: 'equipo', type: 'external', label: 'Equipo de cartera', sublabel: 'simula y revisa', pos: [20, 254], size: [150, 60] },
+    { id: 'cuestionario', type: 'frontend', label: 'Cuestionario', sublabel: 'cuestionario/ · React', tag: 'ronda 7', pos: [240, 56], size: [200, 68] },
+    { id: 'consola', type: 'frontend', label: 'Consola', sublabel: 'consola/ · React', tag: 'usa el API', pos: [240, 250], size: [200, 68] },
+    { id: 'diagrama', type: 'frontend', label: 'Diagrama del proyecto', sublabel: 'docs/diagrama/ · archify', pos: [240, 420], size: [200, 68] },
+    { id: 'funcion', type: 'cloud', label: 'Azure Function', sublabel: 'nube/ · guarda respuestas', pos: [540, 56], size: [200, 68] },
+    { id: 'tabla', type: 'database', label: 'Table Storage', sublabel: 'tabla respuestas', pos: [800, 56], size: [200, 68] },
+    { id: 'importador', type: 'backend', label: 'Importador', sublabel: 'importar_respuestas.py', tag: 'herramientas/', pos: [1080, 56], size: [200, 68] },
+    // Región Azure App Service: cuatro columnas (api, servicios, núcleo, piezas del núcleo)
+    { id: 'filtros', type: 'backend', label: 'Filtros de entrada', sublabel: 'cabeceras · tamaño · API-Key', tag: 'clave opcional', pos: [540, 250], size: [220, 68] },
+    { id: 'api', type: 'backend', label: 'api · fachada', sublabel: 'CarteraController · ServicioCartera', tag: 'REST /api/v1', pos: [540, 400], size: [220, 68] },
+    { id: 'apoyo', type: 'backend', label: 'Apoyo del API', sublabel: 'validadores · mapeo · errores', tag: 'PerfilesReglas', pos: [540, 550], size: [220, 68] },
+    { id: 'simulaciones', type: 'backend', label: 'simulaciones', sublabel: 'EscenariosExcel · 13 casos', pos: [820, 310], size: [220, 68] },
+    { id: 'contabilidad', type: 'backend', label: 'contabilidad', sublabel: 'Contabilizador · reglas', pos: [820, 490], size: [220, 68] },
+    { id: 'reglas', type: 'database', label: 'reglas-negocio.properties', sublabel: 'config/ · va en el jar', pos: [1100, 230], size: [220, 68] },
+    { id: 'motor', type: 'backend', label: 'nucleo · MotorCartera', sublabel: 'ciclo por periodo · delega', tag: 'cálculo puro', pos: [1100, 400], size: [220, 68] },
+    { id: 'versiones', type: 'backend', label: 'Versiones y bitácora', sublabel: 'VersionReglas · OrigenCredito', tag: 'en memoria', pos: [1100, 560], size: [220, 68] },
+    { id: 'reglasnegocio', type: 'backend', label: 'ReglasNegocio', sublabel: 'Constructor · desde / desdeEstricto', pos: [1380, 230], size: [220, 68] },
+    { id: 'extraidas', type: 'backend', label: 'Piezas del motor', sublabel: 'Causador · Abonos · Recuperacion', tag: 'extraídas', pos: [1380, 340], size: [220, 68] },
+    { id: 'reanudable', type: 'backend', label: 'Estado reanudable', sublabel: 'Instantanea · RecalculoUsura', tag: 'streaming', pos: [1380, 450], size: [220, 68] },
+    { id: 'calendario', type: 'backend', label: 'Periodicidad', sublabel: 'CalendarioPagos · prorrateo', tag: 'sem · quin · mens', pos: [1380, 560], size: [220, 68] },
+    { id: 'persistencia', type: 'database', label: 'PostgreSQL · historial', sublabel: 'ADR 0004 · solo diseñado', tag: 'no construido', pos: [1100, 740], size: [220, 68] },
   ],
   boundaries: [
     { kind: 'region', label: 'GitHub Pages', wraps: ['cuestionario', 'diagrama', 'consola'] },
     { kind: 'region', label: 'Azure · respuestas sin servidor', wraps: ['funcion', 'tabla'] },
-    { kind: 'region', label: 'Azure App Service F1 · Java 21 · un jar', wraps: ['reglas', 'api', 'simulaciones', 'contabilidad', 'nucleo'] },
+    { kind: 'region', label: 'Azure App Service F1 · Java 21 · un jar', wraps: ['filtros', 'api', 'apoyo', 'simulaciones', 'contabilidad', 'reglas', 'motor', 'versiones', 'reglasnegocio', 'extraidas', 'reanudable', 'calendario'] },
   ],
   connections: [
     { id: 'responde', from: 'diego', to: 'cuestionario', label: 'responde', variant: 'emphasis' },
@@ -65,42 +74,58 @@ const arquitectura = {
     { id: 'lee-nube', from: 'tabla', to: 'importador', label: '--nube', variant: 'dashed' },
     { id: 'escribe-reglas', from: 'importador', to: 'reglas', label: 'escribe', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
     { id: 'usa-consola', from: 'equipo', to: 'consola', label: 'usa', variant: 'emphasis' },
-    { id: 'consulta', from: 'equipo', to: 'diagrama', label: 'consulta', variant: 'dashed', fromSide: 'top', toSide: 'left' },
-    { id: 'https', from: 'consola', to: 'api', label: 'HTTPS', variant: 'emphasis' },
-    { id: 'perfil', from: 'reglas', to: 'api', label: 'perfil NEGOCIO', variant: 'dashed', fromSide: 'left', toSide: 'top' },
+    { id: 'consulta', from: 'equipo', to: 'diagrama', label: 'consulta', variant: 'dashed', fromSide: 'bottom', toSide: 'left' },
+    { id: 'https', from: 'consola', to: 'filtros', label: 'HTTPS', variant: 'emphasis' },
+    { id: 'valida', from: 'filtros', to: 'api', label: 'pasa', fromSide: 'bottom', toSide: 'top' },
+    { id: 'usa-apoyo', from: 'api', to: 'apoyo', label: 'valida y mapea', fromSide: 'bottom', toSide: 'top' },
     { id: 'casos', from: 'api', to: 'simulaciones', label: 'casos', fromSide: 'right', toSide: 'left' },
     { id: 'asientos', from: 'api', to: 'contabilidad', label: 'asientos', fromSide: 'right', toSide: 'left' },
-    { id: 'escenarios', from: 'simulaciones', to: 'nucleo', label: 'escenarios', fromSide: 'right', toSide: 'left' },
-    { id: 'movimientos', from: 'contabilidad', to: 'nucleo', label: 'movimientos', fromSide: 'right', toSide: 'left' },
+    { id: 'escenarios', from: 'simulaciones', to: 'motor', label: 'escenarios', fromSide: 'right', toSide: 'left' },
+    { id: 'movimientos', from: 'contabilidad', to: 'motor', label: 'movimientos', fromSide: 'right', toSide: 'left' },
+    { id: 'carga-reglas', from: 'reglas', to: 'reglasnegocio', label: 'desde()', variant: 'dashed' },
+    { id: 'reglas-motor', from: 'reglasnegocio', to: 'motor', label: 'reglas', fromSide: 'left', toSide: 'top' },
+    { id: 'delega', from: 'motor', to: 'extraidas', label: 'delega', fromSide: 'right', toSide: 'left' },
+    { id: 'reanuda', from: 'motor', to: 'reanudable', label: 'reanuda', fromSide: 'right', toSide: 'left' },
+    { id: 'calcula-fechas', from: 'motor', to: 'calendario', label: 'fechas', fromSide: 'right', toSide: 'left' },
+    { id: 'version-motor', from: 'versiones', to: 'motor', label: 'versión', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
+    { id: 'guardaria', from: 'versiones', to: 'persistencia', label: 'guardaría', variant: 'dashed', fromSide: 'bottom', toSide: 'top' },
   ],
   cards: [
     { dot: 'cyan', title: 'nucleo · cálculo puro', items: [
-      'MotorCartera: un ciclo por periodo para todos los casos',
-      'Periodicidad semanal, quincenal o mensual y CalendarioPagos',
-      'Usura (misma cuota o misma fecha) y ClasificacionPago',
+      'MotorCartera: un ciclo por periodo para todos los casos; delega en Causador, Abonos, RepartoPrelacion, Recuperacion, DescriptorEventos y EstadoCorrida',
+      'Instantanea y FormatoInstantanea: ejecutarHasta / ejecutarDesde y ejecutar en streaming',
+      'RecalculoUsura: recálculo masivo reanudando desde la cuota siguiente',
+      'Periodicidad semanal, quincenal o mensual con CalendarioPagos y prorrateo de la primera cuota',
       'Sin Spring ni base de datos; BigDecimal sin redondeo',
     ] },
-    { dot: 'violet', title: 'contabilidad, simulaciones y api', items: [
-      'contabilidad: Contabilizador y una regla por evento',
-      'simulaciones: EscenariosExcel (13 casos) y GeneradorEscenarios',
-      'api: REST /api/v1 con perfiles EXCEL y NEGOCIO',
-      'Spring Modulith verifica que ningún módulo use internos de otro',
+    { dot: 'violet', title: 'Reglas, versiones y bitácora', items: [
+      'ReglasNegocio: Constructor por nombre y lectura guiada por tabla (desde / desdeEstricto)',
+      'VersionReglas inmutable, RepositorioReglas (con versión en memoria) y OrigenCredito',
+      'BitacoraParametros, EventoBitacora, Responsable y Rol, Exoneracion y VigenciasCobranza',
+      'Persistencia en PostgreSQL con historial inmutable: diseñada en el ADR 0004 (línea punteada), todavía no construida',
     ] },
-    { dot: 'emerald', title: 'De la respuesta a la regla', items: [
-      'El cuestionario autoguarda cada cambio en la Azure Function',
-      'El importador lee la tabla y escribe config/reglas-negocio.properties',
-      'Ese archivo va dentro del jar: un cambio de reglas exige redesplegar',
+    { dot: 'emerald', title: 'api, contabilidad y simulaciones', items: [
+      'CarteraController y ServicioCartera, con MapeadorDto, FechasCredito, ValidadorCredito, CatalogoServicio y ValidadorInstrucciones',
+      'ManejadorErrores y PerfilesReglas (perfiles EXCEL y NEGOCIO)',
+      'Filtros de cabeceras de seguridad, tamaño de cuerpo y X-API-Key, registrados por ConfiguracionFiltros; la clave está apagada por defecto',
+      'contabilidad: Contabilizador y una regla por evento; simulaciones: los 13 casos',
+    ] },
+    { dot: 'orange', title: 'Pruebas y calidad', items: [
+      '602 pruebas de Java; cobertura de ramas cercana al 92 %',
+      'Huellas de regresión (caracterizacion/) y prueba de propiedades con 3.000 escenarios',
+      'ArquitecturaTest (ArchUnit), ModularidadTest y ArranqueRealTest',
+      'CI con jobs separados: motor, cuestionario, consola, herramientas y humo/e2e; análisis de SonarCloud',
     ] },
     { dot: 'amber', title: 'Despliegue', items: [
       'API: Azure App Service plan F1 gratuito, Java 21, sin estado',
       'Consola, cuestionario y diagrama: GitHub Pages (workflow Sitio)',
+      'Respuestas del cuestionario: Azure Function y Table Storage; el importador las lleva a config/',
       'Si el API duerme o agota su cuota, la consola usa datos de demostración',
     ] },
-    { dot: 'rose', title: 'Estado', items: [
-      '296 pruebas en verde, 13 casos reproducidos al centavo',
-      'Completitud de reglas: 67 % (78 de 116); cuestionario: 68 %',
-      'Pendiente de negocio: ronda 4, política de cobranza y PUC',
-      'El caso 13 espera que negocio valide sus valores',
+    { dot: 'rose', title: 'Estado y pendiente', items: [
+      'Rondas 5 y 6 de negocio aplicadas; la ronda 7 deja 2 preguntas abiertas',
+      'Sin construir: persistencia, abonos con idempotencia, cierre diario y CRM (ADR 0004 y pendientes técnicos)',
+      'El archivo de reglas va dentro del jar: un cambio de reglas exige redesplegar',
     ] },
   ],
 };
@@ -134,6 +159,8 @@ const ajusteAgente = (n) => (n >= 7 ? 9 - n : 0);
 const ajusteEntrega = (n) => (n <= 3 ? 3 - n : 0);
 // Fila de abajo (fases 6 a 10): se lee de derecha a izquierda, siguiendo la columna de la derecha.
 const YB = 840;
+// Columna de la izquierda (fases 11 a 14, 22 y 23 oct): sigue a la fase 10 y baja de arriba hacia abajo.
+const YC = 640, PC = 100;
 
 const componentesFases = [
   { id: 'juan', type: 'external', label: 'Juan Esteban', sublabel: 'pide el motor', pos: [20, CY - 30], size: [130, 60] },
@@ -153,6 +180,10 @@ const componentesFases = [
   { id: 'api', type: 'backend', label: '9 · API REST v1', sublabel: 'módulo api · /api/v1', tag: '2d04f7a', pos: [770, YB - 90], size: [220, 68] },
   { id: 'consola', type: 'backend', label: '9 · Consola', sublabel: 'React · consume el API', tag: '67bcc63', pos: [770, YB + 30], size: [220, 68] },
   { id: 'despliegue', type: 'frontend', label: '10 · Despliegue', sublabel: 'App Service F1 · GitHub Pages', tag: '296 pruebas', pos: [420, YB - 34], size: [230, 68] },
+  { id: 'rondas56', type: 'frontend', label: '11 · Rondas 5 y 6', sublabel: 'respuestas de Diego · D48 a D55', tag: '22 oct', pos: [30, YC], size: [340, 68] },
+  { id: 'ola1', type: 'backend', label: '12 · Ola 1', sublabel: 'finanzas y API endurecido', tag: '23 oct', pos: [30, YC + PC], size: [340, 68] },
+  { id: 'ola2', type: 'backend', label: '13 · Ola 2', sublabel: 'refactor con red de huellas', tag: '23 oct', pos: [30, YC + 2 * PC], size: [340, 68] },
+  { id: 'ola3', type: 'backend', label: '14 · Ola 3', sublabel: 'motor reanudable · reglas versionadas', tag: '23 oct', pos: [30, YC + 3 * PC], size: [340, 68] },
 ];
 const conexionesFases = [
   { id: 'solicita', from: 'juan', to: 'orquestador', label: 'solicita', variant: 'emphasis' },
@@ -172,6 +203,10 @@ const conexionesFases = [
   { id: 'consume', from: 'consola', to: 'api', label: 'consume', variant: 'dashed', fromSide: 'top', toSide: 'bottom' },
   { id: 'publica-api', from: 'api', to: 'despliegue', label: 'publica', variant: 'emphasis', fromSide: 'left', toSide: 'right' },
   { id: 'publica-consola', from: 'consola', to: 'despliegue', fromSide: 'left', toSide: 'right' },
+  { id: 'sigue-rondas', from: 'despliegue', to: 'rondas56', label: 'sigue', variant: 'emphasis', fromSide: 'left', toSide: 'right' },
+  { id: 'sigue-ola1', from: 'rondas56', to: 'ola1', variant: 'emphasis', fromSide: 'bottom', toSide: 'top' },
+  { id: 'sigue-ola2', from: 'ola1', to: 'ola2', fromSide: 'bottom', toSide: 'top' },
+  { id: 'sigue-ola3', from: 'ola2', to: 'ola3', fromSide: 'bottom', toSide: 'top' },
 ];
 for (const [n, nombre, seg, her, pruebas, commit, entrega] of agentes) {
   const y = Y0 + (n - 1) * PASO;
@@ -193,7 +228,7 @@ const fases = {
   diagram_type: 'architecture',
   meta: {
     title: 'Motor de cartera · cómo se construyó',
-    subtitle: '10 fases del 8 al 21 oct 2026: base común, 9 casos en paralelo, integración, rondas con negocio, motor, periodicidad, API, consola y despliegue',
+    subtitle: '14 fases del 8 al 23 oct 2026: base común, 9 casos en paralelo, integración, rondas con negocio, motor, periodicidad, API, consola, despliegue y tres olas de robustez',
     locale: 'es',
     translations: es,
     output: 'fases.html',
@@ -213,6 +248,7 @@ const fases = {
     { kind: 'region', label: '2 · 9 git worktrees en paralelo · 7 min 14 s', wraps: agentes.flatMap(([n]) => [`agente${n}`, `entrega${n}`]) },
     { kind: 'region', label: '20 oct · ramas en paralelo', wraps: ['motor', 'periodicidad'] },
     { kind: 'region', label: '20 oct · API y consola en paralelo', wraps: ['api', 'consola'] },
+    { kind: 'region', label: '22 y 23 oct · rondas 5 y 6 y olas de robustez', wraps: ['rondas56', 'ola1', 'ola2', 'ola3'] },
   ],
   connections: conexionesFases,
   cards: [
@@ -241,10 +277,20 @@ const fases = {
       'API en Azure App Service F1; consola, cuestionario y diagrama en GitHub Pages',
       '296 pruebas; completitud de reglas 67 %',
     ] },
-    { dot: 'slate', title: 'Pendiente de negocio', items: [
-      'Ronda 4 del cuestionario',
-      'Política de gastos de cobranza (tope, valor diario)',
-      'PUC con los códigos contables y validación del caso 13',
+    { dot: 'cyan', title: '11 · Rondas 5 y 6 (22 oct)', items: [
+      'Diego respondió por el cuestionario y por documento: decisiones D48 a D55',
+      'Prorrateo de la primera cuota, mora mensual por días reales y cobranza con vigencias',
+      'API y consola con fechas opcionales del crédito',
+    ] },
+    { dot: 'orange', title: '12 a 14 · Olas de robustez (23 oct)', items: [
+      'Ola 1: correcciones de la auditoría financiera, API endurecido (topes, cuerpo, cabeceras, clave opcional) y CI en jobs separados',
+      'Ola 2: MotorCartera y ServicioCartera se parten en clases pequeñas, sin cambiar comportamiento y con la red de huellas',
+      'Ola 3: estado reanudable del motor, recálculo por usura, versiones de reglas y bitácora; persistencia solo diseñada (ADR 0004)',
+      'Al cierre: 602 pruebas de Java y cobertura de ramas cercana al 92 %',
+    ] },
+    { dot: 'slate', title: 'Pendiente', items: [
+      'Ronda 7: 2 preguntas abiertas con negocio',
+      'Construir la persistencia, la idempotencia de abonos y el cierre diario',
     ] },
   ],
 };

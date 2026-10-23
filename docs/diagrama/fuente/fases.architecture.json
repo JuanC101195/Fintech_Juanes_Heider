@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Motor de cartera · cómo se construyó",
-    "subtitle": "10 fases del 8 al 21 oct 2026: base común, 9 casos en paralelo, integración, rondas con negocio, motor, periodicidad, API, consola y despliegue",
+    "subtitle": "14 fases del 8 al 23 oct 2026: base común, 9 casos en paralelo, integración, rondas con negocio, motor, periodicidad, API, consola, despliegue y tres olas de robustez",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -718,6 +718,66 @@
       ]
     },
     {
+      "id": "rondas56",
+      "type": "frontend",
+      "label": "11 · Rondas 5 y 6",
+      "sublabel": "respuestas de Diego · D48 a D55",
+      "tag": "22 oct",
+      "pos": [
+        30,
+        640
+      ],
+      "size": [
+        340,
+        68
+      ]
+    },
+    {
+      "id": "ola1",
+      "type": "backend",
+      "label": "12 · Ola 1",
+      "sublabel": "finanzas y API endurecido",
+      "tag": "23 oct",
+      "pos": [
+        30,
+        740
+      ],
+      "size": [
+        340,
+        68
+      ]
+    },
+    {
+      "id": "ola2",
+      "type": "backend",
+      "label": "13 · Ola 2",
+      "sublabel": "refactor con red de huellas",
+      "tag": "23 oct",
+      "pos": [
+        30,
+        840
+      ],
+      "size": [
+        340,
+        68
+      ]
+    },
+    {
+      "id": "ola3",
+      "type": "backend",
+      "label": "14 · Ola 3",
+      "sublabel": "motor reanudable · reglas versionadas",
+      "tag": "23 oct",
+      "pos": [
+        30,
+        940
+      ],
+      "size": [
+        340,
+        68
+      ]
+    },
+    {
       "id": "agente1",
       "type": "backend",
       "label": "Caso 1 · Normal",
@@ -1010,6 +1070,16 @@
         "api",
         "consola"
       ]
+    },
+    {
+      "kind": "region",
+      "label": "22 y 23 oct · rondas 5 y 6 y olas de robustez",
+      "wraps": [
+        "rondas56",
+        "ola1",
+        "ola2",
+        "ola3"
+      ]
     }
   ],
   "connections": [
@@ -1153,6 +1223,37 @@
       "to": "despliegue",
       "fromSide": "left",
       "toSide": "right"
+    },
+    {
+      "id": "sigue-rondas",
+      "from": "despliegue",
+      "to": "rondas56",
+      "label": "sigue",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "sigue-ola1",
+      "from": "rondas56",
+      "to": "ola1",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "sigue-ola2",
+      "from": "ola1",
+      "to": "ola2",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "sigue-ola3",
+      "from": "ola2",
+      "to": "ola3",
+      "fromSide": "bottom",
+      "toSide": "top"
     },
     {
       "id": "entrega1-hecha",
@@ -1375,12 +1476,30 @@
       ]
     },
     {
-      "dot": "slate",
-      "title": "Pendiente de negocio",
+      "dot": "cyan",
+      "title": "11 · Rondas 5 y 6 (22 oct)",
       "items": [
-        "Ronda 4 del cuestionario",
-        "Política de gastos de cobranza (tope, valor diario)",
-        "PUC con los códigos contables y validación del caso 13"
+        "Diego respondió por el cuestionario y por documento: decisiones D48 a D55",
+        "Prorrateo de la primera cuota, mora mensual por días reales y cobranza con vigencias",
+        "API y consola con fechas opcionales del crédito"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "12 a 14 · Olas de robustez (23 oct)",
+      "items": [
+        "Ola 1: correcciones de la auditoría financiera, API endurecido (topes, cuerpo, cabeceras, clave opcional) y CI en jobs separados",
+        "Ola 2: MotorCartera y ServicioCartera se parten en clases pequeñas, sin cambiar comportamiento y con la red de huellas",
+        "Ola 3: estado reanudable del motor, recálculo por usura, versiones de reglas y bitácora; persistencia solo diseñada (ADR 0004)",
+        "Al cierre: 602 pruebas de Java y cobertura de ramas cercana al 92 %"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Pendiente",
+      "items": [
+        "Ronda 7: 2 preguntas abiertas con negocio",
+        "Construir la persistencia, la idempotencia de abonos y el cierre diario"
       ]
     }
   ]

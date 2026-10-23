@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Motor de cartera · arquitectura",
-    "subtitle": "Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 21 oct 2026",
+    "subtitle": "Monolito modular Spring Modulith (Java 21) con API REST, consola y cuestionario de reglas · estado al 23 oct 2026",
     "locale": "es",
     "translations": {
       "page.title": "{title} · Diagrama",
@@ -490,7 +490,7 @@
       "sublabel": "simula y revisa",
       "pos": [
         20,
-        404
+        254
       ],
       "size": [
         150,
@@ -502,24 +502,10 @@
       "type": "frontend",
       "label": "Cuestionario",
       "sublabel": "cuestionario/ · React",
-      "tag": "ronda 4",
+      "tag": "ronda 7",
       "pos": [
         240,
         56
-      ],
-      "size": [
-        200,
-        68
-      ]
-    },
-    {
-      "id": "diagrama",
-      "type": "frontend",
-      "label": "Diagrama del proyecto",
-      "sublabel": "docs/diagrama/ · archify",
-      "pos": [
-        240,
-        228
       ],
       "size": [
         200,
@@ -534,7 +520,21 @@
       "tag": "usa el API",
       "pos": [
         240,
-        400
+        250
+      ],
+      "size": [
+        200,
+        68
+      ]
+    },
+    {
+      "id": "diagrama",
+      "type": "frontend",
+      "label": "Diagrama del proyecto",
+      "sublabel": "docs/diagrama/ · archify",
+      "pos": [
+        240,
+        420
       ],
       "size": [
         200,
@@ -547,7 +547,7 @@
       "label": "Azure Function",
       "sublabel": "nube/ · guarda respuestas",
       "pos": [
-        530,
+        540,
         56
       ],
       "size": [
@@ -561,11 +561,11 @@
       "label": "Table Storage",
       "sublabel": "tabla respuestas",
       "pos": [
-        790,
+        800,
         56
       ],
       "size": [
-        180,
+        200,
         68
       ]
     },
@@ -576,7 +576,7 @@
       "sublabel": "importar_respuestas.py",
       "tag": "herramientas/",
       "pos": [
-        1060,
+        1080,
         56
       ],
       "size": [
@@ -585,31 +585,47 @@
       ]
     },
     {
-      "id": "reglas",
-      "type": "database",
-      "label": "reglas-negocio.properties",
-      "sublabel": "config/ · va en el jar",
+      "id": "filtros",
+      "type": "backend",
+      "label": "Filtros de entrada",
+      "sublabel": "cabeceras · tamaño · API-Key",
+      "tag": "clave opcional",
       "pos": [
-        1060,
-        228
+        540,
+        250
       ],
       "size": [
-        200,
+        220,
         68
       ]
     },
     {
       "id": "api",
       "type": "backend",
-      "label": "api",
-      "sublabel": "REST /api/v1",
-      "tag": "PerfilesReglas",
+      "label": "api · fachada",
+      "sublabel": "CarteraController · ServicioCartera",
+      "tag": "REST /api/v1",
       "pos": [
-        530,
+        540,
         400
       ],
       "size": [
-        200,
+        220,
+        68
+      ]
+    },
+    {
+      "id": "apoyo",
+      "type": "backend",
+      "label": "Apoyo del API",
+      "sublabel": "validadores · mapeo · errores",
+      "tag": "PerfilesReglas",
+      "pos": [
+        540,
+        550
+      ],
+      "size": [
+        220,
         68
       ]
     },
@@ -619,11 +635,11 @@
       "label": "simulaciones",
       "sublabel": "EscenariosExcel · 13 casos",
       "pos": [
-        790,
+        820,
         310
       ],
       "size": [
-        200,
+        220,
         68
       ]
     },
@@ -633,26 +649,129 @@
       "label": "contabilidad",
       "sublabel": "Contabilizador · reglas",
       "pos": [
-        790,
+        820,
         490
       ],
       "size": [
-        200,
+        220,
         68
       ]
     },
     {
-      "id": "nucleo",
-      "type": "backend",
-      "label": "nucleo",
-      "sublabel": "MotorCartera · cálculo puro",
-      "tag": "Periodicidad",
+      "id": "reglas",
+      "type": "database",
+      "label": "reglas-negocio.properties",
+      "sublabel": "config/ · va en el jar",
       "pos": [
-        1060,
+        1100,
+        230
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "motor",
+      "type": "backend",
+      "label": "nucleo · MotorCartera",
+      "sublabel": "ciclo por periodo · delega",
+      "tag": "cálculo puro",
+      "pos": [
+        1100,
         400
       ],
       "size": [
-        200,
+        220,
+        68
+      ]
+    },
+    {
+      "id": "versiones",
+      "type": "backend",
+      "label": "Versiones y bitácora",
+      "sublabel": "VersionReglas · OrigenCredito",
+      "tag": "en memoria",
+      "pos": [
+        1100,
+        560
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "reglasnegocio",
+      "type": "backend",
+      "label": "ReglasNegocio",
+      "sublabel": "Constructor · desde / desdeEstricto",
+      "pos": [
+        1380,
+        230
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "extraidas",
+      "type": "backend",
+      "label": "Piezas del motor",
+      "sublabel": "Causador · Abonos · Recuperacion",
+      "tag": "extraídas",
+      "pos": [
+        1380,
+        340
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "reanudable",
+      "type": "backend",
+      "label": "Estado reanudable",
+      "sublabel": "Instantanea · RecalculoUsura",
+      "tag": "streaming",
+      "pos": [
+        1380,
+        450
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "calendario",
+      "type": "backend",
+      "label": "Periodicidad",
+      "sublabel": "CalendarioPagos · prorrateo",
+      "tag": "sem · quin · mens",
+      "pos": [
+        1380,
+        560
+      ],
+      "size": [
+        220,
+        68
+      ]
+    },
+    {
+      "id": "persistencia",
+      "type": "database",
+      "label": "PostgreSQL · historial",
+      "sublabel": "ADR 0004 · solo diseñado",
+      "tag": "no construido",
+      "pos": [
+        1100,
+        740
+      ],
+      "size": [
+        220,
         68
       ]
     }
@@ -679,11 +798,18 @@
       "kind": "region",
       "label": "Azure App Service F1 · Java 21 · un jar",
       "wraps": [
-        "reglas",
+        "filtros",
         "api",
+        "apoyo",
         "simulaciones",
         "contabilidad",
-        "nucleo"
+        "reglas",
+        "motor",
+        "versiones",
+        "reglasnegocio",
+        "extraidas",
+        "reanudable",
+        "calendario"
       ]
     }
   ],
@@ -737,23 +863,30 @@
       "to": "diagrama",
       "label": "consulta",
       "variant": "dashed",
-      "fromSide": "top",
+      "fromSide": "bottom",
       "toSide": "left"
     },
     {
       "id": "https",
       "from": "consola",
-      "to": "api",
+      "to": "filtros",
       "label": "HTTPS",
       "variant": "emphasis"
     },
     {
-      "id": "perfil",
-      "from": "reglas",
+      "id": "valida",
+      "from": "filtros",
       "to": "api",
-      "label": "perfil NEGOCIO",
-      "variant": "dashed",
-      "fromSide": "left",
+      "label": "pasa",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "usa-apoyo",
+      "from": "api",
+      "to": "apoyo",
+      "label": "valida y mapea",
+      "fromSide": "bottom",
       "toSide": "top"
     },
     {
@@ -775,7 +908,7 @@
     {
       "id": "escenarios",
       "from": "simulaciones",
-      "to": "nucleo",
+      "to": "motor",
       "label": "escenarios",
       "fromSide": "right",
       "toSide": "left"
@@ -783,10 +916,67 @@
     {
       "id": "movimientos",
       "from": "contabilidad",
-      "to": "nucleo",
+      "to": "motor",
       "label": "movimientos",
       "fromSide": "right",
       "toSide": "left"
+    },
+    {
+      "id": "carga-reglas",
+      "from": "reglas",
+      "to": "reglasnegocio",
+      "label": "desde()",
+      "variant": "dashed"
+    },
+    {
+      "id": "reglas-motor",
+      "from": "reglasnegocio",
+      "to": "motor",
+      "label": "reglas",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "delega",
+      "from": "motor",
+      "to": "extraidas",
+      "label": "delega",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "reanuda",
+      "from": "motor",
+      "to": "reanudable",
+      "label": "reanuda",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "calcula-fechas",
+      "from": "motor",
+      "to": "calendario",
+      "label": "fechas",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "version-motor",
+      "from": "versiones",
+      "to": "motor",
+      "label": "versión",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "guardaria",
+      "from": "versiones",
+      "to": "persistencia",
+      "label": "guardaría",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
     }
   ],
   "cards": [
@@ -794,29 +984,41 @@
       "dot": "cyan",
       "title": "nucleo · cálculo puro",
       "items": [
-        "MotorCartera: un ciclo por periodo para todos los casos",
-        "Periodicidad semanal, quincenal o mensual y CalendarioPagos",
-        "Usura (misma cuota o misma fecha) y ClasificacionPago",
+        "MotorCartera: un ciclo por periodo para todos los casos; delega en Causador, Abonos, RepartoPrelacion, Recuperacion, DescriptorEventos y EstadoCorrida",
+        "Instantanea y FormatoInstantanea: ejecutarHasta / ejecutarDesde y ejecutar en streaming",
+        "RecalculoUsura: recálculo masivo reanudando desde la cuota siguiente",
+        "Periodicidad semanal, quincenal o mensual con CalendarioPagos y prorrateo de la primera cuota",
         "Sin Spring ni base de datos; BigDecimal sin redondeo"
       ]
     },
     {
       "dot": "violet",
-      "title": "contabilidad, simulaciones y api",
+      "title": "Reglas, versiones y bitácora",
       "items": [
-        "contabilidad: Contabilizador y una regla por evento",
-        "simulaciones: EscenariosExcel (13 casos) y GeneradorEscenarios",
-        "api: REST /api/v1 con perfiles EXCEL y NEGOCIO",
-        "Spring Modulith verifica que ningún módulo use internos de otro"
+        "ReglasNegocio: Constructor por nombre y lectura guiada por tabla (desde / desdeEstricto)",
+        "VersionReglas inmutable, RepositorioReglas (con versión en memoria) y OrigenCredito",
+        "BitacoraParametros, EventoBitacora, Responsable y Rol, Exoneracion y VigenciasCobranza",
+        "Persistencia en PostgreSQL con historial inmutable: diseñada en el ADR 0004 (línea punteada), todavía no construida"
       ]
     },
     {
       "dot": "emerald",
-      "title": "De la respuesta a la regla",
+      "title": "api, contabilidad y simulaciones",
       "items": [
-        "El cuestionario autoguarda cada cambio en la Azure Function",
-        "El importador lee la tabla y escribe config/reglas-negocio.properties",
-        "Ese archivo va dentro del jar: un cambio de reglas exige redesplegar"
+        "CarteraController y ServicioCartera, con MapeadorDto, FechasCredito, ValidadorCredito, CatalogoServicio y ValidadorInstrucciones",
+        "ManejadorErrores y PerfilesReglas (perfiles EXCEL y NEGOCIO)",
+        "Filtros de cabeceras de seguridad, tamaño de cuerpo y X-API-Key, registrados por ConfiguracionFiltros; la clave está apagada por defecto",
+        "contabilidad: Contabilizador y una regla por evento; simulaciones: los 13 casos"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Pruebas y calidad",
+      "items": [
+        "602 pruebas de Java; cobertura de ramas cercana al 92 %",
+        "Huellas de regresión (caracterizacion/) y prueba de propiedades con 3.000 escenarios",
+        "ArquitecturaTest (ArchUnit), ModularidadTest y ArranqueRealTest",
+        "CI con jobs separados: motor, cuestionario, consola, herramientas y humo/e2e; análisis de SonarCloud"
       ]
     },
     {
@@ -825,17 +1027,17 @@
       "items": [
         "API: Azure App Service plan F1 gratuito, Java 21, sin estado",
         "Consola, cuestionario y diagrama: GitHub Pages (workflow Sitio)",
+        "Respuestas del cuestionario: Azure Function y Table Storage; el importador las lleva a config/",
         "Si el API duerme o agota su cuota, la consola usa datos de demostración"
       ]
     },
     {
       "dot": "rose",
-      "title": "Estado",
+      "title": "Estado y pendiente",
       "items": [
-        "296 pruebas en verde, 13 casos reproducidos al centavo",
-        "Completitud de reglas: 67 % (78 de 116); cuestionario: 68 %",
-        "Pendiente de negocio: ronda 4, política de cobranza y PUC",
-        "El caso 13 espera que negocio valide sus valores"
+        "Rondas 5 y 6 de negocio aplicadas; la ronda 7 deja 2 preguntas abiertas",
+        "Sin construir: persistencia, abonos con idempotencia, cierre diario y CRM (ADR 0004 y pendientes técnicos)",
+        "El archivo de reglas va dentro del jar: un cambio de reglas exige redesplegar"
       ]
     }
   ]
