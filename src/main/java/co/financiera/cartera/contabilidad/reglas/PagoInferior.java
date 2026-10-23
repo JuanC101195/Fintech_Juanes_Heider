@@ -35,9 +35,17 @@ public final class PagoInferior implements ReglaContable {
     /** Evento con que el motor marca la semana de un pago inferior (columna C de la hoja). */
     public static final String EVENTO = "Pago inferior";
 
-    /** Verdadero si el movimiento es una semana de pago inferior y lo contabiliza esta regla. */
+    /**
+     * Verdadero si el movimiento es una semana de pago inferior y lo contabiliza esta regla.
+     *
+     * <p>Auditoría 2026-10-23 (H1): el texto del evento no basta. Cuando la última cuota es residual y se paga con
+     * un {@code PagoValor} por todo lo exigible, el motor la marca "Pago inferior" (pagó menos que la cuota pactada)
+     * pero es un recaudo normal y {@link RecaudoCuota} ya la contabiliza: la Caja quedaba debitada dos veces. Las
+     * fronteras se excluyen aquí para que una sola regla de recaudo tome cada movimiento.
+     */
     public static boolean aplica(Movimiento m) {
-        return EVENTO.equals(m.evento()) && m.pagoRecibido().signum() > 0;
+        return EVENTO.equals(m.evento()) && m.pagoRecibido().signum() > 0
+                && !RecaudoCuota.esRecaudoNormal(m) && !CobranzaYMora.aplica(m);
     }
 
     @Override

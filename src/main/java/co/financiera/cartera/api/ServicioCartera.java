@@ -260,15 +260,54 @@ public class ServicioCartera {
         }
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
         if (r.instrucciones() != null) {
+            if (r.instrucciones().size() > MAX_INSTRUCCIONES) {
+                throw ApiException.datoInvalido("Una petición admite como máximo " + MAX_INSTRUCCIONES
+                        + " instrucciones; llegaron " + r.instrucciones().size(), "instrucciones");
+            }
             for (InstruccionDto i : r.instrucciones()) {
                 if (i == null || i.periodo() == null || i.periodo() < 1 || i.periodo() > ultimoPeriodo) {
                     throw ApiException.datoInvalido("Cada instrucción necesita un periodo entre 1 y "
                             + ultimoPeriodo + ": " + (i == null ? null : i.periodo()), "periodo");
                 }
+                validarInstruccion(i);
                 e.en(i.periodo(), Instrucciones.aMotor(i));
             }
         }
         return correr(e, perfil, r.incluirAsientos() == null || r.incluirAsientos(), fechas);
+    }
+
+    /** Topes de los campos numéricos de una instrucción, antes de convertirla para el motor. */
+    static void validarInstruccion(InstruccionDto i) {
+        diasAcotados(i.diasAtraso(), "diasAtraso");
+        diasAcotados(i.diasDesdeUltimaCuota(), "diasDesdeUltimaCuota");
+        if (tiene(i.fraccion())) {
+            Decimales.fraccion(i.fraccion(), "fraccion");
+        }
+        if (tiene(i.valor())) {
+            Decimales.dineroObligatorio(i.valor(), "valor", false);
+        }
+        if (tiene(i.valorMoto())) {
+            Decimales.dineroObligatorio(i.valorMoto(), "valorMoto", true);
+        }
+        if (tiene(i.costoRecuperacion())) {
+            Decimales.dineroObligatorio(i.costoRecuperacion(), "costoRecuperacion", false);
+        }
+        if (tiene(i.usuraEA())) {
+            Decimales.tasa(i.usuraEA(), "usuraEA");
+        }
+        if (tiene(i.nuevaTasaEA())) {
+            Decimales.tasa(i.nuevaTasaEA(), "nuevaTasaEA");
+        }
+    }
+
+    private static boolean tiene(String valor) {
+        return valor != null && !valor.isBlank();
+    }
+
+    private static void diasAcotados(Integer dias, String campo) {
+        if (dias != null && (dias < 0 || dias > MAX_DIAS)) {
+            throw ApiException.datoInvalido("El campo " + campo + " debe estar entre 0 y " + MAX_DIAS, campo);
+        }
     }
 
     public List<CasoResumenDto> casos() {
@@ -347,8 +386,8 @@ public class ServicioCartera {
         if (r == null) {
             throw ApiException.datoInvalido("Faltan valorRecibido y valorAdeudado");
         }
-        ClasificacionPago c = ClasificacionPago.clasificar(Decimales.obligatorio(r.valorRecibido(), "valorRecibido"),
-                Decimales.obligatorio(r.valorAdeudado(), "valorAdeudado"));
+        ClasificacionPago c = ClasificacionPago.clasificar(Decimales.dineroObligatorio(r.valorRecibido(), "valorRecibido", false),
+                Decimales.dineroObligatorio(r.valorAdeudado(), "valorAdeudado", false));
         return new ClasificacionResponse(texto(c.pagoCorriente()), texto(c.abonoExtra()));
     }
 
@@ -361,6 +400,16 @@ public class ServicioCartera {
     private static LineaCredito linea(CreditoRequest c) {
         return Enumeraciones.leer(LineaCredito.class, c.linea(), LineaCredito.CPPU, "linea");
     }
+
+    /** Máximo de instrucciones por petición. */
+    static final int MAX_INSTRUCCIONES = 500;
+    /** Máximo de días de atraso (o desde la última cuota) de una instrucción: 10 años. */
+    static final int MAX_DIAS = 3650;
+    /** El doble de las cuotas máximas del catálogo (hoy 2 × 104 semanas). */
+    static final int MAX_PLAZO_LIMITE_PERIODOS = 2 * Arrays.stream(Periodicidad.values())
+            .mapToInt(per -> per.cuotasEnMeses(plazoMaximoCatalogo())).max().orElseThrow();
+    private static final LocalDate FECHA_MINIMA = LocalDate.of(2000, 1, 1);
+    private static final LocalDate FECHA_MAXIMA = LocalDate.of(2100, 12, 31);
 
     /**
      * Parámetros del crédito del request. Si el request no trae {@code plazoLimitePeriodos} y el perfil fija
@@ -410,6 +459,10 @@ public class ServicioCartera {
             // Puede ser menor que las cuotas: el caso 8 proyecta 100 semanas de un crédito de 104.
             if (c.plazoLimitePeriodos() < 1) {
                 throw ApiException.datoInvalido("El plazo límite debe ser al menos 1 periodo", "plazoLimitePeriodos");
+            }
+            if (c.plazoLimitePeriodos() > MAX_PLAZO_LIMITE_PERIODOS) {
+                throw ApiException.datoInvalido("El plazo límite no puede superar " + MAX_PLAZO_LIMITE_PERIODOS
+                        + " periodos (el doble de las cuotas máximas del catálogo)", "plazoLimitePeriodos");
             }
             p = p.conPlazoLimite(c.plazoLimitePeriodos());
         } else {
@@ -490,12 +543,17 @@ public class ServicioCartera {
     }
 
     private static LocalDate fecha(String valor, String campo) {
+        LocalDate fecha;
         try {
-            return LocalDate.parse(valor.trim());
+            fecha = LocalDate.parse(valor.trim());
         } catch (DateTimeParseException e) {
-            throw ApiException.datoInvalido(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03); "
-                    + "llegó \"" + valor + "\"", campo);
+            throw ApiException.datoInvalido(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03)",
+                    campo);
         }
+        if (fecha.isBefore(FECHA_MINIMA) || fecha.isAfter(FECHA_MAXIMA)) {
+            throw ApiException.datoInvalido(campo + " debe estar entre el año 2000 y el 2100", campo);
+        }
+        return fecha;
     }
 
     private static Movimiento periodo(List<Movimiento> movs, int periodo) {
@@ -522,13 +580,13 @@ public class ServicioCartera {
 
     static Operacion operacion(CreditoRequest c) {
         Operacion base = Operacion.ejemploExcel();
-        return new Operacion(Decimales.leer(c.valorMoto(), "valorMoto", base.valorMoto()),
-                Decimales.leer(c.matriculaRunt(), "matriculaRunt", base.matriculaRunt()),
-                Decimales.leer(c.soat(), "soat", base.soat()),
-                Decimales.leer(c.prenda(), "prenda", base.prenda()),
-                Decimales.leer(c.gpsPlataforma(), "gpsPlataforma", base.gpsPlataforma()),
-                Decimales.leer(c.gastosComerciales(), "gastosComerciales", base.gastosComerciales()),
-                Decimales.leer(c.pagoInicial(), "pagoInicial", Calc.CERO));
+        return new Operacion(Decimales.dinero(c.valorMoto(), "valorMoto", base.valorMoto(), true),
+                Decimales.dinero(c.matriculaRunt(), "matriculaRunt", base.matriculaRunt(), false),
+                Decimales.dinero(c.soat(), "soat", base.soat(), false),
+                Decimales.dinero(c.prenda(), "prenda", base.prenda(), false),
+                Decimales.dinero(c.gpsPlataforma(), "gpsPlataforma", base.gpsPlataforma(), false),
+                Decimales.dinero(c.gastosComerciales(), "gastosComerciales", base.gastosComerciales(), false),
+                Decimales.dinero(c.pagoInicial(), "pagoInicial", Calc.CERO, false));
     }
 
     // ---------------------------------------------------------------- Núcleo → DTO

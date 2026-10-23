@@ -9,6 +9,7 @@ import co.financiera.cartera.contabilidad.reglas.RecaudoCuota;
 import co.financiera.cartera.contabilidad.reglas.Retoma;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,9 @@ import java.util.List;
  * Aplica todas las reglas contables a cada movimiento y rechaza asientos descuadrados (HT-06).
  */
 public final class Contabilizador {
+
+    /** Diferencia máxima entre la Caja de los asientos y lo que entregó el cliente en un periodo (H1). */
+    private static final BigDecimal TOLERANCIA_CAJA = new BigDecimal("0.01");
 
     private final List<ReglaContable> reglas;
 
@@ -64,7 +68,38 @@ public final class Contabilizador {
                 asientos.add(a);
             });
         }
+        verificarCaja(movimiento, asientos);
         return asientos;
+    }
+
+    /**
+     * Auditoría 2026-10-23 (H1): invariante de caja. Lo que los asientos de un periodo mueven en Caja tiene que ser
+     * exactamente lo que el cliente entregó ese periodo ({@link Movimiento#pagoTotalCliente()}): ni más (una regla
+     * de recaudo de más, la Caja contabilizada dos veces) ni menos (un recaudo que ninguna regla tomó). Tolerancia
+     * de un centavo por los residuos DECIMAL128 que las reglas no llevan a línea contable.
+     */
+    private static void verificarCaja(Movimiento m, List<Asiento> asientos) {
+        if (m.periodo() < 1) {
+            return;
+        }
+        BigDecimal caja = BigDecimal.ZERO;
+        for (Asiento a : asientos) {
+            for (Asiento.Linea l : a.lineas()) {
+                if (l.cuenta() == Cuenta.CAJA) {
+                    caja = caja.add(l.debito()).subtract(l.credito());
+                }
+            }
+        }
+        if (caja.subtract(m.pagoTotalCliente()).abs().compareTo(TOLERANCIA_CAJA) > 0) {
+            throw new CajaDescuadradaException(m, caja);
+        }
+    }
+
+    public static final class CajaDescuadradaException extends RuntimeException {
+        public CajaDescuadradaException(Movimiento m, BigDecimal caja) {
+            super("Caja descuadrada en el periodo " + m.periodo() + " (" + m.evento() + "): los asientos mueven "
+                    + caja.toPlainString() + " y el cliente entregó " + m.pagoTotalCliente().toPlainString());
+        }
     }
 
     public List<Asiento> contabilizar(List<Movimiento> movimientos) {

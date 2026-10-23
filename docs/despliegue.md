@@ -15,9 +15,33 @@
 
 ## Seguridad
 
-- El API no tiene autenticación. Expone solo los casos del Excel y las reglas del motor, sin datos de clientes.
-- El CORS solo admite `http://localhost:5173` y `https://juanc101195.github.io`.
-- Antes de cargar datos reales hay que agregar autenticación.
+- Sin autenticación por defecto: el API expone solo los casos del Excel y las reglas del motor, sin datos de clientes. La autenticación por clave es opcional (ver abajo) y hay que activarla antes de cargar datos reales.
+- El CORS solo admite `http://localhost:5173` y `https://juanc101195.github.io`, con las cabeceras `Content-Type` y `X-API-Key`.
+- Límites de entrada (números, instrucciones, días, fechas y cuerpo de 256 KB) y cabeceras de seguridad: `docs/api.md`. Los errores inesperados responden 500 `ERROR_INTERNO` con un `idCorrelacion` que también está en el log (`az webapp log tail`).
+- Solo se expone `/actuator/health`; las trazas y mensajes de `/error` están apagados.
+
+### Activar la clave de acceso (X-API-Key)
+
+Roles: `CONSUMIDOR` (todo `/api/v1/**`: consola, n8n) y `LECTURA` (solo `GET` de `/catalogo`, `/reglas` y `/casos*`). Se guarda en Azure únicamente el hash SHA-256 de cada clave.
+
+```bash
+# 1. Generar una clave aleatoria y su hash (guarde la clave en un gestor de secretos; solo el hash va a Azure)
+CLAVE=$(openssl rand -hex 32)
+HASH=$(printf '%s' "$CLAVE" | sha256sum | cut -d' ' -f1)
+echo "$CLAVE"      # la que usa el cliente en la cabecera X-API-Key
+
+# 2. Configurarla en Azure (formato 'sha256hex:ROL', varias separadas por coma)
+az webapp config appsettings set -g rg-motor-cartera -n motor-cartera-api-jc   --settings "CARTERA_API_CLAVES=$HASH:CONSUMIDOR"
+
+# 3. Probar
+curl -i https://motor-cartera-api-jc.azurewebsites.net/api/v1/catalogo                       # 401
+curl -i -H "X-API-Key: $CLAVE" https://motor-cartera-api-jc.azurewebsites.net/api/v1/catalogo  # 200
+```
+
+- En PowerShell el hash es `(Get-FileHash -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($clave))) -Algorithm SHA256).Hash.ToLower()`.
+- Rotar: agregar el hash nuevo a la lista, actualizar a los clientes y quitar el viejo. Apagar la autenticación: `az webapp config appsettings delete ... --setting-names CARTERA_API_CLAVES`.
+- Activarla rompe a quien no mande la cabecera: la consola publicada (GitHub Pages) y n8n deben enviar `X-API-Key`. Una clave que viaje en el JavaScript de GitHub Pages es pública; para la consola use `LECTURA` o no la active hasta tener otra forma de entrar.
+- Una entrada mal formada impide arrancar la app (el mensaje de error no repite lo configurado).
 
 ## Reglas de negocio
 

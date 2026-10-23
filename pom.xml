@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
 		<jacoco.version>0.8.13</jacoco.version>
+		<archunit.version>1.4.1</archunit.version>
 		<!-- SonarCloud (organización y proyecto creados al importar el repo de GitHub) -->
 		<sonar.organization>juanc101195</sonar.organization>
 		<sonar.projectKey>JuanC101195_Fintech_Juanes_Heider</sonar.projectKey>
@@ -96,6 +97,13 @@
 			<artifactId>spring-modulith-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Reglas de arquitectura (ArquitecturaTest): el núcleo no depende de Spring ni de las capas de arriba -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -148,5 +156,48 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!--
+			Pruebas de mutación (PIT) del núcleo y del motor. Solo para uso manual o nocturno, NO en cada PR (tarda mucho):
+			./mvnw -B -Ppit test-compile org.pitest:pitest-maven:mutationCoverage
+			Falla si menos del 85 % de los mutantes muertos. Informe en target/pit-reports/.
+		-->
+		<profile>
+			<id>pit</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-maven</artifactId>
+						<version>1.19.1</version>
+						<dependencies>
+							<dependency>
+								<groupId>org.pitest</groupId>
+								<artifactId>pitest-junit5-plugin</artifactId>
+								<version>1.2.2</version>
+							</dependency>
+						</dependencies>
+						<configuration>
+							<targetClasses>
+								<param>co.financiera.cartera.nucleo.*</param>
+								<param>co.financiera.cartera.nucleo.motor.*</param>
+							</targetClasses>
+							<targetTests>
+								<param>co.financiera.cartera.*</param>
+							</targetTests>
+							<mutationThreshold>85</mutationThreshold>
+							<threads>4</threads>
+							<timestampedReports>false</timestampedReports>
+							<outputFormats>
+								<outputFormat>HTML</outputFormat>
+								<outputFormat>XML</outputFormat>
+							</outputFormats>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

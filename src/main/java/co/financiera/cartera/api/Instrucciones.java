@@ -53,23 +53,61 @@ final class Instrucciones {
         }
         return switch (tipo) {
             case PAGO_CONTRACTUAL -> new PagoContractual(dias);
-            case PAGO_PARCIAL -> new PagoParcial(Decimales.obligatorio(d.fraccion(), "fraccion"), dias);
-            case PAGO_VALOR -> new PagoValor(Decimales.obligatorio(d.valor(), "valor"), dias);
+            case PAGO_PARCIAL -> new PagoParcial(fraccion(Decimales.obligatorio(d.fraccion(), "fraccion")), dias);
+            case PAGO_VALOR -> new PagoValor(noNegativo(Decimales.obligatorio(d.valor(), "valor"), "valor",
+                    "El valor del pago no puede ser negativo"), dias);
             case SIN_PAGO -> new SinPago(d.causaMoraYServicios() == null || d.causaMoraYServicios());
-            case ABONO_EXTRA -> new AbonoExtra(Decimales.obligatorio(d.valor(), "valor"),
+            case ABONO_EXTRA -> new AbonoExtra(positivo(Decimales.obligatorio(d.valor(), "valor"), "valor",
+                    "El valor del abono extraordinario debe ser positivo"),
                     Enumeraciones.leer(ModalidadAbono.class, d.modalidad(), ModalidadAbono.POR_DEFECTO, "modalidad"));
-            case PREPAGO_TOTAL -> new PrepagoTotal(d.diasDesdeUltimaCuota() == null ? 0 : d.diasDesdeUltimaCuota());
-            case USURA_VIGENTE -> new UsuraVigente(Decimales.obligatorio(d.usuraEA(), "usuraEA"));
-            case CAMBIO_TASA -> new CambioTasa(Decimales.obligatorio(d.nuevaTasaEA(), "nuevaTasaEA"),
+            case PREPAGO_TOTAL -> new PrepagoTotal(diasDesde(d.diasDesdeUltimaCuota()));
+            case USURA_VIGENTE -> new UsuraVigente(positivo(Decimales.obligatorio(d.usuraEA(), "usuraEA"), "usuraEA",
+                    "La usura debe ser positiva"));
+            case CAMBIO_TASA -> new CambioTasa(positivo(Decimales.obligatorio(d.nuevaTasaEA(), "nuevaTasaEA"), "nuevaTasaEA",
+                    "La nueva tasa EA debe ser positiva"),
                     Enumeraciones.leer(ModalidadCambioTasa.class, d.modalidad(), ModalidadCambioTasa.MISMA_FECHA_FINAL,
                             "modalidad"));
             case PAGO_AL_DIA -> new PagoAlDia();
             case CIERRE_POR_RECUPERACION -> new CierrePorRecuperacion(
                     obligatorio(Enumeraciones.leer(TipoRecuperacion.class, d.tipoRecuperacion(), null, "tipoRecuperacion"),
                             "tipoRecuperacion"),
-                    Decimales.obligatorio(d.valorMoto(), "valorMoto"),
-                    Decimales.leer(d.costoRecuperacion(), "costoRecuperacion", java.math.BigDecimal.ZERO));
+                    positivo(Decimales.obligatorio(d.valorMoto(), "valorMoto"), "valorMoto",
+                            "El valor de la moto recibida debe ser positivo"),
+                    noNegativo(Decimales.leer(d.costoRecuperacion(), "costoRecuperacion", java.math.BigDecimal.ZERO),
+                            "costoRecuperacion", "El costo de la recuperación no puede ser negativo"));
         };
+    }
+
+    // Auditoría 2026-10-23 (H4): valores imposibles se rechazan con 400 nombrando el campo. El núcleo (los records de
+    // Instruccion) repite las mismas validaciones para quien lo use sin pasar por el API.
+
+    private static java.math.BigDecimal positivo(java.math.BigDecimal v, String campo, String mensaje) {
+        if (v.signum() <= 0) {
+            throw ApiException.datoInvalido(mensaje + ": " + v.toPlainString(), campo);
+        }
+        return v;
+    }
+
+    private static java.math.BigDecimal noNegativo(java.math.BigDecimal v, String campo, String mensaje) {
+        if (v.signum() < 0) {
+            throw ApiException.datoInvalido(mensaje + ": " + v.toPlainString(), campo);
+        }
+        return v;
+    }
+
+    private static java.math.BigDecimal fraccion(java.math.BigDecimal v) {
+        if (v.signum() <= 0 || v.compareTo(java.math.BigDecimal.ONE) > 0) {
+            throw ApiException.datoInvalido("La fracción del pago parcial debe estar entre 0 (sin incluir) y 1: "
+                    + v.toPlainString(), "fraccion");
+        }
+        return v;
+    }
+
+    private static int diasDesde(Integer dias) {
+        if (dias != null && dias < 0) {
+            throw ApiException.datoInvalido("Los días desde la última cuota no pueden ser negativos", "diasDesdeUltimaCuota");
+        }
+        return dias == null ? 0 : dias;
     }
 
     private static <T> T obligatorio(T valor, String campo) {

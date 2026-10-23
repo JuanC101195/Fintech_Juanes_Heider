@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { esDecimal } from './dinero'
-import type { Asiento, Catalogo, CasoDetalle, DeudaExtinguida, Ejecucion, FilaPlan, LineaAsiento, Movimiento, ProrrateoPrimeraCuota, Servicios, Simulacion } from './tipos'
+import type { Asiento, Catalogo, CasoDetalle, CasoResumen, Credito, DeudaExtinguida, Ejecucion, FilaPlan, InfoPeriodicidad, Linea, LineaAsiento, Movimiento, ProrrateoPrimeraCuota, ResumenEjecucion, ResumenSimulacion, Servicios, Simulacion } from './tipos'
 
 type Forma = 'dinero' | 'texto' | 'entero' | 'booleano' | 'servicios' | 'deuda' | 'fecha'
 
@@ -120,6 +120,54 @@ describe('catálogo y simulación reales contra los tipos', () => {
     const s = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-quincenal.json')
     expect(s.plan).toHaveLength(48)
     for (const f of s.plan) validar(f, FILA_PLAN, `fila ${f.periodo}`)
+  })
+})
+
+/** Claves exactas de cada objeto del contrato (los Record obligan a declarar todas las claves del tipo de tipos.ts). */
+const CLAVES_LINEA: Record<keyof Linea, true> = { codigo: true, nombre: true, tasaEA: true, plazoMaximoMeses: true, periodicidades: true }
+const CLAVES_PERIODICIDAD: Record<keyof InfoPeriodicidad, true> = { codigo: true, periodosPorAnio: true, adjetivo: true, porConfirmar: true, diasNominales: true, unidadCuota: true, cuotasMaximas: true }
+const CLAVES_RESUMEN_SIMULACION: Record<Exclude<keyof ResumenSimulacion, 'prorrateoPrimeraCuota'>, true> = {
+  linea: true, perfilReglas: true, serviciosPorCuota: true, montoFinanciado: true, tasaEA: true, tasaPeriodo: true, cuotas: true,
+  cuotaFinanciera: true, cuotaTotal: true, totalPagado: true, totalIntereses: true, totalServicios: true, periodicidad: true, porConfirmar: true,
+}
+const CLAVES_RESUMEN_EJECUCION: Record<Exclude<keyof ResumenEjecucion, 'prorrateoPrimeraCuota'>, true> = {
+  periodoFinal: true, estadoFinal: true, saldoFinal: true, totalPagadoCliente: true, cuotasVencidasMax: true, montoFinanciado: true,
+  perfilReglas: true, listoParaRecuperacion: true, periodoListoParaRecuperacion: true,
+}
+const CLAVES_CASO_RESUMEN: Record<keyof CasoResumen, true> = { numero: true, nombre: true, descripcion: true, fuente: true }
+// Las que el API omite cuando no aplican (@JsonInclude NON_NULL) son opcionales en el tipo; el ejemplo trae un subconjunto.
+const CLAVES_CREDITO: Record<keyof Credito, true> = {
+  linea: true, periodicidad: true, cuotas: true, meses: true, valorMoto: true, pagoInicial: true, perfilReglas: true, matriculaRunt: true, soat: true,
+  prenda: true, gpsPlataforma: true, gastosComerciales: true, plazoLimitePeriodos: true, cobranzaActiva: true, fechaDesembolso: true, primerVencimiento: true,
+}
+
+const claves = (o: unknown) => Object.keys(o as object).sort()
+
+describe('claves de los objetos del contrato (Java ↔ tipos.ts ↔ ejemplos reales)', () => {
+  it('catálogo: líneas y periodicidades', () => {
+    const c = leer<Catalogo>('docs', 'api-ejemplos', 'catalogo.json')
+    expect(c.lineas.length).toBeGreaterThan(0)
+    for (const l of c.lineas) expect(claves(l)).toEqual(claves(CLAVES_LINEA))
+    for (const p of c.periodicidades) expect(claves(p)).toEqual(claves(CLAVES_PERIODICIDAD))
+    expect(claves(c)).toEqual(['lineas', 'modalidadesAbono', 'modalidadesCambioTasa', 'perfilesReglas', 'periodicidades', 'tiposInstruccion', 'tiposRecuperacion', 'valoresPorDefecto'])
+  })
+
+  it('resúmenes de simulación y de ejecución', () => {
+    const s = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-quincenal.json')
+    expect(claves(s.resumen)).toEqual(claves(CLAVES_RESUMEN_SIMULACION))
+    const conFechas = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-mensual-prorrateo.json')
+    expect(claves(conFechas.resumen)).toEqual([...claves(CLAVES_RESUMEN_SIMULACION), 'prorrateoPrimeraCuota'].sort())
+    const e = leer<Ejecucion>('docs', 'api-ejemplos', 'escenario-semanal-prorrateo.json')
+    expect(claves(e.resumen)).toEqual([...claves(CLAVES_RESUMEN_EJECUCION), 'prorrateoPrimeraCuota'].sort())
+    expect(claves(leer<CasoDetalle>('docs', 'api-ejemplos', 'caso-13-negocio.json').resumen)).toEqual(claves(CLAVES_RESUMEN_EJECUCION))
+  })
+
+  it('caso 13: resumen del caso, crédito e instrucciones solo con claves del tipo', () => {
+    const c = leer<CasoDetalle>('docs', 'api-ejemplos', 'caso-13-negocio.json')
+    expect(claves(c.caso)).toEqual(claves(CLAVES_CASO_RESUMEN))
+    expect(Object.keys(c.credito).filter((k) => !(k in CLAVES_CREDITO))).toEqual([])
+    const permitidas = ['periodo', 'tipo', 'valor', 'fraccion', 'diasAtraso', 'causaMoraYServicios', 'modalidad', 'diasDesdeUltimaCuota', 'usuraEA', 'nuevaTasaEA', 'tipoRecuperacion', 'valorMoto', 'costoRecuperacion']
+    for (const i of c.instrucciones) expect(Object.keys(i).filter((k) => !permitidas.includes(k))).toEqual([])
   })
 })
 

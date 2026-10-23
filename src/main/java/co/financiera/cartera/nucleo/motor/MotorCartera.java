@@ -202,17 +202,32 @@ public final class MotorCartera {
                 usuraPorAplicar = null;
             }
             boolean pagoExplicito = false;
+            boolean usuraLeida = false;
             for (Instruccion i : instrucciones) {
                 switch (i) {
                     case CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) -> {
                         cambiarTasa(periodo, nuevaTasaEA, modalidad);
                         ordenes.cambioTasa = true;
                     }
-                    case UsuraVigente(BigDecimal usuraEA) -> usuraPorAplicar = usuraEA;
-                    case AbonoExtra a -> ordenes.abono = a;
-                    case PrepagoTotal t -> ordenes.prepago = t;
-                    case CierrePorRecuperacion c -> ordenes.cierre = c;
+                    case UsuraVigente(BigDecimal usuraEA) -> {
+                        unaSola(periodo, usuraLeida, "publicación de usura");
+                        usuraLeida = true;
+                        usuraPorAplicar = usuraEA;
+                    }
+                    case AbonoExtra a -> {
+                        unaSola(periodo, ordenes.abono != null, "abono extraordinario");
+                        ordenes.abono = a;
+                    }
+                    case PrepagoTotal t -> {
+                        unaSola(periodo, ordenes.prepago != null, "orden de prepago total");
+                        ordenes.prepago = t;
+                    }
+                    case CierrePorRecuperacion c -> {
+                        unaSola(periodo, ordenes.cierre != null, "orden de cierre por recuperación");
+                        ordenes.cierre = c;
+                    }
                     default -> {
+                        unaSola(periodo, pagoExplicito, "instrucción de pago");
                         ordenes.pago = i;
                         pagoExplicito = true;
                     }
@@ -225,6 +240,18 @@ public final class MotorCartera {
                 ordenes.pago = new SinPago(false);
             }
             return ordenes;
+        }
+
+        /**
+         * Auditoría 2026-10-23 (H5): antes la segunda instrucción del mismo tipo en un periodo reemplazaba a la
+         * primera y el dinero de la primera se perdía sin aviso. Decisión conservadora: no se suman ni se elige
+         * una; se rechaza el escenario y quien lo arma decide.
+         */
+        private static void unaSola(int periodo, boolean yaHabia, String que) {
+            if (yaHabia) {
+                throw new IllegalArgumentException("El periodo " + periodo + " tiene más de una " + que
+                        + "; el motor acepta una sola por periodo (no las suma). Unifíquelas en una instrucción.");
+            }
         }
 
         /**
@@ -251,6 +278,14 @@ public final class MotorCartera {
         private void cambiarTasa(int periodo, BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) {
             tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
             saldoPlan = restar(saldo, capitalVencido);
+            if (periodo > cuotasVigentes) {
+                // Auditoría 2026-10-23 (H6): después de la última cuota pactada no quedan cuotas por recalcular
+                // (PMT con 0 o menos periodos lanzaba excepción y tumbaba, p. ej., un lote de usura con créditos en
+                // mora fuera de plazo). Decisión conservadora, pendiente de Diego: la tasa nueva queda registrada
+                // (rige el interés y la mora desde este periodo), pero ni la cuota ni el plazo cambian: lo que
+                // queda es capital vencido y se sigue cobrando por prelación.
+                return;
+            }
             if (modalidad == ModalidadCambioTasa.MISMA_FECHA_FINAL) {
                 // R4-T5 (Diego 2026-10-22): con el cliente en mora la cuota nueva va solo sobre el capital vigente;
                 // el vencido se sigue cobrando aparte (prelación) y los intereses pendientes nunca entran a la base
@@ -269,6 +304,14 @@ public final class MotorCartera {
          * y el abono a menor plazo (SRV-2).
          */
         private int cuotasHastaSaldoCero(BigDecimal base) {
+            if (base.signum() <= 0 || esCero(base)) {
+                return 0;
+            }
+            if (tasas.periodica().signum() == 0) {
+                // Auditoría 2026-10-23 (H9): con tasa 0 la fórmula da 0/0 = NaN y (int) NaN = 0 cuotas, lo que
+                // cortaba el plan. Sin interés el número de cuotas es saldo / cuota redondeado hacia arriba.
+                return Calc.dividir(base, cuota).setScale(0, java.math.RoundingMode.CEILING).intValueExact();
+            }
             double r = tasas.periodica().doubleValue();
             double proporcion = r * base.doubleValue() / cuota.doubleValue();
             if (proporcion >= 1) {
@@ -296,7 +339,16 @@ public final class MotorCartera {
                     ? noNegativo(restar(saldoInicial, capitalVencido)) : saldoInicial;
             BigDecimal capitalContractual = CERO;
             if (dentroDelPlazo && !sinPagoSinMora && !esCero(saldoPlan)) {
-                capitalContractual = min(saldoPlan, restar(cuota, multiplicar(saldoPlan, tasa)));
+                // Auditoría 2026-10-23 (H3): nunca negativo, aunque el saldo del plan lo fuera por un error aguas arriba.
+                capitalContractual = noNegativo(min(saldoPlan, restar(cuota, multiplicar(saldoPlan, tasa))));
+                // Auditoría 2026-10-23 (I8): el plan puede ir por encima del capital que de verdad queda vigente (un pago
+                // mayor que la cuota baja el saldo pero no el plan). Sin este tope la cuota del plan vencía más capital
+                // del que existe y el capital vencido superaba al saldo. Solo actúa si la diferencia supera el medio
+                // centavo, así los residuos DECIMAL128 de los casos del Excel no cambian.
+                BigDecimal vigente = noNegativo(restar(saldoInicial, capitalVencido));
+                if (restar(capitalContractual, vigente).compareTo(Calc.EPSILON_SALDO) > 0) {
+                    capitalContractual = vigente;
+                }
             }
             boolean causaServicios = !sinPagoSinMora
                     && (dentroDelPlazo || (reglas.serviciosDespuesDelPlazo() && !esCero(saldoInicial)));
@@ -457,8 +509,13 @@ public final class MotorCartera {
                         new DeudaExtinguida(CERO, CERO, CERO, serviciosCorrientesExtra, CERO));
                 restante = noNegativo(restar(restante, serviciosCorrientesExtra.total()));
             }
-            BigDecimal aplicado = min(restante, saldo);
+            // Auditoría 2026-10-23 (H3): el abono va primero al capital vigente (con un abono menor que el vigente nada
+            // cambia) y lo que lo supere extingue capital vencido. Antes se descontaba del saldo (que incluye el
+            // vencido) sin reducir el vencido: el saldo del plan quedaba negativo, el capital contractual salía
+            // negativo y el vencido seguía causando mora sobre capital ya pagado.
+            BigDecimal aplicado = min(restante, noNegativo(restar(saldo, capitalVencido)));
             saldo = restar(saldo, aplicado);
+            pagarVencidoConExtra(noNegativo(restar(restante, aplicado)));
             if (abono.modalidad() == ModalidadAbono.MENOR_CUOTA && cuotasVigentes - periodo > 0 && !esCero(saldo)) {
                 // A5 (Diego 2026-10-20): la cuota nueva usa la tasa vigente; el abono no cambia la tasa (D-7.1).
                 // Con PRIMERO_PENDIENTES la cuota nueva amortiza solo el capital vigente: el vencido que el
@@ -495,6 +552,25 @@ public final class MotorCartera {
             restante = restar(restante, asistencia);
             BigDecimal seguro = min(restante, porPagar.seguro());
             return new Servicios(fondo, asistencia, seguro);
+        }
+
+        /**
+         * Auditoría 2026-10-23 (H3): capital vencido que paga un abono o un prepago aplicado solo a capital
+         * (SOLO_CAPITAL, el Excel) cuando supera el capital vigente. Se reporta como capital de los pendientes
+         * pagados por fuera de la cuota, para que la contabilidad lo acredite a Cartera capital vencida.
+         */
+        private void pagarVencidoConExtra(BigDecimal disponible) {
+            BigDecimal vencido = min(disponible, capitalVencido);
+            if (vencido.signum() <= 0) {
+                return;
+            }
+            pendientesPagadosExtra = pendientesPagadosExtra.mas(
+                    new DeudaExtinguida(CERO, CERO, CERO, Servicios.NINGUNO, vencido));
+            capitalVencido = noNegativo(restar(capitalVencido, vencido));
+            if (esCero(capitalVencido)) {
+                capitalVencido = CERO;
+            }
+            saldo = noNegativo(restar(saldo, vencido));
         }
 
         /** Pendientes de semanas anteriores distintos del capital: cobranza, mora, interés y servicios. */
@@ -561,6 +637,9 @@ public final class MotorCartera {
             if (reglas.aplicacionAbono().pagaPendientes()) {
                 pendientesPagadosExtra = pendientesPagadosExtra.mas(pagarPendientes(sumar(saldo, pendientesSinCapital())));
             }
+            // Auditoría 2026-10-23 (H3): el prepago total extingue el capital completo, también el vencido (con SOLO_CAPITAL
+            // antes quedaba vivo con saldo 0 y seguía causando mora y servicios por más de 100 periodos).
+            pagarVencidoConExtra(capitalVencido);
             BigDecimal prepagado = saldo;
             saldo = CERO;
             saldoPlan = CERO;
