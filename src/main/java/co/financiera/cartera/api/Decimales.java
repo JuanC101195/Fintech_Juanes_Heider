@@ -30,7 +30,7 @@ final class Decimales {
         try {
             return new BigDecimal(valor.trim());
         } catch (NumberFormatException e) {
-            throw ApiException.validacion("El campo " + campo + " no es un número decimal: " + valor, campo);
+            throw ApiException.datoInvalido("El campo " + campo + " no es un número decimal: " + valor, campo);
         }
     }
 
@@ -38,7 +38,7 @@ final class Decimales {
     static BigDecimal obligatorio(String valor, String campo) {
         BigDecimal v = leer(valor, campo, null);
         if (v == null) {
-            throw ApiException.validacion("Falta el campo " + campo, campo);
+            throw ApiException.datoInvalido("Falta el campo " + campo, campo);
         }
         return v;
     }

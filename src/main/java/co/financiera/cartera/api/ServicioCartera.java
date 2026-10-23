@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -199,7 +200,7 @@ public class ServicioCartera {
 
     public SimulacionResponse simular(CreditoRequest c) {
         if (c == null) {
-            throw ApiException.validacion("Falta el crédito");
+            throw ApiException.datoInvalido("Falta el crédito");
         }
         Perfil perfil = perfil(c.perfilReglas(), Perfil.NEGOCIO);
         ParametrosProducto p = parametros(c, perfiles.reglas(perfil));
@@ -246,7 +247,7 @@ public class ServicioCartera {
 
     public EjecucionResponse ejecutar(EjecutarRequest r) {
         if (r == null || r.credito() == null) {
-            throw ApiException.validacion("Falta el crédito", "credito");
+            throw ApiException.datoInvalido("Falta el crédito", "credito");
         }
         CreditoRequest c = r.credito();
         Perfil perfil = perfil(r.perfilReglas() != null ? r.perfilReglas() : c.perfilReglas(), Perfil.NEGOCIO);
@@ -261,7 +262,7 @@ public class ServicioCartera {
         if (r.instrucciones() != null) {
             for (InstruccionDto i : r.instrucciones()) {
                 if (i == null || i.periodo() == null || i.periodo() < 1 || i.periodo() > ultimoPeriodo) {
-                    throw ApiException.validacion("Cada instrucción necesita un periodo entre 1 y "
+                    throw ApiException.datoInvalido("Cada instrucción necesita un periodo entre 1 y "
                             + ultimoPeriodo + ": " + (i == null ? null : i.periodo()), "periodo");
                 }
                 e.en(i.periodo(), Instrucciones.aMotor(i));
@@ -344,7 +345,7 @@ public class ServicioCartera {
 
     public ClasificacionResponse clasificar(ClasificarRequest r) {
         if (r == null) {
-            throw ApiException.validacion("Faltan valorRecibido y valorAdeudado");
+            throw ApiException.datoInvalido("Faltan valorRecibido y valorAdeudado");
         }
         ClasificacionPago c = ClasificacionPago.clasificar(Decimales.obligatorio(r.valorRecibido(), "valorRecibido"),
                 Decimales.obligatorio(r.valorAdeudado(), "valorAdeudado"));
@@ -372,30 +373,30 @@ public class ServicioCartera {
         int maxMeses = linea.plazoMaximoMeses();
         int maxCuotas = per.cuotasEnMeses(maxMeses);
         if (c.cuotas() == null && c.meses() == null) {
-            throw ApiException.validacion("Mande cuotas o meses", "cuotas");
+            throw ApiException.datoInvalido("Mande cuotas o meses", "cuotas");
         }
         Integer cuotasMeses = null;
         if (c.meses() != null) {
             if (c.meses() < 1) {
-                throw ApiException.validacion("Los meses deben ser al menos 1", "meses");
+                throw ApiException.datoInvalido("Los meses deben ser al menos 1", "meses");
             }
             if (c.meses() > maxMeses) {
                 throw plazoMaximo(maxMeses, maxCuotas, per, "Plazo de " + c.meses() + " meses");
             }
             cuotasMeses = per.cuotasEnMeses(c.meses());
             if (cuotasMeses < 1) {
-                throw ApiException.validacion(c.meses() + " meses no alcanzan para una cuota " + per.adjetivo(), "meses");
+                throw ApiException.datoInvalido(c.meses() + " meses no alcanzan para una cuota " + per.adjetivo(), "meses");
             }
         }
         if (c.cuotas() != null) {
             if (c.cuotas() < 1) {
-                throw ApiException.validacion("Las cuotas deben ser al menos 1", "cuotas");
+                throw ApiException.datoInvalido("Las cuotas deben ser al menos 1", "cuotas");
             }
             if (c.cuotas() > maxCuotas) {
                 throw plazoMaximo(maxMeses, maxCuotas, per, c.cuotas() + " " + per.unidadCuota());
             }
             if (cuotasMeses != null && !cuotasMeses.equals(c.cuotas())) {
-                throw ApiException.validacion(c.meses() + " meses son " + cuotasMeses + " " + per.unidadCuota()
+                throw ApiException.datoInvalido(c.meses() + " meses son " + cuotasMeses + " " + per.unidadCuota()
                         + ", no " + c.cuotas() + "; mande solo cuotas o solo meses", "cuotas");
             }
         }
@@ -408,7 +409,7 @@ public class ServicioCartera {
         if (c.plazoLimitePeriodos() != null) {
             // Puede ser menor que las cuotas: el caso 8 proyecta 100 semanas de un crédito de 104.
             if (c.plazoLimitePeriodos() < 1) {
-                throw ApiException.validacion("El plazo límite debe ser al menos 1 periodo", "plazoLimitePeriodos");
+                throw ApiException.datoInvalido("El plazo límite debe ser al menos 1 periodo", "plazoLimitePeriodos");
             }
             p = p.conPlazoLimite(c.plazoLimitePeriodos());
         } else {
@@ -451,19 +452,19 @@ public class ServicioCartera {
         }
         if (sinDesembolso || sinVencimiento) {
             String falta = sinDesembolso ? FECHA_DESEMBOLSO : PRIMER_VENCIMIENTO;
-            throw ApiException.validacion("Las fechas van juntas: falta " + falta
+            throw ApiException.datoInvalido("Las fechas van juntas: falta " + falta
                     + " (mande fechaDesembolso y primerVencimiento, o ninguna de las dos)", falta);
         }
         LocalDate desembolso = fecha(fechaDesembolso, FECHA_DESEMBOLSO);
         LocalDate vencimiento = fecha(primerVencimiento, PRIMER_VENCIMIENTO);
         if (!vencimiento.isAfter(desembolso)) {
-            throw ApiException.validacion("El primer vencimiento (" + vencimiento + ") debe ser posterior a la fecha de "
+            throw ApiException.datoInvalido("El primer vencimiento (" + vencimiento + ") debe ser posterior a la fecha de "
                     + "desembolso (" + desembolso + ")", PRIMER_VENCIMIENTO);
         }
         CalendarioPagos calendario = switch (per) {
             case SEMANAL -> {
-                if (vencimiento.getDayOfWeek() != DayOfWeek.TUESDAY) {
-                    throw ApiException.validacion("En un crédito semanal la cuota vence los martes; el " + vencimiento
+                if (!DayOfWeek.TUESDAY.equals(vencimiento.getDayOfWeek())) {
+                    throw ApiException.datoInvalido("En un crédito semanal la cuota vence los martes; el " + vencimiento
                             + " es " + vencimiento.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.of("es", "CO")),
                             PRIMER_VENCIMIENTO);
                 }
@@ -471,14 +472,14 @@ public class ServicioCartera {
             }
             case QUINCENAL -> {
                 if (vencimiento.getDayOfMonth() != 5 && vencimiento.getDayOfMonth() != 20) {
-                    throw ApiException.validacion("En un crédito quincenal la cuota vence el 5 y el 20 de cada mes; el "
+                    throw ApiException.datoInvalido("En un crédito quincenal la cuota vence el 5 y el 20 de cada mes; el "
                             + vencimiento + " no es ninguno de los dos", PRIMER_VENCIMIENTO);
                 }
                 yield CalendarioPagos.quincenal(desembolso, vencimiento);
             }
             case MENSUAL -> {
                 if (vencimiento.getDayOfMonth() != CalendarioPagos.DIA_PAGO_MENSUAL) {
-                    throw ApiException.validacion("En un crédito mensual la cuota vence el día "
+                    throw ApiException.datoInvalido("En un crédito mensual la cuota vence el día "
                             + CalendarioPagos.DIA_PAGO_MENSUAL + " de cada mes; el " + vencimiento + " no lo es",
                             PRIMER_VENCIMIENTO);
                 }
@@ -492,7 +493,7 @@ public class ServicioCartera {
         try {
             return LocalDate.parse(valor.trim());
         } catch (DateTimeParseException e) {
-            throw ApiException.validacion(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03); "
+            throw ApiException.datoInvalido(campo + " debe ser una fecha con formato yyyy-MM-dd (por ejemplo 2026-11-03); "
                     + "llegó \"" + valor + "\"", campo);
         }
     }
@@ -507,7 +508,7 @@ public class ServicioCartera {
      */
     static ProrrateoDto prorrateo(Fechas fechas, Escenario e, Movimiento primero) {
         boolean aplicado = e.reglas().prorrateoPrimeraCuota();
-        BigDecimal causado = primero.interesCorriente();
+        BigDecimal causado = Objects.requireNonNull(primero.interesCorriente(), "interesCorriente");
         BigDecimal completo = aplicado ? Calc.multiplicar(primero.saldoInicial(), primero.tasaPeriodica()) : causado;
         return new ProrrateoDto(fechas.desembolso().toString(), fechas.primerVencimiento().toString(),
                 fechas.calendario().diasDelPeriodo(1), e.parametros().periodicidad().diasNominales(), aplicado,
