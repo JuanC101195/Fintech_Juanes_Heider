@@ -17,7 +17,14 @@ curl localhost:8080/api/v1/catalogo
   - `EXCEL` = `ReglasNegocio.EXCEL`, el comportamiento del Excel de Diego del 11 de octubre.
   - `NEGOCIO` = `ReglasNegocio.desde(config/reglas-negocio.properties)`, las respuestas de negocio. Ruta configurable con `cartera.reglas.archivo`; si el archivo no existe, NEGOCIO queda igual a EXCEL.
   - Por defecto: `NEGOCIO` en `/simulaciones` y `/escenarios/ejecutar`; `EXCEL` en `/casos/{numero}`, porque de ahí salen los casos 1 a 12.
-- CORS: `http://localhost:5173` y `https://juanc101195.github.io` (propiedad `cartera.api.cors.origenes`), métodos GET, POST y OPTIONS.
+- CORS: `http://localhost:5173` y `https://juanc101195.github.io` (propiedad `cartera.api.cors.origenes`), métodos GET, POST y OPTIONS, cabeceras `Content-Type` y `X-API-Key`.
+- Cabeceras de seguridad en toda respuesta: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` y, en `/api/**`, `Cache-Control: no-store`. Las respuestas JSON de más de 1 KB se comprimen (gzip) si el cliente manda `Accept-Encoding`.
+- **Autenticación opcional** (`X-API-Key`): apagada por defecto. Con `cartera.api.claves` (variable `CARTERA_API_CLAVES`) configurada, toda petición salvo `OPTIONS` y `/actuator/health` necesita la cabecera. Roles `CONSUMIDOR` (todo `/api/v1/**`) y `LECTURA` (solo `GET` de `/catalogo`, `/reglas` y `/casos*`). Cómo activarla: `docs/despliegue.md`.
+- **Límites** (todos responden 400 `VALIDACION` con `detalle.campo`, antes de calcular, salvo el del cuerpo):
+  - Números: máximo 30 dígitos y escala entre -20 y 20 (así `"1e999999999"` se rechaza); dinero entre 0 y 10.000.000.000 (`valorMoto` mayor que 0); tasas (`nuevaTasaEA`, `usuraEA`) en (0, 5]; `fraccion` entre 0 y 100.
+  - Fechas del crédito entre los años 2000 y 2100.
+  - Escenarios: máximo 500 instrucciones por petición; `plazoLimitePeriodos` hasta 208 (el doble de las cuotas máximas del catálogo, 104); `diasAtraso` y `diasDesdeUltimaCuota` entre 0 y 3.650.
+  - Cuerpo de la petición: máximo 256 KB (`cartera.api.cuerpo-maximo-bytes`); más responde 413.
 - Errores: `{"codigo": "...", "mensaje": "...", "detalle": {...}}`.
 
 | HTTP | `codigo` | Cuándo |
@@ -25,7 +32,11 @@ curl localhost:8080/api/v1/catalogo
 | 400 | `ABONO_MAYOR_QUE_SALDO` | Un abono extra supera el saldo de capital (P-14, D12). `detalle`: `periodo`, `abono`, `saldo`. |
 | 400 | `PLAZO_MAXIMO` | Más de 24 meses o más cuotas que el máximo de la periodicidad (104 / 48 / 24). `detalle`: `maximoMeses`, `maximoCuotas`, `periodicidad`. |
 | 400 | `VALIDACION` | Campo faltante o mal formado, enum desconocido (`detalle.valoresValidos`), JSON inválido o validación del núcleo (pago inicial negativo, etc.). También fechas del crédito incoherentes (ver "Fechas y prorrateo de la primera cuota"). `detalle.campo` cuando se sabe. |
+| 401 | `NO_AUTORIZADO` | Solo con autenticación activada: falta `X-API-Key` o no es válida. |
+| 403 | `PROHIBIDO` | Solo con autenticación activada: la clave es de rol `LECTURA` y el recurso o el método no está permitido. |
 | 404 | `CASO_INEXISTENTE` | `/casos/{numero}` fuera de 1 a 13. |
+| 413 | `CUERPO_DEMASIADO_GRANDE` | El cuerpo supera 256 KB. |
+| 500 | `ERROR_INTERNO` | Cualquier excepción no prevista. `detalle.idCorrelacion` es un UUID que también queda en el log del servidor; el mensaje no revela el error interno. |
 | 500 | `ASIENTO_DESCUADRADO` | Error interno: el `Contabilizador` generó un asiento descuadrado (HT-06). No depende del request. |
 
 ## Endpoints
@@ -188,7 +199,7 @@ curl -X POST localhost:8080/api/v1/escenarios/ejecutar -H 'Content-Type: applica
   "incluirAsientos": true}'
 ```
 
-`perfilReglas` va arriba o dentro de `credito` (gana el de arriba). `incluirAsientos` es `true` por defecto; en `false`, `asientos` llega vacío. Un periodo puede llevar varias instrucciones: se aplican en el orden en que llegan (el caso 13 manda `SIN_PAGO` y `ABONO_EXTRA` en la semana 42).
+`perfilReglas` va arriba o dentro de `credito` (gana el de arriba). `incluirAsientos` es `true` por defecto (se mantiene así: la consola y varios clientes lo usan sin mandarlo); en `false`, `asientos` llega vacío. Un periodo puede llevar varias instrucciones: se aplican en el orden en que llegan (el caso 13 manda `SIN_PAGO` y `ABONO_EXTRA` en la semana 42).
 
 Campos de cada instrucción (los de su record en `Instruccion`):
 

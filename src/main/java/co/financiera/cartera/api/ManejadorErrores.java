@@ -4,6 +4,10 @@ import co.financiera.cartera.api.Dtos.ErrorDto;
 import co.financiera.cartera.contabilidad.Contabilizador;
 import co.financiera.cartera.nucleo.motor.AbonoMayorQueElSaldoException;
 import java.util.LinkedHashMap;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.ErrorResponse;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice(assignableTypes = CarteraController.class)
 public class ManejadorErrores {
 
+    static final String ERROR_INTERNO = "ERROR_INTERNO";
+    private static final Logger LOG = LoggerFactory.getLogger(ManejadorErrores.class);
     static final String ABONO_MAYOR_QUE_SALDO = "ABONO_MAYOR_QUE_SALDO";
     static final String ASIENTO_DESCUADRADO = "ASIENTO_DESCUADRADO";
 
@@ -56,6 +62,29 @@ public class ManejadorErrores {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorDto> tipoInvalido(MethodArgumentTypeMismatchException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ApiException.VALIDACION,
-                "Valor no válido para " + e.getName() + ": " + e.getValue(), Map.of("campo", e.getName())));
+                "Valor no válido para " + e.getName(), Map.of("campo", e.getName())));
+    }
+
+    /**
+     * Cualquier otra excepción: 500 con un id de correlación que también queda en el log. No se vuelca el cuerpo de
+     * la petición ni se devuelve el mensaje interno. Los {@link Error} (OutOfMemoryError, StackOverflowError) no son
+     * {@code Exception} y no se atrapan. Los errores HTTP de Spring (405, 415, parámetro faltante) conservan su estado.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDto> interno(Exception e) throws Exception {
+        // DispatcherServlet envuelve los Error en una ServletException: se deja pasar para que no se atrapen.
+        for (Throwable causa = e; causa != null; causa = causa.getCause() == causa ? null : causa.getCause()) {
+            if (causa instanceof Error) {
+                throw e;
+            }
+        }
+        if (e instanceof ErrorResponse er && !er.getStatusCode().is5xxServerError()) {
+            return ResponseEntity.status(er.getStatusCode()).body(new ErrorDto(ApiException.VALIDACION,
+                    "Petición no válida para este endpoint", Map.of()));
+        }
+        String id = UUID.randomUUID().toString();
+        LOG.error("ERROR_INTERNO idCorrelacion={} tipo={}", id, e.getClass().getName(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDto(ERROR_INTERNO,
+                "Error interno del servidor. Cite el identificador al reportarlo.", Map.of("idCorrelacion", id)));
     }
 }
