@@ -84,6 +84,8 @@ for (const [nombre, ancho, alto, escala] of [['celular', 360, 780, 2], ['escrito
   await page.getByRole('button', { name: 'Calcular resultado' }).click()
   await page.getByText('Termina en el periodo 84').waitFor({ timeout: 30000 })
   await page.getByRole('button', { name: /Abono extra de \$ 500\.000 a menor plazo/ }).click()
+  // El atajo enfoca el periodo en el siguiente cuadro de animación: se espera antes de escribir.
+  await page.waitForFunction(() => document.activeElement?.closest('[data-periodo]') !== null && document.activeElement?.closest('[data-periodo]') !== undefined)
   await page.getByLabel('Periodo', { exact: true }).fill('10')
   await page.getByLabel('Valor del abono').fill('99000000')
   await page.getByRole('button', { name: 'Agregar evento' }).click()

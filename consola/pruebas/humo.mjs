@@ -96,16 +96,21 @@ for (const { nombre, ancho, alto, escala, esquemas } of CONFIGURACIONES) {
     await foto('laboratorio-casos')
     await page.locator('label.opcion-tarjeta', { hasText: 'Abono extra con pendientes' }).click()
     await page.getByRole('button', { name: /Abono extra de \$ 500\.000 a menor plazo/ }).click()
+    // El atajo enfoca el periodo en el siguiente cuadro de animación: se espera a que termine antes de escribir,
+    // para que el resultado no dependa de la velocidad de la máquina (en el servidor de GitHub fallaba).
+    await page.waitForFunction(() => document.activeElement?.closest('[data-periodo]') !== null && document.activeElement?.closest('[data-periodo]') !== undefined)
     await page.getByLabel('Periodo', { exact: true }).fill('10')
     await page.getByLabel('Valor del abono').fill('99000000')
-    if ((await page.getByLabel('Valor del abono').inputValue()) !== '99.000.000') { console.log('el abono no se ve con miles'); fallas++ }
+    const abonoVisto = await page.getByLabel('Valor del abono').inputValue()
+    if (abonoVisto !== '99.000.000') { console.log(`el abono no se ve con miles: llegó "${abonoVisto}"`); fallas++ }
     await page.getByRole('heading', { name: 'Agregar un evento' }).scrollIntoViewIfNeeded()
     await foto('laboratorio-atajo')
     await page.getByRole('button', { name: 'Agregar evento' }).click()
     await page.getByRole('button', { name: 'Calcular resultado' }).click()
     const alerta = page.getByRole('alert')
     await alerta.waitFor()
-    if (!nbsp(await alerta.innerText()).includes('Abono: $ 99.000.000')) { console.log('el error no muestra el abono legible'); fallas++ }
+    const textoAlerta = nbsp(await alerta.innerText())
+    if (!textoAlerta.includes('Abono: $ 99.000.000')) { console.log(`el error no muestra el abono legible: "${textoAlerta.slice(0, 160)}"`); fallas++ }
     await revisar('laboratorio-error')
 
     // 4. Reglas
