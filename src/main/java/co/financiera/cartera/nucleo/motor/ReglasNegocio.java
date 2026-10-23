@@ -240,7 +240,6 @@ public record ReglasNegocio(
         return java.util.OptionalInt.of(Math.min(cuotasPactadas, periodicidad.cuotasEnMeses(plazoLimiteMeses)));
     }
 
-    /** Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. */
     /**
      * Claves que el motor ya sabe aplicar; las demás respuestas del cuestionario esperan desarrollo. Son los nombres
      * de los componentes del record, en su orden (el mismo de {@code /reglas}), así que una regla nueva entra sola.
@@ -312,10 +311,10 @@ public record ReglasNegocio(
     }
 
     /** Entero: vacío se ignora (queda el valor del Excel). */
-    private static Clave entera(String nombre, java.util.function.BiConsumer<Constructor, Integer> setter) {
+    private static Clave entera(String nombre, java.util.function.ObjIntConsumer<Constructor> setter) {
         return new Clave(nombre, (c, v) -> {
             if (!v.isBlank()) {
-                setter.accept(c, Integer.valueOf(v.trim()));
+                setter.accept(c, Integer.parseInt(v.trim()));
             }
         });
     }

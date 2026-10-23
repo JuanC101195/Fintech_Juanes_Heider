@@ -1,6 +1,7 @@
 package co.financiera.cartera.caracterizacion;
 
 import static co.financiera.cartera.nucleo.Calc.bd;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.CalendarioPagos;
@@ -53,7 +54,7 @@ class PeriodicidadesNoCambianTest {
     private static Map<String, Escenario> escenarios(Periodicidad per, boolean conFechas, ReglasNegocio reglas) {
         ParametrosProducto p = parametros(per);
         // Quincenal: 23-oct → 5-nov (13 días). Mensual: 23-oct → 5-dic (43 días, como el ejemplo de P5-PRORRATEO).
-        LocalDate primero = per == Periodicidad.QUINCENAL ? LocalDate.of(2026, 11, 5) : LocalDate.of(2026, 12, 5);
+        LocalDate primero = LocalDate.of(2026, per == Periodicidad.QUINCENAL ? 11 : 12, 5);
         // Primera cuota "casi completa": quincenal 6-oct → 20-oct (14 días); mensual 6-oct → 5-nov (30 días).
         LocalDate desembolsoLargo = LocalDate.of(2026, 10, 6);
         LocalDate primeroLargo = per == Periodicidad.QUINCENAL ? LocalDate.of(2026, 10, 20) : LocalDate.of(2026, 11, 5);
@@ -114,6 +115,6 @@ class PeriodicidadesNoCambianTest {
                 }
             }
         }
-        Huellas.verificar("periodicidades.sha256", actual);
+        assertThatCode(() -> Huellas.verificar("periodicidades.sha256", actual)).doesNotThrowAnyException();
     }
 }

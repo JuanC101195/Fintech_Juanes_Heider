@@ -20,6 +20,7 @@ import java.util.List;
 
 /** Traduce entre {@link InstruccionDto} y las instrucciones del motor, en los dos sentidos. */
 final class Instrucciones {
+    private static final String CAMPO_VALOR = "valor";
 
     /** Tipos de instrucción del API, uno por record de {@link Instruccion}. */
     enum Tipo {
@@ -54,10 +55,10 @@ final class Instrucciones {
         return switch (tipo) {
             case PAGO_CONTRACTUAL -> new PagoContractual(dias);
             case PAGO_PARCIAL -> new PagoParcial(fraccion(Decimales.obligatorio(d.fraccion(), "fraccion")), dias);
-            case PAGO_VALOR -> new PagoValor(noNegativo(Decimales.obligatorio(d.valor(), "valor"), "valor",
+            case PAGO_VALOR -> new PagoValor(noNegativo(Decimales.obligatorio(d.valor(), CAMPO_VALOR), CAMPO_VALOR,
                     "El valor del pago no puede ser negativo"), dias);
             case SIN_PAGO -> new SinPago(d.causaMoraYServicios() == null || d.causaMoraYServicios());
-            case ABONO_EXTRA -> new AbonoExtra(positivo(Decimales.obligatorio(d.valor(), "valor"), "valor",
+            case ABONO_EXTRA -> new AbonoExtra(positivo(Decimales.obligatorio(d.valor(), CAMPO_VALOR), CAMPO_VALOR,
                     "El valor del abono extraordinario debe ser positivo"),
                     Enumeraciones.leer(ModalidadAbono.class, d.modalidad(), ModalidadAbono.POR_DEFECTO, "modalidad"));
             case PREPAGO_TOTAL -> new PrepagoTotal(diasDesde(d.diasDesdeUltimaCuota()));
