@@ -21,11 +21,11 @@ public class ApiException extends RuntimeException {
         this.detalle = detalle == null ? Map.of() : detalle;
     }
 
-    public static ApiException validacion(String mensaje) {
+    public static ApiException datoInvalido(String mensaje) {
         return new ApiException(HttpStatus.BAD_REQUEST, VALIDACION, mensaje, Map.of());
     }
 
-    public static ApiException validacion(String mensaje, String campo) {
+    public static ApiException datoInvalido(String mensaje, String campo) {
         return new ApiException(HttpStatus.BAD_REQUEST, VALIDACION, mensaje, Map.of("campo", campo));
     }
 

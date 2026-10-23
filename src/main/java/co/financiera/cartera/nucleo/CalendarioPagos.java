@@ -53,7 +53,7 @@ public final class CalendarioPagos {
 
     /** Semanal: la primera fecha la fija la oferta (CAL-3) y debe ser martes. */
     public static CalendarioPagos semanal(LocalDate desembolso, LocalDate primerMartes) {
-        if (primerMartes.getDayOfWeek() != DayOfWeek.TUESDAY) {
+        if (!DayOfWeek.TUESDAY.equals(primerMartes.getDayOfWeek())) {
             throw new IllegalArgumentException("La cuota semanal vence los martes; " + primerMartes + " es "
                     + primerMartes.getDayOfWeek());
         }

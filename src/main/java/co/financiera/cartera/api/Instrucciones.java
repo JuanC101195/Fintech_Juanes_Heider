@@ -45,11 +45,11 @@ final class Instrucciones {
     static Instruccion aMotor(InstruccionDto d) {
         Tipo tipo = Enumeraciones.leer(Tipo.class, d.tipo(), null, "tipo");
         if (tipo == null) {
-            throw ApiException.validacion("Falta el tipo de la instrucción del periodo " + d.periodo(), "tipo");
+            throw ApiException.datoInvalido("Falta el tipo de la instrucción del periodo " + d.periodo(), "tipo");
         }
         int dias = d.diasAtraso() == null ? 0 : d.diasAtraso();
         if (dias < 0) {
-            throw ApiException.validacion("Los días de atraso no pueden ser negativos", "diasAtraso");
+            throw ApiException.datoInvalido("Los días de atraso no pueden ser negativos", "diasAtraso");
         }
         return switch (tipo) {
             case PAGO_CONTRACTUAL -> new PagoContractual(dias);
@@ -74,7 +74,7 @@ final class Instrucciones {
 
     private static <T> T obligatorio(T valor, String campo) {
         if (valor == null) {
-            throw ApiException.validacion("Falta el campo " + campo, campo);
+            throw ApiException.datoInvalido("Falta el campo " + campo, campo);
         }
         return valor;
     }

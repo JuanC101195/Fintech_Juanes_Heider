@@ -2,6 +2,7 @@ package co.financiera.cartera.casos;
 
 import static co.financiera.cartera.nucleo.Calc.bd;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.within;
 
 import co.financiera.cartera.contabilidad.Contabilizador;
@@ -143,7 +144,9 @@ class Caso13AbonoConPendientesTest {
         @Test
         void losAsientosCuadran() {
             // El Contabilizador lanza excepción si algún asiento no cuadra.
-            Contabilizador.estandar().contabilizar(motor.ejecutar(caso13(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO)));
+            assertThatCode(() -> Contabilizador.estandar()
+                    .contabilizar(motor.ejecutar(caso13(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO))))
+                    .doesNotThrowAnyException();
             Contabilizador.estandar().contabilizar(motor.ejecutar(caso13(VALOR_ABONO, ModalidadAbono.MENOR_CUOTA)));
         }
     }
@@ -254,8 +257,9 @@ class Caso13AbonoConPendientesTest {
         @Test
         void losAsientosCuadranYElAbonoAcreditaLosServiciosATerceros() {
             List<Movimiento> m = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_PLAZO));
-            Contabilizador.estandar().contabilizar(m);
-            Contabilizador.estandar().contabilizar(motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_CUOTA)));
+            List<Movimiento> menorCuota = motor.ejecutar(caso13Ronda4(VALOR_ABONO, ModalidadAbono.MENOR_CUOTA));
+            assertThatCode(() -> Contabilizador.estandar().contabilizar(m)).doesNotThrowAnyException();
+            assertThatCode(() -> Contabilizador.estandar().contabilizar(menorCuota)).doesNotThrowAnyException();
         }
     }
 }
