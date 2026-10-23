@@ -47,6 +47,20 @@ curl -i -H "X-API-Key: $CLAVE" https://motor-cartera-api-jc.azurewebsites.net/ap
 
 `config/reglas-negocio.properties` se empaqueta dentro del jar (`pom.xml`, `<resources>`). Si el archivo no está en disco, como pasa en Azure, `PerfilesReglas` lo lee del classpath. Un cambio de reglas exige volver a desplegar.
 
+Cada perfil es una versión de reglas con id fijo (ADR 0004): `excel-2026-10` y `negocio-<fecha>`, hoy `negocio-2026-10-23`. Cambiar el archivo es una versión nueva: suba `PerfilesReglas.NEGOCIO_VIGENTE_DESDE` (o configure `CARTERA_REGLAS_VIGENTEDESDE=aaaa-mm-dd` en la app) y actualice la huella de `VersionesPerfilesTest`, que falla si el contenido cambia sin cambiar el id. La fecha debe ser posterior al 2026-10-11 o la app no arranca.
+
+## Persistencia y lote nocturno (planeado, ADR 0004)
+
+Todavía no existe. La propuesta de `docs/adr/0004-persistencia-y-versionado.md`:
+
+| Pieza | Dónde | Costo aprox. (USD/mes) |
+|---|---|---|
+| Base de datos | Azure Database for PostgreSQL Flexible Server, Burstable **B1ms**, 32 GiB, North Central US | ~17 (puede estar cubierto 12 meses por los servicios gratuitos) |
+| Lote nocturno | **Container Apps Job** con la imagen del API, cron `0 7 * * *` UTC (2:00 a. m. Colombia), `--fecha-corte` como argumento | 0 a 5 (concesión gratuita; ACR Basic si no se usa GitHub Container Registry) |
+| API con datos reales | App Service **B1** con Always On (el F1 se duerme y tiene 60 min de CPU al día) | ~13 |
+
+El plan F1 no sirve para el lote: no tiene Always On y se duerme sin tráfico. La cadena de conexión y la contraseña irán en la configuración de la app o en Key Vault, nunca en el repo.
+
 ## Volver a desplegar el API
 
 ```bash
