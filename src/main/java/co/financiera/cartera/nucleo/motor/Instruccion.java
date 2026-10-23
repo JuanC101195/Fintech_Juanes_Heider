@@ -11,14 +11,37 @@ public sealed interface Instruccion {
     /** Paga la cuota total exigible (financiera + servicios), con los días de atraso indicados. */
     record PagoContractual(int diasAtraso) implements Instruccion {
         public static final PagoContractual A_TIEMPO = new PagoContractual(0);
+
+        public PagoContractual {
+            Validar.dias(diasAtraso);
+        }
     }
 
-    /** Paga una fracción de la cuota total exigible (caso 8: 40 %). */
+    /** Paga una fracción de la cuota total exigible (caso 8: 40 %). La fracción va en (0, 1]. */
     record PagoParcial(BigDecimal fraccion, int diasAtraso) implements Instruccion {
+
+        public PagoParcial {
+            java.util.Objects.requireNonNull(fraccion, "fraccion");
+            // Auditoría 2026-10-23 (H4): una fracción negativa o mayor que 1 no es un pago parcial.
+            if (fraccion.signum() <= 0 || fraccion.compareTo(BigDecimal.ONE) > 0) {
+                throw new IllegalArgumentException("La fracción del pago parcial debe estar entre 0 (sin incluir) y 1: "
+                        + fraccion.toPlainString());
+            }
+            Validar.dias(diasAtraso);
+        }
     }
 
-    /** Paga un valor exacto. */
+    /** Paga un valor exacto (0 o más). */
     record PagoValor(BigDecimal valor, int diasAtraso) implements Instruccion {
+
+        public PagoValor {
+            java.util.Objects.requireNonNull(valor, "valor");
+            // Auditoría 2026-10-23 (H4): un pago negativo creaba deuda de la nada (CxC de cobranza negativa).
+            if (valor.signum() < 0) {
+                throw new IllegalArgumentException("El valor del pago no puede ser negativo: " + valor.toPlainString());
+            }
+            Validar.dias(diasAtraso);
+        }
     }
 
     /**
@@ -34,6 +57,15 @@ public sealed interface Instruccion {
      * superar el saldo (P-14).
      */
     record AbonoExtra(BigDecimal valor, ModalidadAbono modalidad) implements Instruccion {
+
+        public AbonoExtra {
+            java.util.Objects.requireNonNull(valor, "valor");
+            java.util.Objects.requireNonNull(modalidad, "modalidad");
+            // Auditoría 2026-10-23 (H4): un abono negativo aumentaba el saldo sin desembolso.
+            if (valor.signum() <= 0) {
+                throw new IllegalArgumentException("El valor del abono extraordinario debe ser positivo: " + valor.toPlainString());
+            }
+        }
 
         /** Si el cliente no elige, se reduce el plazo (P-13, Diego 2026-10-16). */
         public AbonoExtra(BigDecimal valor) {
@@ -102,6 +134,15 @@ public sealed interface Instruccion {
      */
     record CambioTasa(BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) implements Instruccion {
 
+        public CambioTasa {
+            java.util.Objects.requireNonNull(nuevaTasaEA, "nuevaTasaEA");
+            java.util.Objects.requireNonNull(modalidad, "modalidad");
+            // Auditoría 2026-10-23 (H4): una tasa nueva negativa o cero no es un cambio de tasa válido.
+            if (nuevaTasaEA.signum() <= 0) {
+                throw new IllegalArgumentException("La nueva tasa EA debe ser positiva: " + nuevaTasaEA.toPlainString());
+            }
+        }
+
         /** Conserva la fecha final y recalcula la cuota (caso 2). */
         public CambioTasa(BigDecimal nuevaTasaEA) {
             this(nuevaTasaEA, ModalidadCambioTasa.MISMA_FECHA_FINAL);
@@ -129,6 +170,11 @@ public sealed interface Instruccion {
 
         public CierrePorRecuperacion {
             java.util.Objects.requireNonNull(valorMoto, "valorMoto");
+            java.util.Objects.requireNonNull(tipo, "tipo");
+            // Auditoría 2026-10-23 (H4): la moto recibida tiene que tener un valor positivo.
+            if (valorMoto.signum() <= 0) {
+                throw new IllegalArgumentException("El valor de la moto recibida debe ser positivo: " + valorMoto.toPlainString());
+            }
             costoRecuperacion = costoRecuperacion == null ? BigDecimal.ZERO : costoRecuperacion;
             if (costoRecuperacion.signum() < 0) {
                 throw new IllegalArgumentException("El costo de la recuperación no puede ser negativo: " + costoRecuperacion);
@@ -138,6 +184,18 @@ public sealed interface Instruccion {
         /** Sin costo de recuperación, como el Excel. */
         public CierrePorRecuperacion(TipoRecuperacion tipo, BigDecimal valorMoto) {
             this(tipo, valorMoto, BigDecimal.ZERO);
+        }
+    }
+
+    /** Validaciones comunes de las instrucciones (auditoría 2026-10-23, H4). */
+    final class Validar {
+        private Validar() {
+        }
+
+        static void dias(int diasAtraso) {
+            if (diasAtraso < 0) {
+                throw new IllegalArgumentException("Los días de atraso no pueden ser negativos: " + diasAtraso);
+            }
         }
     }
 

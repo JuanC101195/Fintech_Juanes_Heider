@@ -210,8 +210,13 @@ class RespuestasDiego20OctTest {
             Contabilizador.estandar().contabilizar(diego);
 
             // Con la regla del Excel el prepago solo toma el saldo de capital y lo demás queda pendiente.
+            // Auditoría 2026-10-23 (H3): el capital vencido sí es capital y el prepago lo extingue; se reporta aparte
+            // (pendientesPagadosExtra.capital) para acreditarlo a Cartera capital vencida. Cobranza, mora, interés y
+            // servicios pendientes no se tocan.
             Movimiento excel = motor.ejecutar(conPendientes().en(44, new PrepagoTotal())).get(44);
-            assertThat(excel.pendientesPagadosExtra()).isEqualTo(DeudaExtinguida.NINGUNA);
+            assertThat(excel.pendientesPagadosExtra().total()).isEqualByComparingTo(excel.pendientesPagadosExtra().capital());
+            assertThat(excel.capitalVencido().signum()).isZero();
+            assertThat(excel.saldoFinal().signum()).isZero();
             assertThat(excel.estado()).isEqualTo(EstadoCredito.EN_MORA);
         }
     }
