@@ -35,11 +35,12 @@ public record VersionReglas(String id, LocalDate vigenteDesde, ReglasNegocio reg
     /** Versión del formato del contenido canónico; si cambia el formato, cambia este número (y todas las huellas). */
     public static final String FORMATO = "reglas-negocio/1";
 
-    private static final Pattern ID = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
+    /** Minúsculas, dígitos y guiones; los guiones solo separan (ni al inicio, ni al final, ni dos seguidos). */
+    private static final Pattern CARACTERES_ID = Pattern.compile("[a-z0-9-]+");
     private static final int LARGO_MAXIMO_ID = 64;
 
     public VersionReglas {
-        if (id == null || id.length() > LARGO_MAXIMO_ID || !ID.matcher(id).matches()) {
+        if (id == null || id.length() > LARGO_MAXIMO_ID || !idValido(id)) {
             throw new IllegalArgumentException("Id de versión inválido (minúsculas, dígitos y guiones, hasta "
                     + LARGO_MAXIMO_ID + " caracteres): " + id);
         }
@@ -53,6 +54,10 @@ public record VersionReglas(String id, LocalDate vigenteDesde, ReglasNegocio reg
             throw new IllegalArgumentException("La versión " + id + " está alterada: su huella guardada (" + huella
                     + ") no coincide con la de su contenido (" + calculada + ")");
         }
+    }
+
+    private static boolean idValido(String id) {
+        return CARACTERES_ID.matcher(id).matches() && !id.startsWith("-") && !id.endsWith("-") && !id.contains("--");
     }
 
     /** Versión nueva con la huella calculada de las reglas. */

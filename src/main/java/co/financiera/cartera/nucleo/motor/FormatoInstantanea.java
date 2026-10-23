@@ -32,6 +32,9 @@ import java.util.Set;
  * </ul>
  */
 public final class FormatoInstantanea {
+    private static final String CLAVE_FORMATO = "formato";
+    private static final String CLAVE_VERSION = "version";
+
 
     public static final String FORMATO = "motor-cartera.instantanea";
     public static final int VERSION = 1;
@@ -41,8 +44,8 @@ public final class FormatoInstantanea {
 
     public static String escribir(Instantanea i) {
         Escritor w = new Escritor();
-        w.linea("formato", FORMATO);
-        w.linea("version", String.valueOf(VERSION));
+        w.linea(CLAVE_FORMATO, FORMATO);
+        w.linea(CLAVE_VERSION, String.valueOf(VERSION));
         w.linea("periodo", String.valueOf(i.periodo()));
         w.linea("terminado", String.valueOf(i.terminado()));
         w.linea("versionReglas", i.versionReglas() == null ? "" : i.versionReglas());
@@ -91,11 +94,11 @@ public final class FormatoInstantanea {
 
     public static Instantanea leer(String texto) {
         Lector r = new Lector(texto);
-        if (!FORMATO.equals(r.texto("formato"))) {
-            throw new IllegalArgumentException("No es una instantánea del motor: formato=" + r.texto("formato"));
+        if (!FORMATO.equals(r.texto(CLAVE_FORMATO))) {
+            throw new IllegalArgumentException("No es una instantánea del motor: formato=" + r.texto(CLAVE_FORMATO));
         }
-        if (r.entero("version") != VERSION) {
-            throw new IllegalArgumentException("Versión de instantánea no soportada: " + r.texto("version")
+        if (r.entero(CLAVE_VERSION) != VERSION) {
+            throw new IllegalArgumentException("Versión de instantánea no soportada: " + r.texto(CLAVE_VERSION)
                     + " (este motor lee la " + VERSION + ")");
         }
         Operacion operacion = new Operacion(r.dinero("operacion.valorMoto"), r.dinero("operacion.matriculaRunt"),
