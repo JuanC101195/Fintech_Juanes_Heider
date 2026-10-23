@@ -16,7 +16,7 @@ class RespuestasRonda5ApiTest {
 
     private static CreditoRequest credito(String periodicidad, Integer cuotas, Integer meses) {
         return new CreditoRequest(null, periodicidad, cuotas, meses, null, null, null, null, null, null, null, null, null,
-                null);
+                null, null, null);
     }
 
     @Test

@@ -101,7 +101,7 @@ class CarteraControllerTest {
                     .andExpect(jsonPath("$.perfiles.EXCEL.plazoLimiteMeses").value(org.hamcrest.Matchers.nullValue()))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.modalidadUsura").value("MISMA_CUOTA"))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.margenUsura").value("1"))
-                    .andExpect(jsonPath("$.claves", hasSize(18)))
+                    .andExpect(jsonPath("$.claves", hasSize(19)))
                     .andExpect(jsonPath("$.claves[0].clave").value("prelacion"))
                     .andExpect(jsonPath("$.archivoNegocio").value("config/reglas-negocio.properties"));
         }

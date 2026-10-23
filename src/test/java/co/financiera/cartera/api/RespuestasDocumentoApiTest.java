@@ -75,7 +75,9 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(18);
+        assertThat(r.get("claves")).hasSize(19);
+        assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");
+        assertThat(excel.get("diasMora").asString()).isEqualTo("PERIODO_NOMINAL");
     }
 
     /**

@@ -13,6 +13,7 @@ import co.financiera.cartera.nucleo.Amortizacion;
 import co.financiera.cartera.nucleo.Calc;
 import co.financiera.cartera.nucleo.Calendario;
 import co.financiera.cartera.nucleo.ParametrosProducto;
+import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.Tasas;
 import co.financiera.cartera.nucleo.Usura;
@@ -152,7 +153,7 @@ public final class MotorCartera {
             interesPrepago = CERO;
             serviciosCorrientesExtra = Servicios.NINGUNO;
             BigDecimal abonoAplicado = ordenes.abono == null ? CERO : aplicarAbono(periodo, ordenes.abono, tasa, causado);
-            BigDecimal prepagoCapital = ordenes.prepago == null ? CERO : prepagar(ordenes.prepago);
+            BigDecimal prepagoCapital = ordenes.prepago == null ? CERO : prepagar(periodo, ordenes.prepago);
 
             // 5. Cierre por recuperación de la moto: su valor extingue lo pendiente por prelación. La fila
             // del cierre reporta el capital vencido que se extinguió (Caso3 Z del evento).
@@ -317,17 +318,35 @@ public final class MotorCartera {
                 int diasReales = escenario.diasPrimerPeriodo().getAsInt();
                 interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), diasReales), Calc.UNO));
             }
-            return new Causacion(interes, capitalContractual, servicios, mora(capitalContractual, dias),
+            return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
                     cobranza(saldoInicial, dias), serviciosAlDia, prorrateada);
         }
 
-        private BigDecimal mora(BigDecimal capitalContractual, int dias) {
-            BigDecimal mora = multiplicar(capitalVencido, tasas.periodica());
+        private BigDecimal mora(int periodo, BigDecimal capitalContractual, int dias) {
+            BigDecimal mora = multiplicar(capitalVencido, factorMoraDelPeriodo(periodo));
             if (dias > 0 && escenario.reglas().formulaMora() == ReglasNegocio.FormulaMora.VENCIDO_MAS_DIAS) {
                 BigDecimal factorDias = restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), dias), Calc.UNO);
                 mora = sumar(mora, multiplicar(capitalContractual, factorDias));
             }
             return mora;
+        }
+
+        /**
+         * Factor de mora del capital vencido en el periodo. Con el Excel (PERIODO_NOMINAL) es la tasa periódica:
+         * el periodo dura 365/ppa días. PPER-5 / D27 (Diego, ADR 0002 paso 8): en mensual la mora cuenta los días
+         * reales del mes; con DIAS_CALENDARIO_MENSUAL y fechas en el escenario el factor es (1 + diaria)^días − 1 con
+         * los días del vencimiento anterior al de esta cuota (28 a 31). Quincenal y semanal siguen nominales: Diego
+         * solo decidió la mensual.
+         */
+        private BigDecimal factorMoraDelPeriodo(int periodo) {
+            if (escenario.reglas().diasMora() == ReglasNegocio.DiasMora.DIAS_CALENDARIO_MENSUAL
+                    && p.periodicidad() == Periodicidad.MENSUAL) {
+                java.util.OptionalInt diasReales = escenario.diasDelPeriodo(periodo);
+                if (diasReales.isPresent()) {
+                    return restar(Calc.potencia(sumar(Calc.UNO, tasas.diaria()), diasReales.getAsInt()), Calc.UNO);
+                }
+            }
+            return tasas.periodica();
         }
 
         /**
@@ -530,9 +549,9 @@ public final class MotorCartera {
          * el mismo prorrateo diario de la mora; el Excel prepaga el día de la cuota y no lo cobra. Con
          * PRIMERO_PENDIENTES (A4) el prepago paga primero todo lo pendiente.
          */
-        private BigDecimal prepagar(PrepagoTotal prepago) {
+        private BigDecimal prepagar(int periodo, PrepagoTotal prepago) {
             ReglasNegocio reglas = escenario.reglas();
-            int dias = prepago.diasDesdeUltimaCuota();
+            int dias = prepago.fecha() == null ? prepago.diasDesdeUltimaCuota() : diasHastaPrepago(periodo, prepago.fecha());
             if (reglas.interesPrepagoPorDias() && dias > 0) {
                 BigDecimal base = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
                         ? noNegativo(restar(saldo, capitalVencido)) : saldo;
@@ -546,6 +565,23 @@ public final class MotorCartera {
             saldo = CERO;
             saldoPlan = CERO;
             return prepagado;
+        }
+
+        /**
+         * PPER-7 / D27 (ADR 0002 paso 8): días reales de un prepago a mitad de periodo, desde el vencimiento de la cuota
+         * del periodo (que ya se aplicó) hasta la fecha del prepago. Si la fecha es anterior a ese vencimiento son 0 (la
+         * cuota ya cobró el periodo completo, como el Excel). Desde el vencimiento siguiente se rechaza: esa cuota ya es
+         * exigible y el prepago va en el periodo siguiente.
+         */
+        private int diasHastaPrepago(int periodo, java.time.LocalDate fecha) {
+            co.financiera.cartera.nucleo.CalendarioPagos calendario = escenario.calendario().orElseThrow(
+                    () -> new IllegalStateException("El prepago con fecha necesita el calendario del crédito (Escenario.conCalendario)"));
+            java.time.LocalDate siguiente = calendario.vencimiento(periodo + 1);
+            if (!fecha.isBefore(siguiente)) {
+                throw new IllegalArgumentException("El prepago del " + fecha + " cae en el periodo " + (periodo + 1)
+                        + " o después (vence el " + siguiente + "); va en ese periodo");
+            }
+            return calendario.diasAtraso(periodo, fecha);
         }
 
         /**

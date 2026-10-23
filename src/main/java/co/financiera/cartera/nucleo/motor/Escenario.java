@@ -24,10 +24,10 @@ public final class Escenario {
     /** COB-6: si a este crédito se le causan gastos de cobranza; el Excel los causa siempre. */
     private boolean cobranzaActiva = true;
     /**
-     * P5-PRORRATEO: días reales entre el desembolso y la primera fecha de pago
-     * ({@link CalendarioPagos#diasDelPeriodo(int) diasDelPeriodo(1)}); {@code null} si el escenario no tiene fechas.
+     * Fechas del crédito (ADR 0002 pasos 7 y 8): días reales de la primera cuota (P5-PRORRATEO), de cada mes para la
+     * mora mensual (PPER-5) y de un prepago a mitad de periodo (PPER-7). {@code null} si el escenario no tiene fechas.
      */
-    private Integer diasPrimerPeriodo;
+    private CalendarioPagos calendario;
 
     public Escenario(Operacion operacion, ParametrosProducto parametros) {
         this.operacion = operacion;
@@ -67,13 +67,26 @@ public final class Escenario {
             throw new IllegalArgumentException("El calendario es " + calendario.periodicidad().adjetivo()
                     + " y el crédito " + parametros.periodicidad().adjetivo());
         }
-        this.diasPrimerPeriodo = calendario.diasDelPeriodo(1);
+        this.calendario = calendario;
         return this;
     }
 
     /** Días reales de la primera cuota, si el escenario tiene fechas ({@link #conCalendario}). */
     public java.util.OptionalInt diasPrimerPeriodo() {
-        return diasPrimerPeriodo == null ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(diasPrimerPeriodo);
+        return diasDelPeriodo(1);
+    }
+
+    /**
+     * Días reales del periodo (del vencimiento anterior, o del desembolso, al de esta cuota), si el escenario tiene
+     * fechas ({@link #conCalendario}).
+     */
+    public java.util.OptionalInt diasDelPeriodo(int periodo) {
+        return calendario == null ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(calendario.diasDelPeriodo(periodo));
+    }
+
+    /** Calendario de vencimientos del crédito, si el escenario tiene fechas ({@link #conCalendario}). */
+    public java.util.Optional<CalendarioPagos> calendario() {
+        return java.util.Optional.ofNullable(calendario);
     }
 
     public Escenario en(int periodo, Instruccion instruccion) {

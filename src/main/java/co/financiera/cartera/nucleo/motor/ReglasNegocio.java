@@ -72,6 +72,12 @@ import java.math.BigDecimal;
  *                                 ({@link Escenario#conCalendario}). Capital y servicios complementarios van
  *                                 completos. Aplica en semanal (primer martes), quincenal (5 y 20) y mensual
  *                                 (día 5). Sin fechas en el escenario no cambia nada. {@code false} en el Excel.
+ * @param diasMora                 cuántos días causa de mora el capital vencido en un periodo (Diego, PPER-5 / D27:
+ *                                 "en mensual la mora cuenta los días reales del mes"; ADR 0002 paso 8). Con
+ *                                 {@link DiasMora#PERIODO_NOMINAL} (el Excel) es vencido × tasa periódica, es decir
+ *                                 365/ppa días; con {@link DiasMora#DIAS_CALENDARIO_MENSUAL} un crédito mensual con
+ *                                 fechas ({@link Escenario#conCalendario}) causa vencido × ((1 + tasa diaria)^días − 1)
+ *                                 con los días reales del periodo (28 a 31). Sin fechas no cambia nada.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -91,9 +97,11 @@ public record ReglasNegocio(
         boolean cambioTasaSobreCapitalVigente,
         BigDecimal cobranzaDiaria,
         Integer cuotasVencidasParaRecuperacion,
-        boolean prorrateoPrimeraCuota) {
+        boolean prorrateoPrimeraCuota,
+        DiasMora diasMora) {
 
     public ReglasNegocio {
+        java.util.Objects.requireNonNull(diasMora, "diasMora");
         if (plazoLimiteMeses != null && plazoLimiteMeses < 1) {
             throw new IllegalArgumentException("El plazo límite debe ser de al menos 1 mes: " + plazoLimiteMeses);
         }
@@ -118,7 +126,8 @@ public record ReglasNegocio(
     public static final ReglasNegocio EXCEL = new ReglasNegocio(OrdenPrelacion.SERVICIOS_ANTES_DE_CAPITAL,
             FormulaMora.VENCIDO_MAS_DIAS, BaseInteres.SALDO_VIGENTE, null, BaseServicios.MONTO_INICIAL, false, true,
             AplicacionAbono.SOLO_CAPITAL, false, MARGEN_USURA_POR_DEFECTO,
-            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL, true, false, null, false, null, null, false);
+            Instruccion.ModalidadCambioTasa.MISMA_FECHA_FINAL, true, false, null, false, null, null, false,
+            DiasMora.PERIODO_NOMINAL);
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -132,6 +141,20 @@ public record ReglasNegocio(
         VENCIDO_MAS_DIAS,
         /** Solo capital vencido × tasa semanal (caso 8). */
         SOLO_VENCIDO
+    }
+
+    /**
+     * Días de mora del capital vencido en un periodo (PPER-5, D27; ADR 0002 paso 8). Diego solo decidió la mensual:
+     * la quincenal (13 a 16 días reales) y la semanal (7) siguen con el periodo nominal hasta que lo diga.
+     */
+    public enum DiasMora {
+        /** Vencido × tasa periódica: el periodo dura 365/ppa días (30,42 en mensual), como el Excel. */
+        PERIODO_NOMINAL,
+        /**
+         * En un crédito mensual con fechas, vencido × ((1 + tasa diaria)^días − 1) con los días reales del mes
+         * ({@code CalendarioPagos.diasDelPeriodo}: del 5 al 5, de 28 a 31). Quincenal, semanal o sin fechas: nominal.
+         */
+        DIAS_CALENDARIO_MENSUAL
     }
 
     public enum BaseInteres {
@@ -192,7 +215,7 @@ public record ReglasNegocio(
             "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
             "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura", "costoRecuperacionAlFondo",
             "cobranzaIngresoNoOperacional", "plazoLimiteMeses", "cambioTasaSobreCapitalVigente", "cobranzaDiaria",
-            "cuotasVencidasParaRecuperacion", "prorrateoPrimeraCuota");
+            "cuotasVencidasParaRecuperacion", "prorrateoPrimeraCuota", "diasMora");
 
     /**
      * Reglas a partir de la configuración que genera herramientas/importar_respuestas.py
@@ -255,6 +278,9 @@ public record ReglasNegocio(
         if ((v = config.get("prorrateoPrimeraCuota")) != null) {
             r = r.conProrrateoPrimeraCuota(Boolean.parseBoolean(v.trim()));
         }
+        if ((v = config.get("diasMora")) != null) {
+            r = r.conDiasMora(DiasMora.valueOf(v.trim()));
+        }
         return r;
     }
 
@@ -262,63 +288,63 @@ public record ReglasNegocio(
         return new ReglasNegocio(valor, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conFormulaMora(FormulaMora valor) {
         return new ReglasNegocio(prelacion, valor, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conBaseInteres(BaseInteres valor) {
         return new ReglasNegocio(prelacion, formulaMora, valor, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conTopeCobranza(BigDecimal valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, valor, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conBaseServicios(BaseServicios valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, valor, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conServiciosDespuesDelPlazo(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, valor,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conMoraAntesDeRecuperacion(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 valor, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conAplicacionAbono(AplicacionAbono valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, valor, interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     public ReglasNegocio conInteresPrepagoPorDias(boolean valor) {
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, valor, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** Margen bajo la usura en puntos porcentuales de EA (1 = 100 pb); no puede ser negativo. */
@@ -329,7 +355,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, valor, modalidadUsura, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** Qué se conserva cuando la usura obliga a bajar la tasa (USU-6): la cuota o la fecha final. */
@@ -338,7 +364,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, valor, costoRecuperacionAlFondo,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** R4-R2 / P5-COSTO-DACION: en la dación, si el costo de la recuperación se suma al faltante que cubre el fondo. */
@@ -346,7 +372,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura, valor,
                 cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** R4-COBRANZA-CONTABLE: gastos de cobranza como ingreso no operacional (PUC clase 42). */
@@ -354,7 +380,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, valor, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** R4-PLAZO-LIMITE: plazo límite de recuperación en meses; {@code null} = el del producto. */
@@ -362,7 +388,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, valor, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** R4-T5: con el cliente en mora, la cuota nueva de un cambio de tasa va solo sobre el capital vigente. */
@@ -370,7 +396,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, valor, cobranzaDiaria,
-                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** COB-6: valor diario de la cobranza para los créditos nuevos; {@code null} = el del producto. */
@@ -378,7 +404,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente, valor,
-                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota);
+                cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
     }
 
     /** PPER-9: cuotas atrasadas desde las que el crédito queda listo para recuperación; {@code null} = no se marca. */
@@ -386,7 +412,7 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, valor, prorrateoPrimeraCuota);
+                cobranzaDiaria, valor, prorrateoPrimeraCuota, diasMora);
     }
 
     /** P5-PRORRATEO: si el interés de la primera cuota se prorratea por los días reales desde el desembolso. */
@@ -394,7 +420,15 @@ public record ReglasNegocio(
         return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
                 moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
                 costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                cobranzaDiaria, cuotasVencidasParaRecuperacion, valor);
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, valor, diasMora);
+    }
+
+    /** PPER-5 / D27: días de mora del capital vencido (nominales o reales del mes en mensual). */
+    public ReglasNegocio conDiasMora(DiasMora valor) {
+        return new ReglasNegocio(prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios, serviciosDespuesDelPlazo,
+                moraAntesDeRecuperacion, aplicacionAbono, interesPrepagoPorDias, margenUsura, modalidadUsura,
+                costoRecuperacionAlFondo, cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
+                cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, valor);
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */

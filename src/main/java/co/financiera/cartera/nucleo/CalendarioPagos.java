@@ -25,8 +25,9 @@ import java.util.Objects;
  *
  * <p>Una cuota es a tiempo hasta el fin del día de vencimiento; el atraso empieza el día siguiente
  * como día 1 (CAL-1). En mensual la mora se cuenta por los días reales del mes (PPER-5): para eso
- * está {@link #diasDelPeriodo(int)}; el motor todavía causa la mora de un periodo sin pago con la
- * tasa periódica (paso 8 del ADR).
+ * está {@link #diasDelPeriodo(int)}, que el motor usa con {@code ReglasNegocio.diasMora} en
+ * {@code DIAS_CALENDARIO_MENSUAL} (paso 8 del ADR). El prepago con fecha cuenta sus días desde el
+ * vencimiento de la cuota con {@link #diasAtraso(int, LocalDate)} (PPER-7).
  */
 public final class CalendarioPagos {
 
