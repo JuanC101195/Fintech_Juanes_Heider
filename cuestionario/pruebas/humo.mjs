@@ -48,18 +48,18 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
-  await page.getByLabel('Comentario de la pregunta R8-COBRANZA-PAGO-TARDIO', { exact: true }).fill('Lo decide el director financiero')
+  await page.getByLabel('Comentario de la pregunta R9-COBRO-MOMENTO', { exact: true }).fill('Lo decide el director financiero')
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
   await page.screenshot({ path: path.join(salida, `cuestionario-${nombre}.png`), fullPage: true })
 
   if (nombre === 'escritorio') {
-    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R8-COBRANZA-PAGO-TARDIO, arriba).
+    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R9-COBRO-MOMENTO, arriba).
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
-    // La ronda 8 (R8-*) aparece en su bloque y se puede responder escogiendo una opción.
-    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Abonos y prepago/ }).click()
-    await page.getByRole('radio', { name: /Se rechaza el pago/i }).check()
+    // La ronda 9 (R9-*) aparece en su bloque y se puede responder escogiendo una opción.
+    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Servicios complementarios/ }).click()
+    await page.getByRole('radio', { name: /Es el mismo seguro/i }).check()
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
     const ultimo = enviados.at(-1)
