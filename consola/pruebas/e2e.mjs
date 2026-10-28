@@ -60,16 +60,16 @@ for (const [nombre, ancho, alto, escala] of [['celular', 360, 780, 2], ['escrito
   if (await page.getByText('Datos de demostración').count()) falla('aparece el aviso de modo demostración: la consola no está usando el API')
   await revisar('simulador')
 
-  // 2. Caso 13 NEGOCIO: saldo 3.241.537,12 en la semana 42 y asiento con su explicación
+  // 2. Caso 13 NEGOCIO: saldo 3.320.164,36 en la semana 42 y asiento con su explicación
   await ir('Casos')
   await page.getByRole('link', { name: /Caso 13/ }).click()
   const tabla = page.getByRole('region', { name: 'Tabla periodo a periodo' })
   await tabla.waitFor({ timeout: 30000 })
   const fila42 = tabla.locator('tbody tr').filter({ has: page.locator('th[scope="row"]', { hasText: /^42$/ }) })
   const texto42 = nbsp(await fila42.innerText())
-  if (!texto42.includes('$ 3.241.537,12')) falla(`caso 13 semana 42: falta el saldo $ 3.241.537,12 en ${JSON.stringify(texto42)}`)
+  if (!texto42.includes('$ 3.320.164,36')) falla(`caso 13 semana 42: falta el saldo $ 3.320.164,36 en ${JSON.stringify(texto42)}`)
   if (!texto42.includes('Cuota + abono extra')) falla('caso 13 semana 42: falta el evento "Cuota + abono extra"')
-  await page.getByText('Termina en el periodo 84').waitFor()
+  await page.getByText('Termina en el periodo 85').waitFor()
   const asiento42 = page.locator('details').filter({ hasText: 'Periodo 42' }).first()
   await asiento42.locator('summary').click()
   if (!(await asiento42.getByText('Recaudo extraordinario aplicado a pendientes').first().isVisible())) falla('caso 13: no se ve la explicación del asiento del periodo 42')
@@ -82,7 +82,7 @@ for (const [nombre, ancho, alto, escala] of [['celular', 360, 780, 2], ['escrito
   const ahora = await page.locator('[data-prueba="partida-actual"]').innerText()
   if (ahora !== 'Caso 13 · Abono extra con pendientes') falla(`laboratorio: el punto de partida dice "${ahora}"`)
   await page.getByRole('button', { name: 'Calcular resultado' }).click()
-  await page.getByText('Termina en el periodo 84').waitFor({ timeout: 30000 })
+  await page.getByText('Termina en el periodo 85').waitFor({ timeout: 30000 })
   await page.getByRole('button', { name: /Abono extra de \$ 500\.000 a menor plazo/ }).click()
   // El atajo enfoca el periodo en el siguiente cuadro de animación: se espera antes de escribir.
   await page.waitForFunction(() => document.activeElement?.closest('[data-periodo]') !== null && document.activeElement?.closest('[data-periodo]') !== undefined)

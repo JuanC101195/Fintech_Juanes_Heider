@@ -37,9 +37,9 @@ describe('rutas', () => {
 describe('fixtures de demostración', () => {
   it('la simulación quincenal de la línea estándar da 48 cuotas y las cifras acordadas', async () => {
     const s: Simulacion = await demo.simular({ linea: 'CPPU', periodicidad: 'QUINCENAL', cuotas: 48, meses: null, valorMoto: '5100000', pagoInicial: '0', perfilReglas: 'NEGOCIO' })
-    expect(s.resumen).toMatchObject({ cuotas: 48, cuotaFinanciera: '219092.9355960436057213056188035084', cuotaTotal: '355666.9755960436057213056188035084' })
+    expect(s.resumen).toMatchObject({ cuotas: 48, cuotaFinanciera: '219092.96', cuotaTotal: '355667' })
     expect(cop(s.resumen.cuotaTotal).replaceAll(' ', ' ')).toBe('$ 355.667')
-    expect(cop(s.resumen.totalPagado).replaceAll(' ', ' ')).toBe('$ 17.072.015')
+    expect(cop(s.resumen.totalPagado).replaceAll(' ', ' ')).toBe('$ 17.072.016')
     expect(s.plan).toHaveLength(48)
     expect(comparar(s.plan.at(-1)!.saldo, '0.000001')).toBeLessThanOrEqual(0)
     expect(s.resumen.porConfirmar).toEqual([])
@@ -49,17 +49,17 @@ describe('fixtures de demostración', () => {
     expect(s.resumen.cuotas).toBe(24)
     expect(cop(s.resumen.cuotaFinanciera).replaceAll(' ', ' ')).toBe('$ 444.006')
     expect(cop(s.resumen.cuotaTotal).replaceAll(' ', ' ')).toBe('$ 717.154')
-    expect(cop(s.resumen.totalPagado).replaceAll(' ', ' ')).toBe('$ 17.211.702')
+    expect(cop(s.resumen.totalPagado).replaceAll(' ', ' ')).toBe('$ 17.211.696')
   })
-  it('el caso 13 en la semana 42 trae las cifras acordadas y termina en la 84', async () => {
+  it('el caso 13 en la semana 42 trae las cifras acordadas y termina en la 85', async () => {
     const c: CasoDetalle = await demo.caso(13, 'NEGOCIO')
     const m = c.movimientos.find((x) => x.periodo === 42)!
-    expect(sp(copCentavos(m.saldoFinal))).toBe('$ 3.241.537,12')
-    expect(sp(copCentavos(m.abonoExtra))).toBe('$ 1.111.017,41')
-    expect(sp(copCentavos(m.pendientesPagadosExtra.total))).toBe('$ 388.982,59')
+    expect(sp(copCentavos(m.saldoFinal))).toBe('$ 3.320.164,36')
+    expect(sp(copCentavos(m.abonoExtra))).toBe('$ 1.032.390,17')
+    expect(sp(copCentavos(m.pendientesPagadosExtra.total))).toBe('$ 467.609,83')
     expect(sp(copCentavos(sumar(m.abonoExtra, m.pendientesPagadosExtra.total)))).toBe('$ 1.500.000,00')
     expect(m.evento).toBe('Cuota + abono extra')
-    expect(c.resumen.periodoFinal).toBe(84)
+    expect(c.resumen.periodoFinal).toBe(85)
     expect(c.asientos?.every((a) => a.cuadra)).toBe(true)
   })
   it('el perfil EXCEL del caso 13 no paga los pendientes con el abono', async () => {
@@ -85,7 +85,7 @@ describe('Simulador', () => {
     const t = texto()
     expect(t).toContain('$ 355.667')
     expect(t).toContain('$ 219.093')
-    expect(t).toContain('$ 17.072.015')
+    expect(t).toContain('$ 17.072.016')
     expect(t).toContain('Datos de demostración')
     expect(screen.getByRole('img', { name: /Saldo de capital/ })).toBeTruthy()
     expect(screen.getByRole('img', { name: /Composición de la cuota/ })).toBeTruthy()
@@ -101,7 +101,7 @@ describe('Simulador', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Simular' }))
     await waitFor(() => expect(texto()).toContain('$ 717.154'))
     expect(texto()).toContain('$ 444.006')
-    expect(texto()).toContain('$ 17.211.702')
+    expect(texto()).toContain('$ 17.211.696')
   })
 
   it('valida el máximo de 24 meses sin llamar al API', async () => {
@@ -142,11 +142,11 @@ describe('Casos', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Caso 13'))
     await waitFor(() => expect(screen.getByRole('region', { name: 'Tabla periodo a periodo' })).toBeTruthy())
     const t = texto()
-    expect(t).toContain('$ 388.982,59')
-    expect(t).toContain('$ 1.111.017,41')
+    expect(t).toContain('$ 467.609,83')
+    expect(t).toContain('$ 1.032.390,17')
     expect(t).toContain('Recaudo extraordinario aplicado a pendientes')
-    expect(t).toContain('$ 3.241.537,12')
-    expect(t).toContain('Termina en el periodo 84')
+    expect(t).toContain('$ 3.320.164,36')
+    expect(t).toContain('Termina en el periodo 85')
     expect(screen.getByRole('list', { name: 'Línea de tiempo de eventos' }).textContent).toContain('Periodo 40')
     // Por defecto solo los asientos de periodos con eventos; el botón despliega todos.
     const destacados = screen.getAllByText('✓ Cuadra').length
@@ -159,10 +159,10 @@ describe('Casos', () => {
 
   it('cambiar el perfil a EXCEL recarga el caso con otro resultado', async () => {
     abrir('#/casos/13')
-    await waitFor(() => expect(texto()).toContain('Termina en el periodo 84'))
-    expect(texto()).toContain('$ 3.241.537,12')
+    await waitFor(() => expect(texto()).toContain('Termina en el periodo 85'))
+    expect(texto()).toContain('$ 3.320.164,36')
     fireEvent.click(screen.getByRole('radio', { name: /Excel/ }))
-    await waitFor(() => expect(texto()).not.toContain('$ 3.241.537,12'))
+    await waitFor(() => expect(texto()).not.toContain('$ 3.320.164,36'))
     await waitFor(() => expect(texto()).toContain('$ 2.991.408,97'))
   })
 
@@ -214,7 +214,7 @@ describe('Laboratorio', () => {
     await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar el evento del periodo 42/ }).length).toBeGreaterThan(0))
     expect(partidaActual()).toBe('Caso 13 · Abono extra con pendientes')
     fireEvent.click(screen.getByRole('button', { name: 'Calcular resultado' }))
-    await waitFor(() => expect(texto()).toContain('Termina en el periodo 84'))
+    await waitFor(() => expect(texto()).toContain('Termina en el periodo 85'))
     expect(screen.getByRole('region', { name: 'Tabla periodo a periodo' })).toBeTruthy()
   })
 
@@ -273,7 +273,7 @@ describe('Reglas', () => {
   it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
     const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
-    expect(within(lista).getAllByRole('listitem')).toHaveLength(20)
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(24)
     expect(within(lista).getAllByText('Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)').length).toBeGreaterThan(0)
     expect(within(lista).getByText(/A4/)).toBeTruthy()
     expect(lista.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)

@@ -87,7 +87,7 @@ final class CatalogoServicio {
                     "Fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro; vacío = fondo y asistencia solo en periodos al día (D17)",
                     "R8-PAGO-INCOMPLETO-EN-FECHA"),
             new ClaveDto("redondeoCuotaAlPeso",
-                    "Si la cuota exigible del periodo (cuota + servicios) se redondea a pesos enteros (HALF_UP); el residuo va al interés corriente del periodo",
+                    "Si la cuota exigible del periodo (cuota + servicios) se redondea al peso más cercano; el residuo va al interés corriente del periodo",
                     "R8-REDONDEO-PESO"),
             new ClaveDto("sobranteComoCuentaPorPagar",
                     "Si el pago mayor que lo exigible se recibe completo y el sobrante queda como cuenta por pagar al cliente (en vez de recortarse)",

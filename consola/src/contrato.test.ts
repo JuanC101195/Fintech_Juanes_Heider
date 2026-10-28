@@ -19,7 +19,12 @@ const MOVIMIENTO: Record<keyof Movimiento, Forma> = {
   saldoFinal: 'dinero', cuotasVencidas: 'entero', deudaAExtinguir: 'dinero', inventario: 'dinero', cxcFondoGarantias: 'dinero', cxpDeudor: 'dinero',
   pagoTerceros: 'servicios', pagosServicios: 'servicios', cxcServiciosPorConcepto: 'servicios', extinguido: 'deuda', capitalVencidoInicial: 'dinero',
   pendientesPagadosExtra: 'deuda', interesPrepago: 'dinero', pagoTotalCliente: 'dinero', pagoExtraordinario: 'dinero',
-  costoRecuperacion: 'dinero', costoRecuperacionAsumido: 'dinero', listoParaRecuperacion: 'booleano',
+  costoRecuperacion: 'dinero', costoRecuperacionAsumido: 'dinero', listoParaRecuperacion: 'booleano', sobranteCliente: 'dinero',
+}
+// sobranteCliente solo viaja cuando hay sobrante (NON_NULL): es opcional en el movimiento real.
+function formaMovimiento(m: unknown): Record<string, Forma> {
+  const { sobranteCliente: _omitido, ...siempre } = MOVIMIENTO
+  return 'sobranteCliente' in (m as object) ? MOVIMIENTO : siempre
 }
 const SERVICIOS: Record<keyof Servicios, Forma> = { fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', total: 'dinero' }
 const DEUDA: Record<keyof DeudaExtinguida, Forma> = { cobranza: 'dinero', mora: 'dinero', interesCorriente: 'dinero', servicios: 'servicios', capital: 'dinero', total: 'dinero' }
@@ -77,7 +82,7 @@ describe('caso 13 (docs/api-ejemplos/caso-13-negocio.json) contra los tipos', ()
 
   it('cada movimiento tiene exactamente los campos de Movimiento, con pendientesPagadosExtra siempre como objeto', () => {
     expect(caso.movimientos.length).toBeGreaterThan(80)
-    for (const m of caso.movimientos) validar(m, MOVIMIENTO, `movimiento ${m.periodo}`)
+    for (const m of caso.movimientos) validar(m, formaMovimiento(m), `movimiento ${m.periodo}`)
   })
 
   it('cada asiento trae nombreCuenta, explicacion, totales y cuadra al centavo', () => {
@@ -196,7 +201,7 @@ describe('prorrateo de la primera cuota (P5-PRORRATEO) contra los tipos', () => 
     validar(p, PRORRATEO, 'prorrateoPrimeraCuota')
     expect(p.diasPrimerPeriodo).toBe(11)
     expect(e.movimientos[1].interesCorriente).toBe(p.interesProrrateado)
-    for (const m of e.movimientos.slice(0, 5)) validar(m, MOVIMIENTO, `movimiento ${m.periodo}`)
+    for (const m of e.movimientos.slice(0, 5)) validar(m, formaMovimiento(m), `movimiento ${m.periodo}`)
   })
 })
 
