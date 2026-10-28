@@ -39,7 +39,8 @@ final class Causador {
      * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
      * el Excel tal cual.
      */
-    Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
+    Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia,
+            int cuotasVencidasPrevias, int diasCobranza) {
         ReglasNegocio reglas = s.reglas();
         BigDecimal tasa = s.tasas.periodica();
         boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
@@ -70,7 +71,7 @@ final class Causador {
             interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
         }
         return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
-                cobranza(saldoInicial, dias), serviciosAlDia, prorrateada);
+                cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias), serviciosAlDia, prorrateada);
     }
 
     /** Capital contractual del plan vigente en un periodo dentro del plazo, sin pasar del capital vigente. */
@@ -119,9 +120,12 @@ final class Causador {
      * Gastos de cobranza = días de atraso × valor diario del producto. COB-4 (Diego 2026-10-22): solo se
      * causan cuando el pago llega en mora (días de atraso &gt; 0); al día, cancelado o prepagado no se liquidan.
      * COB-6: solo si la cobranza está activa en el crédito ({@link Escenario#cobranzaActiva()}).
+     * R7-COBRANZA-ACTIVA: y solo desde que hay {@code cuotasVencidasParaCobranza} cuotas atrasadas de periodos anteriores
+     * (con 2, la cobranza empieza en la tercera cuota vencida).
      */
-    private BigDecimal cobranza(BigDecimal saldoInicial, int dias) {
-        if (!s.escenario.cobranzaActiva()) {
+    private BigDecimal cobranza(BigDecimal saldoInicial, int dias, int cuotasVencidasPrevias) {
+        // R7-COBRANZA-ACTIVA (Diego): la cobranza empieza tras N periodos en mora (regla fija; con el Excel no hay umbral).
+        if (!s.escenario.cobranzaActiva() || !s.reglas().llegaAlUmbralDeCobranza(cuotasVencidasPrevias)) {
             return CERO;
         }
         BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), s.p.cobranzaDiaria()) : CERO;

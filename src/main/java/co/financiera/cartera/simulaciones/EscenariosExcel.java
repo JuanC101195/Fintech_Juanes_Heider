@@ -118,8 +118,16 @@ public final class EscenariosExcel {
      * el cuarto (Inputs C80: 4 periodos de espera, incluido el cierre).
      */
     public static Escenario caso11(ParametrosProducto p) {
+        return caso11(p, 4);
+    }
+
+    /**
+     * Caso 11 con los periodos de espera de la dación: 4 en el Excel; con NEGOCIO, 2 (R7-RECUP-VS-CASO11, Diego
+     * 2026-10-27: se corrige a 2 periodos, los de las cuotas vencidas que habilitan la recuperación).
+     */
+    public static Escenario caso11(ParametrosProducto p, int periodosEspera) {
         int inferior = Calendario.periodoDelMes(10, p);
-        int cierre = inferior + 4;
+        int cierre = inferior + periodosEspera;
         return base(p).en(inferior, new PagoParcial(bd("0.4"), 0))
                 .entre(inferior + 1, cierre, new SinPago(true))
                 .en(cierre, new CierrePorRecuperacion(TipoRecuperacion.DACION_EN_PAGO, bd(3_000_000)));

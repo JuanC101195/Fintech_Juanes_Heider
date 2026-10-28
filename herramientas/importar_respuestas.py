@@ -26,7 +26,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago', 'baseServicios', 'serviciosDespuesDelPlazo', 'moraAntesDeRecuperacion',
                 'aplicacionAbono', 'interesPrepagoPorDias', 'margenUsura', 'modalidadUsura',
                 'costoRecuperacionAlFondo', 'cobranzaIngresoNoOperacional', 'plazoLimiteMeses',
-                'cambioTasaSobreCapitalVigente', 'cobranzaDiaria', 'cuotasVencidasParaRecuperacion',
+                'cambioTasaSobreCapitalVigente', 'cobranzaDiaria', 'cuotasVencidasParaRecuperacion', 'cuotasVencidasParaCobranza',
                 'prorrateoPrimeraCuota', 'diasMora'}
 # Preguntas cuyos ajustes NO se aplican porque el comentario de negocio contradice la opción marcada
 # (la opción era de relleno: el formulario no guardaba sin elegir una). Se versiona aquí; para

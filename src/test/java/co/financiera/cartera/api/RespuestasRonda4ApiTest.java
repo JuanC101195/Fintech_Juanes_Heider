@@ -73,7 +73,7 @@ class RespuestasRonda4ApiTest {
     @Test
     void enNegocioLaCobranzaVaAIngresosNoOperacionales() throws Exception {
         String tardio = """
-                {"credito":{"cuotas":104},"perfilReglas":"%s","instrucciones":[{"periodo":5,"tipo":"PAGO_CONTRACTUAL","diasAtraso":4}]}
+                {"credito":{"cuotas":104},"perfilReglas":"%s","instrucciones":[{"periodo":3,"tipo":"SIN_PAGO"},{"periodo":4,"tipo":"SIN_PAGO"},{"periodo":5,"tipo":"PAGO_CONTRACTUAL","diasAtraso":4}]}
                 """;
         for (String perfil : new String[] {"NEGOCIO", "EXCEL"}) {
             JsonNode asientos = ejecutar(tardio.formatted(perfil)).get("asientos");

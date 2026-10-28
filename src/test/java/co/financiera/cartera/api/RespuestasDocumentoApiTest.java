@@ -52,7 +52,7 @@ class RespuestasDocumentoApiTest {
     @Test
     void cob6LaCobranzaSeActivaODesactivaPorCredito() throws Exception {
         String tardio = """
-                {"credito":{"cuotas":104%s},"perfilReglas":"NEGOCIO","instrucciones":[{"periodo":5,"tipo":"PAGO_CONTRACTUAL","diasAtraso":4}]}
+                {"credito":{"cuotas":104%s},"perfilReglas":"NEGOCIO","instrucciones":[{"periodo":3,"tipo":"SIN_PAGO"},{"periodo":4,"tipo":"SIN_PAGO"},{"periodo":5,"tipo":"PAGO_CONTRACTUAL","diasAtraso":4}]}
                 """;
         JsonNode porDefecto = ejecutar(tardio.formatted("")).get("movimientos").get(5);
         JsonNode activa = ejecutar(tardio.formatted(",\"cobranzaActiva\":true")).get("movimientos").get(5);
@@ -75,7 +75,9 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(19);
+        assertThat(r.get("claves")).hasSize(20);
+        assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
+        assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();
         assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");
         assertThat(excel.get("diasMora").asString()).isEqualTo("PERIODO_NOMINAL");
     }

@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
  */
 class VersionesPerfilesTest {
 
-    private static final String HUELLA_EXCEL = "615f5d9b2575e50edcd54991ff12c7bf54e526a76e812cc802cfa99564f2771a";
-    private static final String ID_NEGOCIO = "negocio-2026-10-23";
-    private static final String HUELLA_NEGOCIO = "f3187deaa4ee3aecea57d00b0a992662333c86fb6b578befd42508b129baad68";
+    private static final String HUELLA_EXCEL = "580dd2b46a53e31b9b8b7ae1e732264050b3d0021acf69742b2d7bd87281e9a8";
+    private static final String ID_NEGOCIO = "negocio-2026-10-27";
+    private static final String HUELLA_NEGOCIO = "70e72e22551a82d19cbf39dd76a2e96ac219f486389f756e1eba40d560521a6f";
 
     private final PerfilesReglas perfiles = new PerfilesReglas("config/reglas-negocio.properties");
 
@@ -35,7 +35,7 @@ class VersionesPerfilesTest {
         assertThat(negocio.id())
                 .as("¿Cambió config/reglas-negocio.properties? Es una versión nueva: suba NEGOCIO_VIGENTE_DESDE")
                 .isEqualTo(ID_NEGOCIO);
-        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 10, 23));
+        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 10, 27));
         assertThat(negocio.reglas()).isSameAs(perfiles.reglas(Perfil.NEGOCIO));
         assertThat(negocio.huella())
                 .as("El contenido de " + ID_NEGOCIO + " cambió sin cambiar el id: suba NEGOCIO_VIGENTE_DESDE y "
