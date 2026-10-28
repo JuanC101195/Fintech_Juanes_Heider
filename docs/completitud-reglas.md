@@ -1,6 +1,6 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-27** (ronda 7 respondida) (rondas 4, 5 y 6 respondidas; respuestas por documento del 22 oct incorporadas; ronda 7 abierta con 2 preguntas).
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-27** (rondas 4 a 7 respondidas; respuestas por documento del 22 oct incorporadas; ronda 8 abierta con 4 preguntas).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
@@ -17,19 +17,19 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 27 | 34 | 79 % |
-| Servicios complementarios | 10 | 10 | 100 % |
-| Abonos y prepago | 15 | 15 | 100 % |
+| Pagos, mora y cobranza | 27 | 36 | 75 % |
+| Servicios complementarios | 10 | 11 | 91 % |
+| Abonos y prepago | 15 | 16 | 94 % |
 | Cambio de tasa y usura | 14 | 14 | 100 % |
 | Dación y retoma | 16 | 16 | 100 % |
 | Contabilidad | 7 | 9 | 78 % |
 | Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 3 | 3 | 100 % |
-| **Tabla A (preguntas del cuestionario)** | **97** | **106** | **92 %** |
+| **Tabla A (preguntas del cuestionario)** | **97** | **110** | **88 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **108** | **124** | **87 %** |
+| **Total de reglas inventariadas** | **108** | **128** | **84 %** |
 
-Las 106 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 110 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) y las 4 de la ronda 8 (ids `R8-*`, abiertas). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
@@ -85,6 +85,9 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R6-COBRANZA-ACTIVA | ¿Quién activa la cobranza por crédito: el administrador, el director, un comité o una regla? | Reemplazada por R7-COBRANZA-ACTIVA | Ronda 6 (22 oct 2026): Diego la dejó pendiente ("pendiente de definir política de cobranza"). No cuenta en el total: la cuenta R7-COBRANZA-ACTIVA. |
 | R6-LIMITE-CORTO | En un crédito de menos de 24 meses, ¿el plazo límite es su propio plazo o los 24 meses? | Decidida | Ronda 6 (22 oct 2026): El plazo límite es el propio plazo del crédito: 12 meses, límite 12 (D53). |
 | R7-COBRANZA-ACTIVA | ¿Quién activa el cobro de los gastos de cobranza (director financiero, gerente o comité) y se hace crédito por crédito o por una regla (tras N días de mora)? | Decidida | Ronda 7 (27 oct 2026): Por regla: la cobranza se activa sola tras 2 periodos en mora (tercera cuota vencida), en periodos de la periodicidad pactada, y el director financiero puede exonerar (D56). El valor y la política fina se pulen después. |
+| R8-COBRANZA-PAGO-TARDIO | Con la regla nueva (D56), ¿se cobra cobranza por los días de atraso cuando el cliente paga la cuota completa pero tarde (caso 9)? | Abierta | Pregunta R8-COBRANZA-PAGO-TARDIO del cuestionario (ronda 8). Hoy solo cuentan las cuotas vencidas sin cubrir; el caso 9 pasó de 121 a 107 filas. |
+| R8-REDONDEO-PESO | Si el cliente paga en pesos enteros y la cuota tiene decimales (163.440,4465), ¿se acepta una tolerancia o se redondea la cuota? (H2) | Abierta | Pregunta R8-REDONDEO-PESO del cuestionario (ronda 8). Hoy queda pago inferior por 0,45 COP y a la segunda cuota se marca recuperación. |
+
 ### Servicios complementarios
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -99,6 +102,8 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | SRV-2 | Si un abono acorta el plazo, ¿qué pasa con la cobertura del seguro y del fondo de garantías en las cuotas eliminadas? | Decidida | Ronda 3 (20 oct 2026): Si un abono acorta el plazo, la cobertura de seguro y fondo termina con el nuevo plazo. |
 | SRV-3 | En la última cuota, ¿se cobran los servicios completos del periodo o se prorratean? | Decidida | Ronda 3 (20 oct 2026): La última cuota lleva los servicios completos. |
 | SRV-4 | ¿La cuenta por pagar de servicios se separa por tercero y por IVA? | Decidida | Ronda 3 (20 oct 2026): Una cuenta por pagar por tercero y el IVA en su propia cuenta. |
+| R8-PAGO-INCOMPLETO-EN-FECHA | Un pago incompleto hecho en la fecha (0 días de atraso), ¿es "al día" para el fondo y la asistencia? (H7) | Abierta | Pregunta R8-PAGO-INCOMPLETO-EN-FECHA del cuestionario (ronda 8). Hoy causa los tres servicios; un pago parcial declarado causa solo el seguro (D17). |
+
 
 ### Abonos y prepago
 
@@ -122,6 +127,8 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R4-A3 | ¿Se acepta cualquier abono extra o hay un valor mínimo? | Decidida | Ronda 4 (21 oct 2026): No hay valor mínimo para el abono extra. |
 | P5-PAGO-ANTES-PRIMERA | Un pago antes de la primera cuota: ¿abono extra a capital o se guarda para la primera cuota? | Decidida | Ronda 5 (22 oct 2026): Es abono extra a capital (D49). |
 | P5-CASO13 | Caso 13 recalculado con el sobrante por la prelación: ¿las cifras nuevas son correctas? | Decidida | Ronda 5 (22 oct 2026): Las cifras nuevas son correctas: capital 1.123.017,41 y saldo 3.229.537,12 (D50). |
+| R8-PAGO-MAYOR-EXIGIBLE | Un pago mayor que lo exigible, ¿se rechaza, se devuelve como cuenta por pagar o se aplica como abono extraordinario? (H8) | Abierta | Pregunta R8-PAGO-MAYOR-EXIGIBLE del cuestionario (ronda 8). Hoy se recorta sin aviso y el sobrante no se registra. |
+
 ### Cambio de tasa y usura
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
