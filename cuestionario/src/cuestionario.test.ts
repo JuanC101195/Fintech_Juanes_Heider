@@ -20,12 +20,12 @@ describe('preguntas', () => {
     expect(RESPONDIDAS.length + PREGUNTAS.length).toBe(TODAS.length)
     expect(RESPONDIDAS.map((p) => p.id)).toEqual(expect.arrayContaining(['P1', 'P7', 'A1', 'A2', 'C4', 'PTOPE', 'S3', 'X4']))
     for (const p of PREGUNTAS) expect(p.respondida, p.id).toBeUndefined()
-    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Documento 22 oct)/)
+    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Ronda 7|Documento 22 oct)/)
     for (const b of BLOQUES_ABIERTOS) expect(PREGUNTAS.some((p) => p.bloque === b), b).toBe(true)
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
 
-  it('las rondas 5 y 6 quedaron respondidas el 22 de octubre y la ronda 7 deja abiertas solo 2 preguntas', () => {
+  it('las rondas 5 y 6 quedaron respondidas el 22 de octubre y la ronda 7 también quedó respondida y la ronda 8 deja abiertas 4', () => {
     const ronda56 = TODAS.filter((p) => p.id.startsWith('P5-') || p.id.startsWith('R6-'))
     expect(ronda56).toHaveLength(10)
     for (const p of ronda56) {
@@ -45,20 +45,28 @@ describe('preguntas', () => {
     expect(ronda56.find((p) => p.id === 'R6-RECUP-VS-CASO11')!.respondida!.reemplazadaPor).toBe('R7-RECUP-VS-CASO11')
     for (const id of ['R6-COBRANZA-ACTIVA', 'R6-RECUP-VS-CASO11']) expect(ronda56.find((p) => p.id === id)!.respondida!.nota, id).toMatch(/^Pendiente: /)
 
-    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R7-COBRANZA-ACTIVA', 'R7-RECUP-VS-CASO11'])
+    const ronda7 = TODAS.filter((p) => p.id.startsWith('R7-'))
+    expect(ronda7.map((p) => p.respondida?.referencia)).toEqual(['Ronda 7', 'Ronda 7'])
+    for (const p of ronda7) expect(p.respondida!.nota, p.id).toBeUndefined()
+
+    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R8-COBRANZA-PAGO-TARDIO', 'R8-PAGO-INCOMPLETO-EN-FECHA', 'R8-PAGO-MAYOR-EXIGIBLE', 'R8-REDONDEO-PESO'])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
 
-  it('la ronda 7 pregunta quién activa la cobranza (y si es por crédito o por regla) y si el caso 11 pasa a 2 periodos', () => {
-    const cobranza = PREGUNTAS.find((p) => p.id === 'R7-COBRANZA-ACTIVA')!
-    const codigos = cobranza.opciones.map((o) => o.codigo)
-    expect(codigos).toEqual(expect.arrayContaining(['director-credito', 'gerente-credito', 'comite-credito', 'regla-director', 'regla-gerente', 'otro']))
-    expect(cobranza.opciones.find((o) => o.codigo === 'otro')!.pideTexto).toBe(true)
-    expect(cobranza.titulo).toMatch(/crédito por crédito o por una regla/)
-    const caso11 = PREGUNTAS.find((p) => p.id === 'R7-RECUP-VS-CASO11')!
-    expect(caso11.opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)).toEqual(['corregir-a-2', 'dejar-4-ejemplo'])
-    expect(caso11.contexto).toContain('4 periodos')
-    expect(caso11.opciones.find((o) => o.esExcel)!.codigo).toBe('dejar-4-ejemplo')
+  it('la ronda 8 pregunta la cobranza por pago tardío, el redondeo al peso, el pago incompleto en la fecha y el pago mayor que lo exigible', () => {
+    const cod = (id: string) => PREGUNTAS.find((p) => p.id === id)!.opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
+    const tardio = PREGUNTAS.find((p) => p.id === 'R8-COBRANZA-PAGO-TARDIO')!
+    expect(cod('R8-COBRANZA-PAGO-TARDIO')).toEqual(['cobrar-dias-atraso', 'solo-cuotas-vencidas', 'otro'])
+    expect(tardio.contexto).toContain('121 a 107')
+    expect(tardio.opciones.find((o) => o.codigo === 'otro')!.pideTexto).toBe(true)
+    const peso = PREGUNTAS.find((p) => p.id === 'R8-REDONDEO-PESO')!
+    expect(cod('R8-REDONDEO-PESO')).toEqual(['tolerancia-1-peso', 'redondear-cuota-al-peso', 'sin-tolerancia', 'otro'])
+    expect(peso.contexto).toContain('163.440,4465')
+    expect(peso.opciones.find((o) => o.esExcel)!.codigo).toBe('sin-tolerancia')
+    expect(cod('R8-PAGO-INCOMPLETO-EN-FECHA')).toEqual(['incompleto-no-al-dia', 'incompleto-al-dia', 'otro'])
+    expect(PREGUNTAS.find((p) => p.id === 'R8-PAGO-INCOMPLETO-EN-FECHA')!.bloque).toBe('Servicios complementarios')
+    expect(cod('R8-PAGO-MAYOR-EXIGIBLE')).toEqual(['rechazar', 'devolver-cxp', 'abono-extra', 'otro'])
+    expect(PREGUNTAS.find((p) => p.id === 'R8-PAGO-MAYOR-EXIGIBLE')!.bloque).toBe('Abonos y prepago')
   })
 
   it('la ronda 4 quedó respondida el 21 de octubre, salvo T5 que Diego contestó por documento el 22', () => {
@@ -191,7 +199,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ 'R7-COBRANZA-ACTIVA': { codigo: 'director-credito' }, 'R7-RECUP-VS-CASO11': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
+    expect(avance({ 'R8-REDONDEO-PESO': { codigo: 'tolerancia-1-peso' }, 'R8-PAGO-MAYOR-EXIGIBLE': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -201,7 +209,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { 'R7-COBRANZA-ACTIVA': { codigo: 'otro', texto: 'Comité trimestral' }, 'R7-RECUP-VS-CASO11': { comentario: 'Así' } },
+    respuestas: { 'R8-REDONDEO-PESO': { codigo: 'otro', texto: 'Comité trimestral' }, 'R8-PAGO-MAYOR-EXIGIBLE': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -211,9 +219,9 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'R7-COBRANZA-ACTIVA')).toContain('Comité trimestral')
-    expect(filas.find((f) => f[0] === 'R7-RECUP-VS-CASO11')).toContain('Así')
-    expect(filas.find((f) => f[0] === 'R7-RECUP-VS-CASO11')![10]).toBe('Sí')
+    expect(filas.find((f) => f[0] === 'R8-REDONDEO-PESO')).toContain('Comité trimestral')
+    expect(filas.find((f) => f[0] === 'R8-PAGO-MAYOR-EXIGIBLE')).toContain('Así')
+    expect(filas.find((f) => f[0] === 'R8-PAGO-MAYOR-EXIGIBLE')![10]).toBe('Sí')
   })
 
   it('manda la fila a la tabla y avisa si falla', async () => {
@@ -245,8 +253,8 @@ describe('exportación a Excel', () => {
     const estado: Estado = {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
-        'R7-RECUP-VS-CASO11': { codigo: 'corregir-a-2', comentario: 'Así lo hacemos hoy' },
-        'R7-COBRANZA-ACTIVA': { codigo: 'otro', texto: 'Comité trimestral' },
+        'R8-PAGO-MAYOR-EXIGIBLE': { codigo: 'abono-extra', comentario: 'Así lo hacemos hoy' },
+        'R8-REDONDEO-PESO': { codigo: 'otro', texto: 'Comité trimestral' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -265,14 +273,14 @@ describe('exportación a Excel', () => {
       })
       return encontrada!
     }
-    expect(fila('R7-RECUP-VS-CASO11').getCell(4).value).toBe('corregir-a-2')
-    expect(fila('R7-RECUP-VS-CASO11').getCell(9).value).toBe('Así lo hacemos hoy')
+    expect(fila('R8-PAGO-MAYOR-EXIGIBLE').getCell(4).value).toBe('abono-extra')
+    expect(fila('R8-PAGO-MAYOR-EXIGIBLE').getCell(9).value).toBe('Así lo hacemos hoy')
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
     expect(fila('R4-QUIN')).toBeUndefined()
-    expect(fila('R7-COBRANZA-ACTIVA').getCell(8).value).toBe('Comité trimestral')
-    expect(fila('R7-COBRANZA-ACTIVA').getCell(11).value).toBe('Sí')
-    expect(fila('R7-RECUP-VS-CASO11').getCell(11).value).toBe('Sí')
+    expect(fila('R8-REDONDEO-PESO').getCell(8).value).toBe('Comité trimestral')
+    expect(fila('R8-REDONDEO-PESO').getCell(11).value).toBe('Sí')
+    expect(fila('R8-PAGO-MAYOR-EXIGIBLE').getCell(11).value).toBe('Sí')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!
     expect(efecto.rowCount).toBe(1)

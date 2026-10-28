@@ -1642,7 +1642,7 @@ const RONDA_6: Pregunta[] = [
   },
 ]
 
-// Ronda 7 (22 oct 2026): las dos preguntas que Diego marcó pendientes en la ronda 6, reformuladas con opciones concretas.
+// Ronda 7 (22 oct 2026, respondida el 27 oct): las dos preguntas que Diego marcó pendientes en la ronda 6, reformuladas con opciones concretas.
 const RONDA_7: Pregunta[] = [
   {
     id: 'R7-COBRANZA-ACTIVA',
@@ -1670,6 +1670,69 @@ const RONDA_7: Pregunta[] = [
     opciones: [
       { codigo: 'corregir-a-2', texto: 'Se corrige el caso 11 a 2 periodos de espera (el Excel se corrige)' },
       { codigo: 'dejar-4-ejemplo', texto: 'Se deja en 4 como ejemplo de un crédito en el que se esperó más del umbral', esExcel: true },
+    ],
+  },
+]
+
+// Ronda 8 (27 oct 2026): cuatro huecos que dejó la regla nueva de cobranza (D56) y los pendientes técnicos H2, H7 y H8.
+const RONDA_8: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'R8-COBRANZA-PAGO-TARDIO',
+    bloque: PAGOS,
+    titulo: 'Si el cliente paga la cuota completa pero tarde, ¿se cobra cobranza por los días de atraso?',
+    contexto:
+      'Con la regla nueva, la cobranza empieza tras 2 periodos en mora (tercera cuota vencida) y solo cuenta las cuotas que quedan sin cubrir. Un cliente que paga cada cuota completa pero con retraso nunca suma cuotas vencidas, así que ya no genera cobranza. En el caso 9 (todas las cuotas pagadas con 14 días de atraso en semanal) el motor pasó de 121 a 107 filas en NEGOCIO porque desapareció esa cobranza. Falta saber si la cobranza debe cobrarse por los días de atraso aunque el pago sea completo (por ejemplo, desde la tercera cuota atrasada, contando también los pagos completos tardíos) o solo cuando la cuota queda sin cubrir.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso en cada cuota tardía, aunque el pago sea completo (caso 9).',
+    opciones: [
+      { codigo: 'cobrar-dias-atraso', texto: 'Sí: se cobra días de atraso × valor diario desde la tercera cuota atrasada, contando también los pagos completos tardíos', esExcel: true },
+      { codigo: 'solo-cuotas-vencidas', texto: 'No: solo cuenta cuando la cuota queda sin cubrir (como está hoy en el motor)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R8-REDONDEO-PESO',
+    bloque: PAGOS,
+    titulo: 'Si el cliente paga en pesos enteros y la cuota tiene centavos, ¿se acepta el pago como completo?',
+    contexto:
+      'La cuota total del ejemplo es 163.440,4465. Un cliente que paga en pesos enteros (163.440) queda cada periodo como "pago inferior" por 0,45 COP, acumula mora sobre ese residuo y, a la segunda cuota, el crédito se marca para recuperación. Como en la práctica los pagos llegan en pesos enteros, conviene decidir si se acepta una tolerancia, si la cuota exigible se redondea al peso o si el motor sigue exigiendo el valor exacto.',
+    excelHoy: 'El Excel no redondea la cuota (P2): el cálculo conserva los decimales y solo el formato los oculta.',
+    opciones: [
+      { codigo: 'tolerancia-1-peso', texto: 'Se acepta como pago completo el que difiera menos de 1 peso de la cuota' },
+      { codigo: 'redondear-cuota-al-peso', texto: 'La cuota exigible se redondea a pesos enteros' },
+      { codigo: 'sin-tolerancia', texto: 'Sin tolerancia: se exige el valor exacto (como hoy)', esExcel: true },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+
+  // ── Servicios complementarios ─────────────────────────────────────────────────
+  {
+    id: 'R8-PAGO-INCOMPLETO-EN-FECHA',
+    bloque: SERVICIOS,
+    titulo: 'Un pago incompleto hecho en la fecha, ¿cuenta como "al día" para el fondo y la asistencia?',
+    contexto:
+      'Ya decidió que el fondo de garantías y la asistencia solo se causan en los periodos pagados al día; en mora o con pago parcial se causa solo el seguro (D17). Hoy el motor trata distinto dos situaciones parecidas: un pago parcial declarado como tal causa solo el seguro, pero un pago incompleto hecho en la fecha (0 días de atraso) causa los tres servicios, como si estuviera al día. Falta definir si un pago incompleto en la fecha es "al día" o no.',
+    excelHoy: 'El Excel solo simula servicios en una operación; no distingue un pago incompleto hecho en la fecha.',
+    opciones: [
+      { codigo: 'incompleto-no-al-dia', texto: 'No es "al día": se causa solo el seguro, igual que un pago parcial' },
+      { codigo: 'incompleto-al-dia', texto: 'Sí es "al día": se causan los tres servicios (fondo, asistencia y seguro)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+
+  // ── Abonos y prepago ──────────────────────────────────────────────────────────
+  {
+    id: 'R8-PAGO-MAYOR-EXIGIBLE',
+    bloque: ABONOS,
+    titulo: 'Si el cliente paga más de lo exigible, ¿qué se hace con el sobrante?',
+    contexto:
+      'Hoy, cuando llega un pago mayor que lo exigible en ese momento (por ejemplo, 99.000.000 contra una deuda mucho menor), el motor lo recorta a lo exigible sin dar aviso y el sobrante no queda registrado en ninguna parte. Ya decidió que nunca se recibe más dinero que el saldo del crédito (A2) y que lo que supere la cuota causada es abono extra (ABN-4). Falta definir qué pasa con lo que sobra: rechazar el pago, devolverlo al cliente o aplicarlo como abono extraordinario a capital.',
+    excelHoy: 'El Excel no contempla pagos mayores que lo exigible.',
+    opciones: [
+      { codigo: 'rechazar', texto: 'Se rechaza el pago: solo se recibe lo exigible' },
+      { codigo: 'devolver-cxp', texto: 'Se recibe y el sobrante queda como cuenta por pagar al cliente para devolverlo' },
+      { codigo: 'abono-extra', texto: 'El sobrante se aplica como abono extraordinario a capital, con las reglas de los abonos (D11, D12, D30 y D36)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
 ]
@@ -1808,16 +1871,16 @@ const RESPONDIDAS_22_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   X1: { referencia: REF_22_OCT, respuesta: 'Todas las operaciones tienen servicios complementarios; el Excel solo los simuló en una operación como ejemplo.' },
   'COB-4': { referencia: REF_22_OCT, respuesta: 'Los gastos de cobranza solo se cobran mientras el cliente esté en mora; si se pone al día o termina de pagar, no se liquidan.' },
   'COB-5': { referencia: REF_22_OCT, respuesta: 'Los exonera el director financiero o el gerente, con justificación y aprobando directamente en el software.' },
-  'COB-6': { referencia: REF_22_OCT, respuesta: 'La tarifa no está regulada: el cobro vale si el contrato de mutuo dice cuándo se causa y cuánto. Los 3.000 son un ejemplo; el valor real está pendiente y cambia en el tiempo. Un responsable activa la cobranza crédito por crédito (ronda 7: R7-COBRANZA-ACTIVA).' },
+  'COB-6': { referencia: REF_22_OCT, respuesta: 'La tarifa no está regulada: el cobro vale si el contrato de mutuo dice cuándo se causa y cuánto. Los 3.000 son un ejemplo; el valor real está pendiente y cambia en el tiempo. Un responsable activa la cobranza crédito por crédito (cerrada en la ronda 7: R7-COBRANZA-ACTIVA, D56).' },
   'PPER-8': { referencia: REF_22_OCT, nota: 'Pendiente: política de gastos de cobranza.', respuesta: 'Sin respuesta: dijo que este tema está pendiente de definir y es de los gastos de cobranza.' },
-  'PPER-9': { referencia: REF_22_OCT, respuesta: 'No hay días específicos: la política es ejecutar la dación o la retoma luego de 2 cuotas atrasadas, en periodos de la periodicidad pactada (D54: el motor solo marca; el caso 11 en la ronda 7: R7-RECUP-VS-CASO11).' },
+  'PPER-9': { referencia: REF_22_OCT, respuesta: 'No hay días específicos: la política es ejecutar la dación o la retoma luego de 2 cuotas atrasadas, en periodos de la periodicidad pactada (D54: el motor solo marca; el caso 11 se cerró en la ronda 7: R7-RECUP-VS-CASO11, D57).' },
   X4: { referencia: REF_22_OCT, respuesta: 'El plazo límite del caso 8 se amplía a 104 cuotas (24 meses), según el recálculo; en cualquier momento puede darse la retoma o la dación.' },
   'P5-LIMITE-DESDE': { referencia: REF_22_OCT, reemplazadaPor: 'R6-LIMITE-CORTO', nota: 'Reemplazada por R6-LIMITE-CORTO.', respuesta: 'X4 la contesta en parte: el límite es de 104 cuotas (24 meses) desde el desembolso; falta el caso de un crédito de menos de 24 meses.' },
 }
 
 // Respondidas por el cuestionario (Diego, 22 de octubre de 2026, 19:53): las rondas 5 y 6, 9 de 9 con la opción y el
 // comentario coincidentes (docs/respuestas-diego-2026-10-22-ronda5-6.md). 7 quedan decididas (D48 a D54). Las dos que
-// marcó pendientes (política de cobranza) se reformulan en la ronda 7 y no cuentan en el total: las cuenta la nueva.
+// marcó pendientes (política de cobranza) se reformularon en la ronda 7 (ya respondida) y no cuentan en el total: las cuenta la nueva.
 const REF_RONDA_5 = 'Ronda 5'
 const REF_RONDA_6 = 'Ronda 6'
 const RESPONDIDAS_RONDA_5_6: Record<string, Omit<Respondida, 'fecha'>> = {
@@ -1832,12 +1895,20 @@ const RESPONDIDAS_RONDA_5_6: Record<string, Omit<Respondida, 'fecha'>> = {
   'R6-RECUP-VS-CASO11': { referencia: REF_RONDA_6, reemplazadaPor: 'R7-RECUP-VS-CASO11', nota: 'Pendiente: política por definir. Reformulada en R7-RECUP-VS-CASO11.', respuesta: 'Sin respuesta: "política por definir".' },
 }
 
+// Respondidas por el cuestionario (Diego, 27 de octubre de 2026): la ronda 7. Las dos quedan decididas (D56 y D57 de decisiones.md).
+const REF_RONDA_7 = 'Ronda 7'
+const RESPONDIDAS_RONDA_7: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R7-COBRANZA-ACTIVA': { referencia: REF_RONDA_7, respuesta: 'Por regla: la cobranza se activa sola tras 2 periodos en mora (tercera cuota vencida), en periodos de la periodicidad pactada; el director financiero puede exonerar. La dación o retoma también inicia tras 2 cuotas vencidas y desde ahí aplican todos los costos de cobranza (D56).' },
+  'R7-RECUP-VS-CASO11': { referencia: REF_RONDA_7, respuesta: 'El caso 11 se corrige a 2 periodos de espera (el Excel se corrige) (D57).' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8].map((p) => {
+  if (RESPONDIDAS_RONDA_7[p.id]) return { ...p, respondida: { fecha: '27 oct 2026', ...RESPONDIDAS_RONDA_7[p.id] } }
   if (RESPONDIDAS_RONDA_5_6[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_RONDA_5_6[p.id] } }
   if (RESPONDIDAS_22_OCT[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_22_OCT[p.id] } }
   if (RESPONDIDAS_16_OCT[p.id]) return { ...p, respondida: { fecha: '16 oct 2026', ...RESPONDIDAS_16_OCT[p.id] } }
