@@ -57,8 +57,10 @@ import org.junit.jupiter.api.Test;
  */
 class PropiedadesFinancierasAuditTest {
 
-    private static final long SEMILLA = 20261023L;
-    private static final int ESCENARIOS = 3000;
+    // Por defecto 3.000 escenarios con semilla fija (rápido y determinista). Para cazar casos raros se puede subir la
+    // escala sin tocar el código: ./mvnw test -Dtest=PropiedadesFinancierasAuditTest -Dpropiedades.escenarios=50000 -Dpropiedades.semilla=7
+    private static final long SEMILLA = Long.getLong("propiedades.semilla", 20261023L);
+    private static final int ESCENARIOS = Integer.getInteger("propiedades.escenarios", 3000);
     private static final BigDecimal TOL = new BigDecimal("0.01");
     private static final MotorCartera MOTOR = new MotorCartera();
 
@@ -103,20 +105,55 @@ class PropiedadesFinancierasAuditTest {
         return a.subtract(b).abs().compareTo(TOL) > 0;
     }
 
+    /**
+     * Una combinación al azar de las reglas del negocio: parte del perfil EXCEL o del NEGOCIO y sortea cada clave de
+     * {@link ReglasNegocio}. Los invariantes financieros y contables deben cumplirse con CUALQUIER combinación de
+     * reglas, no solo con los dos perfiles que usamos hoy.
+     */
+    private static ReglasNegocio combinacion(Random r, ReglasNegocio neg) {
+        ReglasNegocio x = r.nextBoolean() ? neg : ReglasNegocio.EXCEL;
+        x = x.conPrelacion(ReglasNegocio.OrdenPrelacion.values()[r.nextInt(ReglasNegocio.OrdenPrelacion.values().length)])
+                .conFormulaMora(ReglasNegocio.FormulaMora.values()[r.nextInt(ReglasNegocio.FormulaMora.values().length)])
+                .conBaseInteres(ReglasNegocio.BaseInteres.values()[r.nextInt(ReglasNegocio.BaseInteres.values().length)])
+                .conBaseServicios(ReglasNegocio.BaseServicios.values()[r.nextInt(ReglasNegocio.BaseServicios.values().length)])
+                .conAplicacionAbono(ReglasNegocio.AplicacionAbono.values()[r.nextInt(ReglasNegocio.AplicacionAbono.values().length)])
+                .conDiasMora(ReglasNegocio.DiasMora.values()[r.nextInt(ReglasNegocio.DiasMora.values().length)])
+                .conServiciosDespuesDelPlazo(r.nextBoolean())
+                .conMoraAntesDeRecuperacion(r.nextBoolean())
+                .conInteresPrepagoPorDias(r.nextBoolean())
+                .conCostoRecuperacionAlFondo(r.nextBoolean())
+                .conCobranzaIngresoNoOperacional(r.nextBoolean())
+                .conCambioTasaSobreCapitalVigente(r.nextBoolean())
+                .conProrrateoPrimeraCuota(r.nextBoolean())
+                .conModalidadUsura(r.nextBoolean() ? ModalidadCambioTasa.MISMA_CUOTA : ModalidadCambioTasa.MISMA_FECHA_FINAL)
+                .conCuotasVencidasParaCobranza(r.nextBoolean() ? null : 1 + r.nextInt(3))
+                .conCuotasVencidasParaRecuperacion(r.nextBoolean() ? null : 1 + r.nextInt(3));
+        return x;
+    }
+
     @Test
     void invariantesEnEscenariosAleatorios() throws Exception {
+        corridaAleatoria(SEMILLA, ESCENARIOS, false);
+    }
+
+    @Test
+    void invariantesConCombinacionesAleatoriasDeReglas() throws Exception {
+        corridaAleatoria(SEMILLA + 1, ESCENARIOS, true);
+    }
+
+    private void corridaAleatoria(long semilla, int escenarios, boolean combinadas) throws Exception {
         ReglasNegocio neg = negocio();
-        Random r = new Random(SEMILLA);
+        Random r = new Random(semilla);
         int corridos = 0;
-        for (int k = 0; k < ESCENARIOS; k++) {
+        for (int k = 0; k < escenarios; k++) {
             StringBuilder repro = new StringBuilder();
             Periodicidad per = Periodicidad.values()[r.nextInt(3)];
             int max = per.cuotasEnMeses(24);
             int n = r.nextInt(8) == 0 ? 1 + r.nextInt(3) : 1 + r.nextInt(max);
             ParametrosProducto p = ParametrosProducto.de(LineaCredito.values()[r.nextInt(4)], per, n);
             boolean esNegocio = r.nextBoolean();
-            ReglasNegocio reglas = esNegocio ? neg : ReglasNegocio.EXCEL;
-            if (esNegocio) {
+            ReglasNegocio reglas = combinadas ? combinacion(r, neg) : (esNegocio ? neg : ReglasNegocio.EXCEL);
+            if (esNegocio || combinadas) {
                 var lim = reglas.plazoLimitePeriodos(per, n);
                 if (lim.isPresent()) {
                     p = p.conPlazoLimite(lim.getAsInt());
@@ -131,7 +168,7 @@ class PropiedadesFinancierasAuditTest {
             boolean cobranza = r.nextBoolean();
             Escenario e = new Escenario(o, p).conReglas(reglas).conCobranzaActiva(cobranza);
             repro.append(String.format("per=%s n=%d tasa=%s reglas=%s moto=%s inicial=%s limite=%d cobranza=%s", per, n,
-                    p.tasaEA(), esNegocio ? "NEGOCIO" : "EXCEL", moto, o.pagoInicial().toPlainString(),
+                    p.tasaEA(), combinadas ? reglas.toString() : (esNegocio ? "NEGOCIO" : "EXCEL"), moto, o.pagoInicial().toPlainString(),
                     p.plazoLimitePeriodos(), cobranza));
             if (r.nextBoolean()) {
                 LocalDate des = LocalDate.of(2024, 1, 1).plusDays(r.nextInt(900));
@@ -209,7 +246,7 @@ class PropiedadesFinancierasAuditTest {
             corridos++;
             verificar(movs, monto, e, repro.toString(), eventos == 0);
         }
-        System.out.println("=== AUDITORIA: escenarios corridos sin excepción = " + corridos + " / " + ESCENARIOS);
+        System.out.println("=== AUDITORIA" + (combinadas ? " (reglas combinadas)" : "") + ": escenarios corridos sin excepción = " + corridos + " / " + escenarios);
         excepciones.forEach((k, v) -> System.out.println("  excepción [" + v + "] " + k));
         conteo.forEach((k, v) -> System.out.println("  VIOLACIÓN [" + v + "] " + k + "\n    " + ejemplo.get(k)));
         ejemplo.forEach((k, v) -> {
@@ -235,6 +272,13 @@ class PropiedadesFinancierasAuditTest {
                 if (v.signum() < 0) {
                     violacion("I1 valor negativo", id + " valor " + v.toPlainString(), repro);
                 }
+            }
+            // I8 (R7-COBRANZA-ACTIVA, Diego 2026-10-27): con umbral de cobranza, nunca se causa cobranza si el cliente
+            // llegaba al periodo con menos cuotas vencidas que el umbral (con 2, empieza en la tercera cuota vencida).
+            Integer umbral = e.reglas().cuotasVencidasParaCobranza();
+            if (umbral != null && m.cobranzaCausada().signum() > 0 && prev.cuotasVencidas() < umbral) {
+                violacion("I8 cobranza antes del umbral de cuotas vencidas", id + " cuotasVencidasPrevias=" + prev.cuotasVencidas()
+                        + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
             }
             // I2 continuidad
             if (dif(m.saldoInicial(), prev.saldoFinal())) {
