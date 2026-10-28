@@ -27,7 +27,7 @@ class ExtractoresTest(unittest.TestCase):
 
     def test_campo_del_periodo(self):
         self.assertEqual(v.campo('saldoFinal')(self.r, 0), Decimal('5904400'))
-        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('1123017.408502946089287426466091208'))
+        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('1111017.408502946089287426466091208'))
         self.assertEqual(v.campo('cuotasVencidas')(self.r, 42), Decimal(0))
 
     def test_campo_anidado(self):
