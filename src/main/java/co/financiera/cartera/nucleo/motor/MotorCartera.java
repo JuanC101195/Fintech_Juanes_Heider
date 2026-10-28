@@ -210,7 +210,8 @@ public final class MotorCartera {
             int dias = diasAtraso(pago);
 
             // 2. Causación del periodo.
-            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias));
+            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias), cuotasVencidas,
+                    diasParaCobranza(pago, dias));
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
@@ -401,6 +402,19 @@ public final class MotorCartera {
             Servicios giro = recaudadoDelMes;
             recaudadoDelMes = Servicios.NINGUNO;
             return giro;
+        }
+
+        /**
+         * R7-COBRANZA-ACTIVA: un periodo sin pago (o con pago parcial sin días de atraso) no trae días de atraso,
+         * pero con umbral de cobranza el cliente que ya lo superó debe el periodo completo; se cuentan los días
+         * nominales de la periodicidad. Con el Excel (sin umbral) todo sigue igual.
+         */
+        private int diasParaCobranza(Instruccion pago, int dias) {
+            boolean periodoSinCubrir = pago instanceof SinPago || pago instanceof PagoParcial;
+            if (dias == 0 && periodoSinCubrir && escenario.reglas().cuotasVencidasParaCobranza() != null) {
+                return s.p.periodicidad().diasNominales();
+            }
+            return dias;
         }
 
         private int diasAtraso(Instruccion pago) {

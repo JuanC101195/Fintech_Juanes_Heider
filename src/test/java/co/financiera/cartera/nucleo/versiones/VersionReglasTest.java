@@ -16,7 +16,7 @@ class VersionReglasTest {
      * Huella fija del perfil EXCEL. Si cambia, cambió el formato canónico o una regla del Excel: las dos cosas son
      * versiones nuevas y deben decidirse a propósito (ADR 0004), nunca regenerarse en silencio.
      */
-    private static final String HUELLA_EXCEL = "615f5d9b2575e50edcd54991ff12c7bf54e526a76e812cc802cfa99564f2771a";
+    private static final String HUELLA_EXCEL = "580dd2b46a53e31b9b8b7ae1e732264050b3d0021acf69742b2d7bd87281e9a8";
 
     @Test
     void elContenidoCanonicoTieneElFormatoYTodasLasClavesEnOrden() {

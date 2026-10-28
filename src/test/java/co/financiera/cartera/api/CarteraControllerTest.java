@@ -101,7 +101,7 @@ class CarteraControllerTest {
                     .andExpect(jsonPath("$.perfiles.EXCEL.plazoLimiteMeses").value(org.hamcrest.Matchers.nullValue()))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.modalidadUsura").value("MISMA_CUOTA"))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.margenUsura").value("1"))
-                    .andExpect(jsonPath("$.claves", hasSize(19)))
+                    .andExpect(jsonPath("$.claves", hasSize(20)))
                     .andExpect(jsonPath("$.claves[0].clave").value("prelacion"))
                     .andExpect(jsonPath("$.archivoNegocio").value("config/reglas-negocio.properties"));
         }
@@ -267,9 +267,10 @@ class CarteraControllerTest {
             assertThat(r.get("caso").get("numero").asInt()).isEqualTo(13);
             assertThat(r.get("perfilReglas").asString()).isEqualTo("NEGOCIO");
             JsonNode semana = r.get("movimientos").get(42);
-            // R4-CASO13 (PRELACION_COMPLETA): lo vencido (317.354,81) más el fondo y la asistencia de la semana 42.
+            // R4-CASO13 (PRELACION_COMPLETA): lo vencido más el fondo y la asistencia de la semana 42. R7-COBRANZA-ACTIVA: la
+            // semana 42 es la tercera cuota vencida y causa 21.000 de cobranza (7 días × 3.000), no los 9.000 de antes.
             assertThat(new BigDecimal(semana.get("pendientesPagadosExtra").get("total").asString()))
-                    .isCloseTo(new BigDecimal("376982.59"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
+                    .isCloseTo(new BigDecimal("388982.59"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
             assertThat(semana.get("estado").asString()).isEqualTo("VIGENTE_AL_DIA");
             assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(84);
             assertThat(r.get("instrucciones").size()).isEqualTo(4);

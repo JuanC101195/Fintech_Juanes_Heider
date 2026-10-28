@@ -35,6 +35,7 @@ class PerfilesReglasSnapshotTest {
             "cambioTasaSobreCapitalVigente=false",
             "cobranzaDiaria=null",
             "cuotasVencidasParaRecuperacion=null",
+            "cuotasVencidasParaCobranza=null",
             "prorrateoPrimeraCuota=false",
             "diasMora=PERIODO_NOMINAL");
 
@@ -56,6 +57,7 @@ class PerfilesReglasSnapshotTest {
             "cambioTasaSobreCapitalVigente=true",
             "cobranzaDiaria=3000",
             "cuotasVencidasParaRecuperacion=2",
+            "cuotasVencidasParaCobranza=2",
             "prorrateoPrimeraCuota=true",
             "diasMora=DIAS_CALENDARIO_MENSUAL");
 

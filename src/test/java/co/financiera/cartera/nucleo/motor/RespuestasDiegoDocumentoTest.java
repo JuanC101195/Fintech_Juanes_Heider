@@ -40,6 +40,11 @@ class RespuestasDiegoDocumentoTest {
     private final MotorCartera motor = new MotorCartera();
 
     /** Las reglas del perfil NEGOCIO tal como están en config/reglas-negocio.properties. */
+    /** El NEGOCIO de antes de R7-COBRANZA-ACTIVA: aísla COB-4 (cobranza solo en mora) del umbral de periodos. */
+    private static ReglasNegocio sinUmbralDeCobranza() {
+        return negocio().conCuotasVencidasParaCobranza(null);
+    }
+
     private static ReglasNegocio negocio() {
         try {
             return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion());
@@ -208,7 +213,7 @@ class RespuestasDiegoDocumentoTest {
 
         @Test
         void enElCaso9SoloSeCausaEnLosPagosEnMora() {
-            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso9(P).conReglas(negocio()));
+            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso9(P).conReglas(sinUmbralDeCobranza()));
             for (int i = 1; i < m.size(); i++) {
                 Movimiento x = m.get(i);
                 if (x.periodo() < 43) {
@@ -224,7 +229,7 @@ class RespuestasDiegoDocumentoTest {
         @Test
         void alPonerseAlDiaDejaDeLiquidarse() {
             Escenario e = new Escenario(Operacion.ejemploExcel(), P).entre(43, 46, new PagoContractual(14))
-                    .en(47, new PagoAlDia()).conReglas(negocio());
+                    .en(47, new PagoAlDia()).conReglas(sinUmbralDeCobranza());
             List<Movimiento> m = motor.ejecutar(e);
             assertThat(fila(m, 46).cobranzaCausada()).isPositive();
             assertThat(fila(m, 47).estado()).isEqualTo(EstadoCredito.VIGENTE_AL_DIA);
@@ -238,7 +243,7 @@ class RespuestasDiegoDocumentoTest {
 
         @Test
         void alCancelarDejaDeLiquidarse() {
-            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso9(P).en(60, new PrepagoTotal()).conReglas(negocio()));
+            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso9(P).en(60, new PrepagoTotal()).conReglas(sinUmbralDeCobranza()));
             Movimiento ultimo = m.getLast();
             assertThat(ultimo.periodo()).isEqualTo(60);
             assertThat(ultimo.estado()).isEqualTo(EstadoCredito.CANCELADO);
@@ -297,6 +302,20 @@ class RespuestasDiegoDocumentoTest {
     class Pper9ListoParaRecuperacion {
 
         @Test
+        void elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaTerceraCuota() {
+            // R7-RECUP-VS-CASO11 (Diego 2026-10-27): el caso 11 espera 2 periodos, no 4.
+            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P, negocio().cuotasVencidasParaRecuperacion())
+                    .conReglas(negocio()));
+            assertThat(m.getLast().periodo()).isEqualTo(45);
+            assertThat(m.getLast().estado()).isEqualTo(EstadoCredito.CERRADO_POR_EVENTO);
+            // R7-COBRANZA-ACTIVA: con 2 periodos en mora, la cobranza empieza en la tercera cuota vencida.
+            List<Movimiento> largo = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
+            assertThat(fila(largo, 43).cobranzaCausada()).isZero();
+            assertThat(fila(largo, 44).cobranzaCausada()).isZero();
+            assertThat(fila(largo, 45).cobranzaCausada()).isPositive();
+        }
+
+        @Test
         void conLasReglasDelExcelNingunCasoSeMarca() {
             casos().forEach((nombre, e) -> assertThat(motor.ejecutar(e.conReglas(ReglasNegocio.EXCEL)))
                     .as(nombre).noneMatch(Movimiento::listoParaRecuperacion));
@@ -304,6 +323,8 @@ class RespuestasDiegoDocumentoTest {
 
         @Test
         void elCaso11SeMarcaConDosCuotasAtrasadasPeroLaDacionSigueEnElCuartoPeriodo() {
+            // Este escenario conserva los 4 periodos de espera del Excel; con NEGOCIO el catálogo usa 2 (ver
+            // elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaTerceraCuota).
             List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso11(P));
             List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
             assertThat(fila(m, 43).cuotasVencidas()).isEqualTo(1);

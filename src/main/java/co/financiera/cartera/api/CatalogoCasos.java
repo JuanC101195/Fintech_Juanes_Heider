@@ -46,8 +46,12 @@ final class CatalogoCasos {
                     EXCEL + "Caso9_Cobranza", EscenariosExcel::caso9),
             caso(10, "Cambio de tasa con cuota fija", "Desde el mes 11 la tasa pasa a 80 % EA; se conserva la cuota y cambia el número de cuotas.",
                     EXCEL + "Caso10_TasaCuotaFija", EscenariosExcel::caso10),
-            caso(11, "Pago inferior y dación", "Paga el 40 % de la cuota en el mes 10, no paga tres semanas y en la cuarta entrega la moto por 3.000.000.",
-                    EXCEL + "Caso11_PagoInfDacion", EscenariosExcel::caso11),
+            new Caso(new CasoResumenDto(11, "Pago inferior y dación",
+                    "Paga el 40 % de la cuota en el mes 10 y entrega la moto por 3.000.000: en la cuarta semana con EXCEL y "
+                            + "tras 2 periodos de espera con NEGOCIO (R7-RECUP-VS-CASO11).",
+                    EXCEL + "Caso11_PagoInfDacion"),
+                    (p, reglas) -> EscenariosExcel.caso11(p, reglas.cuotasVencidasParaRecuperacion() == null
+                            ? 4 : reglas.cuotasVencidasParaRecuperacion())),
             caso(12, "Pago inferior y normalización", "Paga el 40 % de la cuota en el mes 10 y en el mes 14 paga la cuota más lo atrasado y queda al día.",
                     EXCEL + "Caso12_PagoInfNormaliza", EscenariosExcel::caso12),
             caso(13, "Abono extra con pendientes",

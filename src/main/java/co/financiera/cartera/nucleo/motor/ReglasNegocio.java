@@ -65,6 +65,10 @@ import java.math.BigDecimal;
  *                                 motor NO ejecuta la recuperación: solo marca y una persona decide (Diego,
  *                                 R6-RECUP-AUTO). La marca persiste aunque el cliente se ponga al día, hasta que
  *                                 el crédito termina. {@code null} = no se marca (el Excel).
+ * @param cuotasVencidasParaCobranza cuotas atrasadas (en periodos de la periodicidad pactada) que deben haber
+ *                                 pasado antes de que se causen gastos de cobranza: con 2, la cobranza empieza en la
+ *                                 tercera cuota vencida (Diego, R7-COBRANZA-ACTIVA: regla fija, sin activar crédito por
+ *                                 crédito; el director financiero puede exonerar). {@code null} = sin umbral (el Excel).
  * @param prorrateoPrimeraCuota    si el interés corriente de la primera cuota se prorratea por los días reales
  *                                 entre el desembolso y la primera fecha de pago (Diego, P5-PRORRATEO; ADR 0002
  *                                 paso 7): interés = saldo × ((1 + tasa diaria)^días − 1), con los días de
@@ -97,6 +101,7 @@ public record ReglasNegocio(
         boolean cambioTasaSobreCapitalVigente,
         BigDecimal cobranzaDiaria,
         Integer cuotasVencidasParaRecuperacion,
+        Integer cuotasVencidasParaCobranza,
         boolean prorrateoPrimeraCuota,
         DiasMora diasMora) {
 
@@ -121,6 +126,9 @@ public record ReglasNegocio(
         }
         if (cobranzaDiaria != null && cobranzaDiaria.signum() < 0) {
             throw new IllegalArgumentException("La cobranza diaria no puede ser negativa: " + cobranzaDiaria);
+        }
+        if (cuotasVencidasParaCobranza != null && cuotasVencidasParaCobranza < 0) {
+            throw new IllegalArgumentException("El umbral de cobranza no puede ser negativo: " + cuotasVencidasParaCobranza);
         }
         if (cuotasVencidasParaRecuperacion != null && cuotasVencidasParaRecuperacion < 1) {
             throw new IllegalArgumentException("El umbral de recuperación debe ser de al menos 1 cuota: "
@@ -155,6 +163,7 @@ public record ReglasNegocio(
             .cambioTasaSobreCapitalVigente(false)
             .cobranzaDiaria(null)
             .cuotasVencidasParaRecuperacion(null)
+            .cuotasVencidasParaCobranza(null)
             .prorrateoPrimeraCuota(false)
             .diasMora(DiasMora.PERIODO_NOMINAL)
             .construir();
@@ -341,6 +350,7 @@ public record ReglasNegocio(
             booleana("cambioTasaSobreCapitalVigente", Constructor::cambioTasaSobreCapitalVigente),
             decimal("cobranzaDiaria", Constructor::cobranzaDiaria),
             entera("cuotasVencidasParaRecuperacion", Constructor::cuotasVencidasParaRecuperacion),
+            entera("cuotasVencidasParaCobranza", Constructor::cuotasVencidasParaCobranza),
             booleana("prorrateoPrimeraCuota", Constructor::prorrateoPrimeraCuota),
             enumerada(DIAS_MORA, DiasMora.class, Constructor::diasMora));
 
@@ -438,6 +448,11 @@ public record ReglasNegocio(
         return copia().cuotasVencidasParaRecuperacion(valor).construir();
     }
 
+    /** R7-COBRANZA-ACTIVA: cuotas atrasadas que deben haber pasado antes de causar cobranza; {@code null} = sin umbral. */
+    public ReglasNegocio conCuotasVencidasParaCobranza(Integer valor) {
+        return copia().cuotasVencidasParaCobranza(valor).construir();
+    }
+
     /** P5-PRORRATEO: si el interés de la primera cuota se prorratea por los días reales desde el desembolso. */
     public ReglasNegocio conProrrateoPrimeraCuota(boolean valor) {
         return copia().prorrateoPrimeraCuota(valor).construir();
@@ -471,6 +486,7 @@ public record ReglasNegocio(
         private boolean cambioTasaSobreCapitalVigente;
         private BigDecimal cobranzaDiaria;
         private Integer cuotasVencidasParaRecuperacion;
+        private Integer cuotasVencidasParaCobranza;
         private boolean prorrateoPrimeraCuota;
         private DiasMora diasMora;
 
@@ -497,6 +513,7 @@ public record ReglasNegocio(
             cambioTasaSobreCapitalVigente = r.cambioTasaSobreCapitalVigente;
             cobranzaDiaria = r.cobranzaDiaria;
             cuotasVencidasParaRecuperacion = r.cuotasVencidasParaRecuperacion;
+            cuotasVencidasParaCobranza = r.cuotasVencidasParaCobranza;
             prorrateoPrimeraCuota = r.prorrateoPrimeraCuota;
             diasMora = r.diasMora;
         }
@@ -586,6 +603,11 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor cuotasVencidasParaCobranza(Integer valor) {
+            cuotasVencidasParaCobranza = valor;
+            return this;
+        }
+
         public Constructor prorrateoPrimeraCuota(boolean valor) {
             prorrateoPrimeraCuota = valor;
             return this;
@@ -602,11 +624,16 @@ public record ReglasNegocio(
                     serviciosDespuesDelPlazo, moraAntesDeRecuperacion, aplicacionAbono,
                     interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                     cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                    cobranzaDiaria, cuotasVencidasParaRecuperacion, prorrateoPrimeraCuota, diasMora);
+                    cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora);
         }
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */
+    /** Si, con estas cuotas atrasadas de periodos anteriores, el periodo en curso ya debe causar cobranza. */
+    public boolean llegaAlUmbralDeCobranza(int cuotasVencidasPrevias) {
+        return cuotasVencidasParaCobranza == null || cuotasVencidasPrevias >= cuotasVencidasParaCobranza;
+    }
+
     public boolean llegaAlUmbralDeRecuperacion(int cuotasVencidas) {
         return cuotasVencidasParaRecuperacion != null && cuotasVencidas >= cuotasVencidasParaRecuperacion;
     }
