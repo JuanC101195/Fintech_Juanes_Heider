@@ -1,6 +1,6 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-22** (rondas 4, 5 y 6 respondidas; respuestas por documento del 22 oct incorporadas; ronda 7 abierta con 2 preguntas).
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-27** (ronda 7 respondida) (rondas 4, 5 y 6 respondidas; respuestas por documento del 22 oct incorporadas; ronda 7 abierta con 2 preguntas).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
@@ -17,17 +17,17 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 26 | 34 | 76 % |
+| Pagos, mora y cobranza | 27 | 34 | 79 % |
 | Servicios complementarios | 10 | 10 | 100 % |
 | Abonos y prepago | 15 | 15 | 100 % |
 | Cambio de tasa y usura | 14 | 14 | 100 % |
-| Dación y retoma | 15 | 16 | 94 % |
+| Dación y retoma | 16 | 16 | 100 % |
 | Contabilidad | 7 | 9 | 78 % |
 | Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 3 | 3 | 100 % |
-| **Tabla A (preguntas del cuestionario)** | **95** | **106** | **90 %** |
+| **Tabla A (preguntas del cuestionario)** | **97** | **106** | **92 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **106** | **124** | **85 %** |
+| **Total de reglas inventariadas** | **108** | **124** | **87 %** |
 
 Las 106 reglas de la tabla A son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces). El cuestionario publicado muestra el porcentaje de la tabla A.
 
@@ -84,7 +84,7 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | P5-LIMITE-DESDE | El plazo límite de recuperación (24 meses): ¿desde el desembolso o desde el primer atraso? | Reemplazada por R6-LIMITE-CORTO | Documento 22 oct (22 oct 2026): X4 la contesta en parte: el límite es de 104 cuotas (24 meses) desde el desembolso; falta el caso de un crédito de menos de 24 meses. No cuenta en el total: la cuenta R6-LIMITE-CORTO. |
 | R6-COBRANZA-ACTIVA | ¿Quién activa la cobranza por crédito: el administrador, el director, un comité o una regla? | Reemplazada por R7-COBRANZA-ACTIVA | Ronda 6 (22 oct 2026): Diego la dejó pendiente ("pendiente de definir política de cobranza"). No cuenta en el total: la cuenta R7-COBRANZA-ACTIVA. |
 | R6-LIMITE-CORTO | En un crédito de menos de 24 meses, ¿el plazo límite es su propio plazo o los 24 meses? | Decidida | Ronda 6 (22 oct 2026): El plazo límite es el propio plazo del crédito: 12 meses, límite 12 (D53). |
-| R7-COBRANZA-ACTIVA | ¿Quién activa el cobro de los gastos de cobranza (director financiero, gerente o comité) y se hace crédito por crédito o por una regla (tras N días de mora)? | Abierta | Pregunta R7-COBRANZA-ACTIVA del cuestionario (ronda 7) |
+| R7-COBRANZA-ACTIVA | ¿Quién activa el cobro de los gastos de cobranza (director financiero, gerente o comité) y se hace crédito por crédito o por una regla (tras N días de mora)? | Decidida | Ronda 7 (27 oct 2026): Por regla: la cobranza se activa sola tras 2 periodos en mora (tercera cuota vencida), en periodos de la periodicidad pactada, y el director financiero puede exonerar (D56). El valor y la política fina se pulen después. |
 ### Servicios complementarios
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |
@@ -167,7 +167,7 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | P5-COSTO-DACION | En la dación, el costo real de la recuperación: ¿lo cubre el fondo de garantías o la financiera? | Decidida | Ronda 5 (22 oct 2026): Se suma al faltante y lo cubre el fondo de garantías; deja de ser provisional (D52). |
 | R6-RECUP-AUTO | Al llegar a 2 cuotas atrasadas, ¿el motor ejecuta la dación o la retoma solo o solo marca el crédito para que una persona la ordene? | Decidida | Ronda 6 (22 oct 2026): El motor solo marca; una persona ordena, y decide si se ejecuta aunque el cliente se ponga al día (D54). |
 | R6-RECUP-VS-CASO11 | El caso 11 espera 4 periodos; con la política de 2 cuotas atrasadas, ¿se ajusta a 2? | Reemplazada por R7-RECUP-VS-CASO11 | Ronda 6 (22 oct 2026): Diego la dejó pendiente ("política por definir"). No cuenta en el total: la cuenta R7-RECUP-VS-CASO11. |
-| R7-RECUP-VS-CASO11 | El caso 11 espera 4 periodos antes de la dación; con el umbral de 2 cuotas, ¿se corrige a 2 o se deja en 4 como ejemplo? | Abierta | Pregunta R7-RECUP-VS-CASO11 del cuestionario (ronda 7) |
+| R7-RECUP-VS-CASO11 | El caso 11 espera 4 periodos antes de la dación; con el umbral de 2 cuotas, ¿se corrige a 2 o se deja en 4 como ejemplo? | Decidida | Ronda 7 (27 oct 2026): El caso 11 se corrige a 2 periodos de espera; con EXCEL sigue en 4 (D57). |
 
 ### Contabilidad
 
