@@ -104,12 +104,13 @@ class ReglasNegocioClavesTest {
 
     @Test
     void lasClavesSonLosComponentesDelRecordEnSuOrden() {
-        // Las 20 (las 19 de antes más cuotasVencidasParaCobranza) que estaban escritas a mano (y en CLAVES_MOTOR de herramientas/importar_respuestas.py).
+        // Las 24 (las 20 de antes más las 4 de la ronda 8) que estaban escritas a mano (y en CLAVES_MOTOR de herramientas/importar_respuestas.py).
         assertThat(ReglasNegocio.CLAVES).containsExactly("prelacion", "formulaMora", "baseInteres",
                 "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
                 "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura",
                 "costoRecuperacionAlFondo", "cobranzaIngresoNoOperacional", "plazoLimiteMeses",
                 "cambioTasaSobreCapitalVigente", "cobranzaDiaria", "cuotasVencidasParaRecuperacion", "cuotasVencidasParaCobranza",
-                "prorrateoPrimeraCuota", "diasMora");
+                "prorrateoPrimeraCuota", "diasMora", "cobranzaPorPeriodo", "cuotasVencidasParaSuspenderServicios",
+                "redondeoCuotaAlPeso", "sobranteComoCuentaPorPagar");
     }
 }

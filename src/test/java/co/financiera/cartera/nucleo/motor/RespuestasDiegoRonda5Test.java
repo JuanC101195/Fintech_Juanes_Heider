@@ -47,6 +47,14 @@ class RespuestasDiegoRonda5Test {
         }
     }
 
+    /**
+     * NEGOCIO sin R8-REDONDEO-PESO: aísla el prorrateo (P5) del redondeo de la cuota al peso, que mueve el interés del
+     * periodo hasta medio peso.
+     */
+    private static ReglasNegocio negocioSinRedondeo() {
+        return negocio().conRedondeoCuotaAlPeso(false);
+    }
+
     private static Movimiento fila(List<Movimiento> m, int periodo) {
         return m.stream().filter(x -> x.periodo() == periodo).findFirst().orElseThrow();
     }
@@ -70,8 +78,8 @@ class RespuestasDiegoRonda5Test {
         void semanalProrrateaSoloElInteresDeLaPrimeraCuota() {
             CalendarioPagos cal = CalendarioPagos.semanal(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 13));
             assertThat(cal.diasDelPeriodo(1)).isEqualTo(12);
-            List<Movimiento> base = motor.ejecutar(new Escenario(Operacion.ejemploExcel(), SEMANAL).conReglas(negocio()));
-            List<Movimiento> m = motor.ejecutar(new Escenario(Operacion.ejemploExcel(), SEMANAL).conReglas(negocio())
+            List<Movimiento> base = motor.ejecutar(new Escenario(Operacion.ejemploExcel(), SEMANAL).conReglas(negocioSinRedondeo()));
+            List<Movimiento> m = motor.ejecutar(new Escenario(Operacion.ejemploExcel(), SEMANAL).conReglas(negocioSinRedondeo())
                     .conCalendario(cal));
             Movimiento uno = fila(m, 1);
             Movimiento sin = fila(base, 1);
@@ -134,7 +142,7 @@ class RespuestasDiegoRonda5Test {
             CalendarioPagos cal = CalendarioPagos.semanal(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 13));
             List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso1(SEMANAL));
             assertThat(motor.ejecutar(EscenariosExcel.caso1(SEMANAL).conCalendario(cal))).isEqualTo(excel);
-            List<Movimiento> sinFechas = motor.ejecutar(EscenariosExcel.caso1(SEMANAL).conReglas(negocio()));
+            List<Movimiento> sinFechas = motor.ejecutar(EscenariosExcel.caso1(SEMANAL).conReglas(negocioSinRedondeo()));
             assertThat(fila(sinFechas, 1).interesCorriente()).isEqualByComparingTo(fila(excel, 1).interesCorriente());
             assertThat(fila(sinFechas, 1).cuotaFinanciera()).isEqualByComparingTo(fila(excel, 1).cuotaFinanciera());
         }

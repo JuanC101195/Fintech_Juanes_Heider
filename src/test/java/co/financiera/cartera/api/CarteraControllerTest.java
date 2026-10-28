@@ -101,7 +101,7 @@ class CarteraControllerTest {
                     .andExpect(jsonPath("$.perfiles.EXCEL.plazoLimiteMeses").value(org.hamcrest.Matchers.nullValue()))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.modalidadUsura").value("MISMA_CUOTA"))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.margenUsura").value("1"))
-                    .andExpect(jsonPath("$.claves", hasSize(20)))
+                    .andExpect(jsonPath("$.claves", hasSize(24)))
                     .andExpect(jsonPath("$.claves[0].clave").value("prelacion"))
                     .andExpect(jsonPath("$.archivoNegocio").value("config/reglas-negocio.properties"));
         }
@@ -118,8 +118,10 @@ class CarteraControllerTest {
             assertThat(resumen.get("cuotas").asInt()).isEqualTo(48);
             assertThat(alPeso(resumen.get("cuotaFinanciera"))).isEqualByComparingTo("219093");
             assertThat(alPeso(resumen.get("cuotaTotal"))).isEqualByComparingTo("355667");
-            assertThat(alPeso(resumen.get("totalPagado"))).isEqualByComparingTo("17072015");
-            assertThat(alPeso(resumen.get("totalIntereses"))).isEqualByComparingTo("4612061");
+            // R8-REDONDEO-PESO: con NEGOCIO cada cuota exigible queda en pesos enteros (antes 17.072.015 al peso).
+            assertThat(alPeso(resumen.get("totalPagado"))).isEqualByComparingTo("17072016");
+            // R8-REDONDEO-PESO: el interés absorbe el residuo del redondeo de cada cuota (antes 4.612.061 al peso).
+            assertThat(alPeso(resumen.get("totalIntereses"))).isEqualByComparingTo("4612062");
             assertThat(alPeso(resumen.get("totalServicios"))).isEqualByComparingTo("6555554");
             assertThat(resumen.get("montoFinanciado").asString()).isEqualTo("5904400");
             assertThat(resumen.get("tasaEA").asString()).isEqualTo("0.8762");
@@ -268,11 +270,13 @@ class CarteraControllerTest {
             assertThat(r.get("perfilReglas").asString()).isEqualTo("NEGOCIO");
             JsonNode semana = r.get("movimientos").get(42);
             // R4-CASO13 (PRELACION_COMPLETA): lo vencido más el fondo y la asistencia de la semana 42. R7-COBRANZA-ACTIVA: la
-            // semana 42 es la tercera cuota vencida y causa 21.000 de cobranza (7 días × 3.000), no los 9.000 de antes.
+            // semana 42 es la tercera cuota vencida. Ronda 8: la cobranza es el cobro fijo de 40.000 (antes 21.000 = 7 días ×
+            // 3.000); las semanas 40 y 41 ya causan fondo y asistencia aunque no se pagaron al día (antes solo el seguro) y
+            // la 42 los suspende (solo seguro), así que el abono ya no los paga: 388.982,59 → 467.609,83.
             assertThat(new BigDecimal(semana.get("pendientesPagadosExtra").get("total").asString()))
-                    .isCloseTo(new BigDecimal("388982.59"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
+                    .isCloseTo(new BigDecimal("467609.83"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
             assertThat(semana.get("estado").asString()).isEqualTo("VIGENTE_AL_DIA");
-            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(84);
+            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(85);
             assertThat(r.get("instrucciones").size()).isEqualTo(4);
             assertThat(r.get("instrucciones").get(3).get("tipo").asString()).isEqualTo("ABONO_EXTRA");
             assertThat(r.get("instrucciones").get(3).get("valor").asString()).isEqualTo("1500000");

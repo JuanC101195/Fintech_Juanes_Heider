@@ -222,4 +222,100 @@ class HallazgosAuditoriaTest {
             assertThat(m.capitalVencido().signum()).as("periodo %d al día", m.periodo()).isZero();
         }
     }
+
+    // ---------------------------------------------------------------- H2, H7 y H8 (respuestas de la ronda 8, 2026-10-28)
+
+    /** El perfil NEGOCIO de config/reglas-negocio.properties. */
+    private static ReglasNegocio negocio() {
+        try {
+            return PropiedadesFinancierasAuditTest.negocio();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** Cliente que paga cada periodo la cuota del ejemplo (163.440,4465) en pesos enteros: 163.440. */
+    private static Escenario pagaEnPesosEnteros(ReglasNegocio reglas) {
+        return new Escenario(Operacion.ejemploExcel(), P).conReglas(reglas).desde(1, new PagoValor(bd(163_440), 0));
+    }
+
+    @Test
+    void h2SinRedondeoElPagoEnPesosEnterosQuedaComoPagoInferiorYLlegaARecuperacion() {
+        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocio().conRedondeoCuotaAlPeso(false)));
+        assertThat(movs.get(1).evento()).isEqualTo("Pago inferior");
+        assertThat(movs.stream().anyMatch(Movimiento::listoParaRecuperacion)).isTrue();
+    }
+
+    @Test
+    void h2ConRedondeoAlPesoElPagoEnPesosEnterosEsUnPagoNormalYElCreditoCierraEnLaCuotaN() {
+        // R8-REDONDEO-PESO (Diego): la cuota exigible se redondea al peso (HALF_UP) y el residuo va al interés del periodo.
+        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocio()));
+        List<Movimiento> exacto = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P)
+                .conReglas(negocio().conRedondeoCuotaAlPeso(false)));
+        assertThat(movs).hasSameSizeAs(exacto);
+        for (int i = 1; i < movs.size(); i++) {
+            Movimiento m = movs.get(i);
+            assertThat(m.evento()).as("periodo %d", m.periodo()).isNotEqualTo("Pago inferior");
+            assertThat(m.cuotasVencidas()).as("periodo %d", m.periodo()).isZero();
+            assertThat(m.interesMora().signum()).as("periodo %d", m.periodo()).isZero();
+            assertThat(m.listoParaRecuperacion()).isFalse();
+            // La cuota exigible queda en pesos enteros.
+            BigDecimal exigible = Calc.sumar(m.cuotaFinanciera(), m.serviciosCausados().total());
+            assertThat(exigible.stripTrailingZeros().scale()).as("periodo %d", m.periodo()).isLessThanOrEqualTo(0);
+            // El plan de capital y los servicios no cambian; el residuo (hasta medio peso) es del interés.
+            assertThat(m.capitalContractual()).isEqualByComparingTo(exacto.get(i).capitalContractual());
+            assertThat(m.serviciosCausados()).isEqualTo(exacto.get(i).serviciosCausados());
+            assertThat(m.interesCorriente().subtract(exacto.get(i).interesCorriente()).abs())
+                    .isLessThanOrEqualTo(new BigDecimal("0.5"));
+        }
+        assertThat(movs.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
+        assertThat(movs.getLast().periodo()).isEqualTo(P.numeroCuotas());
+    }
+
+    @Test
+    void h7ConSuspensionUnPagoIncompletoEnLaFechaCausaLosTresServicios() {
+        // R8-PAGO-INCOMPLETO-EN-FECHA (Diego): la causación genera siempre fondo, asistencia y seguro, haya o no pago.
+        BigDecimal valor = Calc.multiplicar(bd("0.4"), bd("163440.4465"));
+        for (var pago : List.of(new PagoParcial(bd("0.4"), 0), new PagoValor(valor, 0))) {
+            Movimiento tres = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P).conReglas(negocio()).en(3, pago)).get(3);
+            assertThat(tres.serviciosCausados().fondoGarantias()).as("%s", pago).isPositive();
+            assertThat(tres.serviciosCausados().asistencia()).as("%s", pago).isPositive();
+            assertThat(tres.serviciosCausados().seguro()).as("%s", pago).isPositive();
+        }
+        // Sin la clave sigue D17: el pago parcial declarado solo causa el seguro.
+        Movimiento d17 = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P)
+                .conReglas(negocio().conCuotasVencidasParaSuspenderServicios(null)).en(3, new PagoParcial(bd("0.4"), 0))).get(3);
+        assertThat(d17.serviciosCausados().fondoGarantias()).isZero();
+        assertThat(d17.serviciosCausados().asistencia()).isZero();
+    }
+
+    @Test
+    void h8ConSobranteElPagoMayorQueLoExigibleSeRecibeCompletoYQuedaComoCuentaPorPagar() {
+        // R8-PAGO-MAYOR-EXIGIBLE (Diego): el sobrante queda como CxP al cliente para devolverlo.
+        BigDecimal valor = bd(99_000_000);
+        List<Movimiento> movs = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P).conReglas(negocio())
+                .en(5, new PagoValor(valor, 0)));
+        Movimiento cinco = movs.getLast();
+        assertThat(cinco.periodo()).isEqualTo(5);
+        assertThat(cinco.estado()).isEqualTo(EstadoCredito.CANCELADO);
+        assertThat(cinco.sobranteCliente()).isPositive();
+        assertThat(Calc.sumar(cinco.pagoRecibido(), cinco.sobranteCliente())).isCloseTo(valor, within(new BigDecimal("0.000001")));
+        assertThat(cinco.pagoTotalCliente()).isCloseTo(valor, within(new BigDecimal("0.000001")));
+        List<Asiento> asientos = Contabilizador.para(negocio()).contabilizar(movs);
+        BigDecimal cxp = asientos.stream().filter(a -> a.periodo() == 5).flatMap(a -> a.lineas().stream())
+                .filter(l -> l.cuenta() == Cuenta.CXP_SOBRANTE_CLIENTE).map(Asiento.Linea::credito).reduce(Calc.CERO, Calc::sumar);
+        assertThat(cxp).isEqualByComparingTo(cinco.sobranteCliente());
+        assertThat(asientos).allMatch(Asiento::cuadra);
+        assertThat(cajaPorPeriodo(asientos).get(5)).isCloseTo(valor, within(new BigDecimal("0.000001")));
+
+        // Sin la clave (el Excel, H8): se recorta a lo exigible y no queda registro del sobrante.
+        Movimiento recortado = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P)
+                .conReglas(negocio().conSobranteComoCuentaPorPagar(false)).en(5, new PagoValor(valor, 0))).getLast();
+        assertThat(recortado.sobranteCliente()).isZero();
+        assertThat(recortado.pagoRecibido()).isEqualByComparingTo(cinco.pagoRecibido()).isLessThan(valor);
+        List<Movimiento> conExcel = MOTOR.ejecutar(excel().en(5, new PagoValor(valor, 0)));
+        assertThat(conExcel.getLast().sobranteCliente()).isZero();
+        assertThat(Contabilizador.para(ReglasNegocio.EXCEL).contabilizar(conExcel).stream().flatMap(a -> a.lineas().stream())
+                .noneMatch(l -> l.cuenta() == Cuenta.CXP_SOBRANTE_CLIENTE)).isTrue();
+    }
 }

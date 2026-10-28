@@ -42,7 +42,8 @@ class RespuestasDiegoDocumentoTest {
     /** Las reglas del perfil NEGOCIO tal como están en config/reglas-negocio.properties. */
     /** El NEGOCIO de antes de R7-COBRANZA-ACTIVA: aísla COB-4 (cobranza solo en mora) del umbral de periodos. */
     private static ReglasNegocio sinUmbralDeCobranza() {
-        return negocio().conCuotasVencidasParaCobranza(null);
+        // Ronda 8: también sin el cobro fijo por periodo (R8-COBRANZA-PAGO-TARDIO), para seguir viendo días × valor diario.
+        return negocio().conCuotasVencidasParaCobranza(null).conCobranzaPorPeriodo(null);
     }
 
     private static ReglasNegocio negocio() {
