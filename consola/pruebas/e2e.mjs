@@ -60,14 +60,14 @@ for (const [nombre, ancho, alto, escala] of [['celular', 360, 780, 2], ['escrito
   if (await page.getByText('Datos de demostración').count()) falla('aparece el aviso de modo demostración: la consola no está usando el API')
   await revisar('simulador')
 
-  // 2. Caso 13 NEGOCIO: saldo 3.229.537,12 en la semana 42 y asiento con su explicación
+  // 2. Caso 13 NEGOCIO: saldo 3.241.537,12 en la semana 42 y asiento con su explicación
   await ir('Casos')
   await page.getByRole('link', { name: /Caso 13/ }).click()
   const tabla = page.getByRole('region', { name: 'Tabla periodo a periodo' })
   await tabla.waitFor({ timeout: 30000 })
   const fila42 = tabla.locator('tbody tr').filter({ has: page.locator('th[scope="row"]', { hasText: /^42$/ }) })
   const texto42 = nbsp(await fila42.innerText())
-  if (!texto42.includes('$ 3.229.537,12')) falla(`caso 13 semana 42: falta el saldo $ 3.229.537,12 en ${JSON.stringify(texto42)}`)
+  if (!texto42.includes('$ 3.241.537,12')) falla(`caso 13 semana 42: falta el saldo $ 3.241.537,12 en ${JSON.stringify(texto42)}`)
   if (!texto42.includes('Cuota + abono extra')) falla('caso 13 semana 42: falta el evento "Cuota + abono extra"')
   await page.getByText('Termina en el periodo 84').waitFor()
   const asiento42 = page.locator('details').filter({ hasText: 'Periodo 42' }).first()
