@@ -105,6 +105,15 @@ Lo que agrega el documento "rptas software" de Diego (2026-10-22):
 | `cobranzaDiaria` | COB-6: valor diario de la cobranza para los créditos nuevos y las simulaciones; queda fijo en los parámetros del crédito (3.000 es un ejemplo, provisional) | `3000` | `null` (el del producto: 3.000) |
 | `cuotasVencidasParaRecuperacion` | PPER-9: cuotas atrasadas desde las que el crédito queda `listoParaRecuperacion` (solo se marca; el motor no ejecuta la dación ni la retoma, R6-RECUP-AUTO) | `2` | `null` (no se marca) |
 
+Lo que agrega la ronda 8 de Diego (2026-10-28):
+
+| Clave | Qué hace | NEGOCIO | EXCEL |
+|---|---|---|---|
+| `cobranzaPorPeriodo` | R8-COBRANZA-PAGO-TARDIO: la cobranza no se prorratea por días; cada periodo que causaría cobranza (con el umbral `cuotasVencidasParaCobranza`) causa exactamente este cobro fijo, una vez (provisional: 40.000 es el ejemplo de Diego) | `40000` | `null` (días × valor diario) |
+| `cuotasVencidasParaSuspenderServicios` | R8-PAGO-INCOMPLETO-EN-FECHA: fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro | `2` | `null` (D17: fondo y asistencia solo en periodos al día) |
+| `redondeoCuotaAlPeso` | R8-REDONDEO-PESO: la cuota exigible (cuota + servicios) se redondea a pesos enteros (HALF_UP); el residuo, de hasta medio peso, va al interés corriente del periodo | `true` | `false` |
+| `sobranteComoCuentaPorPagar` | R8-PAGO-MAYOR-EXIGIBLE: un `PAGO_VALOR` mayor que lo exigible se recibe completo y el sobrante queda en `sobranteCliente` y en la cuenta provisional `CXP_SOBRANTE_CLIENTE` (PUC pendiente) | `true` | `false` (se recorta sin registrar) |
+
 ### POST /api/v1/simulaciones
 
 Plan de pagos de un cliente que paga siempre a tiempo.
@@ -233,6 +242,7 @@ Response:
 
 - `movimientos` empieza en el periodo 0 (desembolso, estado `DESEMBOLSADO`) y trae todos los campos de `Movimiento`; los `Servicios` y `DeudaExtinguida` van como objetos con su `total`. `etiqueta` es el `evento` del motor ("Pago normal", "Cuota + abono extra"…). Además vienen `pagoTotalCliente` y `pagoExtraordinario`.
 - Cada movimiento trae además `costoRecuperacion` y `costoRecuperacionAsumido` (R4-R2): el costo descontado en la dación o la retoma y la parte que asume la financiera (0 con `costoRecuperacionAlFondo = true`).
+- R8-PAGO-MAYOR-EXIGIBLE: un movimiento trae `sobranteCliente` (string decimal) solo cuando un `PAGO_VALOR` pagó más que todo lo exigible y el perfil tiene `sobranteComoCuentaPorPagar` (NEGOCIO); no está incluido en `pagoRecibido`, sí en `pagoTotalCliente` (lo que entró a caja), y su asiento acredita `CXP_SOBRANTE_CLIENTE`. Con EXCEL nunca aparece.
 - PPER-9: cada movimiento trae `listoParaRecuperacion` (boolean): el crédito llegó a `cuotasVencidasParaRecuperacion` cuotas atrasadas (2 con NEGOCIO) y sigue en mora. Es solo una marca: el motor no ejecuta la dación ni la retoma. El resumen trae `listoParaRecuperacion` (el del último periodo) y `periodoListoParaRecuperacion` (el primer periodo marcado; `null` si nunca llegó o el perfil no lo fija). Con EXCEL siempre `false` / `null`.
 - `asientos` sale de `Contabilizador.para(reglas del perfil)`: con EXCEL es igual a `Contabilizador.estandar()`; con NEGOCIO la cobranza causada va a `INGRESOS_NO_OPERACIONALES_COBRANZA` (R4-COBRANZA-CONTABLE) y los cierres con costo acreditan `CXP_COSTOS_RECUPERACION` (y debitan `GASTO_COSTOS_RECUPERACION` si lo asume la financiera). `cuadra` = débitos y créditos iguales al centavo (las sumas DECIMAL128 difieren en residuos de 1e-28; el `Contabilizador` además rechaza cualquier asiento con más de 1 COP de diferencia).
 

@@ -41,6 +41,11 @@ final class EstadoCorrida {
      * el periodo no se pagó al día y que el excedente del abono pagó por prelación.
      */
     Servicios serviciosCorrientesExtra = Servicios.NINGUNO;
+    /**
+     * R8-PAGO-MAYOR-EXIGIBLE: lo que un {@code PagoValor} del periodo trajo por encima de lo exigible y queda como cuenta
+     * por pagar al cliente (con {@code sobranteComoCuentaPorPagar}). Transitorio: el reparto lo reinicia cada periodo.
+     */
+    BigDecimal sobranteCliente = CERO;
 
     EstadoCorrida(Escenario escenario, int cuotasPactadas) {
         this.escenario = escenario;

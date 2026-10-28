@@ -34,7 +34,12 @@ public enum Cuenta {
      */
     CXP_COSTOS_RECUPERACION("CxP costos de recuperación (grúa, bodegaje, avalúo, trámites)"),
     /** R4-R2: la parte del costo de recuperación que asume la financiera (dación sin cargo al fondo). */
-    GASTO_COSTOS_RECUPERACION("Gasto por costos de recuperación asumidos");
+    GASTO_COSTOS_RECUPERACION("Gasto por costos de recuperación asumidos"),
+    /**
+     * R8-PAGO-MAYOR-EXIGIBLE (Diego, ronda 8, 2026-10-28): lo que el cliente pagó por encima de lo exigible y se le
+     * debe devolver. PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
+     */
+    CXP_SOBRANTE_CLIENTE("CxP sobrante por devolver al cliente (provisional, PUC pendiente)");
 
     private final String nombreExcel;
 

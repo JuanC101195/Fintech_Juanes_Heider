@@ -82,6 +82,25 @@ import java.math.BigDecimal;
  *                                 365/ppa días; con {@link DiasMora#DIAS_CALENDARIO_MENSUAL} un crédito mensual con
  *                                 fechas ({@link Escenario#conCalendario}) causa vencido × ((1 + tasa diaria)^días − 1)
  *                                 con los días reales del periodo (28 a 31). Sin fechas no cambia nada.
+ * @param cobranzaPorPeriodo       R8-COBRANZA-PAGO-TARDIO (Diego 2026-10-28): la cobranza no se prorratea por días; es un
+ *                                 cobro único y fijo por periodo. En cada periodo en que la regla de días (umbral de
+ *                                 {@link #cuotasVencidasParaCobranza}, días de atraso, cobranza activa) causaría
+ *                                 cobranza, se causa exactamente este valor, una vez por periodo y sin tope por pago; se
+ *                                 repite en cada periodo atrasado hasta que el crédito cierra. Sigue siendo un concepto
+ *                                 aparte de la cuota. {@code null} = días × valor diario (el Excel y el NEGOCIO anterior).
+ * @param cuotasVencidasParaSuspenderServicios R8-PAGO-INCOMPLETO-EN-FECHA (Diego 2026-10-28): la causación genera
+ *                                 siempre fondo, asistencia y seguro, haya o no pago en la fecha (ya no depende de que
+ *                                 el periodo se pague al día, D17); desde que el crédito llega al periodo con estas
+ *                                 cuotas atrasadas de periodos anteriores se suspenden el fondo y la asistencia y solo
+ *                                 se causa el seguro. {@code null} = D17 (fondo y asistencia solo en periodos al día).
+ * @param redondeoCuotaAlPeso      R8-REDONDEO-PESO (Diego 2026-10-28): la cuota exigible del periodo (cuota financiera +
+ *                                 servicios) se redondea a pesos enteros (HALF_UP, supuesto). El residuo (a lo sumo
+ *                                 medio peso) se absorbe en el interés corriente del periodo: el plan de capital y los
+ *                                 servicios de terceros no cambian. {@code false} = sin redondeo (el Excel).
+ * @param sobranteComoCuentaPorPagar R8-PAGO-MAYOR-EXIGIBLE (Diego 2026-10-28): un {@code PagoValor} mayor que lo exigible
+ *                                 se recibe completo y el sobrante queda como cuenta por pagar al cliente para
+ *                                 devolverlo ({@link Movimiento#sobranteCliente()}). {@code false} = se recorta a lo
+ *                                 exigible sin registrar el sobrante (el Excel, H8).
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -103,7 +122,11 @@ public record ReglasNegocio(
         Integer cuotasVencidasParaRecuperacion,
         Integer cuotasVencidasParaCobranza,
         boolean prorrateoPrimeraCuota,
-        DiasMora diasMora) {
+        DiasMora diasMora,
+        BigDecimal cobranzaPorPeriodo,
+        Integer cuotasVencidasParaSuspenderServicios,
+        boolean redondeoCuotaAlPeso,
+        boolean sobranteComoCuentaPorPagar) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
@@ -133,6 +156,13 @@ public record ReglasNegocio(
         if (cuotasVencidasParaRecuperacion != null && cuotasVencidasParaRecuperacion < 1) {
             throw new IllegalArgumentException("El umbral de recuperación debe ser de al menos 1 cuota: "
                     + cuotasVencidasParaRecuperacion);
+        }
+        if (cobranzaPorPeriodo != null && cobranzaPorPeriodo.signum() < 0) {
+            throw new IllegalArgumentException("La cobranza por periodo no puede ser negativa: " + cobranzaPorPeriodo);
+        }
+        if (cuotasVencidasParaSuspenderServicios != null && cuotasVencidasParaSuspenderServicios < 0) {
+            throw new IllegalArgumentException("El umbral de suspensión de servicios no puede ser negativo: "
+                    + cuotasVencidasParaSuspenderServicios);
         }
     }
 
@@ -166,6 +196,10 @@ public record ReglasNegocio(
             .cuotasVencidasParaCobranza(null)
             .prorrateoPrimeraCuota(false)
             .diasMora(DiasMora.PERIODO_NOMINAL)
+            .cobranzaPorPeriodo(null)
+            .cuotasVencidasParaSuspenderServicios(null)
+            .redondeoCuotaAlPeso(false)
+            .sobranteComoCuentaPorPagar(false)
             .construir();
 
     public enum OrdenPrelacion {
@@ -352,7 +386,11 @@ public record ReglasNegocio(
             entera("cuotasVencidasParaRecuperacion", Constructor::cuotasVencidasParaRecuperacion),
             entera("cuotasVencidasParaCobranza", Constructor::cuotasVencidasParaCobranza),
             booleana("prorrateoPrimeraCuota", Constructor::prorrateoPrimeraCuota),
-            enumerada(DIAS_MORA, DiasMora.class, Constructor::diasMora));
+            enumerada(DIAS_MORA, DiasMora.class, Constructor::diasMora),
+            decimal("cobranzaPorPeriodo", Constructor::cobranzaPorPeriodo),
+            entera("cuotasVencidasParaSuspenderServicios", Constructor::cuotasVencidasParaSuspenderServicios),
+            booleana("redondeoCuotaAlPeso", Constructor::redondeoCuotaAlPeso),
+            booleana("sobranteComoCuentaPorPagar", Constructor::sobranteComoCuentaPorPagar));
 
     static {
         verificarTabla();
@@ -463,6 +501,26 @@ public record ReglasNegocio(
         return copia().diasMora(valor).construir();
     }
 
+    /** R8-COBRANZA-PAGO-TARDIO: cobro fijo de cobranza por periodo; {@code null} = días × valor diario. */
+    public ReglasNegocio conCobranzaPorPeriodo(BigDecimal valor) {
+        return copia().cobranzaPorPeriodo(valor).construir();
+    }
+
+    /** R8-PAGO-INCOMPLETO-EN-FECHA: cuotas atrasadas previas desde las que solo se causa el seguro; {@code null} = D17. */
+    public ReglasNegocio conCuotasVencidasParaSuspenderServicios(Integer valor) {
+        return copia().cuotasVencidasParaSuspenderServicios(valor).construir();
+    }
+
+    /** R8-REDONDEO-PESO: si la cuota exigible se redondea a pesos enteros (el residuo va al interés corriente). */
+    public ReglasNegocio conRedondeoCuotaAlPeso(boolean valor) {
+        return copia().redondeoCuotaAlPeso(valor).construir();
+    }
+
+    /** R8-PAGO-MAYOR-EXIGIBLE: si el sobrante de un pago mayor que lo exigible queda como cuenta por pagar al cliente. */
+    public ReglasNegocio conSobranteComoCuentaPorPagar(boolean valor) {
+        return copia().sobranteComoCuentaPorPagar(valor).construir();
+    }
+
     /**
      * Arma unas reglas por nombre de componente, sin depender del orden de los argumentos (dos booleanos cruzados
      * compilan). Es el único sitio, aparte de la cabecera del record, que lista los componentes en orden.
@@ -489,6 +547,10 @@ public record ReglasNegocio(
         private Integer cuotasVencidasParaCobranza;
         private boolean prorrateoPrimeraCuota;
         private DiasMora diasMora;
+        private BigDecimal cobranzaPorPeriodo;
+        private Integer cuotasVencidasParaSuspenderServicios;
+        private boolean redondeoCuotaAlPeso;
+        private boolean sobranteComoCuentaPorPagar;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -516,6 +578,10 @@ public record ReglasNegocio(
             cuotasVencidasParaCobranza = r.cuotasVencidasParaCobranza;
             prorrateoPrimeraCuota = r.prorrateoPrimeraCuota;
             diasMora = r.diasMora;
+            cobranzaPorPeriodo = r.cobranzaPorPeriodo;
+            cuotasVencidasParaSuspenderServicios = r.cuotasVencidasParaSuspenderServicios;
+            redondeoCuotaAlPeso = r.redondeoCuotaAlPeso;
+            sobranteComoCuentaPorPagar = r.sobranteComoCuentaPorPagar;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -618,13 +684,34 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor cobranzaPorPeriodo(BigDecimal valor) {
+            cobranzaPorPeriodo = valor;
+            return this;
+        }
+
+        public Constructor cuotasVencidasParaSuspenderServicios(Integer valor) {
+            cuotasVencidasParaSuspenderServicios = valor;
+            return this;
+        }
+
+        public Constructor redondeoCuotaAlPeso(boolean valor) {
+            redondeoCuotaAlPeso = valor;
+            return this;
+        }
+
+        public Constructor sobranteComoCuentaPorPagar(boolean valor) {
+            sobranteComoCuentaPorPagar = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
                     serviciosDespuesDelPlazo, moraAntesDeRecuperacion, aplicacionAbono,
                     interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                     cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
-                    cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora);
+                    cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora,
+                    cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar);
         }
     }
 
@@ -632,6 +719,16 @@ public record ReglasNegocio(
     /** Si, con estas cuotas atrasadas de periodos anteriores, el periodo en curso ya debe causar cobranza. */
     public boolean llegaAlUmbralDeCobranza(int cuotasVencidasPrevias) {
         return cuotasVencidasParaCobranza == null || cuotasVencidasPrevias >= cuotasVencidasParaCobranza;
+    }
+
+    /**
+     * R8-PAGO-INCOMPLETO-EN-FECHA: si, con estas cuotas atrasadas de periodos anteriores, el periodo solo causa el seguro
+     * (fondo y asistencia suspendidos). Con 2, desde la tercera cuota vencida, como la cobranza. Siempre {@code false}
+     * sin la clave.
+     */
+    public boolean suspendeServicios(int cuotasVencidasPrevias) {
+        return cuotasVencidasParaSuspenderServicios != null
+                && cuotasVencidasPrevias >= cuotasVencidasParaSuspenderServicios;
     }
 
     public boolean llegaAlUmbralDeRecuperacion(int cuotasVencidas) {

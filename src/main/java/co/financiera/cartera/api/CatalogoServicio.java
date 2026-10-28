@@ -79,7 +79,19 @@ final class CatalogoServicio {
                     "P5-PRORRATEO"),
             new ClaveDto("diasMora",
                     "Días de mora del capital vencido: los nominales del periodo o, en mensual con fechas, los días reales del mes",
-                    "PPER-5 / D27"));
+                    "PPER-5 / D27"),
+            new ClaveDto("cobranzaPorPeriodo",
+                    "Cobro fijo de cobranza por periodo en mora (no se prorratea por días): se causa una vez en cada periodo que causaría cobranza; vacío = días × valor diario",
+                    "R8-COBRANZA-PAGO-TARDIO"),
+            new ClaveDto("cuotasVencidasParaSuspenderServicios",
+                    "Fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro; vacío = fondo y asistencia solo en periodos al día (D17)",
+                    "R8-PAGO-INCOMPLETO-EN-FECHA"),
+            new ClaveDto("redondeoCuotaAlPeso",
+                    "Si la cuota exigible del periodo (cuota + servicios) se redondea a pesos enteros (HALF_UP); el residuo va al interés corriente del periodo",
+                    "R8-REDONDEO-PESO"),
+            new ClaveDto("sobranteComoCuentaPorPagar",
+                    "Si el pago mayor que lo exigible se recibe completo y el sobrante queda como cuenta por pagar al cliente (en vez de recortarse)",
+                    "R8-PAGO-MAYOR-EXIGIBLE"));
 
     private final PerfilesReglas perfiles;
 

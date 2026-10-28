@@ -35,6 +35,14 @@ final class RepartoPrelacion {
         BigDecimal pendienteSinCapital = sumar(s.cxcCobranza, c.cobranza(), s.cxcMora, c.mora(), s.cxcInteres, c.interes(),
                 s.cxcServicios.total(), c.servicios().total());
         BigDecimal exigible = sumar(saldoInicial, pendienteSinCapital);
+        s.sobranteCliente = CERO;
+        if (pago instanceof PagoValor pv && s.reglas().sobranteComoCuentaPorPagar()) {
+            // R8-PAGO-MAYOR-EXIGIBLE (Diego 2026-10-28): el pago se recibe completo; lo que pasa de lo exigible no se
+            // recorta en silencio (H8): queda como cuenta por pagar al cliente para devolverlo. Un exceso de medio
+            // centavo o menos (residuos DECIMAL128) no se registra.
+            BigDecimal sobrante = noNegativo(restar(pv.valor(), exigible));
+            s.sobranteCliente = esCero(sobrante) ? CERO : sobrante;
+        }
         return switch (pago) {
             case PagoContractual x -> min(cuotaTotal, exigible);
             // El pago parcial es una fracción de la cuota total pactada (Inputs B36: cuota + los tres servicios);

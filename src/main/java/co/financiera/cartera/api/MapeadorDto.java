@@ -47,7 +47,8 @@ final class MapeadorDto {
                 servicios(m.pagosServicios()), servicios(m.cxcServiciosPorConcepto()), deuda(m.extinguido()),
                 texto(m.capitalVencidoInicial()), deuda(m.pendientesPagadosExtra()), texto(m.interesPrepago()),
                 texto(m.costoRecuperacion()), texto(m.costoRecuperacionAsumido()), texto(m.pagoTotalCliente()),
-                texto(m.pagoExtraordinario()), m.listoParaRecuperacion());
+                texto(m.pagoExtraordinario()), m.listoParaRecuperacion(),
+                m.sobranteCliente().signum() == 0 ? null : texto(m.sobranteCliente()));
     }
 
     /** Fila del plan de pagos de una simulación: cuota financiera más servicios del periodo. */
