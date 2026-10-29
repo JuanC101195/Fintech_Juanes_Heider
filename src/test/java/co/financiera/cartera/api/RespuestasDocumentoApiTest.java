@@ -57,10 +57,39 @@ class RespuestasDocumentoApiTest {
         JsonNode porDefecto = ejecutar(tardio.formatted("")).get("movimientos").get(5);
         JsonNode activa = ejecutar(tardio.formatted(",\"cobranzaActiva\":true")).get("movimientos").get(5);
         JsonNode inactiva = ejecutar(tardio.formatted(",\"cobranzaActiva\":false")).get("movimientos").get(5);
-        assertThat(dinero(porDefecto.get("cobranzaCausada"))).isEqualByComparingTo("12000");
-        assertThat(dinero(activa.get("cobranzaCausada"))).isEqualByComparingTo("12000");
+        // R8-COBRANZA-PAGO-TARDIO: con NEGOCIO la cobranza es el cobro fijo del periodo (40.000), no 4 días × 3.000.
+        assertThat(dinero(porDefecto.get("cobranzaCausada"))).isEqualByComparingTo("40000");
+        assertThat(dinero(activa.get("cobranzaCausada"))).isEqualByComparingTo("40000");
         assertThat(dinero(inactiva.get("cobranzaCausada"))).isZero();
         assertThat(dinero(inactiva.get("interesMora"))).isEqualByComparingTo(dinero(porDefecto.get("interesMora")));
+    }
+
+    /**
+     * R8-PAGO-MAYOR-EXIGIBLE: con NEGOCIO el movimiento trae {@code sobranteCliente} y el asiento a la CxP provisional;
+     * con EXCEL el campo no viaja (se recorta como antes, H8).
+     */
+    @Test
+    void r8ElSobranteDeUnPagoMayorQueLoExigibleSaleEnElMovimientoYEnElAsiento() throws Exception {
+        String pago = """
+                {"credito":{"cuotas":104},"perfilReglas":"%s","instrucciones":[{"periodo":5,"tipo":"PAGO_VALOR","valor":"99000000"}]}
+                """;
+        JsonNode negocio = ejecutar(pago.formatted("NEGOCIO"));
+        JsonNode cinco = negocio.get("movimientos").get(5);
+        BigDecimal sobrante = dinero(cinco.get("sobranteCliente"));
+        assertThat(sobrante).isPositive();
+        assertThat(sobrante.add(dinero(cinco.get("pagoRecibido")))).isCloseTo(new BigDecimal("99000000"),
+                org.assertj.core.data.Offset.offset(new BigDecimal("0.000001")));
+        boolean cxp = false;
+        for (JsonNode a : negocio.get("asientos")) {
+            assertThat(a.get("cuadra").asBoolean()).isTrue();
+            for (JsonNode l : a.get("lineas")) {
+                cxp |= l.get("cuenta").asString().equals("CXP_SOBRANTE_CLIENTE")
+                        && dinero(l.get("credito")).compareTo(sobrante) == 0;
+            }
+        }
+        assertThat(cxp).isTrue();
+        JsonNode excel = ejecutar(pago.formatted("EXCEL")).get("movimientos").get(5);
+        assertThat(excel.has("sobranteCliente")).isFalse();
     }
 
     /** COB-6 y R4-T5 y PPER-9: las claves nuevas salen en /reglas con el valor de Diego en NEGOCIO. */
@@ -75,7 +104,16 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(20);
+        assertThat(r.get("claves")).hasSize(24);
+        // Ronda 8 (Diego 2026-10-28).
+        assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
+        assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();
+        assertThat(negocio.get("cuotasVencidasParaSuspenderServicios").asString()).isEqualTo("2");
+        assertThat(excel.get("cuotasVencidasParaSuspenderServicios").isNull()).isTrue();
+        assertThat(negocio.get("redondeoCuotaAlPeso").asString()).isEqualTo("true");
+        assertThat(excel.get("redondeoCuotaAlPeso").asString()).isEqualTo("false");
+        assertThat(negocio.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("true");
+        assertThat(excel.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("false");
         assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();
         assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");

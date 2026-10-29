@@ -241,6 +241,8 @@ export interface Movimiento {
   costoRecuperacionAsumido: string
   /** El crédito llegó al umbral de cuotas vencidas para dación o retoma (D46); el motor no la ejecuta solo. */
   listoParaRecuperacion: boolean
+  /** R8-PAGO-MAYOR-EXIGIBLE: sobrante por devolver al cliente; solo viene cuando lo hay (nunca con EXCEL). */
+  sobranteCliente?: string
 }
 
 export interface LineaAsiento {

@@ -43,9 +43,9 @@ Pruebas: `auditoria/HallazgosAuditoriaTest` (un repro por hallazgo) y `auditoria
 26. **Hecho (H9):** con tasa 0, el número de cuotas hasta saldo cero (abono a menor plazo, caso 10) es saldo / cuota redondeado hacia arriba; antes daba NaN → 0 cuotas y cortaba el plan.
 
 ### Preguntas para Diego (no implementadas: dependen de reglas de negocio)
-27. **H2 · Tolerancia de redondeo al peso.** La cuota total del ejemplo es 163.440,4465. Un cliente que paga en pesos enteros, `desde(1, PagoValor(163.440))`, queda cada periodo como "Pago inferior" por 0,45 COP, acumula mora sobre ese residuo y el crédito se marca para recuperación (2 cuotas atrasadas, D46/D54). ¿Se acepta una tolerancia (p. ej., pagos que difieren menos de 1 peso de la cuota cuentan como completos) y dónde se absorbe el residuo (P2)?
-28. **H7 · `PagoValor` inferior sin días de atraso.** `en(3, PagoParcial(0,4))` causa solo el seguro (D17: fondo y asistencia solo en periodos pagados al día), pero `en(3, PagoValor(<el mismo valor>, 0))` causa los tres servicios porque el motor trata todo `PagoValor` con 0 días como "al día". ¿Un pago incompleto en la fecha es "al día" para D17?
-29. **H8 · `PagoValor` mayor que lo exigible.** `en(5, PagoValor(99.000.000))` se recorta a lo exigible sin aviso; el sobrante no queda registrado. ¿Se rechaza, se devuelve (CxP al cliente) o se aplica como abono extraordinario (D11, D12, D30, D36)?
+27. **Hecho 2026-10-28 · H2, tolerancia de redondeo al peso.** Diego decidió en la ronda 8 que la cuota exigible se redondea a pesos enteros (D59, clave `redondeoCuotaAlPeso`, HALF_UP como supuesto).
+28. **Hecho 2026-10-28 · H7, `PagoValor` inferior sin días de atraso.** Diego decidió que la causación siempre genera servicios + interés + capital y que solo tras 2 periodos atrasados se suspenden fondo y asistencia (D60, clave `cuotasVencidasParaSuspenderServicios`); modifica D17.
+29. **Hecho 2026-10-28 · H8, `PagoValor` mayor que lo exigible.** Diego decidió que el sobrante queda como cuenta por pagar al cliente (D61, clave `sobranteComoCuentaPorPagar`; cuenta provisional hasta el PUC).
 30. **Tolerancia `Calc.esCero` (0,005).** Un saldo o pendiente de hasta medio centavo se considera cero y el crédito se cancela, condonando ese residuo. ¿Se acepta, o el residuo debe cobrarse o redondearse al peso en la última cuota (P2)?
 
 ## Escala: instantánea, streaming y recálculo masivo por usura (2026-10-23)

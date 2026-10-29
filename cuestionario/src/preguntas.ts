@@ -1674,7 +1674,7 @@ const RONDA_7: Pregunta[] = [
   },
 ]
 
-// Ronda 8 (27 oct 2026): cuatro huecos que dejó la regla nueva de cobranza (D56) y los pendientes técnicos H2, H7 y H8.
+// Ronda 8 (27 oct 2026, respondida el 28 oct): cuatro huecos que dejó la regla nueva de cobranza (D56) y los pendientes técnicos H2, H7 y H8.
 const RONDA_8: Pregunta[] = [
   // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
   {
@@ -1732,6 +1732,53 @@ const RONDA_8: Pregunta[] = [
       { codigo: 'rechazar', texto: 'Se rechaza el pago: solo se recibe lo exigible' },
       { codigo: 'devolver-cxp', texto: 'Se recibe y el sobrante queda como cuenta por pagar al cliente para devolverlo' },
       { codigo: 'abono-extra', texto: 'El sobrante se aplica como abono extraordinario a capital, con las reglas de los abonos (D11, D12, D30 y D36)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+]
+
+// Ronda 9 (28 oct 2026): tres huecos que dejaron las respuestas de la ronda 8 (cobranza fija por periodo, servicios suspendidos tras 2 periodos atrasados).
+const RONDA_9: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'R9-COBRO-MOMENTO',
+    bloque: PAGOS,
+    titulo: 'El primer cobro de cobranza y la suspensión del fondo y la asistencia, ¿ocurren al cumplirse la 2.ª cuota atrasada o al llegar a la 3.ª?',
+    contexto:
+      'En la ronda 8 nos dijo que la cobranza es un cobro fijo por periodo (no por días) y que el fondo de garantías y la asistencia se suspenden junto con la cobranza. Hoy el motor cobra desde la tercera cuota vencida (regla de la ronda 7: tras 2 periodos en mora). Su ejemplo dice "luego de 2 cuotas atrasadas se genera el cobro" y "si llega a la 3.ª cuota se vuelve a cobrar". Con 40.000 por periodo en un crédito semanal, hay dos lecturas. Lectura A: el cliente deja de pagar desde la semana 1; al terminar la semana 2 ya tiene 2 cuotas atrasadas y ahí se cobran 40.000 y se suspenden fondo y asistencia; al llegar a la semana 3 se cobran otros 40.000 (80.000 en total), y así cada semana. Lectura B: se cobra al llegar a la 3.ª cuota atrasada (semana 3), 40.000 la primera vez, 80.000 en total a la semana 4. Cambia en un periodo cuándo empieza la cobranza y cuándo se dejan de causar fondo y asistencia.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso en cada cuota tardía; no tiene un cobro fijo por periodo ni suspende servicios.',
+    opciones: [
+      { codigo: 'segunda-cuota', texto: 'Al cumplirse la 2.ª cuota atrasada: primer cobro y suspensión de fondo y asistencia desde ahí (lectura A)' },
+      { codigo: 'tercera-cuota', texto: 'Al llegar a la 3.ª cuota atrasada, como hoy en el motor (lectura B)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+
+  // ── Servicios complementarios ─────────────────────────────────────────────────
+  {
+    id: 'R9-SEGURO-TODO-RIESGO',
+    bloque: SERVICIOS,
+    titulo: 'El seguro todo riesgo, ¿es el mismo seguro que ya causa el motor o uno nuevo? ¿Cuál es su valor, su base y su periodicidad?',
+    contexto:
+      'En la ronda 8 nos dijo que después de 2 periodos atrasados solo se causa el seguro, y pidió incluir el concepto "seguro todo riesgo" con IVA del 19 % como el fondo y las asistencias. Hoy el motor causa un seguro (el de vida, sobre el monto financiado) con los mismos servicios. Necesitamos saber si el todo riesgo reemplaza a ese seguro, se suma a él o es el mismo con otro nombre. Si es uno nuevo, indique en el comentario el valor (monto fijo o porcentaje), sobre qué se calcula (monto financiado, saldo o valor de la moto) y cada cuánto se cobra (con cada cuota de la periodicidad del crédito o por mes). Confirme también si el IVA del 19 % va sobre todo el valor del seguro.',
+    excelHoy: 'El Excel solo tiene el seguro de vida; no incluye un seguro todo riesgo.',
+    opciones: [
+      { codigo: 'mismo-seguro', texto: 'Es el mismo seguro que ya causa el motor', detalle: 'Indique en el comentario si el IVA del 19 % va sobre todo el valor.' },
+      { codigo: 'seguro-nuevo-reemplaza', texto: 'Es uno nuevo que reemplaza al seguro actual', detalle: 'Indique en el comentario valor, base de cálculo, periodicidad e IVA.' },
+      { codigo: 'seguro-nuevo-se-suma', texto: 'Es uno nuevo que se suma al seguro actual', detalle: 'Indique en el comentario valor, base de cálculo, periodicidad e IVA.' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R9-SERVICIOS-AL-PONERSE-AL-DIA',
+    bloque: SERVICIOS,
+    titulo: 'Si el cliente se pone al día después de la suspensión, ¿los fondos y asistencias de los periodos suspendidos se pierden o se cobran después?',
+    contexto:
+      'Tras 2 periodos atrasados el motor deja de causar el fondo de garantías y la asistencia y causa solo el seguro. Si el cliente se pone al día (paga lo vencido), falta definir qué pasa con esos servicios de los periodos suspendidos. Por ejemplo, con 4 periodos suspendidos: si se pierden, el cliente retoma los servicios desde el periodo siguiente y no paga nada por esos 4; si se cobran de forma retroactiva, se le suman los 4 periodos de fondo y asistencia a lo que debe para quedar al día.',
+    excelHoy: 'El Excel no suspende servicios por atraso; no contempla este caso.',
+    opciones: [
+      { codigo: 'se-pierden', texto: 'Se pierden: los servicios se retoman desde el periodo siguiente y los suspendidos no se cobran' },
+      { codigo: 'cobro-retroactivo', texto: 'Se cobran de forma retroactiva: el cliente paga el fondo y la asistencia de los periodos suspendidos al ponerse al día' },
       { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
@@ -1902,12 +1949,22 @@ const RESPONDIDAS_RONDA_7: Record<string, Omit<Respondida, 'fecha'>> = {
   'R7-RECUP-VS-CASO11': { referencia: REF_RONDA_7, respuesta: 'El caso 11 se corrige a 2 periodos de espera (el Excel se corrige) (D57).' },
 }
 
+// Respondidas por el cuestionario (Diego, 28 de octubre de 2026, 11:56): la ronda 8, 4 de 4 (docs/respuestas-diego-2026-10-28-ronda8.md). Quedan decididas (D58 a D61 de decisiones.md); lo que dejó abierto va a la ronda 9.
+const REF_RONDA_8 = 'Ronda 8'
+const RESPONDIDAS_RONDA_8: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R8-COBRANZA-PAGO-TARDIO': { referencia: REF_RONDA_8, respuesta: 'Otra regla: la cobranza no se prorratea por días. Al llegar a 2 periodos atrasados se cobra un valor fijo por periodo (concepto aparte, valor a definir por el director financiero; ejemplo 40.000), y se repite cada periodo hasta que cierre por dación, retoma o pago. El pago completo pero tardío no genera cobranza (D58). El momento exacto del primer cobro: R9-COBRO-MOMENTO.' },
+  'R8-REDONDEO-PESO': { referencia: REF_RONDA_8, respuesta: 'La cuota exigible se redondea a pesos enteros (D59).' },
+  'R8-PAGO-INCOMPLETO-EN-FECHA': { referencia: REF_RONDA_8, respuesta: 'Otra regla: la causación siempre genera servicios + interés + capital; un pago incompleto en la fecha no quita fondo y asistencia. Tras 2 periodos atrasados solo se causa el seguro (suspensión de fondo y asistencia, junto con la cobranza). Incluir el seguro todo riesgo con IVA del 19 % (D60). Falta: R9-SEGURO-TODO-RIESGO y R9-SERVICIOS-AL-PONERSE-AL-DIA.' },
+  'R8-PAGO-MAYOR-EXIGIBLE': { referencia: REF_RONDA_8, respuesta: 'El sobrante queda como cuenta por pagar al cliente para devolverlo (D61).' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9].map((p) => {
+  if (RESPONDIDAS_RONDA_8[p.id]) return { ...p, respondida: { fecha: '28 oct 2026', ...RESPONDIDAS_RONDA_8[p.id] } }
   if (RESPONDIDAS_RONDA_7[p.id]) return { ...p, respondida: { fecha: '27 oct 2026', ...RESPONDIDAS_RONDA_7[p.id] } }
   if (RESPONDIDAS_RONDA_5_6[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_RONDA_5_6[p.id] } }
   if (RESPONDIDAS_22_OCT[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_22_OCT[p.id] } }

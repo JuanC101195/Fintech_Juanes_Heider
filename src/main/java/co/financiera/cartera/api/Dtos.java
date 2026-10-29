@@ -157,7 +157,9 @@ public final class Dtos {
             ServiciosDto cxcServiciosPorConcepto, DeudaDto extinguido, String capitalVencidoInicial,
             DeudaDto pendientesPagadosExtra, String interesPrepago, String costoRecuperacion,
             String costoRecuperacionAsumido, String pagoTotalCliente, String pagoExtraordinario,
-            boolean listoParaRecuperacion) {
+            boolean listoParaRecuperacion,
+            // R8-PAGO-MAYOR-EXIGIBLE: sobrante por devolver al cliente; solo viaja cuando lo hay (nunca con EXCEL).
+            @JsonInclude(JsonInclude.Include.NON_NULL) String sobranteCliente) {
     }
 
     public record AsientoDto(int periodo, String evento, List<LineaAsientoDto> lineas, String totalDebitos,

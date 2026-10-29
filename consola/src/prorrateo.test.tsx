@@ -79,7 +79,7 @@ describe('Simulador con fechas', () => {
     const t = sp(aviso.textContent)
     expect(t).toContain('43 días')
     expect(t).toContain('23 de octubre de 2026')
-    expect(t).toContain('$ 454.328,75')
+    expect(t).toContain('$ 454.328,34')
     expect(t).toContain('$ 317.872,58')
     expect(t).toContain('$ 136.456 más que un periodo normal')
     // La tarjeta muestra la cuota regular y avisa que la primera va prorrateada.

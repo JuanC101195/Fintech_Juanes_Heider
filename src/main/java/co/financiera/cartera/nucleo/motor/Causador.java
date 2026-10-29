@@ -57,8 +57,17 @@ final class Causador {
         if (causaServicios) {
             Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
                     ? Servicios.porCuota(saldoInicial, s.p) : s.serviciosPorCuota;
-            servicios = alDia ? base : base.soloSeguro();
-            serviciosAlDia = base;
+            if (reglas.cuotasVencidasParaSuspenderServicios() == null) {
+                servicios = alDia ? base : base.soloSeguro();
+                serviciosAlDia = base;
+            } else {
+                // R8-PAGO-INCOMPLETO-EN-FECHA (Diego 2026-10-28): la causación genera siempre los tres servicios, haya
+                // o no pago en la fecha (D17 deja de aplicar); con previas >= clave se suspenden fondo y asistencia y
+                // solo se causa el seguro. Lo suspendido no es "no causado por falta de pago": un abono no lo revive
+                // (R4-CASO13), por eso serviciosAlDia = servicios.
+                servicios = reglas.suspendeServicios(cuotasVencidasPrevias) ? base.soloSeguro() : base;
+                serviciosAlDia = servicios;
+            }
         }
         // P5-PRORRATEO (Diego, ronda 5; ADR 0002 paso 7): en la primera cuota solo el interés se prorratea por
         // los días reales entre el desembolso y la primera fecha de pago, con la tasa diaria como el prepago por
@@ -72,6 +81,27 @@ final class Causador {
         }
         return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
                 cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias), serviciosAlDia, prorrateada);
+    }
+
+    /**
+     * R8-REDONDEO-PESO (Diego 2026-10-28): lo que hay que sumar a la cuota exigible del periodo (cuota financiera +
+     * servicios causados) para que quede en pesos enteros, redondeando HALF_UP (supuesto: Diego dijo "redondear al
+     * peso" sin el modo). El residuo, de −0,5 a +0,5, se absorbe en el interés corriente del periodo (ingreso de la
+     * financiera): el capital contractual sigue el plan exacto, así el plan cierra en la cuota n, la suma del capital
+     * contractual es el monto financiado y la última cuota no arrastra residuos acumulados; los servicios son de terceros
+     * y tampoco se tocan. Si el interés del periodo no alcanza para absorber un residuo negativo (tasa 0 o interés menor
+     * que medio peso) esa cuota no se redondea. Sin la clave (el Excel) devuelve 0.
+     */
+    BigDecimal residuoAlPeso(BigDecimal cuotaDelPeriodo, Causacion c) {
+        if (!s.reglas().redondeoCuotaAlPeso()) {
+            return CERO;
+        }
+        BigDecimal exigible = sumar(cuotaDelPeriodo, c.servicios().total());
+        BigDecimal residuo = restar(exigible.setScale(0, java.math.RoundingMode.HALF_UP), exigible);
+        if (residuo.signum() == 0 || sumar(c.interes(), residuo).signum() < 0) {
+            return CERO;
+        }
+        return residuo;
     }
 
     /** Capital contractual del plan vigente en un periodo dentro del plazo, sin pasar del capital vigente. */
@@ -127,6 +157,12 @@ final class Causador {
         // R7-COBRANZA-ACTIVA (Diego): la cobranza empieza tras N periodos en mora (regla fija; con el Excel no hay umbral).
         if (!s.escenario.cobranzaActiva() || !s.reglas().llegaAlUmbralDeCobranza(cuotasVencidasPrevias)) {
             return CERO;
+        }
+        BigDecimal fija = s.reglas().cobranzaPorPeriodo();
+        if (fija != null) {
+            // R8-COBRANZA-PAGO-TARDIO (Diego 2026-10-28): no se prorratea por días; el periodo que causaría cobranza
+            // causa exactamente el cobro fijo, una sola vez (sin tope por pago: el valor ya es el del periodo).
+            return dias > 0 && !esCero(saldoInicial) ? fija : CERO;
         }
         BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), s.p.cobranzaDiaria()) : CERO;
         BigDecimal tope = s.reglas().topeCobranzaPorPago();

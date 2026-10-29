@@ -68,14 +68,48 @@ public record Movimiento(
         // PPER-9 (Diego 2026-10-22): el crédito llegó a ReglasNegocio.cuotasVencidasParaRecuperacion cuotas
         // atrasadas y sigue en mora: queda listo para dación o retoma. Solo es una marca: el motor no ejecuta
         // la recuperación (R6-RECUP-AUTO). Siempre false con ReglasNegocio.EXCEL.
-        boolean listoParaRecuperacion) {
+        boolean listoParaRecuperacion,
+        // R8-PAGO-MAYOR-EXIGIBLE (Diego 2026-10-28): lo que un PagoValor trajo por encima de lo exigible; no se aplica a
+        // la deuda y queda como cuenta por pagar al cliente para devolverlo. Siempre 0 con ReglasNegocio.EXCEL (allí se
+        // recorta sin registrarlo, H8). No está incluido en pagoRecibido.
+        BigDecimal sobranteCliente) {
+
+    /** Campo que {@link #toString()} solo escribe cuando no es cero (así las filas sin sobrante no cambian). */
+    private static final String SOBRANTE = "sobranteCliente";
 
     /**
      * Pago total del cliente en el periodo: pago recibido + abonos extraordinarios (lo que fue a capital
-     * vigente, a pendientes y al interés por días del prepago).
+     * vigente, a pendientes y al interés por días del prepago) + el sobrante que queda por devolverle (lo que entró a
+     * caja).
      */
     public BigDecimal pagoTotalCliente() {
-        return pagoRecibido.add(abonoExtra).add(prepagoCapital).add(pendientesPagadosExtra.total()).add(interesPrepago);
+        return pagoRecibido.add(abonoExtra).add(prepagoCapital).add(pendientesPagadosExtra.total()).add(interesPrepago)
+                .add(sobranteCliente);
+    }
+
+    /**
+     * El formato de un record ({@code Movimiento[campo=valor, ...]}), pero sin {@link #sobranteCliente} cuando es cero:
+     * el campo llegó con la ronda 8 y las filas que no tienen sobrante (todas las del Excel) deben escribirse igual que
+     * antes, porque las huellas de caracterización ({@code ReplicaSemanalNoCambiaTest}) se calculan sobre este texto.
+     */
+    @Override
+    public String toString() {
+        StringBuilder t = new StringBuilder("Movimiento[");
+        String separador = "";
+        for (java.lang.reflect.RecordComponent c : Movimiento.class.getRecordComponents()) {
+            if (SOBRANTE.equals(c.getName()) && sobranteCliente.signum() == 0) {
+                continue;
+            }
+            Object valor;
+            try {
+                valor = c.getAccessor().invoke(this);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+            t.append(separador).append(c.getName()).append('=').append(valor);
+            separador = ", ";
+        }
+        return t.append(']').toString();
     }
 
     /** Lo que el cliente entregó por fuera de la cuota: abono extra o prepago, con lo que pagó de pendientes. */

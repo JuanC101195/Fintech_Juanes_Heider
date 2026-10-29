@@ -14,4 +14,9 @@ record Causacion(BigDecimal interes, BigDecimal capitalContractual, Servicios se
     Servicios serviciosNoCausados() {
         return serviciosAlDia.menos(servicios).noNegativo();
     }
+
+    /** La misma causación con otro interés corriente (R8-REDONDEO-PESO: el residuo del redondeo va al interés). */
+    Causacion conInteres(BigDecimal nuevo) {
+        return new Causacion(nuevo, capitalContractual, servicios, mora, cobranza, serviciosAlDia, prorrateada);
+    }
 }

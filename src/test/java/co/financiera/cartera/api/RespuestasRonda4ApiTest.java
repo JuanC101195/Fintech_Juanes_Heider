@@ -78,11 +78,13 @@ class RespuestasRonda4ApiTest {
         for (String perfil : new String[] {"NEGOCIO", "EXCEL"}) {
             JsonNode asientos = ejecutar(tardio.formatted(perfil)).get("asientos");
             String esperado = perfil.equals("NEGOCIO") ? "INGRESOS_NO_OPERACIONALES_COBRANZA" : "INGRESOS_COBRANZA";
+            // R8-COBRANZA-PAGO-TARDIO: con NEGOCIO la cobranza es el cobro fijo de 40.000; con EXCEL, 4 días × 3.000.
+            BigDecimal valor = new BigDecimal(perfil.equals("NEGOCIO") ? "40000" : "12000");
             boolean hay = false;
             for (JsonNode a : asientos) {
                 for (JsonNode l : a.get("lineas")) {
                     hay |= l.get("cuenta").asString().equals(esperado) && new BigDecimal(l.get("credito").asString())
-                            .compareTo(new BigDecimal("12000")) == 0;
+                            .compareTo(valor) == 0;
                 }
             }
             assertThat(hay).as(perfil).isTrue();

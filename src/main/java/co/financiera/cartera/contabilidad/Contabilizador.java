@@ -7,6 +7,7 @@ import co.financiera.cartera.contabilidad.reglas.PagoInferior;
 import co.financiera.cartera.contabilidad.reglas.RecaudoConVencidos;
 import co.financiera.cartera.contabilidad.reglas.RecaudoCuota;
 import co.financiera.cartera.contabilidad.reglas.Retoma;
+import co.financiera.cartera.contabilidad.reglas.SobranteCliente;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import java.math.BigDecimal;
@@ -55,6 +56,7 @@ public final class Contabilizador {
         reglas.add(new RecaudoConVencidos());  // casos 8 y 12: semanas que recuperan vencidos
         reglas.add(new DacionEnPago());        // caso 3: moto recibida por menos que la deuda
         reglas.add(new Retoma());              // caso 4: moto recibida por más que la deuda
+        reglas.add(new SobranteCliente());     // R8-PAGO-MAYOR-EXIGIBLE: sobrante por devolver (solo con sobrante)
         return reglas;
     }
 

@@ -194,7 +194,7 @@ public final class MotorCartera {
             return new Movimiento(0, 0, "Desembolso", s.saldo, CERO, CERO, CERO, CERO, CERO, CERO, Servicios.NINGUNO, CERO, CERO,
                     CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, CERO, s.saldo, s.saldo, 0, CERO, CERO, CERO, CERO,
                     Servicios.NINGUNO, EstadoCredito.DESEMBOLSADO, Servicios.NINGUNO, Servicios.NINGUNO, DeudaExtinguida.NINGUNA,
-                    CERO, DeudaExtinguida.NINGUNA, CERO, CERO, CERO, false);
+                    CERO, DeudaExtinguida.NINGUNA, CERO, CERO, CERO, false, CERO);
         }
 
         // ADR 0002 paso 4: antes "semana"; el ciclo es por periodo de la periodicidad pactada.
@@ -217,6 +217,12 @@ public final class MotorCartera {
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
             // prorrateo de la primera cuota (P5-PRORRATEO) es su capital completo más el interés de los días reales.
             BigDecimal cuotaDelPeriodo = causado.prorrateada() ? sumar(causado.capitalContractual(), causado.interes()) : s.cuota;
+            // R8-REDONDEO-PESO: la cuota exigible queda en pesos enteros; el residuo va al interés corriente del periodo.
+            BigDecimal residuo = causador.residuoAlPeso(cuotaDelPeriodo, causado);
+            if (residuo.signum() != 0) {
+                causado = causado.conInteres(sumar(causado.interes(), residuo));
+                cuotaDelPeriodo = sumar(cuotaDelPeriodo, residuo);
+            }
 
             // 3. Pago y prelación.
             BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
@@ -261,7 +267,7 @@ public final class MotorCartera {
                     vencidoReportado, max(CERO, restar(s.saldo, s.capitalVencido)), s.saldo, cuotasVencidas, cierre.deuda(),
                     cierre.inventario(), cierre.cxcFondoGarantias(), cierre.cxpDeudor(), giro, estado, recaudado,
                     s.cxcServicios, cierre.extinguido(), vencidoInicial, s.pendientesPagadosExtra, s.interesPrepago,
-                    cierre.costo(), cierre.costoAsumido(), listoParaRecuperacion);
+                    cierre.costo(), cierre.costoAsumido(), listoParaRecuperacion, s.sobranteCliente);
         }
 
         /** 1. Lee las instrucciones del periodo; el cambio de tasa se aplica al leerlo (casos 2 y 10). */

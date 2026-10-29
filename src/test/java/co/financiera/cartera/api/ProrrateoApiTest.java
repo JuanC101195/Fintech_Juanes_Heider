@@ -92,7 +92,8 @@ class ProrrateoApiTest {
             assertThat(pr.get("aplicado").asBoolean()).isTrue();
             igualAlPeso(bd(pr.get("interesProrrateado")), interesDias(Periodicidad.MENSUAL, 43));
             // Sin prorrateo es el interés del periodo 1 sin fechas: saldo × tasa mensual.
-            assertThat(bd(pr.get("interesSinProrrateo"))).isEqualByComparingTo(bd(sin.get("plan").get(0).get("interes")));
+            // R8-REDONDEO-PESO: con NEGOCIO el interés del plan absorbe el residuo (hasta medio peso) del redondeo de la cuota.
+            igualAlPeso(bd(pr.get("interesSinProrrateo")), bd(sin.get("plan").get(0).get("interes")));
             assertThat(bd(pr.get("diferencia"))).isEqualByComparingTo(
                     bd(pr.get("interesProrrateado")).subtract(bd(pr.get("interesSinProrrateo"))));
             // 43 días cuestan más que un mes.

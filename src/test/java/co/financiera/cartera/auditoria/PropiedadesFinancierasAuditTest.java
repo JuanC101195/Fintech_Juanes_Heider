@@ -127,7 +127,12 @@ class PropiedadesFinancierasAuditTest {
                 .conProrrateoPrimeraCuota(r.nextBoolean())
                 .conModalidadUsura(r.nextBoolean() ? ModalidadCambioTasa.MISMA_CUOTA : ModalidadCambioTasa.MISMA_FECHA_FINAL)
                 .conCuotasVencidasParaCobranza(r.nextBoolean() ? null : 1 + r.nextInt(3))
-                .conCuotasVencidasParaRecuperacion(r.nextBoolean() ? null : 1 + r.nextInt(3));
+                .conCuotasVencidasParaRecuperacion(r.nextBoolean() ? null : 1 + r.nextInt(3))
+                // Ronda 8 (Diego 2026-10-28).
+                .conCobranzaPorPeriodo(r.nextBoolean() ? null : bd(1_000 + r.nextInt(80_000)))
+                .conCuotasVencidasParaSuspenderServicios(r.nextBoolean() ? null : r.nextInt(4))
+                .conRedondeoCuotaAlPeso(r.nextBoolean())
+                .conSobranteComoCuentaPorPagar(r.nextBoolean());
         return x;
     }
 
@@ -207,7 +212,12 @@ class PropiedadesFinancierasAuditTest {
                 Instruccion ins = switch (r.nextInt(12)) {
                     case 0 -> new PagoContractual(r.nextInt(12));
                     case 1 -> new PagoParcial(u(r, 0.05, 0.95), r.nextInt(8));
-                    case 2 -> new PagoValor(Calc.multiplicar(cuota, u(r, 0.1, 1.6)), r.nextInt(5));
+                    // Ronda 8: a veces el pago es mayor que todo lo exigible (H8, sobrante) o va en pesos enteros (H2).
+                    case 2 -> new PagoValor(switch (r.nextInt(10)) {
+                        case 0 -> Calc.multiplicar(monto, u(r, 0.5, 2.0));
+                        case 1, 2 -> Calc.multiplicar(cuota, u(r, 0.9, 1.1)).setScale(0, java.math.RoundingMode.DOWN);
+                        default -> Calc.multiplicar(cuota, u(r, 0.1, 1.6));
+                    }, r.nextInt(5));
                     case 3, 4 -> new SinPago(r.nextBoolean());
                     case 5 -> new PagoAlDia();
                     case 6 -> new AbonoExtra(Calc.multiplicar(monto, u(r, 0.01, 0.4)),
@@ -279,6 +289,39 @@ class PropiedadesFinancierasAuditTest {
             if (umbral != null && m.cobranzaCausada().signum() > 0 && prev.cuotasVencidas() < umbral) {
                 violacion("I8 cobranza antes del umbral de cuotas vencidas", id + " cuotasVencidasPrevias=" + prev.cuotasVencidas()
                         + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
+            }
+            // I12 (R8-PAGO-MAYOR-EXIGIBLE): el sobrante nunca es negativo, solo existe con la clave y con un PagoValor, y
+            // entonces el pago entregado = lo aplicado + el sobrante (nada se recorta en silencio).
+            BigDecimal sobrante = m.sobranteCliente();
+            Instruccion pagoDelPeriodo = e.instruccionesDe(m.periodo()).stream()
+                    .filter(ins -> "pago".equals(tipo(ins)) && !(ins instanceof CambioTasa)).findFirst().orElse(null);
+            if (sobrante.signum() < 0) {
+                violacion("I12 sobrante negativo", id + " sobrante=" + sobrante.toPlainString(), repro);
+            } else if (sobrante.signum() > 0 && (!e.reglas().sobranteComoCuentaPorPagar() || !(pagoDelPeriodo instanceof PagoValor))) {
+                violacion("I12 sobrante sin la clave o sin PagoValor", id + " sobrante=" + sobrante.toPlainString(), repro);
+            } else if (e.reglas().sobranteComoCuentaPorPagar() && pagoDelPeriodo instanceof PagoValor pv
+                    && dif(pv.valor(), Calc.sumar(m.pagoRecibido(), sobrante))) {
+                violacion("I12 pago != aplicado + sobrante", id + " pago=" + pv.valor().toPlainString() + " aplicado="
+                        + m.pagoRecibido().toPlainString() + " sobrante=" + sobrante.toPlainString(), repro);
+            }
+            // I13 (R8-PAGO-INCOMPLETO-EN-FECHA): con la clave, desde `clave` cuotas vencidas previas solo se causa el seguro;
+            // antes del umbral, si hay servicios causados, no se suspenden fondo y asistencia a la vez.
+            Integer suspension = e.reglas().cuotasVencidasParaSuspenderServicios();
+            if (suspension != null) {
+                var sc = m.serviciosCausados();
+                boolean soloSeguro = sc.fondoGarantias().signum() == 0 && sc.asistencia().signum() == 0;
+                if (prev.cuotasVencidas() >= suspension && !soloSeguro) {
+                    violacion("I13 fondo o asistencia causados con la suspensión", id + " previas=" + prev.cuotasVencidas()
+                            + " fondo=" + sc.fondoGarantias().toPlainString() + " asistencia=" + sc.asistencia().toPlainString(), repro);
+                } else if (prev.cuotasVencidas() < suspension && soloSeguro && sc.seguro().signum() > 0) {
+                    violacion("I13 servicios suspendidos antes del umbral", id + " previas=" + prev.cuotasVencidas(), repro);
+                }
+            }
+            // I14 (R8-COBRANZA-PAGO-TARDIO): con cobro fijo, la cobranza del periodo es 0 o exactamente el valor fijo.
+            BigDecimal fija = e.reglas().cobranzaPorPeriodo();
+            if (fija != null && m.cobranzaCausada().signum() != 0 && m.cobranzaCausada().compareTo(fija) != 0) {
+                violacion("I14 cobranza distinta del cobro fijo por periodo", id + " cobranza=" + m.cobranzaCausada().toPlainString()
+                        + " fija=" + fija.toPlainString(), repro);
             }
             // I2 continuidad
             if (dif(m.saldoInicial(), prev.saldoFinal())) {
