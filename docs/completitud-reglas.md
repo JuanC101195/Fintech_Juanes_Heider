@@ -1,6 +1,6 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-28** (rondas 4 a 8 respondidas; respuestas por documento del 22 oct incorporadas; ronda 9 abierta con 3 preguntas).
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-28** (rondas 4 a 8 respondidas; respuestas por documento del 22 oct incorporadas; ronda 9 abierta con 3 preguntas; ronda 10 abierta con 5 preguntas).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
@@ -17,19 +17,19 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 29 | 37 | 78 % |
+| Pagos, mora y cobranza | 29 | 40 | 73 % |
 | Servicios complementarios | 11 | 13 | 85 % |
 | Abonos y prepago | 16 | 16 | 100 % |
 | Cambio de tasa y usura | 14 | 14 | 100 % |
-| Dación y retoma | 16 | 16 | 100 % |
+| Dación y retoma | 16 | 18 | 89 % |
 | Contabilidad | 7 | 9 | 78 % |
 | Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 3 | 3 | 100 % |
-| **Tabla A (preguntas del cuestionario)** | **101** | **113** | **89 %** |
+| **Tabla A (preguntas del cuestionario)** | **101** | **118** | **86 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **112** | **131** | **85 %** |
+| **Total de reglas inventariadas** | **112** | **136** | **82 %** |
 
-Las 113 reglas de la tabla A (101 cerradas = 88,5 % → 89 %; con la tabla B, 112 de 131 = 85 %) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) y las 3 de la ronda 9 (ids `R9-*`, abiertas). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 118 reglas de la tabla A (101 cerradas = 85,6 % → 86 %; con la tabla B, 112 de 136 = 82 %) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) las 3 de la ronda 9 (ids `R9-*`, abiertas) y las 5 de la ronda 10 (ids `R10-*`, abiertas, salidas del backtesting con el historial real de pagos). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
@@ -88,6 +88,9 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R8-COBRANZA-PAGO-TARDIO | Con la regla nueva (D56), ¿se cobra cobranza por los días de atraso cuando el cliente paga la cuota completa pero tarde (caso 9)? | Decidida | Ronda 8 (28 oct 2026): Otra regla: la cobranza es un cobro fijo por periodo, no por días (provisional 40.000, concepto aparte; lo define el director financiero); desde 2 periodos atrasados y cada periodo hasta el cierre. El pago completo pero tardío no genera cobranza (D58). |
 | R9-COBRO-MOMENTO | El primer cobro de cobranza y la suspensión de fondo y asistencia, ¿al cumplirse la 2.ª cuota atrasada o al llegar a la 3.ª? | Abierta | Pregunta R9-COBRO-MOMENTO del cuestionario (ronda 9). Hoy el motor cobra desde la tercera cuota vencida; el ejemplo de Diego dice «luego de 2 cuotas atrasadas». |
 | R8-REDONDEO-PESO | Si el cliente paga en pesos enteros y la cuota tiene decimales (163.440,4465), ¿se acepta una tolerancia o se redondea la cuota? (H2) | Decidida | Ronda 8 (28 oct 2026): La cuota exigible se redondea a pesos enteros (D59; HALF_UP es un supuesto del equipo). |
+| R10-PERIODO-ATRASADO | ¿Qué cuenta como un periodo atrasado: cualquier saldo pendiente, solo si falta más de un porcentaje de la cuota o solo pasados unos días de gracia? | Abierta | Pregunta R10-PERIODO-ATRASADO del cuestionario (ronda 10). Hoy cualquier saldo pendiente cuenta; con tolerancia del 90 % de la cuota, los marcados bajan de 94 % a 84 % y los que pagan cobranza de 92 % a 82 %. |
+| R10-JUSTIFICACIONES | Con una justificación aprobada, ¿qué se perdona mientras dura (mora, cobranza, servicios, marca de recuperación) y la moto retirada temporalmente congela el crédito? | Abierta | Pregunta R10-JUSTIFICACIONES del cuestionario (ronda 10). Incluye en el comentario los permisos de geocerca y las motos varadas. |
+| R10-VALOR-COBRANZA | ¿Cuál es el valor real del gasto de cobranza por periodo atrasado y quién lo define? | Abierta | Pregunta R10-VALOR-COBRANZA del cuestionario (ronda 10). El motor usa 40.000 de ejemplo; con él la cobranza media por cliente es cerca de 1 millón. |
 
 ### Servicios complementarios
 
@@ -178,6 +181,8 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R6-RECUP-AUTO | Al llegar a 2 cuotas atrasadas, ¿el motor ejecuta la dación o la retoma solo o solo marca el crédito para que una persona la ordene? | Decidida | Ronda 6 (22 oct 2026): El motor solo marca; una persona ordena, y decide si se ejecuta aunque el cliente se ponga al día (D54). |
 | R6-RECUP-VS-CASO11 | El caso 11 espera 4 periodos; con la política de 2 cuotas atrasadas, ¿se ajusta a 2? | Reemplazada por R7-RECUP-VS-CASO11 | Ronda 6 (22 oct 2026): Diego la dejó pendiente ("política por definir"). No cuenta en el total: la cuenta R7-RECUP-VS-CASO11. |
 | R7-RECUP-VS-CASO11 | El caso 11 espera 4 periodos antes de la dación; con el umbral de 2 cuotas, ¿se corrige a 2 o se deja en 4 como ejemplo? | Decidida | Ronda 7 (27 oct 2026): El caso 11 se corrige a 2 periodos de espera; con EXCEL sigue en 4 (D57). |
+| R10-MARCA-RECUPERACION | ¿Cuándo un crédito queda «listo para recuperar»: la primera vez que llega a 2 periodos atrasados, si se mantiene o si no hay justificación vigente? | Abierta | Pregunta R10-MARCA-RECUPERACION del cuestionario (ronda 10). La marca actual no distingue entre quienes terminan pagando y quienes se retiran. |
+| R10-VALOR-MOTO-REENTREGADA | Al entregar la moto a un segundo cliente, ¿qué valor se financia: avalúo, valor en libros, lo no recuperado o solo el reacondicionamiento? | Abierta | Pregunta R10-VALOR-MOTO-REENTREGADA del cuestionario (ronda 10). Sin clave de motor todavía. |
 
 ### Contabilidad
 

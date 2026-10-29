@@ -1784,6 +1784,90 @@ const RONDA_9: Pregunta[] = [
   },
 ]
 
+// Ronda 10 (29 oct 2026): preguntas que salieron del backtesting del motor con el historial real de pagos de Motos del Caribe (~4.500 contratos). Aún no tienen clave de motor.
+const RONDA_10: Pregunta[] = [
+  // ── Pagos, mora y cobranza ────────────────────────────────────────────────────
+  {
+    id: 'R10-PERIODO-ATRASADO',
+    bloque: PAGOS,
+    titulo: '¿Qué cuenta como un periodo atrasado?',
+    contexto:
+      'Probamos el motor con el historial real de pagos de unos 4.500 contratos, como si hubieran entrado por la financiera con las reglas actuales. Hoy cualquier cuota con saldo pendiente cuenta como atrasada, por pequeño que sea el saldo. Aplicado así, el 94 % de los clientes que terminaron pagando todo quedaría marcado "listo para recuperar" alguna vez, y el 91 % pagaría cobranza. Si se tolera que pagar al menos el 90 % de la cuota cuenta como cuota completa, esas cifras bajan a 84 % y 82 %. Entre los clientes vigentes que son el primer cliente de su moto, el 81 % tendría 2 o más cuotas vencidas hoy, mientras que el sistema actual solo marca a 73 clientes (8,6 %) con 14 días o más sin pagar. El motor sí reconoce a 70 de esos 73.',
+    excelHoy: 'El Excel cuenta como atrasada cualquier cuota que no se pagó completa; no tiene tolerancia ni días de gracia.',
+    opciones: [
+      { codigo: 'cualquier-saldo', texto: 'Cualquier saldo pendiente, aunque sea pequeño (como funciona hoy)', esExcel: true },
+      { codigo: 'porcentaje-cuota', texto: 'Solo si falta más de un porcentaje de la cuota (por ejemplo, el 10 %)', detalle: 'Indique el porcentaje en el comentario.', pideTexto: true },
+      { codigo: 'dias-gracia', texto: 'Solo pasados unos días de gracia después del vencimiento', detalle: 'Indique cuántos días en el comentario.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R10-VALOR-COBRANZA',
+    bloque: PAGOS,
+    titulo: '¿Cuál es el valor real del gasto de cobranza por periodo atrasado y quién lo define?',
+    contexto:
+      'El valor que usa el motor hoy es 40.000 por periodo atrasado, un número provisional de ejemplo que usted dio en la ronda 8. Con ese valor, en la prueba con el historial real la cobranza media por cliente sale cerca de 1 millón. Necesitamos el valor real y quién lo define.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso; no tiene un valor por periodo.',
+    opciones: [
+      { codigo: 'director-financiero', texto: 'Lo define el director financiero', detalle: 'Escriba el valor por periodo atrasado.', pideValor: true },
+      { codigo: 'otro', texto: 'Lo define otra persona o instancia', detalle: 'Escriba el valor y quién lo define en el comentario.', pideValor: true, pideTexto: true },
+    ],
+    valor: {
+      etiqueta: 'Gasto de cobranza por periodo atrasado',
+      unidad: 'COP',
+      ayuda: 'Hoy el motor usa 40.000 de ejemplo.',
+      sugeridos: [{ valor: 40000 }],
+    },
+  },
+  {
+    id: 'R10-JUSTIFICACIONES',
+    bloque: PAGOS,
+    titulo: 'Cuando un cliente tiene una justificación aprobada, ¿qué se perdona mientras dura?',
+    contexto:
+      'Las justificaciones aprobadas son enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía o en fiscalía. Hoy el motor no las tiene en cuenta. Escoja la opción que describe qué se perdona durante el tiempo que dura la justificación. Si necesita combinar conceptos distintos, use "Otra combinación" y escríbalos. Dos temas más para el comentario. Uno: si la moto retirada temporalmente (en oficina, en realquiler o pendiente de triage) debe congelar el crédito. Dos: qué hacer con los "permisos de geocerca" y las "motos varadas".',
+    excelHoy: 'El Excel no contempla justificaciones.',
+    opciones: [
+      { codigo: 'todo', texto: 'Se perdona todo: la mora, la cobranza, los servicios y que el periodo cuente como atrasado para la marca de recuperación' },
+      { codigo: 'mora-y-cobranza', texto: 'Se perdonan la mora y la cobranza; los servicios se siguen causando' },
+      { codigo: 'mora-cobranza-servicios', texto: 'Se perdonan la mora, la cobranza y los servicios (fondo, asistencia y seguro)' },
+      { codigo: 'solo-marca', texto: 'Solo se perdona que el periodo cuente como atrasado para la marca de recuperación' },
+      { codigo: 'nada', texto: 'No se perdona nada' },
+      { codigo: 'otro', texto: 'Otra combinación de conceptos', detalle: 'Mora, cobranza, servicios (fondo, asistencia, seguro) o marca de recuperación: escriba cuáles.', pideTexto: true },
+    ],
+  },
+
+  // ── Dación y retoma ───────────────────────────────────────────────────────────
+  {
+    id: 'R10-MARCA-RECUPERACION',
+    bloque: RECUPERACION,
+    titulo: '¿Cuándo un crédito queda "listo para recuperar" (dación o retoma)?',
+    contexto:
+      'Hoy el crédito queda marcado "listo para recuperar" cuando llega a 2 periodos atrasados, aunque después se ponga al día. En la prueba con el historial real, esa marca distingue poco entre quienes terminan pagando y quienes se retiran: entre el 49 % y el 93 % de los retirados quedan marcados, según el motivo del retiro, y también el 94 % de los que terminan pagando todo.',
+    excelHoy: 'El Excel no marca créditos; la dación y la retoma se deciden caso por caso.',
+    opciones: [
+      { codigo: 'primera-vez', texto: 'La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día (como funciona hoy)', esExcel: true },
+      { codigo: 'se-mantiene', texto: 'Solo si se mantienen 2 periodos atrasados seguidos o más de una semana' },
+      { codigo: 'sin-justificacion', texto: 'Solo si hay 2 periodos atrasados y no hay una justificación vigente' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R10-VALOR-MOTO-REENTREGADA',
+    bloque: RECUPERACION,
+    titulo: 'Cuando una moto se entrega a un segundo cliente, ¿cuál es el valor que se financia?',
+    contexto:
+      'Al recuperar una moto (dación o retoma) y entregarla a otro cliente, hay que definir sobre qué valor se hace el nuevo crédito. Cada opción cambia el monto financiado, la cuota y los servicios del segundo cliente. En el comentario cuéntenos cómo se calcula hoy.',
+    excelHoy: 'El Excel no contempla la entrega de una moto recuperada a un segundo cliente.',
+    opciones: [
+      { codigo: 'avaluo', texto: 'El valor de la moto usada según el avalúo' },
+      { codigo: 'valor-libros', texto: 'El valor en libros (costo menos depreciación)' },
+      { codigo: 'no-recuperado', texto: 'Lo no recuperado de la inversión original' },
+      { codigo: 'reacondicionar', texto: 'Solo el costo de reacondicionarla' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+]
+
 // Respuestas de Diego del 16 de octubre de 2026 (documento Preguntas-PO-Financiera).
 const RESPONDIDAS_16_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   P1: { referencia: 'P-02', respuesta: 'Excel del 11 de octubre (Inputs ⑥): cobranza → mora → interés corriente → fondo de garantías → asistencia → seguro → capital.' },
@@ -1963,7 +2047,7 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10].map((p) => {
   if (RESPONDIDAS_RONDA_8[p.id]) return { ...p, respondida: { fecha: '28 oct 2026', ...RESPONDIDAS_RONDA_8[p.id] } }
   if (RESPONDIDAS_RONDA_7[p.id]) return { ...p, respondida: { fecha: '27 oct 2026', ...RESPONDIDAS_RONDA_7[p.id] } }
   if (RESPONDIDAS_RONDA_5_6[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_RONDA_5_6[p.id] } }
