@@ -48,6 +48,7 @@
     .comparacion { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 16px 0; }
     .comparacion > div { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; }
     .diferencia { font-size: 18px; font-weight: 700; margin: 8px 0 0; }
+    .liquidacion { margin: 10px 0 0; padding: 10px 14px; border-left: 4px solid var(--aviso-borde, #c9a227); background: var(--aviso-fondo, #fff4d6); color: var(--aviso-texto, #5a4300); border-radius: 8px; font-size: 15px; line-height: 1.45; }
     fieldset { border: 1px solid var(--borde); border-radius: 12px; margin: 12px 0; padding: 8px 14px; }
     legend { font-weight: 600; font-size: 14px; padding: 0 6px; }
     fieldset label { display: inline-flex; gap: 6px; align-items: center; margin-right: 18px; font-weight: 500; font-size: 16px; }
@@ -271,7 +272,23 @@ function resumenComparativo(ep, c) {
     el('p', { class: 'diferencia' }, `${signo}: ${cop(Math.abs(dif))}`, difPct === null ? '' : ` (${dif < 0 ? '-' : dif > 0 ? '+' : ''}${(Math.abs(difPct) * 100).toFixed(1).replace('.', ',')} % frente al sistema actual)`),
     el('p', { class: 'diferencia' }, `Frente a la inversión, el margen de la financiera sería ${cop(financiera - inversion)} y el del sistema actual ${cop(sistema - inversion)}`,
       sistema - inversion > 0 ? ` (${(((financiera - inversion) / (sistema - inversion) - 1) * 100).toFixed(1).replace('.', ',')} %)` : ''),
+    liquidacionFinal(ep, r),
     el('p', { class: 'ayuda' }, 'Los dos totales son lo que el cliente paga y en ambos va incluida la recuperación de la inversión: no se resta en ninguno. La inversión es la misma en los dos lados (en la financiera es el monto financiado). El margen sí la resta en los dos. No es utilidad: los servicios (fondo, asistencia, seguro) son en buena parte pagos a terceros y no se descuentan otros costos.'))
+}
+
+// Lo que la simulación deja por cobrar al terminar el último periodo (capital + cargos pendientes). Ese valor ya está sumado al total de la financiera.
+function liquidacionFinal(ep, r) {
+  const capital = r.simSaldoFinal ?? 0
+  const cargos = r.simPendientes ?? 0
+  const liquidacion = capital + cargos
+  const cerroPagando = ep.estadoReal === 'NORMAL' || ep.estadoReal === 'PRONTO PAGO'
+  const cierre = cerroPagando ? 'En el sistema actual este contrato terminó pagado por completo (cerró en cero).' : 'Es el saldo al momento del retiro o de hoy, no un cierre.'
+  if (liquidacion < 1000) {
+    return el('p', { class: 'liquidacion' }, el('strong', {}, 'Liquidación final: '), 'la simulación también cierra en cero. ', cierre)
+  }
+  return el('p', { class: 'liquidacion' }, el('strong', {}, 'Liquidación final: '),
+    `al terminar el último periodo la simulación deja ${cop(liquidacion)} por cobrar (capital ${cop(capital)}${cargos >= 1000 ? ` y otros cargos pendientes ${cop(cargos)}` : ''}). `,
+    cierre, ' Esa diferencia sale de la mora y la cobranza que el motor cobra primero por los atrasos, y de que los pagos simulados repiten el comportamiento real sin cubrir esos cargos. Ya está sumada al total de la financiera.')
 }
 
 function margenTexto(margen, inversion) {
