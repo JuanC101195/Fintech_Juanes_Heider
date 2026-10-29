@@ -27,7 +27,7 @@ app.http('respuestas', {
   },
 })
 
-// ---- Consulta de contratos del backtesting (GET /api/contrato?numero=2842) ----
+// ---- Consulta de contratos del backtesting (GET /api/contrato?numero=1001) ----
 // Lee la base PostgreSQL (solo SELECT). La lógica está en contrato.js; aquí solo se adapta la petición de Azure.
 const { crearManejador } = require('./contrato')
 let manejador
