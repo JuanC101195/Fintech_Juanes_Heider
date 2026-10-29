@@ -6,6 +6,7 @@
 | Consola | GitHub Pages (workflow `Sitio`, carpeta `consola/`) | https://juanc101195.github.io/Fintech_Juanes_Heider/consola/ |
 | Cuestionario | GitHub Pages | https://juanc101195.github.io/Fintech_Juanes_Heider/cuestionario.html |
 | Respuestas del cuestionario | Azure Function `fn-motor-cartera-respuestas` + tabla `respuestas` | — |
+| Consulta de contratos | GitHub Pages + función `contrato` + PostgreSQL | https://juanc101195.github.io/Fintech_Juanes_Heider/contratos.html |
 
 ## Costo
 
@@ -42,6 +43,48 @@ curl -i -H "X-API-Key: $CLAVE" https://motor-cartera-api-jc.azurewebsites.net/ap
 - Rotar: agregar el hash nuevo a la lista, actualizar a los clientes y quitar el viejo. Apagar la autenticación: `az webapp config appsettings delete ... --setting-names CARTERA_API_CLAVES`.
 - Activarla rompe a quien no mande la cabecera: la consola publicada (GitHub Pages) y n8n deben enviar `X-API-Key`. Una clave que viaje en el JavaScript de GitHub Pages es pública; para la consola use `LECTURA` o no la active hasta tener otra forma de entrar.
 - Una entrada mal formada impide arrancar la app (el mensaje de error no repite lo configurado).
+
+## Consulta de contratos del backtesting
+
+```
+página (GitHub Pages, contratos.html) --x-clave--> Azure Function GET /api/contrato --SELECT--> PostgreSQL (Azure)
+```
+
+La página es pública pero no contiene datos; la función vive en la misma Function App `fn-motor-cartera-respuestas` (código en `nube/src/contrato.js`) y solo lee la base. Sin la cabecera `x-clave` correcta responde 401. Tiene un límite de 60 consultas por minuto por IP y CORS solo para `https://juanc101195.github.io` y `localhost:5173`. Si la Function App tiene CORS configurado en la plataforma, debe incluir el mismo origen de GitHub Pages.
+
+Variables de la función (Configuración de la Function App; nunca en el repo):
+
+| Variable | Qué es |
+|---|---|
+| `CLAVE_CONSULTA` | Clave que debe enviar la página |
+| `PG_HOST`, `PG_DB` | Servidor y base PostgreSQL |
+| `PG_USER`, `PG_PASSWORD` | Usuario de **solo lectura** y su contraseña |
+
+```bash
+az functionapp config appsettings set -g rg-motor-cartera -n fn-motor-cartera-respuestas   --settings CLAVE_CONSULTA=... PG_HOST=... PG_DB=... PG_USER=... PG_PASSWORD=...
+```
+
+Usuario de solo lectura: crear un rol con `CONNECT` a la base, `USAGE` en el esquema y `SELECT` únicamente sobre `contrato`, `pago_real`, `resultado` y `periodo`. La función solo ejecuta `SELECT` parametrizados, pero el rol es la garantía real.
+
+Firewall de PostgreSQL: agregar una regla por cada IP de salida de la función (y revisar si cambian tras un cambio de plan):
+
+```bash
+az functionapp show -g rg-motor-cartera -n fn-motor-cartera-respuestas --query possibleOutboundIpAddresses -o tsv
+az postgres flexible-server firewall-rule create -g rg-motor-cartera -n <servidor> --rule-name fn-<n> --start-ip-address <ip> --end-ip-address <ip>
+```
+
+Desplegar: como la función de respuestas (`npm install --omit=dev` en `nube/`, zip sin `node_modules` ajenos ni pruebas, `az functionapp deployment source config-zip`). Probar: `curl -i -H "x-clave: $CLAVE" "https://fn-motor-cartera-respuestas.azurewebsites.net/api/contrato?numero=1001"`; sin la cabecera debe dar 401.
+
+Rotar la clave: generar una nueva (`openssl rand -hex 24`), cambiar `CLAVE_CONSULTA` con `az functionapp config appsettings set` y entregarla aparte a quien corresponda; la anterior deja de servir al instante. Si hubo una fuga, rotar también `PG_PASSWORD`.
+
+Pausar el servidor (para no gastar crédito; la consulta responderá 500 mientras tanto):
+
+```bash
+az postgres flexible-server stop  -g rg-motor-cartera -n <servidor>
+az postgres flexible-server start -g rg-motor-cartera -n <servidor>
+```
+
+Azure reinicia solo un servidor detenido a los 7 días.
 
 ## Reglas de negocio
 

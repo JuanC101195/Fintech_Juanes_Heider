@@ -26,7 +26,7 @@ Monolito modular en Java 21 y Spring Boot (Spring Modulith), más las aplicacion
 | `src/` · `api` | API HTTP `/api/v1` que expone el motor |
 | [`consola/`](consola/README.md) | Consola web (React) para analistas |
 | [`cuestionario/`](cuestionario/) | Formulario web de reglas abiertas para negocio |
-| [`nube/`](nube/) | Función de Azure que guarda las respuestas del cuestionario |
+| [`nube/`](nube/) | Funciones de Azure: guardan las respuestas del cuestionario y sirven la consulta de contratos |
 | [`herramientas/`](herramientas/) | Scripts: exportar el Excel a CSV e importar respuestas de negocio |
 
 ## Para desarrollar
@@ -61,6 +61,12 @@ python herramientas/importar_respuestas.py --nube --ver
 | [`docs/reglas/`](docs/reglas/) | Una regla por caso, con sus cifras |
 | [`docs/api.md`](docs/api.md) | Contrato del API |
 | [`docs/despliegue.md`](docs/despliegue.md) | Cómo se publica cada pieza |
+
+## Consulta de contratos del backtesting
+
+Página: https://juanc101195.github.io/Fintech_Juanes_Heider/contratos.html
+
+Se escribe el número de un contrato de Motos del Caribe y se ve la tabla de amortización que el motor calculó con el comportamiento de pago real de ese contrato (con y sin justificaciones), junto a un resumen contra lo pagado en el sistema actual, para compararla con el sistema de la empresa. Requiere una clave de consulta que se entrega aparte a quien corresponda. Los datos nunca están en el repo ni en la página: viven en una base PostgreSQL privada y la página los pide a una Azure Function protegida con esa clave (`?demo=1` muestra un contrato inventado). Arquitectura y operación: [`docs/despliegue.md`](docs/despliegue.md).
 
 ## Despliegue
 

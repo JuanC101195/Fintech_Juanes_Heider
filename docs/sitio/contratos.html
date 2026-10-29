@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Consulta de contratos · Motor de cartera</title>
+  <style>
+    :root {
+      --fondo: #f4f7f6; --tarjeta: #ffffff; --texto: #13201d; --suave: #4d5f5a; --primario: #0f6b5c; --borde: #dbe4e1;
+      --aviso-fondo: #fff4d6; --aviso-texto: #5a4300; --error-fondo: #fde8e6; --error-texto: #8a1c12;
+      --fila-sinpago: #fde8e6; --fila-just: #e3eefc; --fila-listo: #fff0c2; --cabecera: #e9f1ef;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fondo: #0e1513; --tarjeta: #17211e; --texto: #e6efec; --suave: #a3b5b0; --primario: #5fd0b8; --borde: #26332f;
+        --aviso-fondo: #3a2f0c; --aviso-texto: #f6dc8c; --error-fondo: #3d1a17; --error-texto: #ffc2bb;
+        --fila-sinpago: #3d1f1c; --fila-just: #1b2c44; --fila-listo: #453a12; --cabecera: #1f2d29;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 16px 48px; }
+    a { color: var(--primario); }
+    :focus-visible { outline: 3px solid var(--primario); outline-offset: 2px; }
+    .marca { color: var(--primario); font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+    h1 { margin: 4px 0 8px; font-size: 28px; line-height: 1.2; overflow-wrap: anywhere; }
+    h2 { font-size: 20px; margin: 0 0 8px; }
+    h3 { font-size: 16px; margin: 0 0 8px; }
+    .aviso { background: var(--aviso-fondo); color: var(--aviso-texto); border-radius: 12px; padding: 12px 16px; margin: 0 0 20px; font-weight: 600; }
+    .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
+    form.consulta { display: grid; gap: 12px 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: end; }
+    label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    input[type=text], input[type=password], input[type=search] { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 10px; background: var(--fondo); color: var(--texto); }
+    button { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--primario); background: var(--primario); color: #fff; cursor: pointer; }
+    @media (prefers-color-scheme: dark) { button { color: #0e1513; } }
+    button.secundario { background: transparent; color: var(--primario); }
+    button:disabled { opacity: .6; cursor: progress; }
+    .ayuda { color: var(--suave); font-size: 14px; margin: 4px 0 0; }
+    #estado { margin: 0 0 16px; min-height: 1.5em; color: var(--suave); }
+    .error { background: var(--error-fondo); color: var(--error-texto); border-radius: 12px; padding: 12px 16px; font-weight: 600; }
+    .demo { background: var(--aviso-fondo); color: var(--aviso-texto); border-radius: 12px; padding: 12px 16px; margin: 0 0 20px; font-weight: 700; }
+    .datos { display: grid; gap: 8px 24px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin: 0; }
+    .datos div { min-width: 0; }
+    .datos dt { color: var(--suave); font-size: 13px; }
+    .datos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .etiqueta { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
+    .comparacion { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 16px 0; }
+    .comparacion > div { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; }
+    .diferencia { font-size: 18px; font-weight: 700; margin: 8px 0 0; }
+    fieldset { border: 1px solid var(--borde); border-radius: 12px; margin: 12px 0; padding: 8px 14px; }
+    legend { font-weight: 600; font-size: 14px; padding: 0 6px; }
+    fieldset label { display: inline-flex; gap: 6px; align-items: center; margin-right: 18px; font-weight: 500; font-size: 16px; }
+    .barra { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 12px 0; }
+    .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--suave); margin: 8px 0; padding: 0; list-style: none; }
+    .leyenda span.muestra { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--borde); vertical-align: -2px; margin-right: 6px; }
+    .tabla-scroll { overflow: auto; max-height: 70vh; border: 1px solid var(--borde); border-radius: 12px; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+    caption { text-align: left; padding: 10px 12px; font-weight: 600; caption-side: top; }
+    th, td { padding: 6px 10px; border-bottom: 1px solid var(--borde); white-space: nowrap; text-align: right; }
+    th { position: sticky; top: 0; background: var(--cabecera); z-index: 1; font-size: 13px; }
+    th.izq, td.izq { text-align: left; }
+    tr.sinpago td, tr.sinpago th { background: var(--fila-sinpago); }
+    tr.justificado td, tr.justificado th { background: var(--fila-just); }
+    tr.listo td, tr.listo th { background: var(--fila-listo); font-weight: 600; }
+    .tabla-chica { max-width: 520px; }
+    details { margin: 12px 0; }
+    summary { cursor: pointer; font-weight: 600; }
+    ul.notas { margin: 8px 0 0; padding-left: 20px; color: var(--suave); }
+    ul.notas li { margin-bottom: 4px; }
+    footer { margin-top: 32px; color: var(--suave); font-size: 14px; }
+    .solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    @media (max-width: 520px) { h1 { font-size: 22px; } .tarjeta { padding: 14px; } main { padding: 20px 12px 40px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="marca"><a href="./" style="text-decoration:none">Proyecto Financiera</a></p>
+    <h1>Consulta de contratos — backtesting del motor</h1>
+    <p class="aviso" role="note">Datos internos de Motos del Caribe. No compartir.</p>
+    <div id="demo" class="demo" role="note" hidden>Datos de ejemplo, no reales. Este contrato es inventado para mostrar cómo se ve la página.</div>
+
+    <form class="consulta tarjeta" id="formulario" novalidate>
+      <div>
+        <label for="clave">Clave de consulta</label>
+        <input type="password" id="clave" name="clave" autocomplete="off" spellcheck="false">
+        <p class="ayuda">Se guarda solo en esta pestaña y se borra al cerrarla.</p>
+      </div>
+      <div>
+        <label for="numero">Número de contrato</label>
+        <input type="text" id="numero" name="numero" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="Ej.: 1001" aria-describedby="ayuda-numero">
+        <p class="ayuda" id="ayuda-numero">Solo dígitos. Se admiten ceros a la izquierda.</p>
+      </div>
+      <div><button type="submit" id="consultar">Consultar</button></div>
+    </form>
+
+    <p id="estado" role="status" aria-live="polite"></p>
+    <div id="resultado"></div>
+
+    <section class="tarjeta" aria-labelledby="t-explica">
+      <h2 id="t-explica">Qué es real y qué es simulado</h2>
+      <ul class="notas">
+        <li><strong>Real:</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo (columna "Pago real" y lista de pagos reales). Es lo que se compara con el sistema de la empresa.</li>
+        <li><strong>Simulado:</strong> todo lo demás de la tabla (interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación). Es lo que el motor de cartera habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
+        <li>Tasa: usura vigente menos 1 punto, según la serie oficial de la Superfinanciera.</li>
+        <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
+        <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
+        <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
+        <li>"Sin justificaciones" cuenta todo atraso; "con justificaciones" no cuenta los periodos con atraso justificado.</li>
+      </ul>
+    </section>
+    <footer><a href="./">Volver al inicio</a></footer>
+  </main>
+
+<script>
+'use strict'
+// URL de la función de Azure. Para pruebas locales se puede cambiar con ?api=http://localhost:7071/api/contrato
+const URL_FUNCION = 'https://fn-motor-cartera-respuestas.azurewebsites.net/api/contrato'
+
+const params = new URLSearchParams(location.search)
+const MODO_DEMO = params.get('demo') === '1'
+
+// ?api= solo se acepta hacia localhost o hacia la propia función: un enlace ajeno no debe poder llevarse la clave.
+function urlPermitida(u) {
+  try {
+    const x = new URL(u)
+    const local = x.protocol === 'http:' && (x.hostname === 'localhost' || x.hostname === '127.0.0.1')
+    const propia = x.protocol === 'https:' && x.hostname === new URL(URL_FUNCION).hostname
+    return local || propia
+  } catch { return false }
+}
+const urlApi = params.get('api') && urlPermitida(params.get('api')) ? params.get('api') : URL_FUNCION
+
+// ---------- utilidades ----------
+const $ = (id) => document.getElementById(id)
+function el(tag, props, ...hijos) {
+  const e = document.createElement(tag)
+  for (const [k, v] of Object.entries(props || {})) if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v === true ? '' : v)
+  for (const h of hijos.flat()) if (h !== null && h !== undefined && h !== false) e.append(h instanceof Node ? h : document.createTextNode(String(h)))
+  return e
+}
+const agrupar = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+function cop(v) {
+  if (v === null || v === undefined || Number.isNaN(Number(v))) return '—'
+  const r = Math.round(Number(v))
+  return (r < 0 ? '-$ ' : '$ ') + agrupar(Math.abs(r))
+}
+const copMiles = (v) => (v === null || v === undefined ? '—' : cop(Number(v) * 1000))
+function pct(v, dec = 2) {
+  if (v === null || v === undefined) return '—'
+  return (Number(v) * 100).toFixed(dec).replace('.', ',') + ' %'
+}
+function dec(v, d = 2) {
+  if (v === null || v === undefined) return '—'
+  return Number(v).toFixed(d).replace('.', ',').replace(/,00$/, '')
+}
+function fechaCorta(f) {
+  if (!f) return '—'
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(f)
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(f)
+}
+const texto = (s) => (s === null || s === undefined || s === '' ? '—' : String(s).replace(/_/g, ' '))
+const titulo = { sin_justificaciones: 'Sin justificaciones', con_justificaciones: 'Con justificaciones' }
+
+function dato(rotulo, valor, extra) {
+  return el('div', {}, el('dt', {}, rotulo), el('dd', {}, valor, extra || null))
+}
+
+// ---------- tabla de amortización ----------
+const COLUMNAS = [
+  ['Periodo', (p) => p.periodo, 'izq', (p) => p.periodo],
+  ['Vence', (p) => fechaCorta(p.fechaVencimiento), 'izq', (p) => p.fechaVencimiento ?? ''],
+  ['Pago real', (p) => cop(p.valorReal), '', (p) => p.valorReal],
+  ['Días de atraso', (p) => dec(p.diasAtraso, 0), '', (p) => p.diasAtraso],
+  ['Estado', null, 'izq', (p) => texto(p.estado)],
+  ['Cuotas vencidas', (p) => dec(p.cuotasVencidas), '', (p) => p.cuotasVencidas],
+  ['Saldo inicial', (p) => cop(p.saldoInicial), '', (p) => p.saldoInicial],
+  ['Interés', (p) => cop(p.interesCorriente), '', (p) => p.interesCorriente],
+  ['Mora', (p) => cop(p.interesMora), '', (p) => p.interesMora],
+  ['Cobranza', (p) => cop(p.cobranza), '', (p) => p.cobranza],
+  ['Servicios', (p) => cop(p.servicios), '', (p) => p.servicios],
+  ['Capital pagado', (p) => cop(p.pagoCapital), '', (p) => p.pagoCapital],
+  ['Pago total', (p) => cop(p.pagoTotalCliente), '', (p) => p.pagoTotalCliente],
+  ['Saldo final', (p) => cop(p.saldoFinal), '', (p) => p.saldoFinal],
+]
+
+function claseFila(p) {
+  if (p.listoRecuperacion) return 'listo'
+  if (p.justificado) return 'justificado'
+  if (!(Number(p.valorReal) > 0) || /sin_?pago/i.test(p.estado || '')) return 'sinpago'
+  return ''
+}
+const rotuloFila = { listo: 'Listo para recuperar', justificado: 'Justificado', sinpago: 'Sin pago' }
+
+function tablaAmortizacion(periodos, leyendaCaption) {
+  const cuerpo = el('tbody')
+  for (const p of periodos) {
+    const cl = claseFila(p)
+    const tr = el('tr', { class: cl })
+    COLUMNAS.forEach(([, f, alin], i) => {
+      if (i === 4) {
+        const marca = cl ? el('strong', {}, rotuloFila[cl] + ' · ') : null
+        tr.append(el('td', { class: 'izq' }, marca, texto(p.estado)))
+      } else tr.append(el(i === 0 ? 'th' : 'td', { class: alin, scope: i === 0 ? 'row' : null }, f(p)))
+    })
+    cuerpo.append(tr)
+  }
+  const cab = el('tr', {}, COLUMNAS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
+  const tabla = el('table', {}, el('caption', {}, leyendaCaption), el('thead', {}, cab), cuerpo)
+  // Las celdas de periodo son th de fila: se ven como celdas normales.
+  for (const th of tabla.querySelectorAll('tbody th')) { th.style.position = 'static'; th.style.background = 'inherit'; th.style.fontSize = 'inherit'; th.style.fontWeight = '400' }
+  return tabla
+}
+
+function csvDe(periodos) {
+  const esc = (v) => {
+    const s = v === null || v === undefined ? '' : typeof v === 'number' ? String(v).replace('.', ',') : String(v)
+    return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+  }
+  const filas = [COLUMNAS.map(([n]) => n).concat('Marca').map(esc).join(';')]
+  for (const p of periodos) {
+    const cl = claseFila(p)
+    filas.push(COLUMNAS.map(([, , , crudo]) => esc(crudo(p))).concat(esc(cl ? rotuloFila[cl] : '')).join(';'))
+  }
+  return '﻿' + filas.join('\r\n') + '\r\n'
+}
+function descargar(nombre, contenido) {
+  const url = URL.createObjectURL(new Blob([contenido], { type: 'text/csv;charset=utf-8' }))
+  const a = el('a', { href: url, download: nombre })
+  document.body.append(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+// ---------- episodio ----------
+function resumenComparativo(ep, c) {
+  const r = c.resumen
+  if (!r) return el('p', { class: 'ayuda' }, 'Esta corrida no tiene resumen.')
+  const sistema = (ep.realPagadoCuotas ?? 0) + (ep.realMultas ?? 0)
+  const financiera = r.simTotalConDeuda ?? ((r.simPagado ?? 0) + (r.simSaldoFinal ?? 0))
+  const dif = financiera - sistema
+  const difPct = sistema > 0 ? dif / sistema : null
+  const signo = dif > 0 ? 'La financiera habría cobrado más' : dif < 0 ? 'La financiera habría cobrado menos' : 'Sin diferencia'
+  return el('div', {},
+    el('div', { class: 'comparacion' },
+      el('div', {}, el('h3', {}, 'Sistema actual (real)'),
+        el('dl', { class: 'datos' },
+          dato('Pagado por el cliente en cuotas', cop(ep.realPagadoCuotas)),
+          dato('Multas pagadas', cop(ep.realMultas)),
+          dato('Total pagado', cop(sistema)),
+          dato('Rentabilidad real (EA, con multas)', pct(r.realEaConMultas)))),
+      el('div', {}, el('h3', {}, 'Financiera (simulado)'),
+        el('dl', { class: 'datos' },
+          dato('Pagado por el cliente', cop(r.simPagado)),
+          dato('Saldo pendiente', cop(r.simSaldoFinal)),
+          dato('Otros pendientes', cop(r.simPendientes)),
+          dato('Total (pagado + saldo + pendientes)', cop(financiera)),
+          dato('Mora simulada', cop(r.simMora)),
+          dato('Cobranza simulada', cop(r.simCobranza)),
+          dato('Interés', cop(r.simInteres)),
+          dato('Servicios', cop(r.simServicios)),
+          dato('Cuotas vencidas máximas', dec(r.simCuotasVencidasMax)),
+          dato('Listo para recuperar', r.simMarcaRecuperacion ? `Sí, en el periodo ${r.simPeriodoMarca ?? '—'}` : 'No'),
+          dato('Estado final simulado', texto(r.simEstadoFinal))))),
+    el('p', { class: 'diferencia' }, `${signo}: ${cop(Math.abs(dif))}`, difPct === null ? '' : ` (${dif < 0 ? '-' : dif > 0 ? '+' : ''}${(Math.abs(difPct) * 100).toFixed(1).replace('.', ',')} % frente al sistema actual)`),
+    el('p', { class: 'ayuda' }, 'Diferencia = total de la financiera menos lo que el cliente pagó en el sistema actual (cuotas + multas).'))
+}
+
+function tarjetaEpisodio(ep, i, total) {
+  const pref = `ep${i}`
+  const corridas = ep.corridas || {}
+  const claves = ['sin_justificaciones', 'con_justificaciones']
+  const disponibles = claves.filter((k) => corridas[k])
+  const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
+  tarjeta.append(el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
+  tarjeta.append(el('dl', { class: 'datos' },
+    dato('Estado real', texto(ep.estadoReal)),
+    dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Contrato posterior (reasignación nº ${i + 1})`),
+    dato('Cohorte', texto(ep.cohorte)),
+    dato('Inicio', fechaCorta(ep.fechaInicio)),
+    dato('Fin', ep.fechaFin ? fechaCorta(ep.fechaFin) : 'Sin terminar'),
+    dato('Número de cuotas', dec(ep.cuotas, 0)),
+    dato('Cuota real', copMiles(ep.cuotaRealMiles)),
+    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'imputada') : null),
+    dato('Línea de usura aplicada', texto(ep.lineaUsura)),
+    dato('Tasa inicial de usura aplicada (EA)', pct(ep.tasaInicialEA)),
+    dato('Días justificados', dec(ep.diasJustificados, 0))))
+
+  if (!disponibles.length) {
+    tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene corridas del motor.'))
+    return tarjeta
+  }
+  const nombreGrupo = `${pref}-corrida`
+  const zona = el('div')
+  const grupo = el('fieldset', {}, el('legend', {}, 'Corrida del motor'))
+  let actual = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
+  const pintar = () => {
+    const c = corridas[actual]
+    zona.replaceChildren(resumenComparativo(ep, c), tablaCompleta(ep, c, actual))
+  }
+  for (const k of claves) {
+    const radio = el('input', { type: 'radio', name: nombreGrupo, value: k, id: `${pref}-${k}`, checked: k === actual, disabled: !corridas[k] })
+    radio.addEventListener('change', () => { actual = k; pintar() })
+    grupo.append(el('label', { for: `${pref}-${k}` }, radio, titulo[k]))
+  }
+  tarjeta.append(grupo, zona)
+  pintar()
+
+  const lista = ep.pagosReales || []
+  const cuerpo = el('tbody', {}, lista.map((p) => el('tr', {}, el('th', { scope: 'row', class: 'izq' }, fechaCorta(p.fecha)), el('td', {}, copMiles(p.valorMiles)), el('td', {}, copMiles(p.multaMiles)))))
+  const detalle = el('details', {}, el('summary', {}, `Pagos reales (${lista.length})`),
+    lista.length
+      ? el('div', { class: 'tabla-scroll tabla-chica' }, el('table', {}, el('caption', {}, `Pagos reales del contrato ${ep.id}`),
+          el('thead', {}, el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Fecha'), el('th', { scope: 'col' }, 'Valor'), el('th', { scope: 'col' }, 'Multa'))), cuerpo))
+      : el('p', { class: 'ayuda' }, 'Sin pagos reales registrados.'))
+  tarjeta.append(detalle)
+  return tarjeta
+}
+
+function tablaCompleta(ep, c, clave) {
+  const periodos = c.periodos || []
+  const cont = el('div')
+  if (!periodos.length) { cont.append(el('p', { class: 'ayuda' }, 'No hay periodos para esta corrida.')); return cont }
+  const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
+  boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
+  cont.append(
+    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos`)),
+    el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
+      el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
+      el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
+      el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-listo)' }), 'Listo para recuperar')),
+    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de amortización, ${titulo[clave]}` },
+      tablaAmortizacion(periodos, `Amortización simulada del contrato ${ep.id} · ${titulo[clave]}`)))
+  return cont
+}
+
+// Única ruta de render: la usan los datos reales y los de demostración.
+function mostrar(datos) {
+  const cont = $('resultado')
+  const eps = datos.episodios || []
+  const fragmentos = [el('h2', { class: 'solo-lectores' }, `Resultado del contrato ${datos.numero}`)]
+  if (eps.length > 1) fragmentos.push(el('p', {}, `El contrato ${datos.numero} tiene ${eps.length} episodios (la moto se reasignó entre clientes). Se muestran en orden de fecha de inicio.`))
+  eps.forEach((ep, i) => fragmentos.push(tarjetaEpisodio(ep, i, eps.length)))
+  cont.replaceChildren(...fragmentos)
+}
+
+// ---------- datos de demostración (inventados) ----------
+function crearDemo() {
+  const CUOTA = 100000, CAPITAL = 85000, SERVICIOS = 5000
+  const real = { 1: 100000, 2: 100000, 3: 100000, 4: 100000, 5: 0, 6: 0, 7: 0, 8: 300000, 9: 100000, 10: 100000, 11: 100000, 12: 100000 }
+  const fechaDe = (n) => { const d = new Date(Date.UTC(2025, 0, 6 + 7 * n)); return d.toISOString().slice(0, 10) }
+  function simular(justificados) {
+    const filas = []
+    let saldo = 1000000, vencidas = 0, atrasoSem = 0, marca = null
+    for (let n = 1; n <= 12 && marca === null; n++) {
+      const pago = real[n], just = justificados.includes(n)
+      const sinPago = pago === 0
+      if (sinPago && !just) vencidas += 1
+      atrasoSem = vencidas
+      const interes = Math.round(saldo * 0.01 / 1000) * 1000
+      const mora = vencidas > 0 ? 2000 * vencidas : 0
+      const cobranza = vencidas > 0 && !sinPago ? 40000 : 0
+      let resto = pago
+      const toma = (x) => { const t = Math.min(x, resto); resto -= t; return t }
+      const pCob = toma(cobranza), pMora = toma(mora), pInt = toma(interes), pServ = toma(SERVICIOS), pCap = toma(saldo)
+      if (!sinPago) vencidas = Math.max(0, vencidas - Math.floor(pCap / CAPITAL))
+      const listo = vencidas >= 3
+      filas.push({
+        periodo: n, fechaVencimiento: fechaDe(n), instruccion: sinPago ? 'SinPago' : 'PagoValor', valorReal: pago,
+        diasAtraso: sinPago ? 0 : atrasoSem * 7, justificado: just, estado: listo ? 'listo_recuperacion' : sinPago ? (just ? 'justificado' : 'sin_pago') : vencidas > 0 ? 'en_mora' : 'al_dia',
+        cuotasVencidas: vencidas, saldoInicial: saldo, interesCorriente: interes, interesMora: mora, cobranza, servicios: SERVICIOS,
+        cuotaFinanciera: CUOTA, pagoCapital: pCap, pagoInteres: pInt, pagoMora: pMora, pagoCobranza: pCob, pagoServicios: pServ,
+        pagoTotalCliente: pago, capitalVencido: vencidas * CAPITAL, saldoFinal: saldo - pCap, listoRecuperacion: listo, tasaEA: 0.25,
+      })
+      saldo -= pCap
+      if (listo) marca = n
+    }
+    const ult = filas[filas.length - 1]
+    const pagado = filas.reduce((s, f) => s + f.pagoTotalCliente, 0)
+    return {
+      resumen: {
+        simPagado: pagado, simSaldoFinal: ult.saldoFinal, simPendientes: marca ? 50000 : 0, simTotalConDeuda: pagado + ult.saldoFinal + (marca ? 50000 : 0),
+        simMora: filas.reduce((s, f) => s + f.interesMora, 0), simCobranza: filas.reduce((s, f) => s + f.cobranza, 0),
+        simInteres: filas.reduce((s, f) => s + f.interesCorriente, 0), simServicios: filas.reduce((s, f) => s + f.servicios, 0),
+        simCuotasVencidasMax: Math.max(...filas.map((f) => f.cuotasVencidas)), simMarcaRecuperacion: marca !== null, simPeriodoMarca: marca,
+        simEstadoFinal: marca ? 'listo_recuperacion' : 'al_dia', realEaConMultas: 0.3,
+      },
+      periodos: filas,
+    }
+  }
+  return {
+    numero: '9999',
+    episodios: [{
+      id: 'DEMO-9999-1', estadoReal: 'activo', cohorte: '2025-T1', fechaInicio: '2025-01-06', fechaFin: null, cuotas: 12,
+      cuotaRealMiles: 100, inversion: 1000000, inversionImputada: true, lineaUsura: 'consumo (ejemplo)', tasaInicialEA: 0.25,
+      diasJustificados: 7, realPagadoCuotas: 1200000, realMultas: 20000,
+      pagosReales: Object.entries(real).filter(([, v]) => v > 0).map(([n, v]) => ({ fecha: fechaDe(Number(n)), valorMiles: v / 1000, multaMiles: Number(n) === 8 ? 20 : 0 })),
+      corridas: { sin_justificaciones: simular([]), con_justificaciones: simular([7]) },
+    }],
+  }
+}
+
+// ---------- consulta ----------
+const MENSAJES = {
+  401: 'La clave es incorrecta o falta. Revísela e inténtelo de nuevo.',
+  404: 'No se encontró ese número de contrato.',
+  429: 'Demasiadas consultas seguidas. Espere un minuto e inténtelo otra vez.',
+  400: 'El número de contrato no es válido: use solo dígitos (máximo 10).',
+}
+function mostrarEstado(msg, esError) {
+  const e = $('estado')
+  e.replaceChildren(esError ? el('span', { class: 'error', role: 'alert' }, msg) : document.createTextNode(msg || ''))
+}
+function leerClave() { try { return sessionStorage.getItem('clave-consulta') || '' } catch { return '' } }
+function guardarClave(v) { try { sessionStorage.setItem('clave-consulta', v) } catch { /* sin almacenamiento: no pasa nada */ } }
+
+async function consultar(ev) {
+  ev?.preventDefault()
+  const numero = $('numero').value.trim()
+  if (MODO_DEMO) { mostrarEstado(''); mostrar(crearDemo()); return }
+  const clave = $('clave').value
+  if (!clave) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
+  if (!/^[0-9]{1,10}$/.test(numero)) { mostrarEstado(MENSAJES[400], true); $('numero').focus(); return }
+  guardarClave(clave)
+  const boton = $('consultar')
+  boton.disabled = true
+  $('resultado').replaceChildren()
+  mostrarEstado('Consultando…')
+  try {
+    const url = new URL(urlApi)
+    url.searchParams.set('numero', numero)
+    const r = await fetch(url, { headers: { 'x-clave': clave }, cache: 'no-store' })
+    if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+    let datos
+    try { datos = await r.json() } catch { mostrarEstado('La respuesta del servicio no se pudo leer.', true); return }
+    mostrarEstado('')
+    mostrar(datos)
+  } catch {
+    mostrarEstado('No hay conexión con el servicio. Revise su internet e inténtelo de nuevo (la primera consulta puede tardar unos segundos).', true)
+  } finally {
+    boton.disabled = false
+  }
+}
+
+$('formulario').addEventListener('submit', consultar)
+$('clave').value = leerClave()
+if (MODO_DEMO) {
+  $('demo').hidden = false
+  $('clave').closest('div').hidden = true
+  $('numero').value = '9999'
+  mostrar(crearDemo())
+}
+</script>
+</body>
+</html>
