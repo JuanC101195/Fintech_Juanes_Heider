@@ -238,6 +238,7 @@ function resumenComparativo(ep, c) {
   const r = c.resumen
   if (!r) return el('p', { class: 'ayuda' }, 'Esta corrida no tiene resumen.')
   const sistema = (ep.realPagadoCuotas ?? 0) + (ep.realMultas ?? 0)
+  const inversion = ep.inversion ?? 0
   const financiera = r.simTotalConDeuda ?? ((r.simPagado ?? 0) + (r.simSaldoFinal ?? 0))
   const dif = financiera - sistema
   const difPct = sistema > 0 ? dif / sistema : null
@@ -249,6 +250,8 @@ function resumenComparativo(ep, c) {
           dato('Pagado por el cliente en cuotas', cop(ep.realPagadoCuotas)),
           dato('Multas pagadas', cop(ep.realMultas)),
           dato('Total pagado', cop(sistema)),
+          dato('Inversión inicial', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
+          dato('Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
           dato('Rentabilidad real (EA, con multas)', pct(r.realEaConMultas)))),
       el('div', {}, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
@@ -256,6 +259,8 @@ function resumenComparativo(ep, c) {
           dato('Saldo pendiente', cop(r.simSaldoFinal)),
           dato('Otros pendientes', cop(r.simPendientes)),
           dato('Total (pagado + saldo + pendientes)', cop(financiera)),
+          dato('Inversión inicial (monto financiado)', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
+          dato('Margen (total − inversión)', margenTexto(financiera - inversion, inversion)),
           dato('Mora simulada', cop(r.simMora)),
           dato('Cobranza simulada', cop(r.simCobranza)),
           dato('Interés', cop(r.simInteres)),
@@ -264,7 +269,13 @@ function resumenComparativo(ep, c) {
           dato('Listo para recuperar', r.simMarcaRecuperacion ? `Sí, en el periodo ${r.simPeriodoMarca ?? '—'}` : 'No'),
           dato('Estado final simulado', texto(r.simEstadoFinal))))),
     el('p', { class: 'diferencia' }, `${signo}: ${cop(Math.abs(dif))}`, difPct === null ? '' : ` (${dif < 0 ? '-' : dif > 0 ? '+' : ''}${(Math.abs(difPct) * 100).toFixed(1).replace('.', ',')} % frente al sistema actual)`),
-    el('p', { class: 'ayuda' }, 'Diferencia = total de la financiera menos lo que el cliente pagó en el sistema actual (cuotas + multas).'))
+    el('p', { class: 'diferencia' }, `Frente a la inversión, el margen de la financiera sería ${cop(financiera - inversion)} y el del sistema actual ${cop(sistema - inversion)}`,
+      sistema - inversion > 0 ? ` (${(((financiera - inversion) / (sistema - inversion) - 1) * 100).toFixed(1).replace('.', ',')} %)` : ''),
+    el('p', { class: 'ayuda' }, 'Los dos totales son lo que el cliente paga y en ambos va incluida la recuperación de la inversión: no se resta en ninguno. La inversión es la misma en los dos lados (en la financiera es el monto financiado). El margen sí la resta en los dos. No es utilidad: los servicios (fondo, asistencia, seguro) son en buena parte pagos a terceros y no se descuentan otros costos.'))
+}
+
+function margenTexto(margen, inversion) {
+  return inversion > 0 ? `${cop(margen)} (${pct(margen / inversion)} sobre la inversión)` : cop(margen)
 }
 
 function tarjetaEpisodio(ep, i, total) {
