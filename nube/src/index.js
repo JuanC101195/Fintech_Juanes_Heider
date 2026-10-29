@@ -26,3 +26,38 @@ app.http('respuestas', {
     return { status: 204 }
   },
 })
+
+// ---- Consulta de contratos del backtesting (GET /api/contrato?numero=2842) ----
+// Lee la base PostgreSQL (solo SELECT). La lógica está en contrato.js; aquí solo se adapta la petición de Azure.
+const { crearManejador } = require('./contrato')
+let manejador
+function obtenerManejador() {
+  manejador ??= crearManejador({
+    consultar: (sql, parametros) => require('./baseDatos').consultar(sql, parametros),
+    claveEsperada: process.env.CLAVE_CONSULTA,
+    registrar: (t) => console.error(t),
+  })
+  return manejador
+}
+
+app.http('contrato', {
+  methods: ['GET', 'OPTIONS'],
+  authLevel: 'anonymous',
+  route: 'contrato',
+  handler: async (solicitud) => {
+    const reenviada = solicitud.headers.get('x-forwarded-for') || ''
+    const ip = reenviada.split(',')[0].trim().replace(/:\d+$/, '')
+    const r = await obtenerManejador()({
+      metodo: solicitud.method,
+      origen: solicitud.headers.get('origin') || undefined,
+      clave: solicitud.headers.get('x-clave') || undefined,
+      ip,
+      numero: solicitud.query.get('numero') ?? undefined,
+    })
+    return {
+      status: r.status,
+      headers: { ...r.headers, ...(r.cuerpo ? { 'Content-Type': 'application/json; charset=utf-8' } : {}) },
+      body: r.cuerpo ? JSON.stringify(r.cuerpo) : undefined,
+    }
+  },
+})
