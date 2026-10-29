@@ -4,6 +4,25 @@ Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reprod
 
 > **Estado al 2026-10-22.** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. **Abiertas hoy (ronda 7, 2 preguntas):** R7-COBRANZA-ACTIVA (quién activa la cobranza —director financiero, gerente o comité— y si es crédito por crédito o por regla tras N días de mora) y R7-RECUP-VS-CASO11 (si el caso 11 se corrige de 4 a 2 periodos de espera antes de la dación o se deja en 4 como ejemplo).
 
+## Ronda 10 · Abierta (29 oct 2026)
+
+Salen del **backtesting** del motor con el historial real de pagos de Motos del Caribe. Se reprodujo el comportamiento de pago de unos 4.500 contratos como si hubieran entrado por la financiera con las reglas actuales. Estas preguntas aún no tienen clave del motor: primero necesitamos su respuesta.
+
+Lo que encontramos:
+
+- **Una cuota con cualquier saldo pendiente cuenta como atrasada.** Así, el 94 % de los clientes que terminaron pagando todo quedaría marcado «listo para recuperar» alguna vez, y el 91 % pagaría cobranza. Si se tolera que pagar al menos el 90 % de la cuota cuenta como cuota completa, baja a 84 % y 82 %.
+- **Entre los clientes vigentes que son el primer cliente de su moto, el 81 % tendría 2 o más cuotas vencidas hoy.** El sistema actual solo marca a 73 clientes (8,6 %) con 14 días o más sin pagar. El motor sí reconoce a 70 de esos 73.
+- **La marca «listo para recuperar» (2 cuotas vencidas) distingue poco** entre quienes terminan pagando y quienes se retiran: quedan marcados entre el 49 % y el 93 % de los retirados, según el motivo del retiro, y el 94 % de los que terminan pagando.
+- **El gasto de cobranza usado es 40.000 por periodo**, un valor provisional de ejemplo. Con él, la cobranza media por cliente es cerca de 1 millón.
+
+| ID | Pregunta | Opciones |
+|---|---|---|
+| R10-PERIODO-ATRASADO | ¿Qué cuenta como un periodo atrasado? | (a) Cualquier saldo pendiente, aunque sea pequeño (como hoy). (b) Solo si falta más de un porcentaje de la cuota (indique el porcentaje; por ejemplo, 10 %). (c) Solo pasados unos días de gracia después del vencimiento (indique los días). (d) Otra regla. |
+| R10-MARCA-RECUPERACION | ¿Cuándo un crédito queda «listo para recuperar» (dación o retoma)? | (a) La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día. (b) Solo si se mantienen 2 periodos atrasados seguidos o más de una semana. (c) Solo si hay 2 atrasados y no hay justificación vigente. (d) Otra regla. |
+| R10-JUSTIFICACIONES | Con una justificación aprobada (enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía, en fiscalía), ¿qué se perdona mientras dura? | La mora, la cobranza, los servicios (fondo, asistencia, seguro), que el periodo cuente como atrasado para la marca de recuperación, o nada. En el comentario: si la moto retirada temporalmente (en oficina, en realquiler, pendiente de triage) debe congelar el crédito, y qué hacer con los «permisos de geocerca» y las «motos varadas». |
+| R10-VALOR-COBRANZA | ¿Cuál es el valor real del gasto de cobranza por periodo atrasado y quién lo define? | Un valor en pesos y quién lo define (director financiero u otro). Hoy el motor usa 40.000 de ejemplo. |
+| R10-VALOR-MOTO-REENTREGADA | Cuando una moto se entrega a un segundo cliente, ¿cuál es el valor que se financia? | (a) Valor de la moto usada según avalúo. (b) Valor en libros (costo menos depreciación). (c) Lo no recuperado de la inversión original. (d) Solo el costo de reacondicionarla. (e) Otra regla. En el comentario: cómo se calcula hoy. |
+
 ## Bloque 1 · Las que más cambian el cálculo (resolver primero)
 
 | # | Pregunta | Por qué importa | Casos |
