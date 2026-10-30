@@ -45,9 +45,9 @@ Unos 130.000 créditos aleatorios (50.000 con perfiles y 78.000 con reglas combi
 
 | Hueco | Por qué | Quién lo cierra |
 |---|---|---|
-| Pago completo pero tarde (caso 9) no genera cobranza en NEGOCIO | Decidido (D58, ronda 8): la cobranza es un cobro fijo por periodo y el pago completo tardío no la genera | Implementado en NEGOCIO (`cobranzaPorPeriodo`); el momento del primer cobro queda en R9-COBRO-MOMENTO |
+| Pago completo pero tarde (caso 9) no genera cobranza en NEGOCIO | Decidido (D58, ronda 8): la cobranza es un cobro fijo por periodo y el pago completo tardío no la genera | Implementado en NEGOCIO (`cobranzaPorPeriodo`); el momento del primer cobro quedó decidido en la ronda 9 (D62; motor en implementación) |
 | Pagos en pesos enteros dejan 0,45 COP de residuo y llevan a mora | Decidido (D59, ronda 8): la cuota exigible se redondea al peso | Implementado (`redondeoCuotaAlPeso`) |
-| Pago incompleto en la fecha causa los 3 servicios | Decidido (D60, ronda 8): la causación siempre genera los servicios; tras 2 periodos atrasados solo el seguro | Implementado (`cuotasVencidasParaSuspenderServicios`); falta R9-SEGURO-TODO-RIESGO y R9-SERVICIOS-AL-PONERSE-AL-DIA |
+| Pago incompleto en la fecha causa los 3 servicios | Decidido (D60, ronda 8): la causación siempre genera los servicios; tras 2 periodos atrasados solo el seguro | Implementado (`cuotasVencidasParaSuspenderServicios`); la ronda 9 decidió el seguro todo riesgo y que los servicios suspendidos no se cobran (D62 a D64; motor en implementación) y la ronda 11 pregunta los detalles |
 | Pago mayor que lo exigible se recorta sin registrar el sobrante | Decidido (D61, ronda 8): el sobrante es una cuenta por pagar al cliente | Implementado (`sobranteComoCuentaPorPagar`, cuenta provisional hasta el PUC) |
 | Dos instrucciones del mismo tipo en un periodo | El motor las rechaza (H5); el generador no las arma | — |
 | `PrepagoTotal` con fecha real y `PagoValor` con fecha | El generador usa días, no fechas, en esos eventos | Ampliar el generador |
@@ -56,5 +56,5 @@ Unos 130.000 créditos aleatorios (50.000 con perfiles y 78.000 con reglas combi
 ## Orden de trabajo siguiente
 
 1. Ampliar el generador (fechas en prepago y pago de un valor, `desde` para más tipos de pago).
-2. Agregar un invariante por cada decisión de la ronda 8 (D58 a D61) y esperar la ronda 9 (momento del primer cobro, seguro todo riesgo, servicios al ponerse al día). La ronda 10 también está abierta (periodo atrasado, marca de recuperación, justificaciones, valor de la cobranza, primera cuota, contador de cuotas vencidas y valor de la moto reentregada); sale del backtesting con el historial real de pagos y aún no tiene claves del motor.
+2. Agregar un invariante por cada decisión de la ronda 8 (D58 a D61) y agregar los de la ronda 9 (D62 a D64: primer cobro desde la 2.ª cuota atrasada, seguro todo riesgo, servicios suspendidos que no se cobran) cuando el motor los implemente; la ronda 11 (4 preguntas de seguimiento del seguro todo riesgo) está abierta. La ronda 10 también está abierta (periodo atrasado, marca de recuperación, justificaciones, valor de la cobranza, primera cuota, contador de cuotas vencidas y valor de la moto reentregada); sale del backtesting con el historial real de pagos y aún no tiene claves del motor.
 3. Fase 3: alimentar el motor con el historial real de pagos y comparar contra lo que ocurrió.

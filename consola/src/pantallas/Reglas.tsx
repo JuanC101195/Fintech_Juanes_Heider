@@ -37,7 +37,7 @@ export function valorRegla(clave: string, valor: string | null): string {
   if (VALORES[valor]) return VALORES[valor]
   if (clave === 'cobranzaDiaria' && /^\d+(\.\d+)?$/.test(valor)) return `${cop(valor)} por día de atraso (valor de ejemplo, por definir)`
   if (clave === 'cuotasVencidasParaRecuperacion') return `Con ${valor} cuotas atrasadas el crédito queda listo para dación o retoma`
-  if (clave === 'cuotasVencidasParaCobranza') return `La cobranza empieza tras ${valor} cuotas vencidas (desde la ${Number(valor) + 1}.ª)`
+  if (clave === 'cuotasVencidasParaCobranza') return `La cobranza empieza al llegar a la cuota atrasada número ${valor}; con las reglas de negocio la cuota del periodo en curso ya cuenta`
   if (clave === 'cobranzaPorPeriodo' && /^\d+(\.\d+)?$/.test(valor)) return `${cop(valor)} por periodo atrasado (valor de ejemplo, por definir)`
   if (clave === 'cuotasVencidasParaSuspenderServicios') return `Tras ${valor} cuotas vencidas se suspenden el fondo y la asistencia y solo se causa el seguro`
   if (clave === 'seguroTodoRiesgoPorcentajeMensual' && /^\d+(\.\d+)?$/.test(valor)) {
