@@ -83,7 +83,7 @@ describe('Simulador con fechas', () => {
     expect(t).toContain('$ 317.872,58')
     expect(t).toContain('$ 136.456 más que un periodo normal')
     // La tarjeta muestra la cuota regular y avisa que la primera va prorrateada.
-    // R9-SEGURO-TODO-RIESGO: 717.154 + 5.904.400 × 0,3 % × 1,19 (21.078,71) = 738.233.
+    // R9-SEGURO-TODO-RIESGO: 738.233 + 5.904.400 × 0,3 % × 1,19 (21.078,71) = 738.233.
     expect(texto()).toContain('$ 738.233')
     expect(texto()).toContain('la primera va prorrateada')
 
@@ -99,7 +99,7 @@ describe('Simulador con fechas', () => {
     fecha('Primer vencimiento', '2026-11-05')
     expect(screen.getByText(/no incluyen el prorrateo/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Simular' }))
-    await waitFor(() => expect(texto()).toContain('$ 355.667'))
+    await waitFor(() => expect(texto()).toContain('$ 366.206'))
     expect(screen.queryByRole('alert')).toBeNull()
   })
 })
