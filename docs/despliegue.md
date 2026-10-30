@@ -52,6 +52,8 @@ página (GitHub Pages, contratos.html) --x-clave--> Azure Function GET /api/cont
 
 La página es pública pero no contiene datos; la función vive en la misma Function App `fn-motor-cartera-respuestas` (código en `nube/src/contrato.js`) y solo lee la base. Sin la cabecera `x-clave` correcta responde 401. Tiene un límite de 60 consultas por minuto por IP y CORS solo para `https://juanc101195.github.io` y `localhost:5173`. Si la Function App tiene CORS configurado en la plataforma, debe incluir el mismo origen de GitHub Pages.
 
+Las corridas `max_sin_justificaciones` y `max_con_justificaciones` (usura máxima) salen solas en `corridas`; la columna `periodo.usura_ea` es opcional: si no existe, la función consulta sin ella y `usuraEA` queda en `null`.
+
 Variables de la función (Configuración de la Function App; nunca en el repo):
 
 | Variable | Qué es |

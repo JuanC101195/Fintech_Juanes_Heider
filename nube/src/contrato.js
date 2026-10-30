@@ -63,6 +63,7 @@ function resumen(r) {
     simPeriodoMarca: num(r.sim_periodo_marca),
     simEstadoFinal: r.sim_estado_final ?? null,
     realEaConMultas: num(r.real_ea_con_multas),
+    realEA: num(r.real_ea_con_multas),
   }
 }
 
@@ -92,6 +93,23 @@ function periodo(p) {
     saldoFinal: num(p.saldo_final),
     listoRecuperacion: bool(p.listo_recuperacion),
     tasaEA: num(p.tasa_ea),
+    usuraEA: num(p.usura_ea),
+  }
+}
+
+const COLUMNAS_PERIODO =
+  'corrida, id, periodo, fecha_vencimiento, instruccion, valor_real, dias_atraso, justificado, estado, cuotas_vencidas, ' +
+  'saldo_inicial, interes_corriente, interes_mora, cobranza, servicios, pago_total_cliente, saldo_final, listo_recuperacion, ' +
+  'tasa_ea, cuota_financiera, pago_capital, pago_interes, pago_mora, pago_cobranza, pago_servicios, capital_vencido'
+const PIE_PERIODO = ' FROM periodo WHERE id = ANY($1::text[]) ORDER BY id, corrida, periodo'
+
+// `usura_ea` es una columna nueva: si la base aún no la tiene (código 42703, columna inexistente) se consulta sin ella.
+async function consultarPeriodos(consultar, ids) {
+  try {
+    return await consultar('SELECT ' + COLUMNAS_PERIODO + ', usura_ea' + PIE_PERIODO, [ids])
+  } catch (e) {
+    if (!e || e.code !== '42703') throw e
+    return consultar('SELECT ' + COLUMNAS_PERIODO + PIE_PERIODO, [ids])
   }
 }
 
@@ -112,13 +130,7 @@ async function buscar(numero, consultar) {
         'sim_periodos, periodo_corte, real_ea_con_multas FROM resultado WHERE id = ANY($1::text[])',
       [ids],
     ),
-    consultar(
-      'SELECT corrida, id, periodo, fecha_vencimiento, instruccion, valor_real, dias_atraso, justificado, estado, cuotas_vencidas, ' +
-        'saldo_inicial, interes_corriente, interes_mora, cobranza, servicios, pago_total_cliente, saldo_final, listo_recuperacion, ' +
-        'tasa_ea, cuota_financiera, pago_capital, pago_interes, pago_mora, pago_cobranza, pago_servicios, capital_vencido ' +
-        'FROM periodo WHERE id = ANY($1::text[]) ORDER BY id, corrida, periodo',
-      [ids],
-    ),
+    consultarPeriodos(consultar, ids),
   ])
   return contratos.map((c) => {
     const susPagos = pagos.filter((p) => p.id === c.id)
