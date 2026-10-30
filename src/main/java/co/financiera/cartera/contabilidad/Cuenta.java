@@ -39,7 +39,14 @@ public enum Cuenta {
      * R8-PAGO-MAYOR-EXIGIBLE (Diego, ronda 8, 2026-10-28): lo que el cliente pagó por encima de lo exigible y se le
      * debe devolver. PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
      */
-    CXP_SOBRANTE_CLIENTE("CxP sobrante por devolver al cliente (provisional, PUC pendiente)");
+    CXP_SOBRANTE_CLIENTE("CxP sobrante por devolver al cliente (provisional, PUC pendiente)"),
+    /**
+     * R9-SEGURO-TODO-RIESGO (Diego, ronda 9, 2026-10-30): el IVA (19 %) del seguro todo riesgo, que se registra aparte
+     * del seguro ("en la contabilidad debe quedar segmentado lo que es el SEGURO y el IVA"). El motor no tenía una
+     * cuenta de IVA: el del fondo y las asistencias va incluido en sus cuentas ("IVA incl.") como en el Excel.
+     * PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
+     */
+    IVA_POR_PAGAR("IVA generado por pagar (provisional, PUC pendiente)");
 
     private final String nombreExcel;
 

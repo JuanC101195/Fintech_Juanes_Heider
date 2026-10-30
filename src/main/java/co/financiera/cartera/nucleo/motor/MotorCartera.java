@@ -209,9 +209,13 @@ public final class MotorCartera {
                     && !escenario.reglas().moraAntesDeRecuperacion();
             int dias = diasAtraso(pago);
 
-            // 2. Causación del periodo.
-            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias), cuotasVencidas,
-                    diasParaCobranza(pago, dias));
+            // 2. Causación del periodo. R9-COBRO-MOMENTO (lectura A): con umbralesCuentanCuotaEnCurso los umbrales de
+            // cobranza y de suspensión cuentan también la cuota de este periodo si queda atrasada; como la causación va
+            // antes del pago, se decide con la instrucción del periodo (atrasaElPeriodo), no con el pago ya repartido.
+            boolean atrasado = escenario.reglas().umbralesCuentanCuotaEnCurso() && atrasaElPeriodo(pago);
+            int cuotasParaUmbrales = atrasado ? cuotasVencidas + 1 : cuotasVencidas;
+            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias),
+                    cuotasParaUmbrales, diasParaCobranza(pago, dias, atrasado));
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
@@ -415,12 +419,49 @@ public final class MotorCartera {
          * pero con umbral de cobranza el cliente que ya lo superó debe el periodo completo; se cuentan los días
          * nominales de la periodicidad. Con el Excel (sin umbral) todo sigue igual.
          */
-        private int diasParaCobranza(Instruccion pago, int dias) {
-            boolean periodoSinCubrir = pago instanceof SinPago || pago instanceof PagoParcial;
+        private int diasParaCobranza(Instruccion pago, int dias, boolean atrasado) {
+            // R9-COBRO-MOMENTO: con la cuota en curso en los umbrales, un PagoValor menor que la cuota también deja el
+            // periodo sin cubrir (cada periodo atrasado cobra); sin esa clave todo sigue como en la ronda 8.
+            boolean periodoSinCubrir = pago instanceof SinPago || pago instanceof PagoParcial || atrasado;
             if (dias == 0 && periodoSinCubrir && escenario.reglas().cuotasVencidasParaCobranza() != null) {
                 return s.p.periodicidad().diasNominales();
             }
             return dias;
+        }
+
+        /**
+         * R9-COBRO-MOMENTO (Diego 2026-10-30, lectura A): si la cuota del periodo en curso queda atrasada, decidido
+         * con la instrucción antes de causar (la causación va antes del pago y lo que se cause cambia la cuota):
+         * {@code SinPago} siempre; {@code PagoParcial} y {@code PagoValor} si lo que entregan no alcanza ni la cuota
+         * mínima del periodo (ver {@link #cuotaMinimaDelPeriodo}); {@code PagoContractual} y {@code PagoAlDia} cubren la
+         * cuota. Decisión conservadora (ADR 0005): un pago que cubre la cuota con los servicios suspendidos pero no la
+         * completa queda en una zona en la que ninguna de las dos lecturas es coherente (si se suspenden, el pago la
+         * cubre; si no, no); ahí no se adelanta el cobro ni la suspensión y el periodo se cuenta como hasta la ronda 8
+         * (el contador de cuotas vencidas no cambia).
+         */
+        private boolean atrasaElPeriodo(Instruccion pago) {
+            return switch (pago) {
+                case SinPago x -> true;
+                case PagoParcial x -> noAlcanza(Calc.multiplicar(x.fraccion(), sumar(s.cuota, s.serviciosPorCuota.total())));
+                case PagoValor x -> noAlcanza(x.valor());
+                default -> false;
+            };
+        }
+
+        private boolean noAlcanza(BigDecimal entregado) {
+            return entregado.compareTo(restar(cuotaMinimaDelPeriodo(), Calc.EPSILON_SALDO)) < 0;
+        }
+
+        /**
+         * La cuota total más baja que puede exigir el periodo: cuota financiera pactada + servicios por cuota, con fondo y
+         * asistencia suspendidos si la suspensión aplicaría al contar esta cuota como atrasada; al peso si rige el
+         * redondeo.
+         */
+        private BigDecimal cuotaMinimaDelPeriodo() {
+            Servicios servicios = escenario.reglas().suspendeServicios(cuotasVencidas + 1)
+                    ? s.serviciosPorCuota.soloSeguro() : s.serviciosPorCuota;
+            BigDecimal total = sumar(s.cuota, servicios.total());
+            return escenario.reglas().redondeoCuotaAlPeso() ? total.setScale(0, java.math.RoundingMode.HALF_UP) : total;
         }
 
         private int diasAtraso(Instruccion pago) {

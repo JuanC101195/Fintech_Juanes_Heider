@@ -26,6 +26,8 @@ ADR 0002, paso 6. No existe un Excel de referencia para quincenal ni para mensua
 | Total servicios | 6.555.554 | 6.555.554 | 6.555.554 |
 | Total pagado por el cliente | 16.997.806 | 17.072.015 | 17.211.702 |
 
+> Ronda 9 (R9-SEGURO-TODO-RIESGO, D63): estas tablas son sin el seguro todo riesgo. Con NEGOCIO cada cuota suma 5.904.400 × 0,3 % / periodos por mes × 1,19: 4.864,32 semanal, 10.539,35 quincenal y 21.078,71 mensual (la cuota total quincenal pasa de 355.667 a 366.206).
+
 Las tres periodicidades suman los mismos servicios: 24 meses × valor mensual. El interés total crece cuando los pagos son menos frecuentes porque el capital se amortiza más despacio. La tasa efectiva anual es la misma en los tres casos.
 
 ## Quincenal: 48 cuotas

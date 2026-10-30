@@ -1,6 +1,6 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-28** (rondas 4 a 8 respondidas; respuestas por documento del 22 oct incorporadas; ronda 9 abierta con 3 preguntas; ronda 10 abierta con 7 preguntas).
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-10-30** (rondas 4 a 9 respondidas; respuestas por documento del 22 oct incorporadas; ronda 10 abierta con 7 preguntas).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
@@ -17,19 +17,19 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 29 | 42 | 69 % |
-| Servicios complementarios | 11 | 13 | 85 % |
+| Pagos, mora y cobranza | 30 | 42 | 71 % |
+| Servicios complementarios | 13 | 13 | 100 % |
 | Abonos y prepago | 16 | 16 | 100 % |
 | Cambio de tasa y usura | 14 | 14 | 100 % |
 | Dación y retoma | 16 | 18 | 89 % |
 | Contabilidad | 7 | 9 | 78 % |
 | Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 3 | 3 | 100 % |
-| **Tabla A (preguntas del cuestionario)** | **101** | **120** | **84 %** |
+| **Tabla A (preguntas del cuestionario)** | **104** | **120** | **87 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **112** | **138** | **81 %** |
+| **Total de reglas inventariadas** | **115** | **138** | **83 %** |
 
-Las 120 reglas de la tabla A (101 cerradas = 84,2 % → 84 %; con la tabla B, 112 de 138 = 81,2 % → 81 %) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) las 3 de la ronda 9 (ids `R9-*`, abiertas) y las 7 de la ronda 10 (ids `R10-*`, abiertas, salidas del backtesting con el historial real de pagos). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 120 reglas de la tabla A (104 cerradas = 86,7 % → 87 %; con la tabla B, 115 de 138 = 83,3 % → 83 %) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) las 3 de la ronda 9 (ids `R9-*`, respondidas el 30 oct y decididas en D62 a D64) y las 7 de la ronda 10 (ids `R10-*`, abiertas, salidas del backtesting con el historial real de pagos). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
@@ -86,7 +86,7 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R6-LIMITE-CORTO | En un crédito de menos de 24 meses, ¿el plazo límite es su propio plazo o los 24 meses? | Decidida | Ronda 6 (22 oct 2026): El plazo límite es el propio plazo del crédito: 12 meses, límite 12 (D53). |
 | R7-COBRANZA-ACTIVA | ¿Quién activa el cobro de los gastos de cobranza (director financiero, gerente o comité) y se hace crédito por crédito o por una regla (tras N días de mora)? | Decidida | Ronda 7 (27 oct 2026): Por regla: la cobranza se activa sola tras 2 periodos en mora (tercera cuota vencida), en periodos de la periodicidad pactada, y el director financiero puede exonerar (D56). El valor y la política fina se pulen después. |
 | R8-COBRANZA-PAGO-TARDIO | Con la regla nueva (D56), ¿se cobra cobranza por los días de atraso cuando el cliente paga la cuota completa pero tarde (caso 9)? | Decidida | Ronda 8 (28 oct 2026): Otra regla: la cobranza es un cobro fijo por periodo, no por días (provisional 40.000, concepto aparte; lo define el director financiero); desde 2 periodos atrasados y cada periodo hasta el cierre. El pago completo pero tardío no genera cobranza (D58). |
-| R9-COBRO-MOMENTO | El primer cobro de cobranza y la suspensión de fondo y asistencia, ¿al cumplirse la 2.ª cuota atrasada o al llegar a la 3.ª? | Abierta | Pregunta R9-COBRO-MOMENTO del cuestionario (ronda 9). Hoy el motor cobra desde la tercera cuota vencida; el ejemplo de Diego dice «luego de 2 cuotas atrasadas». |
+| R9-COBRO-MOMENTO | El primer cobro de cobranza y la suspensión de fondo y asistencia, ¿al cumplirse la 2.ª cuota atrasada o al llegar a la 3.ª? | Decidida | Ronda 9 (30 oct 2026): Lectura A: al terminar la 2.ª cuota atrasada se cobran los 40.000 y se suspenden fondo y asistencia; cada periodo atrasado siguiente cobra otros 40.000 (D62, clave `umbralesCuentanCuotaEnCurso`, ADR 0005). |
 | R8-REDONDEO-PESO | Si el cliente paga en pesos enteros y la cuota tiene decimales (163.440,4465), ¿se acepta una tolerancia o se redondea la cuota? (H2) | Decidida | Ronda 8 (28 oct 2026): La cuota exigible se redondea a pesos enteros (D59; HALF_UP es un supuesto del equipo). |
 | R10-PERIODO-ATRASADO | ¿Qué cuenta como un periodo atrasado: cualquier saldo pendiente, solo si falta más de un porcentaje de la cuota o solo pasados unos días de gracia? | Abierta | Pregunta R10-PERIODO-ATRASADO del cuestionario (ronda 10). Hoy cualquier saldo pendiente cuenta; con tolerancia del 90 % de la cuota, los marcados bajan de 94 % a 84 % y los que pagan cobranza de 92 % a 82 %. |
 | R10-JUSTIFICACIONES | Con una justificación aprobada, ¿qué se perdona mientras dura (mora, cobranza, servicios, marca de recuperación) y la moto retirada temporalmente congela el crédito? | Abierta | Pregunta R10-JUSTIFICACIONES del cuestionario (ronda 10). Incluye en el comentario los permisos de geocerca y las motos varadas. |
@@ -109,8 +109,8 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | SRV-3 | En la última cuota, ¿se cobran los servicios completos del periodo o se prorratean? | Decidida | Ronda 3 (20 oct 2026): La última cuota lleva los servicios completos. |
 | SRV-4 | ¿La cuenta por pagar de servicios se separa por tercero y por IVA? | Decidida | Ronda 3 (20 oct 2026): Una cuenta por pagar por tercero y el IVA en su propia cuenta. |
 | R8-PAGO-INCOMPLETO-EN-FECHA | Un pago incompleto hecho en la fecha (0 días de atraso), ¿es "al día" para el fondo y la asistencia? (H7) | Decidida | Ronda 8 (28 oct 2026): Otra regla: la causación siempre genera servicios + interés + capital; tras 2 periodos atrasados solo se causa el seguro (D60). El seguro todo riesgo y los servicios suspendidos al ponerse al día quedan en la ronda 9. |
-| R9-SEGURO-TODO-RIESGO | El seguro todo riesgo, ¿es el mismo seguro que ya causa el motor o uno nuevo? ¿Valor, base de cálculo, periodicidad e IVA del 19 %? | Abierta | Pregunta R9-SEGURO-TODO-RIESGO del cuestionario (ronda 9). |
-| R9-SERVICIOS-AL-PONERSE-AL-DIA | Si el cliente se pone al día tras la suspensión, ¿los fondos y asistencias de los periodos suspendidos se pierden o se cobran de forma retroactiva? | Abierta | Pregunta R9-SERVICIOS-AL-PONERSE-AL-DIA del cuestionario (ronda 9). |
+| R9-SEGURO-TODO-RIESGO | El seguro todo riesgo, ¿es el mismo seguro que ya causa el motor o uno nuevo? ¿Valor, base de cálculo, periodicidad e IVA del 19 %? | Decidida | Ronda 9 (30 oct 2026): Seguro nuevo que se suma al de vida: 0,3 % mensual sobre la financiación inicial, se paga igual que el de vida, más IVA del 19 % segmentado en la contabilidad (D63, clave `seguroTodoRiesgoPorcentajeMensual`). Si sigue causándose tras la suspensión es provisional (sí) y va a la ronda 11. |
+| R9-SERVICIOS-AL-PONERSE-AL-DIA | Si el cliente se pone al día tras la suspensión, ¿los fondos y asistencias de los periodos suspendidos se pierden o se cobran de forma retroactiva? | Decidida | Ronda 9 (30 oct 2026): Se pierden; los servicios se retoman desde el periodo siguiente (D64; es lo que ya hacía el motor). |
 
 
 ### Abonos y prepago

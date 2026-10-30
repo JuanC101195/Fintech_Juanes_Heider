@@ -79,11 +79,12 @@ describe('Simulador con fechas', () => {
     const t = sp(aviso.textContent)
     expect(t).toContain('43 días')
     expect(t).toContain('23 de octubre de 2026')
-    expect(t).toContain('$ 454.328,34')
+    expect(t).toContain('$ 454.328,63')
     expect(t).toContain('$ 317.872,58')
     expect(t).toContain('$ 136.456 más que un periodo normal')
     // La tarjeta muestra la cuota regular y avisa que la primera va prorrateada.
-    expect(texto()).toContain('$ 717.154')
+    // R9-SEGURO-TODO-RIESGO: 717.154 + 5.904.400 × 0,3 % × 1,19 (21.078,71) = 738.233.
+    expect(texto()).toContain('$ 738.233')
     expect(texto()).toContain('la primera va prorrateada')
 
     fireEvent.click(screen.getByRole('button', { name: 'Quitar las fechas' }))
@@ -116,7 +117,7 @@ describe('Laboratorio con fechas', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Calcular resultado' }))
     const aviso = await screen.findByRole('region', { name: 'Prorrateo de la primera cuota' })
     expect(aviso.textContent).toContain('11 días')
-    expect(sp(aviso.textContent)).toContain('$ 41.155 más que un periodo normal')
+    expect(sp(aviso.textContent)).toContain('$ 41.154 más que un periodo normal')
     expect(pedidos.ejecutar[0].credito).toMatchObject({ periodicidad: 'SEMANAL', fechaDesembolso: '2026-10-23', primerVencimiento: '2026-11-03' })
   })
 

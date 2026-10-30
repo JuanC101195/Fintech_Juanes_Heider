@@ -1,0 +1,9 @@
+# Respuestas de Diego, ronda 9 (2026-10-30)
+
+3 de 3 respondidas. Qué se implementa (perfil NEGOCIO; EXCEL no cambia) y qué queda para la ronda 11.
+
+| Pregunta | Respuesta de Diego | Implementado | Va a la ronda 11 |
+|---|---|---|---|
+| R9-COBRO-MOMENTO | `segunda-cuota` (lectura A): el cliente deja de pagar desde la semana 1; al terminar la semana 2 ya tiene 2 cuotas atrasadas y ahí se cobran 40.000 y se suspenden fondo y asistencia; en la semana 3 otros 40.000 (80.000 en total), y así cada semana. | D62. Clave `umbralesCuentanCuotaEnCurso=true`: los umbrales de cobranza y de suspensión (2) cuentan también la cuota del periodo en curso si queda atrasada. Detalle y decisiones conservadoras en `adr/0005-umbral-cuenta-cuota-en-curso.md`. | — |
+| R9-SEGURO-TODO-RIESGO | `seguro-nuevo-se-suma`: «Inicialmente pactemos como un porcentaje mensual sobre financiación inicial del 0,3% y se paga igual que el de vida, pero se debe sumar el 19% de IVA en el cálculo: ejm: si el seguro da $10.000, el cobro al cliente es de $11.900 pero en la contabilidad debe quedar segmentado lo que es el SEGURO y el IVA». | D63. Clave `seguroTodoRiesgoPorcentajeMensual=0.003`. Se periodiza como el seguro de vida, lleva el IVA de servicios (19 %) encima, va después del seguro de vida en la prelación y la contabilidad separa el seguro (CxP servicios a terceros, línea aparte) del IVA (cuenta provisional `IVA_POR_PAGAR`). | Tras la suspensión de fondo y asistencia, ¿se sigue causando el seguro todo riesgo o solo el de vida? (hoy, provisional: los dos). ¿Cuenta del PUC para el IVA? |
+| R9-SERVICIOS-AL-PONERSE-AL-DIA | `se-pierden`: al ponerse al día, el fondo y la asistencia de los periodos suspendidos no se cobran después; se retoman desde el periodo siguiente. | D64. El motor ya lo hacía (lo suspendido nunca se causa); queda probado en `RespuestasDiegoRonda9Test`. | — |

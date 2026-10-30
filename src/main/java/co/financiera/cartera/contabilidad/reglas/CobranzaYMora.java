@@ -50,7 +50,7 @@ public final class CobranzaYMora implements ReglaContable {
         if (!aplica(m)) {
             return Optional.empty();
         }
-        return ReglaContable.asiento(m, List.of(
+        return ReglaContable.asiento(m, ReglaContable.con(List.of(
                 // Causación (AE15:AG18)
                 debito(Cuenta.CXC_GASTOS_COBRANZA, m.cobranzaCausada(), "Causación de cobranza por días de atraso"),
                 credito(ingresoCobranza, m.cobranzaCausada(), "Contrapartida de la cobranza causada"),
@@ -63,7 +63,9 @@ public final class CobranzaYMora implements ReglaContable {
                 credito(Cuenta.CXC_INTERES_CORRIENTE, m.pagoInteresCorriente(), "Tercera prioridad"),
                 // El Excel la llama "Servicios complementarios (FCC, asistencia, seguro)"; el caso 1 usa
                 // "CxP servicios a terceros" para el mismo recaudo por cuenta de terceros (R-9.11).
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS, m.pagoServicios(), "Cuarta prioridad"),
-                credito(Cuenta.CARTERA_VIGENTE, m.pagoCapital(), "Remanente aplicado a capital")));
+                credito(Cuenta.CXP_SERVICIOS_TERCEROS,
+                        ReglaContable.serviciosSinTodoRiesgo(m.pagoServicios(), m.pagosServicios()), "Cuarta prioridad"),
+                credito(Cuenta.CARTERA_VIGENTE, m.pagoCapital(), "Remanente aplicado a capital")),
+                ReglaContable.seguroTodoRiesgo(m.pagoServicios(), m.pagosServicios())));
     }
 }

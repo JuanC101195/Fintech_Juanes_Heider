@@ -101,6 +101,22 @@ import java.math.BigDecimal;
  *                                 se recibe completo y el sobrante queda como cuenta por pagar al cliente para
  *                                 devolverlo ({@link Movimiento#sobranteCliente()}). {@code false} = se recorta a lo
  *                                 exigible sin registrar el sobrante (el Excel, H8).
+ * @param umbralesCuentanCuotaEnCurso R9-COBRO-MOMENTO (Diego 2026-10-30, lectura A): {@code true} = los umbrales
+ *                                 {@link #cuotasVencidasParaCobranza} y {@link #cuotasVencidasParaSuspenderServicios}
+ *                                 cuentan también la cuota del periodo en curso cuando ese periodo queda atrasado
+ *                                 ({@code SinPago}, {@code PagoParcial} de menos de la cuota o {@code PagoValor} menor
+ *                                 que la cuota total pactada). Con los dos umbrales en 2, la <b>2.ª cuota atrasada</b>
+ *                                 ya causa el primer cobro de cobranza y suspende fondo y asistencia en ese mismo
+ *                                 periodo, y cada periodo atrasado siguiente vuelve a cobrar. {@code false} = solo
+ *                                 cuentan las cuotas atrasadas de periodos anteriores, es decir, desde la 3.ª cuota
+ *                                 atrasada (lectura B: el Excel y el NEGOCIO de las rondas 7 y 8). Ver
+ *                                 {@code docs/adr/0005-umbral-cuenta-cuota-en-curso.md}.
+ * @param seguroTodoRiesgoPorcentajeMensual R9-SEGURO-TODO-RIESGO (Diego 2026-10-30): seguro todo riesgo, un servicio
+ *                                 NUEVO que se suma al seguro de vida: % mensual sobre el monto financiado inicial
+ *                                 (0,003 = 0,3 %), periodizado igual que el seguro de vida (valor mensual × 12 / ppa)
+ *                                 y con el IVA de servicios encima ({@code ParametrosProducto.iva}, 19 %), que se
+ *                                 lleva segmentado ({@code Servicios.ivaSeguroTodoRiesgo}). {@code 0} o {@code null}
+ *                                 = no existe (el Excel).
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -126,7 +142,9 @@ public record ReglasNegocio(
         BigDecimal cobranzaPorPeriodo,
         Integer cuotasVencidasParaSuspenderServicios,
         boolean redondeoCuotaAlPeso,
-        boolean sobranteComoCuentaPorPagar) {
+        boolean sobranteComoCuentaPorPagar,
+        boolean umbralesCuentanCuotaEnCurso,
+        BigDecimal seguroTodoRiesgoPorcentajeMensual) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
@@ -164,6 +182,10 @@ public record ReglasNegocio(
             throw new IllegalArgumentException("El umbral de suspensión de servicios no puede ser negativo: "
                     + cuotasVencidasParaSuspenderServicios);
         }
+        if (seguroTodoRiesgoPorcentajeMensual != null && seguroTodoRiesgoPorcentajeMensual.signum() < 0) {
+            throw new IllegalArgumentException("El porcentaje del seguro todo riesgo no puede ser negativo: "
+                    + seguroTodoRiesgoPorcentajeMensual);
+        }
     }
 
     /** Margen bajo la usura acordado con negocio y confirmado por Diego (T2, 2026-10-20): 1 punto de EA. */
@@ -200,6 +222,8 @@ public record ReglasNegocio(
             .cuotasVencidasParaSuspenderServicios(null)
             .redondeoCuotaAlPeso(false)
             .sobranteComoCuentaPorPagar(false)
+            .umbralesCuentanCuotaEnCurso(false)
+            .seguroTodoRiesgoPorcentajeMensual(BigDecimal.ZERO)
             .construir();
 
     public enum OrdenPrelacion {
@@ -390,7 +414,9 @@ public record ReglasNegocio(
             decimal("cobranzaPorPeriodo", Constructor::cobranzaPorPeriodo),
             entera("cuotasVencidasParaSuspenderServicios", Constructor::cuotasVencidasParaSuspenderServicios),
             booleana("redondeoCuotaAlPeso", Constructor::redondeoCuotaAlPeso),
-            booleana("sobranteComoCuentaPorPagar", Constructor::sobranteComoCuentaPorPagar));
+            booleana("sobranteComoCuentaPorPagar", Constructor::sobranteComoCuentaPorPagar),
+            booleana("umbralesCuentanCuotaEnCurso", Constructor::umbralesCuentanCuotaEnCurso),
+            decimal("seguroTodoRiesgoPorcentajeMensual", Constructor::seguroTodoRiesgoPorcentajeMensual));
 
     static {
         verificarTabla();
@@ -521,6 +547,21 @@ public record ReglasNegocio(
         return copia().sobranteComoCuentaPorPagar(valor).construir();
     }
 
+    /** R9-COBRO-MOMENTO: si los umbrales de cobranza y de suspensión cuentan la cuota atrasada del periodo en curso. */
+    public ReglasNegocio conUmbralesCuentanCuotaEnCurso(boolean valor) {
+        return copia().umbralesCuentanCuotaEnCurso(valor).construir();
+    }
+
+    /** R9-SEGURO-TODO-RIESGO: % mensual del seguro todo riesgo sobre el monto financiado; 0 o {@code null} = no existe. */
+    public ReglasNegocio conSeguroTodoRiesgoPorcentajeMensual(BigDecimal valor) {
+        return copia().seguroTodoRiesgoPorcentajeMensual(valor).construir();
+    }
+
+    /** El % mensual del seguro todo riesgo, con {@code null} como 0 (no existe). */
+    public BigDecimal porcentajeTodoRiesgo() {
+        return seguroTodoRiesgoPorcentajeMensual == null ? BigDecimal.ZERO : seguroTodoRiesgoPorcentajeMensual;
+    }
+
     /**
      * Arma unas reglas por nombre de componente, sin depender del orden de los argumentos (dos booleanos cruzados
      * compilan). Es el único sitio, aparte de la cabecera del record, que lista los componentes en orden.
@@ -551,6 +592,8 @@ public record ReglasNegocio(
         private Integer cuotasVencidasParaSuspenderServicios;
         private boolean redondeoCuotaAlPeso;
         private boolean sobranteComoCuentaPorPagar;
+        private boolean umbralesCuentanCuotaEnCurso;
+        private BigDecimal seguroTodoRiesgoPorcentajeMensual;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -582,6 +625,8 @@ public record ReglasNegocio(
             cuotasVencidasParaSuspenderServicios = r.cuotasVencidasParaSuspenderServicios;
             redondeoCuotaAlPeso = r.redondeoCuotaAlPeso;
             sobranteComoCuentaPorPagar = r.sobranteComoCuentaPorPagar;
+            umbralesCuentanCuotaEnCurso = r.umbralesCuentanCuotaEnCurso;
+            seguroTodoRiesgoPorcentajeMensual = r.seguroTodoRiesgoPorcentajeMensual;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -704,6 +749,16 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor umbralesCuentanCuotaEnCurso(boolean valor) {
+            umbralesCuentanCuotaEnCurso = valor;
+            return this;
+        }
+
+        public Constructor seguroTodoRiesgoPorcentajeMensual(BigDecimal valor) {
+            seguroTodoRiesgoPorcentajeMensual = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
@@ -711,20 +766,26 @@ public record ReglasNegocio(
                     interesPrepagoPorDias, margenUsura, modalidadUsura, costoRecuperacionAlFondo,
                     cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
                     cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora,
-                    cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar);
+                    cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar,
+                    umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual);
         }
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */
-    /** Si, con estas cuotas atrasadas de periodos anteriores, el periodo en curso ya debe causar cobranza. */
+    /**
+     * Si, con estas cuotas atrasadas, el periodo en curso ya debe causar cobranza. El motor pasa las de periodos
+     * anteriores y, con {@link #umbralesCuentanCuotaEnCurso} (R9-COBRO-MOMENTO), suma la del periodo en curso si queda
+     * atrasado.
+     */
     public boolean llegaAlUmbralDeCobranza(int cuotasVencidasPrevias) {
         return cuotasVencidasParaCobranza == null || cuotasVencidasPrevias >= cuotasVencidasParaCobranza;
     }
 
     /**
-     * R8-PAGO-INCOMPLETO-EN-FECHA: si, con estas cuotas atrasadas de periodos anteriores, el periodo solo causa el seguro
-     * (fondo y asistencia suspendidos). Con 2, desde la tercera cuota vencida, como la cobranza. Siempre {@code false}
-     * sin la clave.
+     * R8-PAGO-INCOMPLETO-EN-FECHA: si, con estas cuotas atrasadas, el periodo solo causa los seguros (fondo y asistencia
+     * suspendidos). Con 2 y sin {@link #umbralesCuentanCuotaEnCurso}, desde la tercera cuota vencida, como la cobranza;
+     * con esa clave (R9-COBRO-MOMENTO) el motor suma la cuota en curso si queda atrasada y la suspensión empieza en la
+     * segunda. Siempre {@code false} sin la clave.
      */
     public boolean suspendeServicios(int cuotasVencidasPrevias) {
         return cuotasVencidasParaSuspenderServicios != null

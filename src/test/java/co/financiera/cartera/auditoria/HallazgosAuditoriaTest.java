@@ -235,13 +235,18 @@ class HallazgosAuditoriaTest {
     }
 
     /** Cliente que paga cada periodo la cuota del ejemplo (163.440,4465) en pesos enteros: 163.440. */
+    /** La cuota exigible de 163.440,4465 es sin el seguro todo riesgo de la ronda 9 (R9-SEGURO-TODO-RIESGO). */
+    private static ReglasNegocio negocioSinTodoRiesgo() {
+        return negocio().conSeguroTodoRiesgoPorcentajeMensual(BigDecimal.ZERO);
+    }
+
     private static Escenario pagaEnPesosEnteros(ReglasNegocio reglas) {
         return new Escenario(Operacion.ejemploExcel(), P).conReglas(reglas).desde(1, new PagoValor(bd(163_440), 0));
     }
 
     @Test
     void h2SinRedondeoElPagoEnPesosEnterosQuedaComoPagoInferiorYLlegaARecuperacion() {
-        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocio().conRedondeoCuotaAlPeso(false)));
+        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocioSinTodoRiesgo().conRedondeoCuotaAlPeso(false)));
         assertThat(movs.get(1).evento()).isEqualTo("Pago inferior");
         assertThat(movs.stream().anyMatch(Movimiento::listoParaRecuperacion)).isTrue();
     }
@@ -249,9 +254,9 @@ class HallazgosAuditoriaTest {
     @Test
     void h2ConRedondeoAlPesoElPagoEnPesosEnterosEsUnPagoNormalYElCreditoCierraEnLaCuotaN() {
         // R8-REDONDEO-PESO (Diego): la cuota exigible se redondea al peso (HALF_UP) y el residuo va al interés del periodo.
-        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocio()));
+        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocioSinTodoRiesgo()));
         List<Movimiento> exacto = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P)
-                .conReglas(negocio().conRedondeoCuotaAlPeso(false)));
+                .conReglas(negocioSinTodoRiesgo().conRedondeoCuotaAlPeso(false)));
         assertThat(movs).hasSameSizeAs(exacto);
         for (int i = 1; i < movs.size(); i++) {
             Movimiento m = movs.get(i);

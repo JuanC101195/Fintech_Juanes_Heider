@@ -46,7 +46,8 @@ public final class RecaudoConVencidos implements ReglaContable {
         BigDecimal cambioVencido = Calc.restar(m.capitalVencido(), m.capitalVencidoInicial());
         BigDecimal aVencida = sinResiduo(Calc.noNegativo(cambioVencido));
         BigDecimal aVigente = sinResiduo(Calc.noNegativo(cambioVencido.negate()));
-        return ReglaContable.asiento(m, List.of(
+        BigDecimal servicios = sinResiduo(m.pagoServicios());
+        return ReglaContable.asiento(m, ReglaContable.con(List.of(
                 debito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.interesMora()), "Causación de mora"),
                 credito(Cuenta.INGRESOS_MORA, sinResiduo(m.interesMora()), "Contrapartida del interés de mora"),
                 debito(Cuenta.CAJA, m.pagoRecibido(), "Recaudo de la cuota más lo atrasado"),
@@ -54,12 +55,14 @@ public final class RecaudoConVencidos implements ReglaContable {
                 credito(Cuenta.CXC_GASTOS_COBRANZA, sinResiduo(m.pagoCobranza()), "Primera prioridad"),
                 credito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.pagoMora()), "Segunda prioridad"),
                 credito(Cuenta.CXC_INTERES_CORRIENTE, sinResiduo(m.pagoInteresCorriente()), "Tercera prioridad"),
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS, sinResiduo(m.pagoServicios()), "Fondo, asistencia y seguro"),
+                credito(Cuenta.CXP_SERVICIOS_TERCEROS, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
+                        "Fondo, asistencia y seguro"),
                 credito(Cuenta.CARTERA_VIGENTE, sinResiduo(m.pagoCapital()), "Remanente aplicado a capital"),
                 debito(Cuenta.CARTERA_VENCIDA, aVencida, "Capital contractual de la semana que quedó vencido"),
                 credito(Cuenta.CARTERA_VIGENTE, aVencida, "Contrapartida de la reclasificación a vencida"),
                 debito(Cuenta.CARTERA_VIGENTE, aVigente, "Capital vencido recuperado"),
-                credito(Cuenta.CARTERA_VENCIDA, aVigente, "Contrapartida de la recuperación del vencido")));
+                credito(Cuenta.CARTERA_VENCIDA, aVigente, "Contrapartida de la recuperación del vencido")),
+                ReglaContable.seguroTodoRiesgo(servicios, m.pagosServicios())));
     }
 
     /** Los residuos DECIMAL128 por debajo de {@link Calc#EPSILON_SALDO} no generan línea. */

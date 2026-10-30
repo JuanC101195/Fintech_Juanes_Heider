@@ -303,17 +303,22 @@ class RespuestasDiegoDocumentoTest {
     class Pper9ListoParaRecuperacion {
 
         @Test
-        void elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaTerceraCuota() {
+        void elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaSegundaCuota() {
             // R7-RECUP-VS-CASO11 (Diego 2026-10-27): el caso 11 espera 2 periodos, no 4.
             List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P, negocio().cuotasVencidasParaRecuperacion())
                     .conReglas(negocio()));
             assertThat(m.getLast().periodo()).isEqualTo(45);
             assertThat(m.getLast().estado()).isEqualTo(EstadoCredito.CERRADO_POR_EVENTO);
-            // R7-COBRANZA-ACTIVA: con 2 periodos en mora, la cobranza empieza en la tercera cuota vencida.
+            // R7-COBRANZA-ACTIVA con R9-COBRO-MOMENTO (lectura A): la 2.ª cuota atrasada (periodo 44) ya cobra. Con la
+            // lectura B de la ronda 7 empezaba en la tercera (periodo 45).
             List<Movimiento> largo = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
             assertThat(fila(largo, 43).cobranzaCausada()).isZero();
-            assertThat(fila(largo, 44).cobranzaCausada()).isZero();
+            assertThat(fila(largo, 44).cobranzaCausada()).isPositive();
             assertThat(fila(largo, 45).cobranzaCausada()).isPositive();
+            List<Movimiento> lecturaB = motor.ejecutar(EscenariosExcel.caso11(P)
+                    .conReglas(negocio().conUmbralesCuentanCuotaEnCurso(false)));
+            assertThat(fila(lecturaB, 44).cobranzaCausada()).isZero();
+            assertThat(fila(lecturaB, 45).cobranzaCausada()).isPositive();
         }
 
         @Test
@@ -325,7 +330,7 @@ class RespuestasDiegoDocumentoTest {
         @Test
         void elCaso11SeMarcaConDosCuotasAtrasadasPeroLaDacionSigueEnElCuartoPeriodo() {
             // Este escenario conserva los 4 periodos de espera del Excel; con NEGOCIO el catálogo usa 2 (ver
-            // elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaTerceraCuota).
+            // elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaSegundaCuota).
             List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso11(P));
             List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
             assertThat(fila(m, 43).cuotasVencidas()).isEqualTo(1);

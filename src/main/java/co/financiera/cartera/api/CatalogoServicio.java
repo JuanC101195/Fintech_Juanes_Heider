@@ -91,7 +91,13 @@ final class CatalogoServicio {
                     "R8-REDONDEO-PESO"),
             new ClaveDto("sobranteComoCuentaPorPagar",
                     "Si el pago mayor que lo exigible se recibe completo y el sobrante queda como cuenta por pagar al cliente (en vez de recortarse)",
-                    "R8-PAGO-MAYOR-EXIGIBLE"));
+                    "R8-PAGO-MAYOR-EXIGIBLE"),
+            new ClaveDto("umbralesCuentanCuotaEnCurso",
+                    "Si los umbrales de cobranza y de suspensión de servicios cuentan también la cuota atrasada del periodo en curso: con 2, la 2.ª cuota atrasada ya cobra la cobranza y suspende fondo y asistencia (lectura A); si no, desde la 3.ª",
+                    "R9-COBRO-MOMENTO"),
+            new ClaveDto("seguroTodoRiesgoPorcentajeMensual",
+                    "Seguro todo riesgo (se suma al seguro de vida): % mensual sobre el monto financiado inicial, periodizado como el seguro de vida y con IVA encima, segmentado en la contabilidad; 0 = no existe",
+                    "R9-SEGURO-TODO-RIESGO"));
 
     private final PerfilesReglas perfiles;
 

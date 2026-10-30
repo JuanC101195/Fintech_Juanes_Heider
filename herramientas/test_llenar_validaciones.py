@@ -27,7 +27,9 @@ class ExtractoresTest(unittest.TestCase):
 
     def test_campo_del_periodo(self):
         self.assertEqual(v.campo('saldoFinal')(self.r, 0), Decimal('5904400'))
-        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('1032390.172587373134571221537897364'))
+        # Ronda 9: los pendientes que paga el abono bajan 5.034 (R9-COBRO-MOMENTO y seguro todo riesgo), así que a capital
+        # va 5.034 más (antes 1032390.172587373134571221537897364).
+        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('1037424.172587373134571221537897364'))
         self.assertEqual(v.campo('cuotasVencidas')(self.r, 42), Decimal(0))
 
     def test_campo_anidado(self):

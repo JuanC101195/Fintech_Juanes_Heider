@@ -26,14 +26,22 @@ function formaMovimiento(m: unknown): Record<string, Forma> {
   const { sobranteCliente: _omitido, ...siempre } = MOVIMIENTO
   return 'sobranteCliente' in (m as object) ? MOVIMIENTO : siempre
 }
-const SERVICIOS: Record<keyof Servicios, Forma> = { fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', total: 'dinero' }
+const SERVICIOS: Record<keyof Servicios, Forma> = {
+  fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', total: 'dinero', seguroTodoRiesgo: 'dinero', ivaSeguroTodoRiesgo: 'dinero',
+}
 const DEUDA: Record<keyof DeudaExtinguida, Forma> = { cobranza: 'dinero', mora: 'dinero', interesCorriente: 'dinero', servicios: 'servicios', capital: 'dinero', total: 'dinero' }
 const LINEA_ASIENTO: Record<keyof LineaAsiento, Forma> = { cuenta: 'texto', nombreCuenta: 'texto', debito: 'dinero', credito: 'dinero', explicacion: 'texto' }
 const ASIENTO: Record<keyof Asiento, Forma> = { periodo: 'entero', evento: 'texto', lineas: 'texto', totalDebitos: 'dinero', totalCreditos: 'dinero', cuadra: 'booleano' }
 const FILA_PLAN: Record<Exclude<keyof FilaPlan, never>, Forma> = {
   periodo: 'entero', mes: 'entero', saldoInicial: 'dinero', cuotaFinanciera: 'dinero', interes: 'dinero', capital: 'dinero',
   fondoGarantias: 'dinero', asistencia: 'dinero', seguro: 'dinero', cuotaTotal: 'dinero', saldo: 'dinero',
+  seguroTodoRiesgo: 'dinero', ivaSeguroTodoRiesgo: 'dinero',
 }
+/**
+ * R9-SEGURO-TODO-RIESGO: el seguro todo riesgo y su IVA solo viajan cuando los hay (NON_NULL), y siempre juntos; en
+ * servicios y en filas del plan son opcionales.
+ */
+const OPCIONALES_JUNTOS = ['seguroTodoRiesgo', 'ivaSeguroTodoRiesgo']
 
 const PRORRATEO: Record<keyof ProrrateoPrimeraCuota, Forma> = {
   fechaDesembolso: 'fecha', primerVencimiento: 'fecha', diasPrimerPeriodo: 'entero', diasNominales: 'entero', aplicado: 'booleano',
@@ -47,8 +55,11 @@ const leer = <T>(...partes: string[]): T => JSON.parse(readFileSync(path.join(ra
 function validar(objeto: unknown, plantilla: Record<string, Forma>, donde: string): void {
   expect(objeto, donde).toBeTypeOf('object')
   const real = objeto as Record<string, unknown>
-  expect(Object.keys(real).sort(), `claves de ${donde}`).toEqual(Object.keys(plantilla).sort())
-  for (const [clave, forma] of Object.entries(plantilla)) {
+  const presentes = OPCIONALES_JUNTOS.filter((k) => k in plantilla && k in real)
+  if (presentes.length > 0) expect(presentes, `${donde}: ${OPCIONALES_JUNTOS.join(' y ')} viajan juntos`).toEqual(OPCIONALES_JUNTOS)
+  const usada = Object.fromEntries(Object.entries(plantilla).filter(([k]) => !OPCIONALES_JUNTOS.includes(k) || k in real))
+  expect(Object.keys(real).sort(), `claves de ${donde}`).toEqual(Object.keys(usada).sort())
+  for (const [clave, forma] of Object.entries(usada)) {
     const v = real[clave]
     const aqui = `${donde}.${clave}`
     switch (forma) {

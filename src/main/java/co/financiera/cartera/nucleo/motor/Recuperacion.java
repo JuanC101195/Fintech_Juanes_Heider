@@ -70,12 +70,8 @@ final class Recuperacion {
             disponible = inventario;
         }
         BigDecimal restante = restar(disponible, min(disponible, sumar(s.cxcCobranza, s.cxcMora, s.cxcInteres)));
-        BigDecimal fondo = min(restante, s.cxcServicios.fondoGarantias());
-        restante = restar(restante, fondo);
-        BigDecimal asistencia = min(restante, s.cxcServicios.asistencia());
-        restante = restar(restante, asistencia);
-        BigDecimal seguro = min(restante, s.cxcServicios.seguro());
-        Cierre cierre = new Cierre(deuda, inventario, cxcFondo, cxpDeudor, new Servicios(fondo, asistencia, seguro),
+        // Fondo → asistencia → seguro de vida → seguro todo riesgo → su IVA (R9-SEGURO-TODO-RIESGO).
+        Cierre cierre = new Cierre(deuda, inventario, cxcFondo, cxpDeudor, s.cxcServicios.pagarHasta(restante),
                 new DeudaExtinguida(s.cxcCobranza, s.cxcMora, s.cxcInteres, s.cxcServicios, s.saldo), costo, costoAsumido);
         s.saldo = CERO;
         s.saldoPlan = CERO;

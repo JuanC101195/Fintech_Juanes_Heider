@@ -24,8 +24,17 @@ final class MapeadorDto {
     }
 
     static ServiciosDto servicios(Servicios s) {
-        return s == null ? null
-                : new ServiciosDto(texto(s.fondoGarantias()), texto(s.asistencia()), texto(s.seguro()), texto(s.total()));
+        if (s == null) {
+            return null;
+        }
+        boolean todoRiesgo = tieneTodoRiesgo(s);
+        return new ServiciosDto(texto(s.fondoGarantias()), texto(s.asistencia()), texto(s.seguro()), texto(s.total()),
+                todoRiesgo ? texto(s.seguroTodoRiesgo()) : null, todoRiesgo ? texto(s.ivaSeguroTodoRiesgo()) : null);
+    }
+
+    /** R9-SEGURO-TODO-RIESGO: el seguro todo riesgo y su IVA solo viajan cuando alguno no es cero. */
+    private static boolean tieneTodoRiesgo(Servicios s) {
+        return s.seguroTodoRiesgo().signum() != 0 || s.ivaSeguroTodoRiesgo().signum() != 0;
     }
 
     static DeudaDto deuda(DeudaExtinguida d) {
@@ -57,7 +66,8 @@ final class MapeadorDto {
         return new FilaPlan(m.periodo(), m.mes(), texto(m.saldoInicial()), texto(m.interesCorriente()),
                 texto(m.capitalContractual()), texto(m.cuotaFinanciera()), texto(s.fondoGarantias()),
                 texto(s.asistencia()), texto(s.seguro()), texto(Calc.sumar(m.cuotaFinanciera(), s.total())),
-                texto(m.saldoFinal()));
+                texto(m.saldoFinal()), tieneTodoRiesgo(s) ? texto(s.seguroTodoRiesgo()) : null,
+                tieneTodoRiesgo(s) ? texto(s.ivaSeguroTodoRiesgo()) : null);
     }
 
     static AsientoDto asiento(Asiento a) {
