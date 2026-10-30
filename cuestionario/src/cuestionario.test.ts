@@ -58,7 +58,7 @@ describe('preguntas', () => {
     }
 
     expect(PREGUNTAS.map((p) => p.id).sort()).toEqual([
-      'R10-JUSTIFICACIONES', 'R10-MARCA-RECUPERACION', 'R10-PERIODO-ATRASADO', 'R10-VALOR-COBRANZA', 'R10-VALOR-MOTO-REENTREGADA',
+      'R10-CONTADOR-VENCIDAS', 'R10-JUSTIFICACIONES', 'R10-MARCA-RECUPERACION', 'R10-PERIODO-ATRASADO', 'R10-PRIMERA-CUOTA', 'R10-VALOR-COBRANZA', 'R10-VALOR-MOTO-REENTREGADA',
       'R9-COBRO-MOMENTO', 'R9-SEGURO-TODO-RIESGO', 'R9-SERVICIOS-AL-PONERSE-AL-DIA',
     ])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
@@ -77,20 +77,23 @@ describe('preguntas', () => {
     for (const p of PREGUNTAS) expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
   })
 
-  it('la ronda 10 sale del backtesting: periodo atrasado, marca de recuperación, justificaciones, valor de cobranza y valor de la moto reentregada', () => {
+  it('la ronda 10 sale del backtesting: periodo atrasado, marca de recuperación, justificaciones, valor de cobranza, primera cuota, contador de cuotas vencidas y valor de la moto reentregada', () => {
     const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
     const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
     expect(cod('R10-PERIODO-ATRASADO')).toEqual(['cualquier-saldo', 'porcentaje-cuota', 'dias-gracia', 'otro'])
-    expect(q('R10-PERIODO-ATRASADO').contexto).toContain('94 %')
+    expect(q('R10-PERIODO-ATRASADO').contexto).toContain('67 %')
     expect(cod('R10-MARCA-RECUPERACION')).toEqual(['primera-vez', 'se-mantiene', 'sin-justificacion', 'otro'])
-    expect(q('R10-MARCA-RECUPERACION').contexto).toContain('49 %')
+    expect(q('R10-MARCA-RECUPERACION').contexto).toContain('17 %')
     expect(cod('R10-JUSTIFICACIONES')).toEqual(['todo', 'mora-y-cobranza', 'mora-cobranza-servicios', 'solo-marca', 'nada', 'otro'])
     expect(q('R10-JUSTIFICACIONES').contexto).toContain('geocerca')
     expect(cod('R10-VALOR-COBRANZA')).toEqual(['director-financiero', 'otro'])
     expect(q('R10-VALOR-COBRANZA').valor).toMatchObject({ unidad: 'COP' })
     expect(q('R10-VALOR-COBRANZA').contexto).toContain('40.000')
+    expect(cod('R10-PRIMERA-CUOTA')).toEqual(['proporcional-dias', 'cuota-completa-interes-prorrateado', 'cuota-completa', 'otro'])
+    expect(q('R10-PRIMERA-CUOTA').contexto).toContain('96.000')
+    expect(cod('R10-CONTADOR-VENCIDAS')).toEqual(['por-deuda-acumulada', 'por-eventos-sin-reinicio', 'eventos-con-reinicio-al-pagar-completo', 'otro'])
     expect(cod('R10-VALOR-MOTO-REENTREGADA')).toEqual(['avaluo', 'valor-libros', 'no-recuperado', 'reacondicionar', 'otro'])
-    for (const id of ['R10-PERIODO-ATRASADO', 'R10-VALOR-COBRANZA', 'R10-JUSTIFICACIONES']) expect(q(id).bloque, id).toBe('Pagos, mora y cobranza')
+    for (const id of ['R10-PERIODO-ATRASADO', 'R10-VALOR-COBRANZA', 'R10-JUSTIFICACIONES', 'R10-PRIMERA-CUOTA', 'R10-CONTADOR-VENCIDAS']) expect(q(id).bloque, id).toBe('Pagos, mora y cobranza')
     for (const id of ['R10-MARCA-RECUPERACION', 'R10-VALOR-MOTO-REENTREGADA']) expect(q(id).bloque, id).toBe('Dación y retoma')
     // Aún no tienen clave de motor: ninguna opción produce ajustes ni previsualización.
     for (const p of PREGUNTAS.filter((x) => x.id.startsWith('R10-'))) {
