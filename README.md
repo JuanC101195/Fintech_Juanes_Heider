@@ -66,7 +66,9 @@ python herramientas/importar_respuestas.py --nube --ver
 
 Página: https://juanc101195.github.io/Fintech_Juanes_Heider/contratos.html
 
-Se escribe el número de un contrato de Motos del Caribe y se ve la tabla de amortización que el motor calculó con el comportamiento de pago real de ese contrato (con y sin justificaciones), junto a un resumen contra lo pagado en el sistema actual, para compararla con el sistema de la empresa. Requiere una clave de consulta que se entrega aparte a quien corresponda. Los datos nunca están en el repo ni en la página: viven en una base PostgreSQL privada y la página los pide a una Azure Function protegida con esa clave (`?demo=1` muestra un contrato inventado). Arquitectura y operación: [`docs/despliegue.md`](docs/despliegue.md).
+Se escribe el número de un contrato de Motos del Caribe y se ve la tabla de amortización que el motor calculó con el comportamiento de pago real de ese contrato (con y sin justificaciones), junto a un resumen contra lo pagado en el sistema actual, para compararla con el sistema de la empresa. Requiere una clave de consulta que se entrega aparte a quien corresponda. Los datos nunca están en el repo ni en la página: viven en una base PostgreSQL privada y la página los pide a una Azure Function protegida con esa clave (`?demo=1` muestra un contrato inventado). La simulación se puede alternar entre dos versiones de tasa (usura − 1 punto y usura máxima) y trae gráficas de tasa e interés por fecha y una tabla mensual para ver cuánto interés se cobró y con qué tasa.
+
+Arquitectura y operación: [`docs/despliegue.md`](docs/despliegue.md).
 
 ## Despliegue
 

@@ -1,5 +1,5 @@
 // Prueba de humo de docs/sitio/contratos.html en Chromium:
-//  1) modo demostración (?demo=1) en celular (390 px) y escritorio: sin desbordes de página, 0 errores JS, la tabla se descarga a CSV;
+//  1) modo demostración (?demo=1) en celular (360 px) y escritorio: sin desbordes de página, 0 errores JS, la tabla se descarga a CSV;
 //  2) consulta con la función simulada (page.route): 200, clave incorrecta (401), contrato no encontrado (404), 429.
 // Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON. Uso: node docs/sitio/pruebas/contratos-humo.mjs [carpeta-capturas]
 import { mkdirSync, readFileSync } from 'node:fs'
@@ -21,23 +21,24 @@ function periodo(n, pago, extra = {}) {
     periodo: n, fechaVencimiento: `2025-02-${String(n).padStart(2, '0')}`, instruccion: 'x', valorReal: pago, diasAtraso: 0, justificado: false,
     estado: pago ? 'al_dia' : 'sin_pago', cuotasVencidas: 0, saldoInicial: 1000000 - n * 80000, interesCorriente: 10000, interesMora: 0,
     cobranza: 0, servicios: 5000, cuotaFinanciera: 100000, pagoCapital: pago ? 85000 : 0, pagoInteres: 10000, pagoMora: 0, pagoCobranza: 0,
-    pagoServicios: 5000, pagoTotalCliente: pago, capitalVencido: 0, saldoFinal: 1000000 - (n + 1) * 80000, listoRecuperacion: false, tasaEA: 0.25, ...extra,
+    pagoServicios: 5000, pagoTotalCliente: pago, capitalVencido: 0, saldoFinal: 1000000 - (n + 1) * 80000, listoRecuperacion: false, tasaEA: 0.25, usuraEA: 0.26, ...extra,
   }
 }
 const DATOS = (() => {
-  const corrida = () => ({
+  const corrida = (maxima = false) => ({
     resumen: {
       simPagado: 200000, simSaldoFinal: 800000, simPendientes: 0, simTotalConDeuda: 1000000, simMora: 0, simCobranza: 0, simInteres: 20000,
       simServicios: 10000, simCuotasVencidasMax: 1, simMarcaRecuperacion: false, simPeriodoMarca: null, simEstadoFinal: 'al_dia', realEaConMultas: 0.3,
     },
-    periodos: [periodo(1, 100000), periodo(2, 0, { cuotasVencidas: 1 }), periodo(3, 100000, { justificado: true })],
+    periodos: [periodo(1, 100000), periodo(2, 0, { cuotasVencidas: 1 }), periodo(3, 100000, { justificado: true })]
+      .map((p) => (maxima ? { ...p, interesCorriente: 25000, tasaEA: 0.26 } : p)),
   })
-  const ep = (id, imputada) => ({
+  const ep = (id, imputada, conMaxima) => ({
     id, estadoReal: 'activo', cohorte: '2025', fechaInicio: '2025-01-01', fechaFin: null, cuotas: 12, cuotaRealMiles: 100, inversion: 1000000,
     inversionImputada: imputada, lineaUsura: 'x', tasaInicialEA: 0.25, diasJustificados: 0, realPagadoCuotas: 200000, realMultas: 0,
-    pagosReales: [{ fecha: '2025-01-08', valorMiles: 100, multaMiles: 0 }], corridas: { sin_justificaciones: corrida(), con_justificaciones: corrida() },
+    pagosReales: [{ fecha: '2025-01-08', valorMiles: 100, multaMiles: 0 }], corridas: { sin_justificaciones: corrida(), con_justificaciones: corrida(), ...(conMaxima ? { max_sin_justificaciones: corrida(true), max_con_justificaciones: corrida(true) } : {}) },
   })
-  return { numero: '123', episodios: [ep('EP-1', false), ep('EP-2', true)] }
+  return { numero: '123', episodios: [ep('EP-1', false, true), ep('EP-2', true, false)] }
 })()
 
 let fallas = 0
@@ -73,7 +74,7 @@ async function contextoSinRed(viewport) {
 }
 
 // ---- 1) Modo demostración ----
-for (const [nombre, ancho, alto] of [['celular', 390, 800], ['escritorio', 1280, 900]]) {
+for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280, 900]]) {
   console.log(`Demo ${nombre}`)
   const contexto = await contextoSinRed({ width: ancho, height: alto })
   const page = await contexto.newPage()
@@ -83,12 +84,30 @@ for (const [nombre, ancho, alto] of [['celular', 390, 800], ['escritorio', 1280,
   await page.goto(`${base}?demo=1`)
   await page.getByText('Datos de ejemplo, no reales').first().waitFor()
   verificar((await page.locator('tbody tr').count()) > 0, 'la tabla de amortización se dibuja')
-  const filas = await page.locator('table').first().locator('tbody tr').count()
+  const amort = page.locator('table:not(.mensual)').first()
+  const filas = await amort.locator('tbody tr').count()
   verificar(filas === 7, `corrida sin justificaciones: 7 periodos (hay ${filas})`)
   verificar((await page.locator('tr.listo').count()) === 1, 'una fila "listo para recuperar"')
   verificar((await page.locator('tr.sinpago').count()) === 2, 'dos filas "sin pago"')
-  await page.getByLabel('Con justificaciones').check()
-  const filas2 = await page.locator('table').first().locator('tbody tr').count()
+  const dosGraficas = async () => {
+    await page.locator('svg[role=img]').nth(1).waitFor()
+    return page.locator('svg[role=img]').evaluateAll((l) => l.map((x) => x.querySelector('title')?.textContent))
+  }
+  const titulos = await dosGraficas()
+  verificar(titulos.length === 2 && /Tasa efectiva anual/.test(titulos[0]) && /Interés cobrado/.test(titulos[1]), `aparecen las dos gráficas (${titulos.join(' | ')})`)
+  verificar((await page.locator('svg[role=img]').first().locator('path').count()) === 2 && (await page.locator('svg[role=img]').first().locator('line[stroke-dasharray]').count()) === 1, 'la gráfica de tasa tiene líneas de tasa y usura y la punteada de la tasa real')
+  verificar(/implícita/.test(await page.locator('.bloque-grafica .ayuda').first().innerText()), 'aviso de tasa implícita visible')
+  const totalMensual = () => page.locator('table.mensual tfoot td').first().innerText()
+  const t1 = await totalMensual()
+  verificar((await page.getByRole('group', { name: 'Tasa aplicada' }).count()) === 1, 'selector "Tasa aplicada" visible')
+  await page.getByLabel('Usura máxima', { exact: true }).check()
+  const t2 = await totalMensual()
+  verificar(t1 !== t2, `cambiar "Tasa aplicada" cambia la tabla mensual (${t1} -> ${t2})`)
+  await page.getByLabel('Usura − 1 punto', { exact: true }).check()
+  await page.getByLabel('Con justificaciones', { exact: true }).check()
+  await page.locator('svg[role=img]').nth(1).waitFor()
+  const filas2 = await amort.locator('tbody tr').count()
+  verificar(((await page.locator('svg[role=img]').count()) === 2),'sigue habiendo dos gráficas tras cambiar de corrida')
   verificar(filas2 === 12, `corrida con justificaciones: 12 periodos (hay ${filas2})`)
   verificar((await page.locator('tr.justificado').count()) === 1, 'una fila "justificado"')
   const p = await problemas(page)
@@ -107,7 +126,7 @@ for (const [nombre, ancho, alto] of [['celular', 390, 800], ['escritorio', 1280,
 // ---- 2) Consulta con la función simulada ----
 console.log('Consulta con función simulada')
 {
-  const contexto = await navegador.newContext({ viewport: { width: 390, height: 800 } })
+  const contexto = await navegador.newContext({ viewport: { width: 360, height: 800 } })
   const visto = []
   await contexto.route(/fn-motor-cartera-respuestas\.azurewebsites\.net/, (r) => {
     const req = r.request()
@@ -149,6 +168,11 @@ console.log('Consulta con función simulada')
   verificar(visto.at(-1).numero === '0123' && visto.at(-1).clave === 'buena', 'la cabecera x-clave y el número viajan a la función')
   verificar(visto.length === antes + 1, 'una sola petición por consulta')
   verificar((await page.getByRole('heading', { name: /Contrato EP-/ }).count()) === 2, 'dos episodios dibujados')
+  await page.locator('svg[role=img]').nth(3).waitFor()
+  verificar((await page.locator('svg[role=img]').count()) === 4, 'dos gráficas por episodio')
+  verificar((await page.getByRole('group', { name: 'Tasa aplicada' }).count()) === 1, 'solo el episodio con corridas de usura máxima muestra el selector de tasa')
+  await page.getByLabel('Usura máxima', { exact: true }).check()
+  verificar(/75.000/.test(await page.locator('table.mensual tfoot td').first().innerText()), 'con usura máxima la tabla mensual refleja el interés de esa corrida')
   verificar((await page.locator('.etiqueta', { hasText: 'imputada' }).count()) === 1, 'etiqueta "imputada" visible en el episodio 2')
   verificar(!page.url().includes('buena'), 'la clave no está en la URL')
   const guardada = await page.evaluate(() => [sessionStorage.getItem('clave-consulta'), localStorage.length])

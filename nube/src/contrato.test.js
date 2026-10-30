@@ -18,7 +18,7 @@ const filaResultado = (id, corrida) => ({
 const filaPeriodo = (id, corrida, n) => ({
   corrida, id, periodo: n, fecha_vencimiento: '2024-02-01', instruccion: 'x', valor_real: '0', dias_atraso: 0, justificado: false,
   estado: 'sin_pago', cuotas_vencidas: '1.5', saldo_inicial: '1000', interes_corriente: '10', interes_mora: '0', cobranza: '0',
-  servicios: '0', pago_total_cliente: '0', saldo_final: '1010', listo_recuperacion: false, tasa_ea: '0.2', cuota_financiera: '100',
+  servicios: '0', pago_total_cliente: '0', saldo_final: '1010', listo_recuperacion: false, tasa_ea: '0.2', usura_ea: '0.27', cuota_financiera: '100',
   pago_capital: '0', pago_interes: '0', pago_mora: '0', pago_cobranza: '0', pago_servicios: '0', capital_vencido: '100',
 })
 
@@ -114,6 +114,8 @@ test('forma de la respuesta: números convertidos, derivados y 4 consultas', asy
   assert.strictEqual(p.listoRecuperacion, false)
   assert.strictEqual(p.fechaVencimiento, '2024-02-01')
   assert.strictEqual(typeof p.tasaEA, 'number')
+  assert.strictEqual(p.usuraEA, 0.27)
+  assert.strictEqual(c.resumen.realEA, 0.31)
 })
 
 test('varios episodios se devuelven todos, cada uno con lo suyo', async () => {
@@ -173,4 +175,38 @@ test('CORS: orígenes permitidos reciben la cabecera, otros no; OPTIONS responde
   assert.strictEqual(sinOrigen.headers['Access-Control-Allow-Origin'], undefined)
   const err = await m({ ...base, clave: 'x' })
   assert.strictEqual(err.headers['Access-Control-Allow-Origin'], 'https://juanc101195.github.io')
+})
+
+test('las corridas con usura máxima aparecen por su nombre', async () => {
+  const nombres = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones']
+  const { m } = manejador({
+    contratos: [filaContrato('A', '2024-01-01')],
+    resultados: nombres.map((n) => filaResultado('A', n)),
+    periodos: nombres.map((n) => filaPeriodo('A', n, 1)),
+  })
+  const r = await m(base)
+  assert.deepStrictEqual(Object.keys(r.cuerpo.episodios[0].corridas).sort(), [...nombres].sort())
+  assert.strictEqual(r.cuerpo.episodios[0].corridas.max_con_justificaciones.periodos.length, 1)
+})
+
+test('si la base no tiene usura_ea, consulta sin esa columna y usuraEA queda en null', async () => {
+  const llamadas = []
+  const m = crearManejador({
+    claveEsperada: CLAVE,
+    consultar: async (sql) => {
+      llamadas.push(sql)
+      if (/FROM contrato/.test(sql)) return [filaContrato('A', '2024-01-01')]
+      if (/FROM pago_real/.test(sql)) return []
+      if (/FROM resultado/.test(sql)) return [filaResultado('A', 'sin_justificaciones'), { ...filaResultado('A', 'con_justificaciones'), real_ea_con_multas: null }]
+      if (/usura_ea/.test(sql)) throw Object.assign(new Error('column "usura_ea" does not exist'), { code: '42703' })
+      const { usura_ea, ...sinUsura } = filaPeriodo('A', 'sin_justificaciones', 1)
+      return [sinUsura]
+    },
+  })
+  const r = await m(base)
+  assert.strictEqual(r.status, 200)
+  const e = r.cuerpo.episodios[0]
+  assert.strictEqual(e.corridas.sin_justificaciones.periodos[0].usuraEA, null)
+  assert.strictEqual(e.corridas.con_justificaciones.resumen.realEA, null)
+  assert.strictEqual(llamadas.filter((q) => /FROM periodo/.test(q)).length, 2)
 })
