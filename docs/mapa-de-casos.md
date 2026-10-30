@@ -56,5 +56,5 @@ Unos 130.000 créditos aleatorios (50.000 con perfiles y 78.000 con reglas combi
 ## Orden de trabajo siguiente
 
 1. Ampliar el generador (fechas en prepago y pago de un valor, `desde` para más tipos de pago).
-2. Agregar un invariante por cada decisión de la ronda 8 (D58 a D61) y esperar la ronda 9 (momento del primer cobro, seguro todo riesgo, servicios al ponerse al día). La ronda 10 también está abierta (periodo atrasado, marca de recuperación, justificaciones, valor de la cobranza y valor de la moto reentregada); sale del backtesting con el historial real de pagos y aún no tiene claves del motor.
+2. Agregar un invariante por cada decisión de la ronda 8 (D58 a D61) y esperar la ronda 9 (momento del primer cobro, seguro todo riesgo, servicios al ponerse al día). La ronda 10 también está abierta (periodo atrasado, marca de recuperación, justificaciones, valor de la cobranza, primera cuota, contador de cuotas vencidas y valor de la moto reentregada); sale del backtesting con el historial real de pagos y aún no tiene claves del motor.
 3. Fase 3: alimentar el motor con el historial real de pagos y comparar contra lo que ocurrió.

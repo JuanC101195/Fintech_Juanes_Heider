@@ -1612,6 +1612,20 @@ const RONDA_6: Pregunta[] = [
       { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
+  {
+    id: 'R10-CONTADOR-VENCIDAS',
+    bloque: PAGOS,
+    titulo: '¿Cómo debe contarse el número de cuotas vencidas de un crédito?',
+    contexto:
+      'Hoy el motor cuenta las cuotas vencidas por eventos: el contador sube 1 con cada pago incompleto o sin pago, y solo vuelve a cero cuando todo lo pendiente (capital vencido, mora, cobranza y servicios) queda exactamente en cero. Una puesta al día parcial nunca lo baja. Con dos eventos, aunque estén separados por meses, el crédito pasa a cobranza (40.000 por periodo), se suspenden el fondo y la asistencia y queda marcado "listo para recuperar". Esa marca no se quita aunque el cliente se ponga al día. Un cliente que paga todas sus cuotas con 1 a 3 días de atraso termina con restos de pocos pesos de mora pendientes, y el contador no se reinicia. En la prueba con el historial real de unos 4.500 contratos, cerca de 67 % de los que terminaron pagando quedaron marcados con el contador actual, pero midiendo el atraso con el efectivo acumulado solo cerca de 60 % llegó alguna vez a 2 cuotas de atraso real (cifras del backtesting corregido del 29-oct). Además: ¿la marca "listo para recuperar" debe poder quitarse cuando el cliente se pone al día? Si su respuesta es distinta a la opción elegida, aclárela en "Otra regla".',
+    excelHoy: 'El Excel no define cómo se cuentan las cuotas vencidas ni si la marca de recuperación se puede quitar.',
+    opciones: [
+      { codigo: 'por-deuda-acumulada', texto: 'Por deuda acumulada: cuotas vencidas = deuda vencida pendiente dividida entre la cuota (baja cuando el cliente paga de más o se pone al día)' },
+      { codigo: 'por-eventos-sin-reinicio', texto: 'Por eventos, sin reinicio (como hoy): sube con cada pago incompleto y solo vuelve a cero cuando todo queda en cero' },
+      { codigo: 'eventos-con-reinicio-al-pagar-completo', texto: 'Por eventos, con reinicio: el contador vuelve a cero cuando el cliente paga una cuota completa más lo vencido o se pone al día' },
+      { codigo: 'otro', texto: 'Otra regla', detalle: 'Aclare también si la marca "listo para recuperar" se puede quitar al ponerse al día.', pideTexto: true },
+    ],
+  },
 
   // ── Dación y retoma ───────────────────────────────────────────────────────────
   {
@@ -1792,7 +1806,7 @@ const RONDA_10: Pregunta[] = [
     bloque: PAGOS,
     titulo: '¿Qué cuenta como un periodo atrasado?',
     contexto:
-      'Probamos el motor con el historial real de pagos de unos 4.500 contratos, como si hubieran entrado por la financiera con las reglas actuales. Hoy cualquier cuota con saldo pendiente cuenta como atrasada, por pequeño que sea el saldo. Aplicado así, el 94 % de los clientes que terminaron pagando todo quedaría marcado "listo para recuperar" alguna vez, y el 91 % pagaría cobranza. Si se tolera que pagar al menos el 90 % de la cuota cuenta como cuota completa, esas cifras bajan a 84 % y 82 %. Entre los clientes vigentes que son el primer cliente de su moto, el 81 % tendría 2 o más cuotas vencidas hoy, mientras que el sistema actual solo marca a 73 clientes (8,6 %) con 14 días o más sin pagar. El motor sí reconoce a 70 de esos 73.',
+      'Probamos el motor con el historial real de pagos de unos 4.500 contratos, como si hubieran entrado por la financiera con las reglas actuales. Hoy cualquier cuota con saldo pendiente cuenta como atrasada, por pequeño que sea el saldo. Aplicado así, cerca del 67 % de los clientes que terminaron pagando todo quedaría marcado "listo para recuperar" alguna vez, y cerca del 55 % pagaría cobranza. Entre los clientes vigentes, cerca del 47 % quedaría marcado. (Cifras de la corrida corregida del 29-oct, que ya aplica todo el dinero que entregó el cliente y cuenta como cuota completa un pago hasta 1 % por debajo.)',
     excelHoy: 'El Excel cuenta como atrasada cualquier cuota que no se pagó completa; no tiene tolerancia ni días de gracia.',
     opciones: [
       { codigo: 'cualquier-saldo', texto: 'Cualquier saldo pendiente, aunque sea pequeño (como funciona hoy)', esExcel: true },
@@ -1835,6 +1849,20 @@ const RONDA_10: Pregunta[] = [
       { codigo: 'otro', texto: 'Otra combinación de conceptos', detalle: 'Mora, cobranza, servicios (fondo, asistencia, seguro) o marca de recuperación: escriba cuáles.', pideTexto: true },
     ],
   },
+  {
+    id: 'R10-PRIMERA-CUOTA',
+    bloque: PAGOS,
+    titulo: '¿Cómo se cobra la primera cuota cuando el vencimiento cae a pocos días de la entrega de la moto?',
+    contexto:
+      'Hoy el sistema cobra la primera cuota proporcional a los días entre la entrega y el primer vencimiento. Por ejemplo, con 3 días de 7 el cliente paga 3/7 de la cuota: 96.000 de 225.000. El motor de la financiera, en cambio, espera una cuota completa y solo prorratea el interés si se le dan las fechas. Por eso un primer pago proporcional se lee como un pago incompleto y el crédito queda "en mora" desde la primera semana. En la prueba con el historial real de unos 4.500 contratos, el 68 % pagó menos del 90 % de la cuota en la primera semana, y en 4 de cada 10 de esos casos el valor coincide con los días proporcionales.',
+    excelHoy: 'El Excel no define cómo se cobra la primera cuota cuando el vencimiento cae a pocos días de la entrega.',
+    opciones: [
+      { codigo: 'proporcional-dias', texto: 'Proporcional a los días: la cuota entera (capital, interés y servicios), como se hace hoy en el sistema actual' },
+      { codigo: 'cuota-completa-interes-prorrateado', texto: 'Cuota completa, con solo el interés prorrateado por días (como calcula el motor hoy)' },
+      { codigo: 'cuota-completa', texto: 'Cuota completa, sin prorrateo' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
 
   // ── Dación y retoma ───────────────────────────────────────────────────────────
   {
@@ -1842,7 +1870,7 @@ const RONDA_10: Pregunta[] = [
     bloque: RECUPERACION,
     titulo: '¿Cuándo un crédito queda "listo para recuperar" (dación o retoma)?',
     contexto:
-      'Hoy el crédito queda marcado "listo para recuperar" cuando llega a 2 periodos atrasados, aunque después se ponga al día. En la prueba con el historial real, esa marca distingue poco entre quienes terminan pagando y quienes se retiran: entre el 49 % y el 93 % de los retirados quedan marcados, según el motivo del retiro, y también el 94 % de los que terminan pagando todo.',
+      'Hoy el crédito queda marcado "listo para recuperar" cuando llega a 2 periodos atrasados, aunque después se ponga al día. En la prueba con el historial real, esa marca distingue poco entre quienes terminan pagando y quienes se retiran: entre el 17 % y el 81 % de los retirados quedan marcados, según el motivo del retiro, y también cerca del 67 % de los que terminan pagando todo.',
     excelHoy: 'El Excel no marca créditos; la dación y la retoma se deciden caso por caso.',
     opciones: [
       { codigo: 'primera-vez', texto: 'La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día (como funciona hoy)', esExcel: true },

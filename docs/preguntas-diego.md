@@ -6,14 +6,16 @@ Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reprod
 
 ## Ronda 10 · Abierta (29 oct 2026)
 
-Salen del **backtesting** del motor con el historial real de pagos de Motos del Caribe. Se reprodujo el comportamiento de pago de unos 4.500 contratos como si hubieran entrado por la financiera con las reglas actuales. Estas preguntas aún no tienen clave del motor: primero necesitamos su respuesta.
+Salen del **backtesting** del motor con el historial real de pagos de Motos del Caribe. Se reprodujo el comportamiento de pago de unos 4.500 contratos como si hubieran entrado por la financiera con las reglas actuales. Son 7 preguntas. Aún no tienen clave del motor: primero necesitamos su respuesta.
 
 Lo que encontramos:
 
-- **Una cuota con cualquier saldo pendiente cuenta como atrasada.** Así, el 94 % de los clientes que terminaron pagando todo quedaría marcado «listo para recuperar» alguna vez, y el 91 % pagaría cobranza. Si se tolera que pagar al menos el 90 % de la cuota cuenta como cuota completa, baja a 84 % y 82 %.
-- **Entre los clientes vigentes que son el primer cliente de su moto, el 81 % tendría 2 o más cuotas vencidas hoy.** El sistema actual solo marca a 73 clientes (8,6 %) con 14 días o más sin pagar. El motor sí reconoce a 70 de esos 73.
-- **La marca «listo para recuperar» (2 cuotas vencidas) distingue poco** entre quienes terminan pagando y quienes se retiran: quedan marcados entre el 49 % y el 93 % de los retirados, según el motivo del retiro, y el 94 % de los que terminan pagando.
+- **Una cuota con cualquier saldo pendiente cuenta como atrasada.** Así, cerca del 67 % de los clientes que terminaron pagando todo quedaría marcado «listo para recuperar» alguna vez, y cerca del 55 % pagaría cobranza (corrida corregida del 29-oct).
+- **Entre los clientes vigentes, cerca del 47 % quedaría marcado «listo para recuperar».** (Corrida corregida del 29-oct.)
+- **La marca «listo para recuperar» (2 cuotas vencidas) distingue poco** entre quienes terminan pagando y quienes se retiran: quedan marcados entre el 17 % y el 81 % de los retirados, según el motivo del retiro, y cerca del 67 % de los que terminan pagando.
 - **El gasto de cobranza usado es 40.000 por periodo**, un valor provisional de ejemplo. Con él, la cobranza media por cliente es cerca de 1 millón.
+- **La primera cuota proporcional se lee como pago incompleto.** Hoy el sistema cobra la primera cuota proporcional a los días entre la entrega y el primer vencimiento (con 3 días de 7, el cliente paga 3/7: 96.000 de 225.000). El motor de la financiera espera una cuota completa y solo prorratea el interés si se le dan las fechas; así el crédito queda «en mora» desde la primera semana. En la prueba, el 68 % pagó menos del 90 % de la cuota en la primera semana, y en 4 de cada 10 de esos el valor coincide con los días proporcionales.
+- **El contador de cuotas vencidas casi nunca baja.** Hoy sube con cada pago incompleto o sin pago y solo vuelve a cero cuando todo lo pendiente queda exactamente en cero; un cliente que paga con 1 a 3 días de atraso arrastra restos de pocos pesos y no se reinicia. Con el contador actual quedó marcado cerca de 67 % de los contratos que terminaron pagando; midiendo el atraso con el efectivo acumulado, solo cerca de 60 % llegó alguna vez a 2 cuotas de atraso real. Estas cifras son del backtesting corregido y se actualizan tras la nueva corrida.
 
 | ID | Pregunta | Opciones |
 |---|---|---|
@@ -21,6 +23,8 @@ Lo que encontramos:
 | R10-MARCA-RECUPERACION | ¿Cuándo un crédito queda «listo para recuperar» (dación o retoma)? | (a) La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día. (b) Solo si se mantienen 2 periodos atrasados seguidos o más de una semana. (c) Solo si hay 2 atrasados y no hay justificación vigente. (d) Otra regla. |
 | R10-JUSTIFICACIONES | Con una justificación aprobada (enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía, en fiscalía), ¿qué se perdona mientras dura? | La mora, la cobranza, los servicios (fondo, asistencia, seguro), que el periodo cuente como atrasado para la marca de recuperación, o nada. En el comentario: si la moto retirada temporalmente (en oficina, en realquiler, pendiente de triage) debe congelar el crédito, y qué hacer con los «permisos de geocerca» y las «motos varadas». |
 | R10-VALOR-COBRANZA | ¿Cuál es el valor real del gasto de cobranza por periodo atrasado y quién lo define? | Un valor en pesos y quién lo define (director financiero u otro). Hoy el motor usa 40.000 de ejemplo. |
+| R10-PRIMERA-CUOTA | ¿Cómo se cobra la primera cuota cuando el vencimiento cae a pocos días de la entrega de la moto? | (a) Proporcional a los días, la cuota entera (capital, interés y servicios), como hoy en el sistema actual. (b) Cuota completa, con solo el interés prorrateado por días (como calcula el motor hoy). (c) Cuota completa, sin prorrateo. (d) Otra regla. |
+| R10-CONTADOR-VENCIDAS | ¿Cómo debe contarse el número de cuotas vencidas de un crédito? Además: ¿la marca «listo para recuperar» debe poder quitarse cuando el cliente se pone al día? | (a) Por deuda acumulada: deuda vencida pendiente dividida entre la cuota (baja al pagar de más o ponerse al día). (b) Por eventos, sin reinicio (como hoy). (c) Por eventos, con reinicio al pagar una cuota completa más lo vencido o ponerse al día. (d) Otra regla (aclarar también lo de la marca). |
 | R10-VALOR-MOTO-REENTREGADA | Cuando una moto se entrega a un segundo cliente, ¿cuál es el valor que se financia? | (a) Valor de la moto usada según avalúo. (b) Valor en libros (costo menos depreciación). (c) Lo no recuperado de la inversión original. (d) Solo el costo de reacondicionarla. (e) Otra regla. En el comentario: cómo se calcula hoy. |
 
 ## Bloque 1 · Las que más cambian el cálculo (resolver primero)
