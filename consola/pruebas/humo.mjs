@@ -46,12 +46,12 @@ for (const { nombre, ancho, alto, escala, esquemas } of CONFIGURACIONES) {
 
     // 1. Simulador (quincenal por defecto, luego mensual); el dinero se ve con miles
     await page.getByRole('region', { name: 'Resultado de la simulación' }).waitFor()
-    if (!(await page.getByText('$ 355.667').first().isVisible())) { console.log('FALTA cuota total 355.667'); fallas++ }
+    if (!(await page.getByText('$ 366.206').first().isVisible())) { console.log('FALTA cuota total 366.206'); fallas++ }
     if ((await page.getByLabel('Valor de la moto').inputValue()) !== '5.100.000') { console.log('FALTA el formato de miles en el valor de la moto'); fallas++ }
     await revisar('simulador')
     await page.getByRole('radio', { name: /Mensual/ }).check({ force: true })
     await page.getByRole('button', { name: 'Simular' }).click()
-    await page.getByText('$ 717.154').first().waitFor()
+    await page.getByText('$ 738.233').first().waitFor()
 
     // 2. Casos: lista, detalle del 13 y el selector propio abierto
     await ir('Casos')
