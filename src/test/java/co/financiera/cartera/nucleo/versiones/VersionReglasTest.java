@@ -16,7 +16,7 @@ class VersionReglasTest {
      * Huella fija del perfil EXCEL. Si cambia, cambió el formato canónico o una regla del Excel: las dos cosas son
      * versiones nuevas y deben decidirse a propósito (ADR 0004), nunca regenerarse en silencio.
      */
-    private static final String HUELLA_EXCEL = "f624ed866a0cc77e671a895441c115f0976c20c52fcb905a0adf9d2f477d0607";
+    private static final String HUELLA_EXCEL = "96af4deeb6226073bf42bf6e99400965d718cf873ba248e8d13447608282e1c8";
 
     @Test
     void elContenidoCanonicoTieneElFormatoYTodasLasClavesEnOrden() {
@@ -30,7 +30,7 @@ class VersionReglasTest {
         }
         assertThat(texto).contains("\ntopeCobranzaPorPago=\n", "\nmargenUsura=1\n", "\nprelacion=SERVICIOS_ANTES_DE_CAPITAL\n")
                 .contains("\ndiasMora=PERIODO_NOMINAL\n", "\ncobranzaPorPeriodo=\n", "\nredondeoCuotaAlPeso=false\n")
-                .endsWith("\nsobranteComoCuentaPorPagar=false\n");
+                .endsWith("\nsobranteComoCuentaPorPagar=false\numbralesCuentanCuotaEnCurso=false\nseguroTodoRiesgoPorcentajeMensual=0\n");
     }
 
     @Test

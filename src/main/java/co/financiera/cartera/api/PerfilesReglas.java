@@ -46,7 +46,7 @@ public class PerfilesReglas {
     /** Prefijo del id de la versión del perfil NEGOCIO; le sigue la fecha desde la que rige (ISO). */
     public static final String PREFIJO_NEGOCIO = "negocio-";
     /** Desde cuándo rige la configuración actual de NEGOCIO (último cambio de config/reglas-negocio.properties). */
-    public static final String NEGOCIO_VIGENTE_DESDE = "2026-10-28";
+    public static final String NEGOCIO_VIGENTE_DESDE = "2026-10-30";
 
     private static final System.Logger LOG = System.getLogger(PerfilesReglas.class.getName());
 

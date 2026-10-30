@@ -6,7 +6,7 @@ import { GraficoSeries } from '../componentes/GraficoSeries'
 import { useCarga, useDatos } from '../datos'
 import { aMicros, cop, esDecimal, porcentaje, sumar } from '../dinero'
 import { fechasDelCredito, validarFechas } from '../fechas'
-import type { Catalogo, Credito, Perfil, Periodicidad, Simulacion } from '../tipos'
+import type { Catalogo, Credito, FilaPlan, Perfil, Periodicidad, Simulacion } from '../tipos'
 
 const PERIODOS_POR_ANIO: Record<Periodicidad, number> = { SEMANAL: 52, QUINCENAL: 24, MENSUAL: 12 }
 const NOMBRES: Record<Periodicidad, string> = { SEMANAL: 'Semanal', QUINCENAL: 'Quincenal', MENSUAL: 'Mensual' }
@@ -185,6 +185,11 @@ export default function Simulador() {
   )
 }
 
+/** R9-SEGURO-TODO-RIESGO: seguro todo riesgo más su IVA de una fila del plan (0 si el perfil no lo causa). */
+function todoRiesgoConIva(p: FilaPlan): string {
+  return sumar(p.seguroTodoRiesgo ?? '0', p.ivaSeguroTodoRiesgo ?? '0')
+}
+
 export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
   const { resumen: r, plan } = sim
   const totales = useMemo(
@@ -194,10 +199,13 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
       fondo: sumar(...plan.map((p) => p.fondoGarantias)),
       asistencia: sumar(...plan.map((p) => p.asistencia)),
       seguro: sumar(...plan.map((p) => p.seguro)),
+      todoRiesgo: sumar(...plan.map(todoRiesgoConIva)),
       cuota: sumar(...plan.map((p) => p.cuotaTotal)),
     }),
     [plan],
   )
+  // R9-SEGURO-TODO-RIESGO: la columna solo aparece si el perfil lo causa (con EXCEL no viaja).
+  const conTodoRiesgo = plan.some((p) => p.seguroTodoRiesgo !== undefined)
   const periodos = plan.map((p) => p.periodo)
   return (
     <section aria-label="Resultado de la simulación" className="grid gap-4">
@@ -214,7 +222,7 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
         <Tarjeta etiqueta="Tasa del periodo" valor={porcentaje(r.tasaPeriodo)} ayuda={`Equivale a ${porcentaje(r.tasaEA)} efectivo anual`} />
         <Tarjeta etiqueta="Total pagado" valor={cop(r.totalPagado)} ayuda={`Sobre ${cop(r.montoFinanciado)} financiados`} />
         <Tarjeta etiqueta="Intereses" valor={cop(r.totalIntereses)} />
-        <Tarjeta etiqueta="Servicios" valor={cop(r.totalServicios)} ayuda="Fondo de garantías, asistencia y seguro" />
+        <Tarjeta etiqueta="Servicios" valor={cop(r.totalServicios)} ayuda={conTodoRiesgo ? 'Fondo de garantías, asistencia, seguro de vida y seguro todo riesgo con IVA' : 'Fondo de garantías, asistencia y seguro'} />
       </dl>
       {r.prorrateoPrimeraCuota && <AvisoProrrateo prorrateo={r.prorrateoPrimeraCuota} />}
 
@@ -228,7 +236,7 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
           series={[
             { nombre: 'Capital', color: 'var(--c-primary)', valores: plan.map((p) => p.capital) },
             { nombre: 'Interés', color: 'var(--serie-2)', valores: plan.map((p) => p.interes) },
-            { nombre: 'Servicios', color: 'var(--c-outline)', valores: plan.map((p) => sumar(p.fondoGarantias, p.asistencia, p.seguro)) },
+            { nombre: 'Servicios', color: 'var(--c-outline)', valores: plan.map((p) => sumar(p.fondoGarantias, p.asistencia, p.seguro, todoRiesgoConIva(p))) },
           ]}
         />
       </div>
@@ -245,6 +253,7 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
                 <th scope="col">Fondo garantías</th>
                 <th scope="col">Asistencia</th>
                 <th scope="col">Seguro</th>
+                {conTodoRiesgo && <th scope="col">Todo riesgo + IVA</th>}
                 <th scope="col">Cuota total</th>
                 <th scope="col">Saldo</th>
               </tr>
@@ -258,6 +267,7 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
                   <td>{cop(p.fondoGarantias)}</td>
                   <td>{cop(p.asistencia)}</td>
                   <td>{cop(p.seguro)}</td>
+                  {conTodoRiesgo && <td>{cop(todoRiesgoConIva(p))}</td>}
                   <td className="font-semibold">{cop(p.cuotaTotal)}</td>
                   <td>{cop(p.saldo)}</td>
                 </tr>
@@ -271,6 +281,7 @@ export function ResultadoSimulacion({ sim }: Readonly<{ sim: Simulacion }>) {
                 <td>{cop(totales.fondo)}</td>
                 <td>{cop(totales.asistencia)}</td>
                 <td>{cop(totales.seguro)}</td>
+                {conTodoRiesgo && <td>{cop(totales.todoRiesgo)}</td>}
                 <td>{cop(totales.cuota)}</td>
                 <td />
               </tr>

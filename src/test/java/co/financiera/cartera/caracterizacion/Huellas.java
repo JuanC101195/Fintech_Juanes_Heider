@@ -52,14 +52,16 @@ public final class Huellas {
                     "cxcServiciosPorConcepto", "extinguido", "capitalVencidoInicial", "pendientesPagadosExtra",
                     "interesPrepago", "costoRecuperacion", "costoRecuperacionAsumido", "listoParaRecuperacion",
                     "sobranteCliente"),
-            "Servicios", List.of("fondoGarantias", "asistencia", "seguro"),
+            "Servicios", List.of("fondoGarantias", "asistencia", "seguro", "seguroTodoRiesgo", "ivaSeguroTodoRiesgo"),
             "DeudaExtinguida", List.of("cobranza", "mora", "interesCorriente", "servicios", "capital"));
 
     /**
      * Campos que solo se escriben cuando no son cero: llegaron después de congelar huellas y las filas que no los usan
-     * (todas las del perfil EXCEL) deben dar la misma huella que antes. {@code sobranteCliente}: ronda 8 (R8-PAGO-MAYOR-EXIGIBLE).
+     * (todas las del perfil EXCEL) deben dar la misma huella que antes. {@code sobranteCliente}: ronda 8 (R8-PAGO-MAYOR-EXIGIBLE);
+     * {@code seguroTodoRiesgo} y su IVA: ronda 9 (R9-SEGURO-TODO-RIESGO).
      */
-    private static final java.util.Set<String> SOLO_SI_NO_ES_CERO = java.util.Set.of("Movimiento.sobranteCliente");
+    private static final java.util.Set<String> SOLO_SI_NO_ES_CERO = java.util.Set.of("Movimiento.sobranteCliente",
+            "Servicios.seguroTodoRiesgo", "Servicios.ivaSeguroTodoRiesgo");
 
     private Huellas() {
     }

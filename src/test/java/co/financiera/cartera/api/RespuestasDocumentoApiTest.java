@@ -104,7 +104,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(24);
+        assertThat(r.get("claves")).hasSize(26);
         // Ronda 8 (Diego 2026-10-28).
         assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
         assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();
@@ -114,6 +114,11 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("redondeoCuotaAlPeso").asString()).isEqualTo("false");
         assertThat(negocio.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("true");
         assertThat(excel.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("false");
+        // Ronda 9 (Diego 2026-10-30).
+        assertThat(negocio.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("true");
+        assertThat(excel.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("false");
+        assertThat(negocio.get("seguroTodoRiesgoPorcentajeMensual").asString()).isEqualTo("0.003");
+        assertThat(excel.get("seguroTodoRiesgoPorcentajeMensual").asString()).isEqualTo("0");
         assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();
         assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");

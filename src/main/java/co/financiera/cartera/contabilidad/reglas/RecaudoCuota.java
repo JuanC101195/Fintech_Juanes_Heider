@@ -41,12 +41,14 @@ public final class RecaudoCuota implements ReglaContable {
         if (!esRecaudoNormal(m)) {
             return Optional.empty();
         }
-        return ReglaContable.asiento(m, List.of(
+        return ReglaContable.asiento(m, ReglaContable.con(List.of(
                 Linea.debito(Cuenta.CAJA, m.pagoRecibido(), "Recaudo de la cuota total"),
                 Linea.credito(Cuenta.INGRESOS_INTERESES, m.pagoInteresCorriente(), "Interés corriente causado"),
                 Linea.credito(Cuenta.CARTERA_VIGENTE, m.pagoCapital(), "Amortización de capital"),
-                Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS, m.pagoServicios(),
-                        "Servicios recaudados por cuenta de terceros")));
+                Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS,
+                        ReglaContable.serviciosSinTodoRiesgo(m.pagoServicios(), m.pagosServicios()),
+                        "Servicios recaudados por cuenta de terceros")),
+                ReglaContable.seguroTodoRiesgo(m.pagoServicios(), m.pagosServicios())));
     }
 
     /**

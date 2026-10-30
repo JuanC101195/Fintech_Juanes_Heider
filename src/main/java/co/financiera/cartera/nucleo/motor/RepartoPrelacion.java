@@ -75,15 +75,11 @@ final class RepartoPrelacion {
             pagoCapital = min(restante, min(saldoInicial, sumar(s.capitalVencido, c.capitalContractual())));
             restante = restar(restante, pagoCapital);
         }
-        BigDecimal pagoFondo = min(restante, porCobrar.fondoGarantias());
-        restante = restar(restante, pagoFondo);
-        BigDecimal pagoAsistencia = min(restante, porCobrar.asistencia());
-        restante = restar(restante, pagoAsistencia);
-        BigDecimal pagoSeguro = min(restante, porCobrar.seguro());
-        restante = restar(restante, pagoSeguro);
+        // Fondo → asistencia → seguro de vida → seguro todo riesgo → su IVA (R9-SEGURO-TODO-RIESGO, después del de vida).
+        Servicios pagoServicios = porCobrar.pagarHasta(restante);
+        restante = pagoServicios.descontarDe(restante);
         pagoCapital = sumar(pagoCapital, min(restante, restar(saldoInicial, pagoCapital)));
-        return new Reparto(pagoCobranza, pagoMora, pagoInteres, new Servicios(pagoFondo, pagoAsistencia, pagoSeguro),
-                pagoCapital);
+        return new Reparto(pagoCobranza, pagoMora, pagoInteres, pagoServicios, pagoCapital);
     }
 
     void actualizarSaldos(BigDecimal saldoInicial, Causacion c, Reparto r, boolean sinPagoSinMora) {

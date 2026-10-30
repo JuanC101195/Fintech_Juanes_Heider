@@ -52,7 +52,8 @@ final class EstadoCorrida {
         this.p = escenario.parametros();
         this.cuotasVigentes = cuotasPactadas;
         BigDecimal monto = escenario.operacion().montoFinanciado();
-        this.serviciosPorCuota = Servicios.porCuota(monto, p);
+        // R9-SEGURO-TODO-RIESGO: el seguro todo riesgo (0 en el Excel) se suma a los servicios por cuota.
+        this.serviciosPorCuota = Servicios.porCuota(monto, p, escenario.reglas().porcentajeTodoRiesgo());
         this.tasas = Tasas.de(p);
         this.cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasPactadas, monto);
         this.saldo = monto;
@@ -67,7 +68,8 @@ final class EstadoCorrida {
     EstadoCorrida(Escenario escenario, Instantanea i) {
         this.escenario = escenario;
         this.p = escenario.parametros();
-        this.serviciosPorCuota = Servicios.porCuota(escenario.operacion().montoFinanciado(), p);
+        this.serviciosPorCuota = Servicios.porCuota(escenario.operacion().montoFinanciado(), p,
+                escenario.reglas().porcentajeTodoRiesgo());
         this.tasas = i.tasas();
         this.cuota = i.cuota();
         this.saldo = i.saldo();

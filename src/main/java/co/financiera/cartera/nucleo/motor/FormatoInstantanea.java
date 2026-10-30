@@ -29,6 +29,10 @@ import java.util.Set;
  *   <li>Enteros en decimal, booleanos {@code true}/{@code false}, enums por su nombre, fechas ISO ({@code 2026-10-23}).</li>
  *   <li>Lo opcional ({@code versionReglas}, {@code usuraPorAplicar}, el calendario) va vacío cuando no hay.</li>
  *   <li>La lectura es estricta: exige exactamente estas claves, sin repetidas ni desconocidas.</li>
+ *   <li>R9-SEGURO-TODO-RIESGO: en cada grupo de servicios, {@code .seguroTodoRiesgo} y {@code .ivaSeguroTodoRiesgo}
+ *       solo se escriben cuando alguno no es el 0 exacto (valor o escala distintos de {@code 0}), y al leer son
+ *       opcionales (0 si faltan). Así las instantáneas sin
+ *       seguro todo riesgo (todas las anteriores y las del Excel) siguen siendo de la versión 1, idénticas.</li>
  * </ul>
  */
 public final class FormatoInstantanea {
@@ -150,6 +154,15 @@ public final class FormatoInstantanea {
             dinero(prefijo + ".fondoGarantias", s.fondoGarantias());
             dinero(prefijo + ".asistencia", s.asistencia());
             dinero(prefijo + ".seguro", s.seguro());
+            if (!ceroExacto(s.seguroTodoRiesgo()) || !ceroExacto(s.ivaSeguroTodoRiesgo())) {
+                dinero(prefijo + ".seguroTodoRiesgo", s.seguroTodoRiesgo());
+                dinero(prefijo + ".ivaSeguroTodoRiesgo", s.ivaSeguroTodoRiesgo());
+            }
+        }
+
+        /** 0 con escala 0: así se lee una clave opcional ausente; cualquier otro valor (incluso 0E-30) se escribe. */
+        private static boolean ceroExacto(BigDecimal valor) {
+            return valor.signum() == 0 && valor.scale() == 0;
         }
 
         @Override
@@ -205,7 +218,13 @@ public final class FormatoInstantanea {
 
         Servicios servicios(String prefijo) {
             return new Servicios(dinero(prefijo + ".fondoGarantias"), dinero(prefijo + ".asistencia"),
-                    dinero(prefijo + ".seguro"));
+                    dinero(prefijo + ".seguro"), dineroOpcional(prefijo + ".seguroTodoRiesgo"),
+                    dineroOpcional(prefijo + ".ivaSeguroTodoRiesgo"));
+        }
+
+        /** Dinero de una clave opcional (R9-SEGURO-TODO-RIESGO): 0 si no está. */
+        BigDecimal dineroOpcional(String clave) {
+            return valores.containsKey(clave) ? dinero(clave) : BigDecimal.ZERO;
         }
 
         void verificarQueNoSobra() {

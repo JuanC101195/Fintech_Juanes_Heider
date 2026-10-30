@@ -51,23 +51,23 @@ for (const [nombre, ancho, alto, escala] of [['celular', 360, 780, 2], ['escrito
 
   await page.goto(origen)
 
-  // 1. Simulador: quincenal por defecto → cuota total 355.667 (viene sin redondear del API y se redondea al mostrar)
+  // 1. Simulador: quincenal por defecto → cuota total 366.206 (viene sin redondear del API y se redondea al mostrar)
   // La primera llamada puede tardar ~30 s: el API está en un plan gratuito que se duerme.
   await page.getByRole('region', { name: 'Resultado de la simulación' }).waitFor({ timeout: 90000 })
   const resultado = nbsp(await page.getByRole('region', { name: 'Resultado de la simulación' }).innerText())
-  if (!resultado.includes('$ 355.667')) falla(`simulador: falta la cuota total $ 355.667 en ${JSON.stringify(resultado.slice(0, 200))}`)
+  if (!resultado.includes('$ 366.206')) falla(`simulador: falta la cuota total $ 366.206 en ${JSON.stringify(resultado.slice(0, 200))}`)
   if (!resultado.includes('$ 219.093')) falla('simulador: falta la cuota financiera $ 219.093')
   if (await page.getByText('Datos de demostración').count()) falla('aparece el aviso de modo demostración: la consola no está usando el API')
   await revisar('simulador')
 
-  // 2. Caso 13 NEGOCIO: saldo 3.320.164,36 en la semana 42 y asiento con su explicación
+  // 2. Caso 13 NEGOCIO: saldo 3.315.130,36 en la semana 42 y asiento con su explicación
   await ir('Casos')
   await page.getByRole('link', { name: /Caso 13/ }).click()
   const tabla = page.getByRole('region', { name: 'Tabla periodo a periodo' })
   await tabla.waitFor({ timeout: 30000 })
   const fila42 = tabla.locator('tbody tr').filter({ has: page.locator('th[scope="row"]', { hasText: /^42$/ }) })
   const texto42 = nbsp(await fila42.innerText())
-  if (!texto42.includes('$ 3.320.164,36')) falla(`caso 13 semana 42: falta el saldo $ 3.320.164,36 en ${JSON.stringify(texto42)}`)
+  if (!texto42.includes('$ 3.315.130,36')) falla(`caso 13 semana 42: falta el saldo $ 3.315.130,36 en ${JSON.stringify(texto42)}`)
   if (!texto42.includes('Cuota + abono extra')) falla('caso 13 semana 42: falta el evento "Cuota + abono extra"')
   await page.getByText('Termina en el periodo 85').waitFor()
   const asiento42 = page.locator('details').filter({ hasText: 'Periodo 42' }).first()

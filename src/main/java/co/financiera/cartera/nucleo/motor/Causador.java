@@ -38,6 +38,11 @@ final class Causador {
      * 2. Interés corriente, capital contractual, servicios, mora y cobranza del periodo. Las
      * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
      * el Excel tal cual.
+     *
+     * @param cuotasVencidasPrevias cuotas atrasadas que cuentan para los umbrales de cobranza y de suspensión: las de
+     *                              periodos anteriores y, con {@code umbralesCuentanCuotaEnCurso} (R9-COBRO-MOMENTO),
+     *                              también la del periodo en curso si queda atrasado (lo decide el motor con la
+     *                              instrucción del periodo, antes de causar)
      */
     Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia,
             int cuotasVencidasPrevias, int diasCobranza) {
@@ -56,7 +61,7 @@ final class Causador {
         Servicios serviciosAlDia = Servicios.NINGUNO;
         if (causaServicios) {
             Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
-                    ? Servicios.porCuota(saldoInicial, s.p) : s.serviciosPorCuota;
+                    ? Servicios.porCuota(saldoInicial, s.p, reglas.porcentajeTodoRiesgo()) : s.serviciosPorCuota;
             if (reglas.cuotasVencidasParaSuspenderServicios() == null) {
                 servicios = alDia ? base : base.soloSeguro();
                 serviciosAlDia = base;

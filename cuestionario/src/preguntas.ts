@@ -2037,6 +2037,64 @@ const RESPONDIDAS_22_OCT: Record<string, Omit<Respondida, 'fecha'>> = {
   'P5-LIMITE-DESDE': { referencia: REF_22_OCT, reemplazadaPor: 'R6-LIMITE-CORTO', nota: 'Reemplazada por R6-LIMITE-CORTO.', respuesta: 'X4 la contesta en parte: el límite es de 104 cuotas (24 meses) desde el desembolso; falta el caso de un crédito de menos de 24 meses.' },
 }
 
+// Ronda 11 (30 oct 2026): cuatro huecos que dejaron las respuestas de la ronda 9 (seguro todo riesgo y suspensión de servicios). Aún no tienen clave de motor.
+const RONDA_11: Pregunta[] = [
+  // ── Servicios complementarios ─────────────────────────────────────────────────
+  {
+    id: 'R11-SEGUROS-TRAS-SUSPENSION',
+    bloque: SERVICIOS,
+    titulo: 'Tras 2 periodos atrasados, cuando "solo se causa el seguro", ¿se siguen causando los dos seguros (vida y todo riesgo) o solo uno?',
+    contexto:
+      'En la ronda 8 nos dijo que después de 2 periodos atrasados solo se causa el seguro, y en la ronda 9 que el seguro todo riesgo es uno nuevo que se suma al seguro de vida. Ahora hay dos seguros y falta saber cuál sigue causándose cuando se suspenden el fondo de garantías y la asistencia. Mientras usted responde, el motor causará los dos seguros (supuesto provisional).',
+    excelHoy: 'El Excel no suspende servicios por atraso y no tiene seguro todo riesgo.',
+    opciones: [
+      { codigo: 'ambos-seguros', texto: 'Se siguen causando los dos seguros: el de vida y el todo riesgo' },
+      { codigo: 'solo-vida', texto: 'Solo se sigue causando el seguro de vida' },
+      { codigo: 'solo-todo-riesgo', texto: 'Solo se sigue causando el seguro todo riesgo' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R11-BASE-FINANCIACION-INICIAL',
+    bloque: SERVICIOS,
+    titulo: 'El 0,3 % mensual del seguro todo riesgo es "sobre la financiación inicial": ¿qué monto es esa base?',
+    contexto:
+      'Usted pactó el seguro todo riesgo como un porcentaje mensual de 0,3 % sobre la financiación inicial. Hoy el motor calcula los servicios sobre el monto financiado. Falta saber si la base es el monto financiado a secas (valor de la moto menos la cuota inicial) o si incluye los servicios y gastos que también se financian. Con una base mayor, el seguro cobra más cada mes.',
+    excelHoy: 'El Excel no tiene seguro todo riesgo; el seguro de vida se calcula sobre el monto financiado.',
+    opciones: [
+      { codigo: 'monto-financiado', texto: 'El monto financiado a secas (valor de la moto menos la cuota inicial)', detalle: 'Es la base con que el motor calcula hoy el seguro de vida.' },
+      { codigo: 'incluye-servicios-gastos', texto: 'El monto financiado más los servicios y gastos que se financian', detalle: 'Indique en el comentario cuáles conceptos se suman.' },
+      { codigo: 'otro', texto: 'Otra base', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R11-PERIODIZACION-SEGURO',
+    bloque: SERVICIOS,
+    titulo: 'El 0,3 % es mensual y "se paga igual que el de vida": ¿se convierte a semanal y quincenal de la misma forma que el seguro de vida?',
+    contexto:
+      'Los servicios se pactan por mes pero se cobran por periodo del crédito. El motor convierte el seguro de vida de mensual a semanal o quincenal de una forma fija. Entendemos que el seguro todo riesgo usa la misma conversión, de modo que el 0,3 % mensual se reparte igual que el seguro de vida en créditos semanales, quincenales y mensuales. Necesitamos su confirmación.',
+    excelHoy: 'El Excel convierte el seguro de vida de mensual a semanal dividiendo entre 4,333; no tiene seguro todo riesgo.',
+    opciones: [
+      { codigo: 'igual-que-vida', texto: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida' },
+      { codigo: 'otra-conversion', texto: 'No: tiene otra forma de conversión', detalle: 'Explique la conversión en el comentario.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R11-CONTABILIDAD-SEGURO-IVA',
+    bloque: SERVICIOS,
+    titulo: 'En la contabilidad, ¿el seguro todo riesgo es ingreso propio o un pasivo a pagar a la aseguradora? ¿Y el IVA es IVA generado?',
+    contexto:
+      'Usted indicó que si el seguro da $10.000 el cobro al cliente es $11.900, y que la contabilidad debe segmentar el seguro y el IVA. Para armar los asientos falta saber a qué cuenta va cada parte: el seguro puede ser un ingreso de la financiera o un valor que se debe a la aseguradora (cuenta por pagar a terceros), y el IVA puede ser IVA generado por pagar a la DIAN. Hoy el motor deja las cuentas de los servicios como provisionales hasta tener el PUC.',
+    excelHoy: 'El Excel no segmenta el IVA; el caso 1 llama a los servicios "CxP servicios a terceros" y los casos 8 y 9 "Servicios complementarios".',
+    opciones: [
+      { codigo: 'pasivo-aseguradora-iva-generado', texto: 'El seguro es un pasivo a pagar a la aseguradora y el IVA es IVA generado' },
+      { codigo: 'ingreso-propio-iva-generado', texto: 'El seguro es ingreso propio de la financiera y el IVA es IVA generado' },
+      { codigo: 'otro', texto: 'Otro tratamiento contable', detalle: 'Indique las cuentas en el comentario.', pideTexto: true },
+    ],
+  },
+]
+
 // Respondidas por el cuestionario (Diego, 22 de octubre de 2026, 19:53): las rondas 5 y 6, 9 de 9 con la opción y el
 // comentario coincidentes (docs/respuestas-diego-2026-10-22-ronda5-6.md). 7 quedan decididas (D48 a D54). Las dos que
 // marcó pendientes (política de cobranza) se reformularon en la ronda 7 (ya respondida) y no cuentan en el total: las cuenta la nueva.
@@ -2070,12 +2128,21 @@ const RESPONDIDAS_RONDA_8: Record<string, Omit<Respondida, 'fecha'>> = {
   'R8-PAGO-MAYOR-EXIGIBLE': { referencia: REF_RONDA_8, respuesta: 'El sobrante queda como cuenta por pagar al cliente para devolverlo (D61).' },
 }
 
+// Respondidas por el cuestionario (Diego, 30 de octubre de 2026): la ronda 9, 3 de 3 (docs/respuestas-diego-2026-10-30-ronda9.md). Quedan decididas (D62 a D64 de decisiones.md); lo que dejó abierto va a la ronda 11.
+const REF_RONDA_9 = 'Ronda 9'
+const RESPONDIDAS_RONDA_9: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R9-COBRO-MOMENTO': { referencia: REF_RONDA_9, respuesta: 'Al cumplirse la 2.ª cuota atrasada: primer cobro y suspensión de fondo y asistencia desde ahí (lectura A) (D62).' },
+  'R9-SEGURO-TODO-RIESGO': { referencia: REF_RONDA_9, respuesta: 'Es un seguro nuevo que se suma al actual: 0,3 % mensual sobre la financiación inicial, se paga igual que el de vida, más 19 % de IVA; la contabilidad segmenta el seguro y el IVA (D63).' },
+  'R9-SERVICIOS-AL-PONERSE-AL-DIA': { referencia: REF_RONDA_9, respuesta: 'Se pierden: los servicios se retoman desde el periodo siguiente y los suspendidos no se cobran (D64).' },
+}
+
 /** Todas las preguntas llevan la opción común "Respondo en el comentario / queda pendiente". */
 function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11].map((p) => {
+  if (RESPONDIDAS_RONDA_9[p.id]) return { ...p, respondida: { fecha: '30 oct 2026', ...RESPONDIDAS_RONDA_9[p.id] } }
   if (RESPONDIDAS_RONDA_8[p.id]) return { ...p, respondida: { fecha: '28 oct 2026', ...RESPONDIDAS_RONDA_8[p.id] } }
   if (RESPONDIDAS_RONDA_7[p.id]) return { ...p, respondida: { fecha: '27 oct 2026', ...RESPONDIDAS_RONDA_7[p.id] } }
   if (RESPONDIDAS_RONDA_5_6[p.id]) return { ...p, respondida: { fecha: '22 oct 2026', ...RESPONDIDAS_RONDA_5_6[p.id] } }

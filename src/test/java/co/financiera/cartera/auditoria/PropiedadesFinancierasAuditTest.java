@@ -132,7 +132,10 @@ class PropiedadesFinancierasAuditTest {
                 .conCobranzaPorPeriodo(r.nextBoolean() ? null : bd(1_000 + r.nextInt(80_000)))
                 .conCuotasVencidasParaSuspenderServicios(r.nextBoolean() ? null : r.nextInt(4))
                 .conRedondeoCuotaAlPeso(r.nextBoolean())
-                .conSobranteComoCuentaPorPagar(r.nextBoolean());
+                .conSobranteComoCuentaPorPagar(r.nextBoolean())
+                // Ronda 9 (Diego 2026-10-30).
+                .conUmbralesCuentanCuotaEnCurso(r.nextBoolean())
+                .conSeguroTodoRiesgoPorcentajeMensual(r.nextBoolean() ? null : bd(1 + r.nextInt(9)).movePointLeft(3));
         return x;
     }
 
@@ -283,18 +286,30 @@ class PropiedadesFinancierasAuditTest {
                     violacion("I1 valor negativo", id + " valor " + v.toPlainString(), repro);
                 }
             }
+            Instruccion pagoDelPeriodo = e.instruccionesDe(m.periodo()).stream()
+                    .filter(ins -> "pago".equals(tipo(ins)) && !(ins instanceof CambioTasa)).findFirst().orElse(null);
+            // R9-COBRO-MOMENTO (lectura A): con umbralesCuentanCuotaEnCurso los umbrales cuentan también la cuota del
+            // periodo si puede quedar atrasada. Cota que no depende de la cuota: solo SinPago, PagoParcial o PagoValor
+            // pueden sumarla (REC-8: el periodo del cierre sin pago explícito es SinPago).
+            boolean cierreSinPago = pagoDelPeriodo == null && e.instruccionesDe(m.periodo()).stream()
+                    .anyMatch(ins -> ins instanceof Instruccion.CierrePorRecuperacion);
+            boolean puedeAtrasar = cierreSinPago || pagoDelPeriodo instanceof Instruccion.SinPago
+                    || pagoDelPeriodo instanceof Instruccion.PagoParcial || pagoDelPeriodo instanceof PagoValor;
+            boolean seguroAtrasa = cierreSinPago || pagoDelPeriodo instanceof Instruccion.SinPago;
+            boolean enCurso = e.reglas().umbralesCuentanCuotaEnCurso();
+            int cuentanComoMaximo = enCurso && puedeAtrasar ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
+            int cuentanComoMinimo = enCurso && seguroAtrasa ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
             // I8 (R7-COBRANZA-ACTIVA, Diego 2026-10-27): con umbral de cobranza, nunca se causa cobranza si el cliente
-            // llegaba al periodo con menos cuotas vencidas que el umbral (con 2, empieza en la tercera cuota vencida).
+            // llegaba al periodo con menos cuotas vencidas que el umbral (con 2, empieza en la tercera cuota vencida; con la
+            // lectura A de la ronda 9, en la segunda si la del periodo queda atrasada).
             Integer umbral = e.reglas().cuotasVencidasParaCobranza();
-            if (umbral != null && m.cobranzaCausada().signum() > 0 && prev.cuotasVencidas() < umbral) {
+            if (umbral != null && m.cobranzaCausada().signum() > 0 && cuentanComoMaximo < umbral) {
                 violacion("I8 cobranza antes del umbral de cuotas vencidas", id + " cuotasVencidasPrevias=" + prev.cuotasVencidas()
                         + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
             }
             // I12 (R8-PAGO-MAYOR-EXIGIBLE): el sobrante nunca es negativo, solo existe con la clave y con un PagoValor, y
             // entonces el pago entregado = lo aplicado + el sobrante (nada se recorta en silencio).
             BigDecimal sobrante = m.sobranteCliente();
-            Instruccion pagoDelPeriodo = e.instruccionesDe(m.periodo()).stream()
-                    .filter(ins -> "pago".equals(tipo(ins)) && !(ins instanceof CambioTasa)).findFirst().orElse(null);
             if (sobrante.signum() < 0) {
                 violacion("I12 sobrante negativo", id + " sobrante=" + sobrante.toPlainString(), repro);
             } else if (sobrante.signum() > 0 && (!e.reglas().sobranteComoCuentaPorPagar() || !(pagoDelPeriodo instanceof PagoValor))) {
@@ -305,15 +320,16 @@ class PropiedadesFinancierasAuditTest {
                         + m.pagoRecibido().toPlainString() + " sobrante=" + sobrante.toPlainString(), repro);
             }
             // I13 (R8-PAGO-INCOMPLETO-EN-FECHA): con la clave, desde `clave` cuotas vencidas previas solo se causa el seguro;
-            // antes del umbral, si hay servicios causados, no se suspenden fondo y asistencia a la vez.
+            // antes del umbral, si hay servicios causados, no se suspenden fondo y asistencia a la vez. Con la lectura A
+            // (R9-COBRO-MOMENTO) un periodo sin pago también cuenta su propia cuota.
             Integer suspension = e.reglas().cuotasVencidasParaSuspenderServicios();
             if (suspension != null) {
                 var sc = m.serviciosCausados();
                 boolean soloSeguro = sc.fondoGarantias().signum() == 0 && sc.asistencia().signum() == 0;
-                if (prev.cuotasVencidas() >= suspension && !soloSeguro) {
+                if (cuentanComoMinimo >= suspension && !soloSeguro) {
                     violacion("I13 fondo o asistencia causados con la suspensión", id + " previas=" + prev.cuotasVencidas()
                             + " fondo=" + sc.fondoGarantias().toPlainString() + " asistencia=" + sc.asistencia().toPlainString(), repro);
-                } else if (prev.cuotasVencidas() < suspension && soloSeguro && sc.seguro().signum() > 0) {
+                } else if (cuentanComoMaximo < suspension && soloSeguro && sc.seguro().signum() > 0) {
                     violacion("I13 servicios suspendidos antes del umbral", id + " previas=" + prev.cuotasVencidas(), repro);
                 }
             }

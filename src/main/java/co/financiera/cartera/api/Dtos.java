@@ -115,9 +115,14 @@ public final class Dtos {
             String diferencia) {
     }
 
+    /**
+     * @param seguroTodoRiesgo    R9-SEGURO-TODO-RIESGO: seguro todo riesgo del periodo sin IVA; solo viaja cuando lo hay
+     * @param ivaSeguroTodoRiesgo su IVA, aparte; solo viaja cuando lo hay. {@code cuotaTotal} ya los incluye
+     */
     public record FilaPlan(int periodo, int mes, String saldoInicial, String interes, String capital,
             String cuotaFinanciera, String fondoGarantias, String asistencia, String seguro, String cuotaTotal,
-            String saldo) {
+            String saldo, @JsonInclude(JsonInclude.Include.NON_NULL) String seguroTodoRiesgo,
+            @JsonInclude(JsonInclude.Include.NON_NULL) String ivaSeguroTodoRiesgo) {
     }
 
     // ---------------------------------------------------------------- Ejecución de escenarios
@@ -138,7 +143,17 @@ public final class Dtos {
             @JsonInclude(JsonInclude.Include.NON_NULL) ProrrateoDto prorrateoPrimeraCuota) {
     }
 
-    public record ServiciosDto(String fondoGarantias, String asistencia, String seguro, String total) {
+    /**
+     * Servicios por concepto. {@code seguro} es el seguro de vida.
+     *
+     * @param seguroTodoRiesgo    R9-SEGURO-TODO-RIESGO: seguro todo riesgo sin IVA; solo viaja cuando él o su IVA no
+     *                            son cero (nunca con EXCEL)
+     * @param ivaSeguroTodoRiesgo IVA del seguro todo riesgo, segmentado; viaja junto con {@code seguroTodoRiesgo}.
+     *                            {@code total} ya incluye los dos
+     */
+    public record ServiciosDto(String fondoGarantias, String asistencia, String seguro, String total,
+            @JsonInclude(JsonInclude.Include.NON_NULL) String seguroTodoRiesgo,
+            @JsonInclude(JsonInclude.Include.NON_NULL) String ivaSeguroTodoRiesgo) {
     }
 
     public record DeudaDto(String cobranza, String mora, String interesCorriente, ServiciosDto servicios,

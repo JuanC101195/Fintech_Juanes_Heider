@@ -20,7 +20,7 @@ describe('preguntas', () => {
     expect(RESPONDIDAS.length + PREGUNTAS.length).toBe(TODAS.length)
     expect(RESPONDIDAS.map((p) => p.id)).toEqual(expect.arrayContaining(['P1', 'P7', 'A1', 'A2', 'C4', 'PTOPE', 'S3', 'X4']))
     for (const p of PREGUNTAS) expect(p.respondida, p.id).toBeUndefined()
-    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Ronda 7|Ronda 8|Documento 22 oct)/)
+    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Ronda 7|Ronda 8|Ronda 9|Documento 22 oct)/)
     for (const b of BLOQUES_ABIERTOS) expect(PREGUNTAS.some((p) => p.bloque === b), b).toBe(true)
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
@@ -57,23 +57,38 @@ describe('preguntas', () => {
       expect(p.respondida!.nota, p.id).toBeUndefined()
     }
 
+    const ronda9 = TODAS.filter((p) => p.id.startsWith('R9-'))
+    expect(ronda9.map((p) => p.id)).toEqual(['R9-COBRO-MOMENTO', 'R9-SEGURO-TODO-RIESGO', 'R9-SERVICIOS-AL-PONERSE-AL-DIA'])
+    for (const p of ronda9) {
+      expect(p.respondida!.referencia, p.id).toBe('Ronda 9')
+      expect(p.respondida!.fecha, p.id).toBe('30 oct 2026')
+      expect(p.respondida!.nota, p.id).toBeUndefined()
+    }
+    expect(ronda9[1].respondida!.respuesta).toContain('0,3 %')
+
     expect(PREGUNTAS.map((p) => p.id).sort()).toEqual([
       'R10-CONTADOR-VENCIDAS', 'R10-JUSTIFICACIONES', 'R10-MARCA-RECUPERACION', 'R10-PERIODO-ATRASADO', 'R10-PRIMERA-CUOTA', 'R10-VALOR-COBRANZA', 'R10-VALOR-MOTO-REENTREGADA',
-      'R9-COBRO-MOMENTO', 'R9-SEGURO-TODO-RIESGO', 'R9-SERVICIOS-AL-PONERSE-AL-DIA',
+      'R11-BASE-FINANCIACION-INICIAL', 'R11-CONTABILIDAD-SEGURO-IVA', 'R11-PERIODIZACION-SEGURO', 'R11-SEGUROS-TRAS-SUSPENSION',
     ])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
 
-  it('la ronda 9 pregunta el momento del primer cobro, el seguro todo riesgo y los servicios al ponerse al día', () => {
-    const cod = (id: string) => PREGUNTAS.find((p) => p.id === id)!.opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
-    const momento = PREGUNTAS.find((p) => p.id === 'R9-COBRO-MOMENTO')!
-    expect(cod('R9-COBRO-MOMENTO')).toEqual(['segunda-cuota', 'tercera-cuota', 'otro'])
-    expect(momento.bloque).toBe('Pagos, mora y cobranza')
-    expect(momento.contexto).toContain('40.000')
-    expect(cod('R9-SEGURO-TODO-RIESGO')).toEqual(['mismo-seguro', 'seguro-nuevo-reemplaza', 'seguro-nuevo-se-suma', 'otro'])
-    expect(PREGUNTAS.find((p) => p.id === 'R9-SEGURO-TODO-RIESGO')!.contexto).toContain('19 %')
-    expect(cod('R9-SERVICIOS-AL-PONERSE-AL-DIA')).toEqual(['se-pierden', 'cobro-retroactivo', 'otro'])
-    for (const id of ['R9-SEGURO-TODO-RIESGO', 'R9-SERVICIOS-AL-PONERSE-AL-DIA']) expect(PREGUNTAS.find((p) => p.id === id)!.bloque).toBe('Servicios complementarios')
+  it('la ronda 11 pregunta los seguros tras la suspensión, la base del 0,3 %, su periodización y la contabilidad del seguro y el IVA', () => {
+    const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
+    const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
+    expect(PREGUNTAS.filter((p) => p.id.startsWith('R11-'))).toHaveLength(4)
+    expect(cod('R11-SEGUROS-TRAS-SUSPENSION')).toEqual(['ambos-seguros', 'solo-vida', 'solo-todo-riesgo', 'otro'])
+    expect(cod('R11-BASE-FINANCIACION-INICIAL')).toEqual(['monto-financiado', 'incluye-servicios-gastos', 'otro'])
+    expect(q('R11-BASE-FINANCIACION-INICIAL').contexto).toContain('0,3 %')
+    expect(cod('R11-PERIODIZACION-SEGURO')).toEqual(['igual-que-vida', 'otra-conversion', 'otro'])
+    expect(cod('R11-CONTABILIDAD-SEGURO-IVA')).toEqual(['pasivo-aseguradora-iva-generado', 'ingreso-propio-iva-generado', 'otro'])
+    expect(q('R11-CONTABILIDAD-SEGURO-IVA').contexto).toContain('11.900')
+    for (const p of PREGUNTAS.filter((x) => x.id.startsWith('R11-'))) {
+      expect(p.bloque, p.id).toBe('Servicios complementarios')
+      // Aún no tienen clave de motor: ninguna opción produce ajustes ni previsualización.
+      expect(p.previsualizacion, p.id).toBeUndefined()
+      for (const o of p.opciones) expect(o.ajustes, `${p.id} ${o.codigo}`).toBeUndefined()
+    }
     for (const p of PREGUNTAS) expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
   })
 
@@ -233,7 +248,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ 'R9-SEGURO-TODO-RIESGO': { codigo: 'mismo-seguro' }, 'R9-SERVICIOS-AL-PONERSE-AL-DIA': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
+    expect(avance({ 'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'ambos-seguros' }, 'R11-PERIODIZACION-SEGURO': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -243,7 +258,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { 'R9-SEGURO-TODO-RIESGO': { codigo: 'otro', texto: 'Comité trimestral' }, 'R9-SERVICIOS-AL-PONERSE-AL-DIA': { comentario: 'Así' } },
+    respuestas: { 'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'otro', texto: 'Comité trimestral' }, 'R11-PERIODIZACION-SEGURO': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -253,9 +268,9 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'R9-SEGURO-TODO-RIESGO')).toContain('Comité trimestral')
-    expect(filas.find((f) => f[0] === 'R9-SERVICIOS-AL-PONERSE-AL-DIA')).toContain('Así')
-    expect(filas.find((f) => f[0] === 'R9-SERVICIOS-AL-PONERSE-AL-DIA')![10]).toBe('Sí')
+    expect(filas.find((f) => f[0] === 'R11-SEGUROS-TRAS-SUSPENSION')).toContain('Comité trimestral')
+    expect(filas.find((f) => f[0] === 'R11-PERIODIZACION-SEGURO')).toContain('Así')
+    expect(filas.find((f) => f[0] === 'R11-PERIODIZACION-SEGURO')![10]).toBe('Sí')
   })
 
   it('manda la fila a la tabla y avisa si falla', async () => {
@@ -287,8 +302,8 @@ describe('exportación a Excel', () => {
     const estado: Estado = {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
-        'R9-SERVICIOS-AL-PONERSE-AL-DIA': { codigo: 'cobro-retroactivo', comentario: 'Así lo hacemos hoy' },
-        'R9-SEGURO-TODO-RIESGO': { codigo: 'otro', texto: 'Comité trimestral' },
+        'R11-PERIODIZACION-SEGURO': { codigo: 'igual-que-vida', comentario: 'Así lo hacemos hoy' },
+        'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'otro', texto: 'Comité trimestral' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -307,14 +322,14 @@ describe('exportación a Excel', () => {
       })
       return encontrada!
     }
-    expect(fila('R9-SERVICIOS-AL-PONERSE-AL-DIA').getCell(4).value).toBe('cobro-retroactivo')
-    expect(fila('R9-SERVICIOS-AL-PONERSE-AL-DIA').getCell(9).value).toBe('Así lo hacemos hoy')
+    expect(fila('R11-PERIODIZACION-SEGURO').getCell(4).value).toBe('igual-que-vida')
+    expect(fila('R11-PERIODIZACION-SEGURO').getCell(9).value).toBe('Así lo hacemos hoy')
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
     expect(fila('R4-QUIN')).toBeUndefined()
-    expect(fila('R9-SEGURO-TODO-RIESGO').getCell(8).value).toBe('Comité trimestral')
-    expect(fila('R9-SEGURO-TODO-RIESGO').getCell(11).value).toBe('Sí')
-    expect(fila('R9-SERVICIOS-AL-PONERSE-AL-DIA').getCell(11).value).toBe('Sí')
+    expect(fila('R11-SEGUROS-TRAS-SUSPENSION').getCell(8).value).toBe('Comité trimestral')
+    expect(fila('R11-SEGUROS-TRAS-SUSPENSION').getCell(11).value).toBe('Sí')
+    expect(fila('R11-PERIODIZACION-SEGURO').getCell(11).value).toBe('Sí')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!
     expect(efecto.rowCount).toBe(1)

@@ -56,17 +56,19 @@ public final class PagoInferior implements ReglaContable {
         // Capital contractual de la semana que el pago no alcanzó a cubrir (AC18 = AD19 = N43 en el Excel,
         // donde el capital vencido anterior es 0; en general es el aumento del capital vencido).
         BigDecimal reclasificacion = sinResiduo(Calc.noNegativo(Calc.restar(m.capitalContractual(), m.pagoCapital())));
-        return ReglaContable.asiento(m, List.of(
+        BigDecimal servicios = sinResiduo(m.pagoServicios());
+        return ReglaContable.asiento(m, ReglaContable.con(List.of(
                 debito(Cuenta.CAJA, sinResiduo(m.pagoRecibido()), "Recaudo efectivamente recibido (incluye servicios)"),
                 credito(Cuenta.CXC_GASTOS_COBRANZA, sinResiduo(m.pagoCobranza()), "Aplicación del pago a gastos de cobranza"),
                 credito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.pagoMora()), "Aplicación del pago a interés de mora"),
                 credito(Cuenta.CXC_INTERES_CORRIENTE, sinResiduo(m.pagoInteresCorriente()),
                         "Aplicación del pago a interés corriente"),
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS, sinResiduo(m.pagoServicios()),
+                credito(Cuenta.CXP_SERVICIOS_TERCEROS, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
                         "Aplicación del pago a servicios, después de intereses (Excel: Servicios complementarios)"),
                 credito(Cuenta.CARTERA_VIGENTE, sinResiduo(m.pagoCapital()), "Aplicación del remanente a capital"),
                 debito(Cuenta.CARTERA_VENCIDA, reclasificacion, "Reclasificación del capital contractual no pagado"),
-                credito(Cuenta.CARTERA_VIGENTE, reclasificacion, "Contrapartida de la reclasificación")));
+                credito(Cuenta.CARTERA_VIGENTE, reclasificacion, "Contrapartida de la reclasificación")),
+                ReglaContable.seguroTodoRiesgo(servicios, m.pagosServicios())));
     }
 
     /**

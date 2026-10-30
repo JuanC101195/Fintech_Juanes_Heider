@@ -133,6 +133,10 @@ export interface FilaPlan {
   seguro: string
   cuotaTotal: string
   saldo: string
+  /** R9-SEGURO-TODO-RIESGO: seguro todo riesgo sin IVA; solo cuando lo hay (`cuotaTotal` ya lo incluye). */
+  seguroTodoRiesgo?: string
+  /** IVA del seguro todo riesgo, aparte; solo cuando lo hay. */
+  ivaSeguroTodoRiesgo?: string
 }
 
 export interface Simulacion {
@@ -172,8 +176,13 @@ export interface PeticionEjecucion {
 export interface Servicios {
   fondoGarantias: string
   asistencia: string
+  /** Seguro de vida. */
   seguro: string
   total: string
+  /** R9-SEGURO-TODO-RIESGO: seguro todo riesgo sin IVA; solo cuando él o su IVA no son cero (`total` ya los incluye). */
+  seguroTodoRiesgo?: string
+  /** IVA del seguro todo riesgo, segmentado; viaja junto con `seguroTodoRiesgo`. */
+  ivaSeguroTodoRiesgo?: string
 }
 
 /** Lo que un pago extraordinario cancela de la deuda pendiente (cobranza, mora, interés, servicios y capital). */

@@ -28,9 +28,13 @@ class RespuestasDiegoRonda8Test {
     private static final BigDecimal CUARENTA_MIL = bd(40_000);
     private final MotorCartera motor = new MotorCartera();
 
+    /**
+     * NEGOCIO con la lectura B de los umbrales (la de la ronda 8: solo cuentan las cuotas atrasadas de periodos
+     * anteriores). La lectura A de la ronda 9 (R9-COBRO-MOMENTO) se prueba en {@code RespuestasDiegoRonda9Test}.
+     */
     private static ReglasNegocio negocio() {
         try {
-            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion());
+            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion()).conUmbralesCuentanCuotaEnCurso(false);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

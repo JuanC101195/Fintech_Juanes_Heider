@@ -101,13 +101,7 @@ final class Abonos {
      * contando como no pagado al día. Nunca se cobra nada de periodos futuros (A4).
      */
     private static Servicios pagarServiciosCorrientes(BigDecimal disponible, Servicios porPagar) {
-        BigDecimal restante = disponible;
-        BigDecimal fondo = min(restante, porPagar.fondoGarantias());
-        restante = restar(restante, fondo);
-        BigDecimal asistencia = min(restante, porPagar.asistencia());
-        restante = restar(restante, asistencia);
-        BigDecimal seguro = min(restante, porPagar.seguro());
-        return new Servicios(fondo, asistencia, seguro);
+        return porPagar.pagarHasta(disponible);
     }
 
     /**
@@ -148,16 +142,12 @@ final class Abonos {
             vencido = min(restante, s.capitalVencido);
             restante = restar(restante, vencido);
         }
-        BigDecimal fondo = min(restante, s.cxcServicios.fondoGarantias());
-        restante = restar(restante, fondo);
-        BigDecimal asistencia = min(restante, s.cxcServicios.asistencia());
-        restante = restar(restante, asistencia);
-        BigDecimal seguro = min(restante, s.cxcServicios.seguro());
-        restante = restar(restante, seguro);
+        // Fondo → asistencia → seguro de vida → seguro todo riesgo → su IVA (R9-SEGURO-TODO-RIESGO).
+        Servicios servicios = s.cxcServicios.pagarHasta(restante);
+        restante = servicios.descontarDe(restante);
         if (!capitalAntes) {
             vencido = min(restante, s.capitalVencido);
         }
-        Servicios servicios = new Servicios(fondo, asistencia, seguro);
         s.cxcCobranza = noNegativo(restar(s.cxcCobranza, cobranza));
         s.cxcMora = noNegativo(restar(s.cxcMora, mora));
         s.cxcInteres = noNegativo(restar(s.cxcInteres, interes));
