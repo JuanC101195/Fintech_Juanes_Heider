@@ -10,12 +10,14 @@
       --fondo: #f4f7f6; --tarjeta: #ffffff; --texto: #13201d; --suave: #4d5f5a; --primario: #0f6b5c; --borde: #dbe4e1;
       --aviso-fondo: #fff4d6; --aviso-texto: #5a4300; --error-fondo: #fde8e6; --error-texto: #8a1c12;
       --fila-sinpago: #fde8e6; --fila-just: #e3eefc; --fila-listo: #fff0c2; --cabecera: #e9f1ef;
+      --s1: #0f6b5c; --s2: #b45309; --s3: #6d28d9; --s4: #1d4ed8;
     }
     @media (prefers-color-scheme: dark) {
       :root {
         --fondo: #0e1513; --tarjeta: #17211e; --texto: #e6efec; --suave: #a3b5b0; --primario: #5fd0b8; --borde: #26332f;
         --aviso-fondo: #3a2f0c; --aviso-texto: #f6dc8c; --error-fondo: #3d1a17; --error-texto: #ffc2bb;
         --fila-sinpago: #3d1f1c; --fila-just: #1b2c44; --fila-listo: #453a12; --cabecera: #1f2d29;
+        --s1: #5fd0b8; --s2: #f0a24b; --s3: #b69cff; --s4: #7fb0ff;
       }
     }
     * { box-sizing: border-box; }
@@ -64,6 +66,19 @@
     tr.sinpago td, tr.sinpago th { background: var(--fila-sinpago); }
     tr.justificado td, tr.justificado th { background: var(--fila-just); }
     tr.listo td, tr.listo th { background: var(--fila-listo); font-weight: 600; }
+    .grafica { width: 100%; min-width: 0; }
+    .grafica svg { display: block; max-width: 100%; height: auto; }
+    .g-texto { fill: var(--suave); font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-valor { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-eje { stroke: var(--borde); stroke-width: 1; }
+    .g-rejilla { stroke: var(--borde); stroke-width: 1; opacity: .7; }
+    .leyenda span.linea { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--texto); vertical-align: 4px; margin-right: 6px; }
+    .leyenda span.punteada { border-top-style: dashed; }
+    .selectores { display: flex; flex-wrap: wrap; gap: 0 16px; }
+    .selectores fieldset { flex: 1 1 260px; min-width: 0; }
+    .selectores label:has(input:disabled) { opacity: .5; }
+    .bloque-grafica { margin: 20px 0; min-width: 0; }
+    tfoot th, tfoot td { font-weight: 700; background: var(--cabecera); border-top: 2px solid var(--borde); }
     .tabla-chica { max-width: 520px; }
     details { margin: 12px 0; }
     summary { cursor: pointer; font-weight: 600; }
@@ -98,12 +113,22 @@
     <p id="estado" role="status" aria-live="polite"></p>
     <div id="resultado"></div>
 
+    <section class="tarjeta" aria-labelledby="t-tasa">
+      <h2 id="t-tasa">Las dos versiones de la tasa</h2>
+      <ul class="notas">
+        <li><strong>Usura − 1 punto:</strong> la simulación cobra la tasa de usura vigente menos un punto porcentual. <strong>Usura máxima:</strong> cobra la usura vigente sin ese margen.</li>
+        <li>Se puede alternar entre las dos y entre "sin" y "con" justificaciones: cada combinación es una corrida distinta del motor.</li>
+        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la simulación, la usura vigente y la tasa implícita del sistema actual.</li>
+        <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la simulación frente a lo que el cliente pagó; la tabla mensual da las mismas cifras.</li>
+      </ul>
+    </section>
+
     <section class="tarjeta" aria-labelledby="t-explica">
       <h2 id="t-explica">Qué es real y qué es simulado</h2>
       <ul class="notas">
         <li><strong>Real:</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo (columna "Pago real" y lista de pagos reales). Es lo que se compara con el sistema de la empresa.</li>
         <li><strong>Simulado:</strong> todo lo demás de la tabla (interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación). Es lo que el motor de cartera habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
-        <li>Tasa: usura vigente menos 1 punto, según la serie oficial de la Superfinanciera.</li>
+        <li>Tasa: usura vigente menos 1 punto (o la usura máxima, si se elige esa versión), según la serie oficial de la Superfinanciera.</li>
         <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
         <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
@@ -161,7 +186,11 @@ function fechaCorta(f) {
   return m ? `${m[3]}/${m[2]}/${m[1]}` : String(f)
 }
 const texto = (s) => (s === null || s === undefined || s === '' ? '—' : String(s).replace(/_/g, ' '))
-const titulo = { sin_justificaciones: 'Sin justificaciones', con_justificaciones: 'Con justificaciones' }
+const titulo = {
+  sin_justificaciones: 'Sin justificaciones', con_justificaciones: 'Con justificaciones',
+  max_sin_justificaciones: 'Usura máxima, sin justificaciones', max_con_justificaciones: 'Usura máxima, con justificaciones',
+}
+const rotuloCorrida = (k) => titulo[k] || texto(k)
 
 function dato(rotulo, valor, extra) {
   return el('div', {}, el('dt', {}, rotulo), el('dd', {}, valor, extra || null))
@@ -176,6 +205,7 @@ const COLUMNAS = [
   ['Estado', null, 'izq', (p) => texto(p.estado)],
   ['Cuotas vencidas', (p) => dec(p.cuotasVencidas), '', (p) => p.cuotasVencidas],
   ['Saldo inicial', (p) => cop(p.saldoInicial), '', (p) => p.saldoInicial],
+  ['Tasa EA', (p) => pct(p.tasaEA), '', (p) => p.tasaEA],
   ['Interés', (p) => cop(p.interesCorriente), '', (p) => p.interesCorriente],
   ['Mora', (p) => cop(p.interesMora), '', (p) => p.interesMora],
   ['Cobranza', (p) => cop(p.cobranza), '', (p) => p.cobranza],
@@ -253,7 +283,7 @@ function resumenComparativo(ep, c) {
           dato('Total pagado', cop(sistema)),
           dato('Inversión inicial', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
           dato('Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
-          dato('Rentabilidad real (EA, con multas)', pct(r.realEaConMultas)))),
+          dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas)))),
       el('div', {}, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente', cop(r.simPagado)),
@@ -298,7 +328,7 @@ function margenTexto(margen, inversion) {
 function tarjetaEpisodio(ep, i, total) {
   const pref = `ep${i}`
   const corridas = ep.corridas || {}
-  const claves = ['sin_justificaciones', 'con_justificaciones']
+  const claves = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones']
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
   tarjeta.append(el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
@@ -319,20 +349,37 @@ function tarjetaEpisodio(ep, i, total) {
     tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene corridas del motor.'))
     return tarjeta
   }
-  const nombreGrupo = `${pref}-corrida`
+  const hayMax = Object.keys(corridas).some((k) => k.startsWith('max_'))
   const zona = el('div')
-  const grupo = el('fieldset', {}, el('legend', {}, 'Corrida del motor'))
-  let actual = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
+  // Corrida elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima) + justificaciones.
+  const nombre = (t, j) => `${t}${j}_justificaciones`
+  const arranque = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
+  const sel = { tasa: arranque.startsWith('max_') ? 'max_' : '', just: arranque.includes('con_') ? 'con' : 'sin' }
+  const radios = []
+  const grupoDe = (leyenda, campo, opciones) => {
+    const g = el('fieldset', {}, el('legend', {}, leyenda))
+    for (const [valor, rotulo] of opciones) {
+      const radio = el('input', { type: 'radio', name: `${pref}-${campo}`, value: valor, id: `${pref}-${campo}-${valor || 'normal'}`, checked: sel[campo] === valor })
+      radio.addEventListener('change', () => { sel[campo] = valor; pintar() })
+      radios.push([campo, valor, radio])
+      g.append(el('label', { for: radio.id }, radio, rotulo))
+    }
+    return g
+  }
+  const grupos = el('div', { class: 'selectores' })
+  if (hayMax) grupos.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ['max_', 'Usura máxima']]))
+  grupos.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
   const pintar = () => {
-    const c = corridas[actual]
-    zona.replaceChildren(resumenComparativo(ep, c), tablaCompleta(ep, c, actual))
+    // Una opción se deshabilita si, combinada con la otra elección, la corrida no existe para este episodio.
+    for (const [campo, valor, radio] of radios) {
+      const otra = campo === 'tasa' ? nombre(valor, sel.just) : nombre(sel.tasa, valor)
+      radio.disabled = !corridas[otra]
+    }
+    const clave = nombre(sel.tasa, sel.just)
+    const c = corridas[clave]
+    zona.replaceChildren(resumenComparativo(ep, c), ...graficasYMensual(ep, c, clave), tablaCompleta(ep, c, clave))
   }
-  for (const k of claves) {
-    const radio = el('input', { type: 'radio', name: nombreGrupo, value: k, id: `${pref}-${k}`, checked: k === actual, disabled: !corridas[k] })
-    radio.addEventListener('change', () => { actual = k; pintar() })
-    grupo.append(el('label', { for: `${pref}-${k}` }, radio, titulo[k]))
-  }
-  tarjeta.append(grupo, zona)
+  tarjeta.append(grupos, zona)
   pintar()
 
   const lista = ep.pagosReales || []
@@ -344,6 +391,223 @@ function tarjetaEpisodio(ep, i, total) {
       : el('p', { class: 'ayuda' }, 'Sin pagos reales registrados.'))
   tarjeta.append(detalle)
   return tarjeta
+}
+
+// ---------- gráficas (SVG en línea, sin librerías) ----------
+const NS = 'http://www.w3.org/2000/svg'
+function sv(tag, attrs, ...hijos) {
+  const e = document.createElementNS(NS, tag)
+  for (const [k, v] of Object.entries(attrs || {})) if (v !== null && v !== undefined) e.setAttribute(k, v)
+  for (const h of hijos.flat()) if (h !== null && h !== undefined) e.append(h instanceof Node ? h : document.createTextNode(String(h)))
+  return e
+}
+const msDe = (f) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(f || ''); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : null }
+const mesDe = (f) => (f && /^\d{4}-\d{2}/.test(f) ? f.slice(0, 7) : null)
+function copCorto(v) {
+  const a = Math.abs(v)
+  if (a >= 1e6) return (v / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',').replace(/,0$/, '') + ' M'
+  if (a >= 1e3) return Math.round(v / 1e3) + ' mil'
+  return String(Math.round(v))
+}
+function pasoBonito(rango, maxMarcas, pasos) {
+  for (const p of pasos) if (rango / p <= maxMarcas) return p
+  return pasos[pasos.length - 1]
+}
+// Separa etiquetas que caerían una sobre otra (valores finales de líneas cercanas).
+function separar(items, minimo, tope) {
+  const o = [...items].sort((a, b) => a.y - b.y)
+  o.forEach((it, i) => { it.ly = i && o[i - 1].ly + minimo > it.y ? o[i - 1].ly + minimo : it.y })
+  const exceso = o.length ? o[o.length - 1].ly - tope : 0
+  if (exceso > 0) o.forEach((it) => { it.ly -= exceso })
+  return o
+}
+// Dibuja con el ancho real del contenedor y vuelve a dibujar si cambia (celular / escritorio).
+function responsivo(dibujar) {
+  const cont = el('div', { class: 'grafica' })
+  let ultimo = 0
+  const pintar = () => {
+    const w = Math.max(280, Math.floor(cont.clientWidth) || 640)
+    if (w === ultimo) return
+    ultimo = w
+    cont.replaceChildren(dibujar(w))
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(pintar).observe(cont)
+  setTimeout(pintar, 0)
+  return cont
+}
+const pct1 = (v, d = 1) => (v * 100).toFixed(d).replace('.', ',') + ' %'
+
+function marcasX(n, anchoUtil) {
+  const cada = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(anchoUtil / 58))))
+  return (i) => i % cada === 0
+}
+
+function graficaTasa(periodos, realEA, nombreCorrida, id) {
+  const serie = (campo) => periodos.filter((p) => p[campo] !== null && p[campo] !== undefined && msDe(p.fechaVencimiento) !== null).map((p) => [msDe(p.fechaVencimiento), Number(p[campo])])
+  const aplicada = serie('tasaEA')
+  const usura = serie('usuraEA')
+  const hayReal = realEA !== null && realEA !== undefined
+  const todos = [...aplicada, ...usura]
+  const envoltura = el('div')
+  envoltura.append(el('h3', {}, 'Tasa efectiva anual por fecha'))
+  if (!todos.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay tasas por fecha para esta corrida.')); return envoltura }
+  const xs = todos.map((q) => q[0])
+  const x0 = Math.min(...xs)
+  const x1 = Math.max(...xs)
+  const vals = todos.map((q) => q[1]).concat(hayReal ? [Number(realEA)] : [])
+  const rango = (s) => `entre ${pct1(Math.min(...s.map((q) => q[1])))} y ${pct1(Math.max(...s.map((q) => q[1])))}`
+  const descripcion = `${nombreCorrida}. ` + (aplicada.length ? `Tasa aplicada por el motor ${rango(aplicada)}` : 'Sin tasa aplicada') +
+    (usura.length ? `; usura vigente ${rango(usura)}` : '') + (hayReal ? `; tasa implícita del sistema actual ${pct1(Number(realEA))}` : '') + '.'
+  const grafica = responsivo((w) => {
+    const alto = w < 500 ? 260 : 300
+    const m = { i: 48, d: 58, s: 14, b: 30 }
+    const ancho = w - m.i - m.d
+    const altoUtil = alto - m.s - m.b
+    const paso = pasoBonito(Math.max(...vals) - Math.min(...vals) + 0.01, 5, [0.005, 0.01, 0.02, 0.05, 0.1, 0.2])
+    const ymin = Math.floor((Math.min(...vals) - 0.003) / paso) * paso
+    const ymax = Math.ceil((Math.max(...vals) + 0.003) / paso) * paso
+    const X = (t) => m.i + (x1 === x0 ? ancho / 2 : ((t - x0) / (x1 - x0)) * ancho)
+    const Y = (v) => m.s + (1 - (v - ymin) / (ymax - ymin)) * altoUtil
+    const svg = sv('svg', { role: 'img', 'aria-labelledby': `${id}-t ${id}-d`, viewBox: `0 0 ${w} ${alto}`, width: w, height: alto },
+      sv('title', { id: `${id}-t` }, 'Tasa efectiva anual por fecha'), sv('desc', { id: `${id}-d` }, descripcion))
+    const decs = paso < 0.01 ? 1 : 0
+    for (let v = ymin; v <= ymax + 1e-9; v += paso) {
+      svg.append(sv('line', { class: 'g-rejilla', x1: m.i, x2: m.i + ancho, y1: Y(v), y2: Y(v) }),
+        sv('text', { class: 'g-texto', x: m.i - 6, y: Y(v) + 4, 'text-anchor': 'end' }, (v * 100).toFixed(decs).replace('.', ',') + ' %'))
+    }
+    svg.append(sv('line', { class: 'g-eje', x1: m.i, x2: m.i + ancho, y1: Y(ymin), y2: Y(ymin) }))
+    // Eje X: año-mes, repartido en pocas marcas.
+    const nMarcas = Math.max(2, Math.min(6, Math.floor(ancho / 80)))
+    let anterior = ''
+    for (let k = 0; k < nMarcas; k++) {
+      const t = x0 + ((x1 - x0) * k) / (nMarcas - 1)
+      const etiqueta = new Date(t).toISOString().slice(0, 7)
+      if (etiqueta === anterior) continue
+      anterior = etiqueta
+      svg.append(sv('text', { class: 'g-texto', x: X(t), y: alto - 8, 'text-anchor': k === 0 ? 'start' : k === nMarcas - 1 ? 'end' : 'middle' }, etiqueta))
+    }
+    const escalon = (pts) => pts.map(([t, v], i) => (i === 0 ? `M${X(t).toFixed(1)} ${Y(v).toFixed(1)}` : `H${X(t).toFixed(1)} V${Y(v).toFixed(1)}`)).join(' ')
+    const finales = []
+    if (usura.length) {
+      svg.append(sv('path', { d: escalon(usura), fill: 'none', style: 'stroke:var(--s2)', 'stroke-width': 2, 'stroke-linejoin': 'round' }))
+      finales.push({ y: Y(usura.at(-1)[1]), v: usura.at(-1)[1], color: 's2' })
+    }
+    if (hayReal) {
+      svg.append(sv('line', { x1: m.i, x2: m.i + ancho, y1: Y(Number(realEA)), y2: Y(Number(realEA)), style: 'stroke:var(--s3)', 'stroke-width': 2, 'stroke-dasharray': '6 4' }))
+      finales.push({ y: Y(Number(realEA)), v: Number(realEA), color: 's3' })
+    }
+    if (aplicada.length) {
+      svg.append(sv('path', { d: escalon(aplicada), fill: 'none', style: 'stroke:var(--s1)', 'stroke-width': 3, 'stroke-linejoin': 'round' }))
+      finales.push({ y: Y(aplicada.at(-1)[1]), v: aplicada.at(-1)[1], color: 's1' })
+    }
+    for (const f of separar(finales, 14, m.s + altoUtil)) {
+      svg.append(sv('text', { class: 'g-valor', x: m.i + ancho + 6, y: f.ly + 4, style: `fill:var(--${f.color})` }, pct1(f.v)))
+    }
+    return svg
+  })
+  const leyenda = el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de la gráfica de tasa' },
+    el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s1);border-top-width:4px' }), 'Tasa aplicada por el motor'),
+    usura.length ? el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s2)' }), 'Usura vigente') : null,
+    hayReal ? el('li', {}, el('span', { class: 'linea punteada', style: 'border-top-color:var(--s3)' }), 'Tasa real implícita del sistema actual') : null)
+  envoltura.append(grafica, leyenda)
+  if (hayReal) envoltura.append(el('p', { class: 'ayuda' }, 'La tasa del sistema actual es implícita: calculada con todo lo que pagó el cliente (cuotas y multas) frente a la inversión; el sistema actual no separa interés.'))
+  return envoltura
+}
+
+// Agrupa los periodos por mes de vencimiento.
+function porMes(periodos) {
+  const mapa = new Map()
+  const suma = (a, b) => a + (Number(b) || 0)
+  for (const p of periodos) {
+    const mes = mesDe(p.fechaVencimiento)
+    if (!mes) continue
+    if (!mapa.has(mes)) mapa.set(mes, { mes, ic: 0, im: 0, cb: 0, sv: 0, pr: 0, pa: 0, tasas: [] })
+    const g = mapa.get(mes)
+    g.ic = suma(g.ic, p.interesCorriente); g.im = suma(g.im, p.interesMora); g.cb = suma(g.cb, p.cobranza); g.sv = suma(g.sv, p.servicios)
+    g.pr = suma(g.pr, p.valorReal); g.pa = suma(g.pa, p.pagoTotalCliente)
+    if (p.tasaEA !== null && p.tasaEA !== undefined) g.tasas.push(Number(p.tasaEA))
+  }
+  return [...mapa.values()].sort((a, b) => (a.mes < b.mes ? -1 : 1)).map((g) => ({ ...g, tasa: g.tasas.length ? g.tasas.reduce((s, x) => s + x, 0) / g.tasas.length : null }))
+}
+
+function graficaInteres(meses, nombreCorrida, id) {
+  const envoltura = el('div')
+  envoltura.append(el('h3', {}, 'Interés cobrado por la simulación, por mes'))
+  if (!meses.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay periodos con fecha para graficar por mes.')); return envoltura }
+  const tope = Math.max(...meses.map((g) => Math.max(g.ic + g.im + g.cb, g.pa)), 1)
+  const totalInteres = meses.reduce((s, g) => s + g.ic + g.im + g.cb, 0)
+  const descripcion = `${nombreCorrida}. ${meses.length} meses, de ${meses[0].mes} a ${meses.at(-1).mes}. Cobro simulado de interés, mora y cobranza: ${cop(totalInteres)} en total; el cliente pagó ${cop(meses.reduce((s, g) => s + g.pa, 0))}.`
+  const grafica = responsivo((w) => {
+    const alto = w < 500 ? 280 : 320
+    const m = { i: 54, d: 12, s: 14, b: 32 }
+    const ancho = w - m.i - m.d
+    const altoUtil = alto - m.s - m.b
+    const paso = pasoBonito(tope, 5, [1, 2, 5, 10, 20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4, 2e4, 5e4, 1e5, 2e5, 5e5, 1e6, 2e6, 5e6, 1e7, 2e7, 5e7, 1e8])
+    const ymax = Math.ceil(tope / paso) * paso
+    const banda = ancho / meses.length
+    const X = (i) => m.i + banda * (i + 0.5)
+    const Y = (v) => m.s + (1 - v / ymax) * altoUtil
+    const svg = sv('svg', { role: 'img', 'aria-labelledby': `${id}-t ${id}-d`, viewBox: `0 0 ${w} ${alto}`, width: w, height: alto },
+      sv('title', { id: `${id}-t` }, 'Interés cobrado por mes y pago del cliente'), sv('desc', { id: `${id}-d` }, descripcion))
+    for (let v = 0; v <= ymax + 1e-9; v += paso) {
+      svg.append(sv('line', { class: 'g-rejilla', x1: m.i, x2: m.i + ancho, y1: Y(v), y2: Y(v) }),
+        sv('text', { class: 'g-texto', x: m.i - 6, y: Y(v) + 4, 'text-anchor': 'end' }, copCorto(v)))
+    }
+    const visible = marcasX(meses.length, ancho)
+    const aB = Math.max(2, Math.min(banda * 0.62, 36))
+    meses.forEach((g, i) => {
+      let base = 0
+      for (const [v, color, rotulo] of [[g.ic, 's1', 'Interés corriente'], [g.im, 's2', 'Interés de mora'], [g.cb, 's4', 'Cobranza']]) {
+        if (v > 0) {
+          svg.append(sv('rect', { x: X(i) - aB / 2, y: Y(base + v), width: aB, height: Math.max(0.5, Y(base) - Y(base + v)), style: `fill:var(--${color})` }, sv('title', {}, `${g.mes} · ${rotulo}: ${cop(v)}`)))
+        }
+        base += v
+      }
+      if (visible(i)) svg.append(sv('text', { class: 'g-texto', x: X(i), y: alto - 10, 'text-anchor': 'middle' }, g.mes))
+    })
+    svg.append(sv('line', { class: 'g-eje', x1: m.i, x2: m.i + ancho, y1: Y(0), y2: Y(0) }))
+    svg.append(sv('path', { d: 'M' + meses.map((g, i) => `${X(i).toFixed(1)} ${Y(g.pa).toFixed(1)}`).join(' L'), fill: 'none', style: 'stroke:var(--texto)', 'stroke-width': 2, 'stroke-linejoin': 'round' }))
+    meses.forEach((g, i) => svg.append(sv('circle', { cx: X(i), cy: Y(g.pa), r: 3.5, style: 'fill:var(--tarjeta);stroke:var(--texto)', 'stroke-width': 2 }, sv('title', {}, `${g.mes} · pagó el cliente: ${cop(g.pa)}`))))
+    return svg
+  })
+  const caja = (color) => el('span', { class: 'muestra', style: `background:var(--${color})` })
+  const leyenda = el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de la gráfica de interés' },
+    el('li', {}, caja('s1'), 'Interés corriente'), el('li', {}, caja('s2'), 'Interés de mora'), el('li', {}, caja('s4'), 'Cobranza'),
+    el('li', {}, el('span', { class: 'linea' }), 'Lo que pagó el cliente'))
+  envoltura.append(grafica, leyenda)
+  return envoltura
+}
+
+function tablaMensual(meses, ep, nombreCorrida) {
+  const envoltura = el('div')
+  if (!meses.length) return envoltura
+  const filas = meses.map((g) => el('tr', {}, el('th', { scope: 'row', class: 'izq' }, g.mes),
+    [g.ic, g.im, g.cb, g.sv, g.pr, g.pa].map((v) => el('td', {}, cop(v))), el('td', {}, g.tasa === null ? '—' : pct(g.tasa))))
+  const t = (k) => meses.reduce((s, g) => s + g[k], 0)
+  const todas = meses.flatMap((g) => g.tasas)
+  const pie = el('tfoot', {}, el('tr', {}, el('th', { scope: 'row', class: 'izq' }, 'Total'),
+    ['ic', 'im', 'cb', 'sv', 'pr', 'pa'].map((k) => el('td', {}, cop(t(k)))), el('td', {}, todas.length ? pct(todas.reduce((s, x) => s + x, 0) / todas.length) : '—')))
+  const cab = ['Mes', 'Interés corriente', 'Mora', 'Cobranza', 'Servicios', 'Pago real del cliente', 'Pago aplicado', 'Tasa aplicada promedio']
+  envoltura.append(el('h3', {}, 'Resumen mensual'),
+    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Resumen mensual, ${nombreCorrida}` },
+      el('table', { class: 'mensual' }, el('caption', {}, `Resumen mensual del contrato ${ep.id} · ${nombreCorrida}`),
+        el('thead', {}, el('tr', {}, cab.map((n, i) => el('th', { scope: 'col', class: i === 0 ? 'izq' : '' }, n)))), el('tbody', {}, filas), pie)))
+  return envoltura
+}
+
+let contadorGraficas = 0
+function graficasYMensual(ep, c, clave) {
+  const periodos = c.periodos || []
+  if (!periodos.length) return []
+  const nombre = rotuloCorrida(clave)
+  const id = `g${++contadorGraficas}`
+  const meses = porMes(periodos)
+  const real = c.resumen ? (c.resumen.realEA ?? c.resumen.realEaConMultas ?? null) : null
+  return [
+    el('section', { class: 'bloque-grafica', 'aria-label': 'Gráfica de tasa' }, graficaTasa(periodos, real, nombre, `${id}a`)),
+    el('section', { class: 'bloque-grafica', 'aria-label': 'Gráfica de interés' }, graficaInteres(meses, nombre, `${id}b`)),
+    tablaMensual(meses, ep, nombre),
+  ]
 }
 
 function tablaCompleta(ep, c, clave) {
@@ -358,8 +622,8 @@ function tablaCompleta(ep, c, clave) {
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-listo)' }), 'Listo para recuperar')),
-    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de amortización, ${titulo[clave]}` },
-      tablaAmortizacion(periodos, `Amortización simulada del contrato ${ep.id} · ${titulo[clave]}`)))
+    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de amortización, ${rotuloCorrida(clave)}` },
+      tablaAmortizacion(periodos, `Amortización simulada del contrato ${ep.id} · ${rotuloCorrida(clave)}`)))
   return cont
 }
 
@@ -378,7 +642,10 @@ function crearDemo() {
   const CUOTA = 100000, CAPITAL = 85000, SERVICIOS = 5000
   const real = { 1: 100000, 2: 100000, 3: 100000, 4: 100000, 5: 0, 6: 0, 7: 0, 8: 300000, 9: 100000, 10: 100000, 11: 100000, 12: 100000 }
   const fechaDe = (n) => { const d = new Date(Date.UTC(2025, 0, 6 + 7 * n)); return d.toISOString().slice(0, 10) }
-  function simular(justificados) {
+  // `margen` = lo que se resta a la usura (0,01 = usura − 1 punto; 0 = usura máxima). La usura de la demo sube en el periodo 7.
+  const usuraDe = (n) => (n < 7 ? 0.27 : 0.285)
+  const semanal = (ea) => Math.pow(1 + ea, 1 / 52) - 1
+  function simular(justificados, margen) {
     const filas = []
     let saldo = 1000000, vencidas = 0, atrasoSem = 0, marca = null
     for (let n = 1; n <= 12 && marca === null; n++) {
@@ -386,7 +653,8 @@ function crearDemo() {
       const sinPago = pago === 0
       if (sinPago && !just) vencidas += 1
       atrasoSem = vencidas
-      const interes = Math.round(saldo * 0.01 / 1000) * 1000
+      const tasa = usuraDe(n) - margen
+      const interes = Math.round(saldo * semanal(tasa) / 100) * 100
       const mora = vencidas > 0 ? 2000 * vencidas : 0
       const cobranza = vencidas > 0 && !sinPago ? 40000 : 0
       let resto = pago
@@ -399,7 +667,7 @@ function crearDemo() {
         diasAtraso: sinPago ? 0 : atrasoSem * 7, justificado: just, estado: listo ? 'listo_recuperacion' : sinPago ? (just ? 'justificado' : 'sin_pago') : vencidas > 0 ? 'en_mora' : 'al_dia',
         cuotasVencidas: vencidas, saldoInicial: saldo, interesCorriente: interes, interesMora: mora, cobranza, servicios: SERVICIOS,
         cuotaFinanciera: CUOTA, pagoCapital: pCap, pagoInteres: pInt, pagoMora: pMora, pagoCobranza: pCob, pagoServicios: pServ,
-        pagoTotalCliente: pago, capitalVencido: vencidas * CAPITAL, saldoFinal: saldo - pCap, listoRecuperacion: listo, tasaEA: 0.25,
+        pagoTotalCliente: pago, capitalVencido: vencidas * CAPITAL, saldoFinal: saldo - pCap, listoRecuperacion: listo, tasaEA: tasa, usuraEA: usuraDe(n),
       })
       saldo -= pCap
       if (listo) marca = n
@@ -412,7 +680,7 @@ function crearDemo() {
         simMora: filas.reduce((s, f) => s + f.interesMora, 0), simCobranza: filas.reduce((s, f) => s + f.cobranza, 0),
         simInteres: filas.reduce((s, f) => s + f.interesCorriente, 0), simServicios: filas.reduce((s, f) => s + f.servicios, 0),
         simCuotasVencidasMax: Math.max(...filas.map((f) => f.cuotasVencidas)), simMarcaRecuperacion: marca !== null, simPeriodoMarca: marca,
-        simEstadoFinal: marca ? 'listo_recuperacion' : 'al_dia', realEaConMultas: 0.3,
+        simEstadoFinal: marca ? 'listo_recuperacion' : 'al_dia', realEaConMultas: 0.3, realEA: 0.3,
       },
       periodos: filas,
     }
@@ -424,7 +692,10 @@ function crearDemo() {
       cuotaRealMiles: 100, inversion: 1000000, inversionImputada: true, lineaUsura: 'consumo (ejemplo)', tasaInicialEA: 0.25,
       diasJustificados: 7, realPagadoCuotas: 1200000, realMultas: 20000,
       pagosReales: Object.entries(real).filter(([, v]) => v > 0).map(([n, v]) => ({ fecha: fechaDe(Number(n)), valorMiles: v / 1000, multaMiles: Number(n) === 8 ? 20 : 0 })),
-      corridas: { sin_justificaciones: simular([]), con_justificaciones: simular([7]) },
+      corridas: {
+        sin_justificaciones: simular([], 0.01), con_justificaciones: simular([7], 0.01),
+        max_sin_justificaciones: simular([], 0), max_con_justificaciones: simular([7], 0),
+      },
     }],
   }
 }
