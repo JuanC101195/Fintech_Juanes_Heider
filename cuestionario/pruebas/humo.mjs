@@ -48,18 +48,18 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
-  await page.getByLabel('Comentario de la pregunta R9-COBRO-MOMENTO', { exact: true }).fill('Lo decide el director financiero')
+  await page.getByLabel('Comentario de la pregunta R10-PERIODO-ATRASADO', { exact: true }).fill('Lo decide el director financiero')
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
   await page.screenshot({ path: path.join(salida, `cuestionario-${nombre}.png`), fullPage: true })
 
   if (nombre === 'escritorio') {
-    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R9-COBRO-MOMENTO, arriba).
+    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R10-PERIODO-ATRASADO, arriba).
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
-    // La ronda 9 (R9-*) aparece en su bloque y se puede responder escogiendo una opción.
+    // La ronda 11 (R11-*) aparece en su bloque (Servicios complementarios) y se puede responder escogiendo una opción.
     await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Servicios complementarios/ }).click()
-    await page.getByRole('radio', { name: /Es el mismo seguro/i }).check()
+    await page.getByRole('radio', { name: /Se siguen causando los dos seguros/i }).check()
     // La ronda 10 (R10-*) también aparece en su bloque (Dación y retoma) y se puede responder.
     await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Dación y retoma/ }).click()
     await page.getByRole('radio', { name: /valor de la moto usada según el avalúo/i }).check()

@@ -2,7 +2,18 @@
 
 Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reproduce el Excel tal cual** en los 9 casos; estas preguntas son para decidir si el Excel es la regla final. El detalle de cada una está en `docs/reglas/caso-N.md`.
 
-> **Estado al 2026-10-22.** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. **Abiertas hoy (ronda 7, 2 preguntas):** R7-COBRANZA-ACTIVA (quién activa la cobranza —director financiero, gerente o comité— y si es crédito por crédito o por regla tras N días de mora) y R7-RECUP-VS-CASO11 (si el caso 11 se corrige de 4 a 2 periodos de espera antes de la dación o se deja en 4 como ejemplo).
+> **Estado al 2026-10-30 (el detalle de rondas es del 22 oct).** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. Las rondas 7, 8 y 9 ya están respondidas (D56 a D64). **Abiertas hoy:** las 7 de la ronda 10 (backtesting) y las 4 de la ronda 11 (seguimiento de la ronda 9, abajo).
+
+## Ronda 11 · Abierta (30 oct 2026)
+
+Seguimiento de la ronda 9, que Diego respondió el 30 oct (`respuestas-diego-2026-10-30-ronda9.md`, D62 a D64). Son 4 preguntas del bloque Servicios complementarios. Aún no tienen clave del motor; mientras responde, el motor hace el supuesto indicado.
+
+| ID | Pregunta | Opciones |
+|---|---|---|
+| R11-SEGUROS-TRAS-SUSPENSION | Tras 2 periodos atrasados, cuando «solo se causa el seguro», ¿se siguen causando los dos seguros (vida y todo riesgo) o solo uno? | (a) Los dos (supuesto provisional del motor). (b) Solo el de vida. (c) Solo el todo riesgo. (d) Otra regla. |
+| R11-BASE-FINANCIACION-INICIAL | El 0,3 % mensual es «sobre la financiación inicial»: ¿qué monto es esa base? | (a) El monto financiado a secas. (b) El monto financiado más los servicios y gastos que se financian. (c) Otra base. |
+| R11-PERIODIZACION-SEGURO | El 0,3 % es mensual y «se paga igual que el de vida»: ¿se convierte a semanal y quincenal igual que el seguro de vida? | (a) Sí, igual. (b) No, otra conversión. (c) Otra regla. |
+| R11-CONTABILIDAD-SEGURO-IVA | En la contabilidad, ¿el seguro todo riesgo es ingreso propio o pasivo a pagar a la aseguradora, y el IVA es IVA generado? | (a) Pasivo a la aseguradora e IVA generado. (b) Ingreso propio e IVA generado. (c) Otro tratamiento. |
 
 ## Ronda 10 · Abierta (29 oct 2026)
 
