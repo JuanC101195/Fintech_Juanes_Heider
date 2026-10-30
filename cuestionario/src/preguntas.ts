@@ -1612,20 +1612,6 @@ const RONDA_6: Pregunta[] = [
       { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
-  {
-    id: 'R10-CONTADOR-VENCIDAS',
-    bloque: PAGOS,
-    titulo: '¿Cómo debe contarse el número de cuotas vencidas de un crédito?',
-    contexto:
-      'Hoy el motor cuenta las cuotas vencidas por eventos: el contador sube 1 con cada pago incompleto o sin pago, y solo vuelve a cero cuando todo lo pendiente (capital vencido, mora, cobranza y servicios) queda exactamente en cero. Una puesta al día parcial nunca lo baja. Con dos eventos, aunque estén separados por meses, el crédito pasa a cobranza (40.000 por periodo), se suspenden el fondo y la asistencia y queda marcado "listo para recuperar". Esa marca no se quita aunque el cliente se ponga al día. Un cliente que paga todas sus cuotas con 1 a 3 días de atraso termina con restos de pocos pesos de mora pendientes, y el contador no se reinicia. En la prueba con el historial real de unos 4.500 contratos, cerca de 67 % de los que terminaron pagando quedaron marcados con el contador actual, pero midiendo el atraso con el efectivo acumulado solo cerca de 60 % llegó alguna vez a 2 cuotas de atraso real (cifras del backtesting corregido del 29-oct). Además: ¿la marca "listo para recuperar" debe poder quitarse cuando el cliente se pone al día? Si su respuesta es distinta a la opción elegida, aclárela en "Otra regla".',
-    excelHoy: 'El Excel no define cómo se cuentan las cuotas vencidas ni si la marca de recuperación se puede quitar.',
-    opciones: [
-      { codigo: 'por-deuda-acumulada', texto: 'Por deuda acumulada: cuotas vencidas = deuda vencida pendiente dividida entre la cuota (baja cuando el cliente paga de más o se pone al día)' },
-      { codigo: 'por-eventos-sin-reinicio', texto: 'Por eventos, sin reinicio (como hoy): sube con cada pago incompleto y solo vuelve a cero cuando todo queda en cero' },
-      { codigo: 'eventos-con-reinicio-al-pagar-completo', texto: 'Por eventos, con reinicio: el contador vuelve a cero cuando el cliente paga una cuota completa más lo vencido o se pone al día' },
-      { codigo: 'otro', texto: 'Otra regla', detalle: 'Aclare también si la marca "listo para recuperar" se puede quitar al ponerse al día.', pideTexto: true },
-    ],
-  },
 
   // ── Dación y retoma ───────────────────────────────────────────────────────────
   {
@@ -1861,6 +1847,20 @@ const RONDA_10: Pregunta[] = [
       { codigo: 'cuota-completa-interes-prorrateado', texto: 'Cuota completa, con solo el interés prorrateado por días (como calcula el motor hoy)' },
       { codigo: 'cuota-completa', texto: 'Cuota completa, sin prorrateo' },
       { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R10-CONTADOR-VENCIDAS',
+    bloque: PAGOS,
+    titulo: '¿Cómo debe contarse el número de cuotas vencidas de un crédito?',
+    contexto:
+      'Hoy el motor cuenta las cuotas vencidas por eventos: el contador sube 1 con cada pago incompleto o sin pago, y solo vuelve a cero cuando todo lo pendiente (capital vencido, mora, cobranza y servicios) queda exactamente en cero. Una puesta al día parcial nunca lo baja. Con dos eventos, aunque estén separados por meses, el crédito pasa a cobranza (40.000 por periodo), se suspenden el fondo y la asistencia y queda marcado "listo para recuperar". Esa marca no se quita aunque el cliente se ponga al día. Un cliente que paga todas sus cuotas con 1 a 3 días de atraso termina con restos de pocos pesos de mora pendientes, y el contador no se reinicia. En la prueba con el historial real de unos 4.500 contratos, cerca de 67 % de los que terminaron pagando quedaron marcados con el contador actual, pero midiendo el atraso con el efectivo acumulado solo cerca de 60 % llegó alguna vez a 2 cuotas de atraso real (cifras del backtesting corregido del 29-oct). Además: ¿la marca "listo para recuperar" debe poder quitarse cuando el cliente se pone al día? Si su respuesta es distinta a la opción elegida, aclárela en "Otra regla".',
+    excelHoy: 'El Excel no define cómo se cuentan las cuotas vencidas ni si la marca de recuperación se puede quitar.',
+    opciones: [
+      { codigo: 'por-deuda-acumulada', texto: 'Por deuda acumulada: cuotas vencidas = deuda vencida pendiente dividida entre la cuota (baja cuando el cliente paga de más o se pone al día)' },
+      { codigo: 'por-eventos-sin-reinicio', texto: 'Por eventos, sin reinicio (como hoy): sube con cada pago incompleto y solo vuelve a cero cuando todo queda en cero' },
+      { codigo: 'eventos-con-reinicio-al-pagar-completo', texto: 'Por eventos, con reinicio: el contador vuelve a cero cuando el cliente paga una cuota completa más lo vencido o se pone al día' },
+      { codigo: 'otro', texto: 'Otra regla', detalle: 'Aclare también si la marca "listo para recuperar" se puede quitar al ponerse al día.', pideTexto: true },
     ],
   },
 
