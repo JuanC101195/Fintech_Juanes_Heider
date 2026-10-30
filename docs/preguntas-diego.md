@@ -10,12 +10,12 @@ Salen del **backtesting** del motor con el historial real de pagos de Motos del 
 
 Lo que encontramos:
 
-- **Una cuota con cualquier saldo pendiente cuenta como atrasada.** Así, cerca del 67 % de los clientes que terminaron pagando todo quedaría marcado «listo para recuperar» alguna vez, y cerca del 55 % pagaría cobranza (corrida corregida del 29-oct).
-- **Entre los clientes vigentes, cerca del 47 % quedaría marcado «listo para recuperar».** (Corrida corregida del 29-oct.)
-- **La marca «listo para recuperar» (2 cuotas vencidas) distingue poco** entre quienes terminan pagando y quienes se retiran: quedan marcados entre el 17 % y el 81 % de los retirados, según el motivo del retiro, y cerca del 67 % de los que terminan pagando.
+- **Una cuota con cualquier saldo pendiente cuenta como atrasada.** Así, cerca del 34 % de los clientes que terminaron pagando todo quedaría marcado «listo para recuperar» alguna vez, y cerca del 29 % pagaría cobranza (corrida corregida del 29-oct).
+- **Entre los clientes vigentes, cerca del 30 % quedaría marcado «listo para recuperar».** (Corrida corregida del 29-oct.)
+- **La marca «listo para recuperar» (2 cuotas vencidas) distingue poco** entre quienes terminan pagando y quienes se retiran: quedan marcados entre el 11 % y el 51 % de los retirados, según el motivo del retiro, y cerca del 34 % de los que terminan pagando.
 - **El gasto de cobranza usado es 40.000 por periodo**, un valor provisional de ejemplo. Con él, la cobranza media por cliente es cerca de 1 millón.
 - **La primera cuota proporcional se lee como pago incompleto.** Hoy el sistema cobra la primera cuota proporcional a los días entre la entrega y el primer vencimiento (con 3 días de 7, el cliente paga 3/7: 96.000 de 225.000). El motor de la financiera espera una cuota completa y solo prorratea el interés si se le dan las fechas; así el crédito queda «en mora» desde la primera semana. En la prueba, el 68 % pagó menos del 90 % de la cuota en la primera semana, y en 4 de cada 10 de esos el valor coincide con los días proporcionales.
-- **El contador de cuotas vencidas casi nunca baja.** Hoy sube con cada pago incompleto o sin pago y solo vuelve a cero cuando todo lo pendiente queda exactamente en cero; un cliente que paga con 1 a 3 días de atraso arrastra restos de pocos pesos y no se reinicia. Con el contador actual quedó marcado cerca de 67 % de los contratos que terminaron pagando; midiendo el atraso con el efectivo acumulado, solo cerca de 60 % llegó alguna vez a 2 cuotas de atraso real. Estas cifras son del backtesting corregido y se actualizan tras la nueva corrida.
+- **El contador de cuotas vencidas casi nunca baja.** Hoy sube con cada pago incompleto o sin pago y solo vuelve a cero cuando todo lo pendiente queda exactamente en cero; un cliente que paga con 1 a 3 días de atraso arrastra restos de pocos pesos y no se reinicia. Con el contador actual quedó marcado cerca de 34 % de los contratos que terminaron pagando; midiendo el atraso con el efectivo acumulado, solo cerca de 17 % llegó alguna vez a 2 cuotas de atraso real. Estas cifras son del backtesting corregido y se actualizan tras la nueva corrida.
 
 | ID | Pregunta | Opciones |
 |---|---|---|

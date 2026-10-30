@@ -81,9 +81,9 @@ describe('preguntas', () => {
     const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
     const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
     expect(cod('R10-PERIODO-ATRASADO')).toEqual(['cualquier-saldo', 'porcentaje-cuota', 'dias-gracia', 'otro'])
-    expect(q('R10-PERIODO-ATRASADO').contexto).toContain('67 %')
+    expect(q('R10-PERIODO-ATRASADO').contexto).toContain('34 %')
     expect(cod('R10-MARCA-RECUPERACION')).toEqual(['primera-vez', 'se-mantiene', 'sin-justificacion', 'otro'])
-    expect(q('R10-MARCA-RECUPERACION').contexto).toContain('17 %')
+    expect(q('R10-MARCA-RECUPERACION').contexto).toContain('11 %')
     expect(cod('R10-JUSTIFICACIONES')).toEqual(['todo', 'mora-y-cobranza', 'mora-cobranza-servicios', 'solo-marca', 'nada', 'otro'])
     expect(q('R10-JUSTIFICACIONES').contexto).toContain('geocerca')
     expect(cod('R10-VALOR-COBRANZA')).toEqual(['director-financiero', 'otro'])
