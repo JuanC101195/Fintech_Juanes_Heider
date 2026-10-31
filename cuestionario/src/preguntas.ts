@@ -2096,6 +2096,48 @@ const RONDA_11: Pregunta[] = [
   },
 ]
 
+// Ronda 12 (31 oct 2026): detalles que dejaron las respuestas de Diego a las rondas 10 y 11 (docs/respuestas-diego-2026-10-31-ronda10-11.md).
+const RONDA_12: Pregunta[] = [
+  {
+    id: 'R12-PRIMERA-CUOTA-DETALLE',
+    bloque: PAGOS,
+    titulo: 'Primera cuota proporcional a los días: ¿qué pasa con el capital y los servicios que esa cuota no cobra?',
+    contexto:
+      'Usted indicó que la primera cuota se cobra proporcional a los días, entera (capital, interés y servicios), como en el sistema actual. Ejemplo: con 3 días de 7, el cliente paga 3/7 de la cuota, 96.000 de 225.000. Hoy el motor prorratea solo el interés y cobra completos el capital y los servicios. Si la cuota entera se prorratea, quedan sin cobrar 4/7 del capital y de los servicios de esa primera cuota (129.000 en el ejemplo). Necesitamos saber qué se hace con ellos para no cambiar el plan de pagos sin querer.',
+    excelHoy: 'El Excel no prorratea la primera cuota; el motor prorratea solo el interés (D48).',
+    opciones: [
+      { codigo: 'se-pierden', texto: 'No se cobran después: el cliente solo paga la parte proporcional y el plan sigue igual (la última cuota queda con el saldo)', detalle: 'El capital no cobrado queda en el saldo y se paga en la última cuota.' },
+      { codigo: 'se-difieren', texto: 'Se reparten en las cuotas siguientes: el capital no cobrado se suma al saldo y se recalcula la cuota' },
+      { codigo: 'solo-interes-y-servicios', texto: 'Se prorratean el interés y los servicios, pero el capital va completo' },
+      { codigo: 'otro', texto: 'Otra regla', detalle: 'Aclare también qué pasa si la entrega es más de un periodo antes del primer vencimiento.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-IVA-FONDO-ASISTENCIAS',
+    bloque: SERVICIOS,
+    titulo: 'El IVA del fondo de garantías y de las asistencias, ¿también se segmenta en la contabilidad como el del seguro?',
+    contexto:
+      'Para el seguro todo riesgo usted indicó que la contabilidad segmenta el seguro (10.000), el IVA por pagar por seguros (1.900) y la deuda con la aseguradora (11.900), y que el IVA nunca es responsabilidad de la financiera frente a la DIAN. Hoy el fondo de garantías y las asistencias llevan el 19 % de IVA incluido en su valor, en una sola cuenta ("IVA incl."), sin separar el IVA. Necesitamos saber si esos dos servicios se tratan igual que el seguro.',
+    excelHoy: 'El Excel deja el IVA del fondo y de las asistencias incluido en su valor, en una sola cuenta.',
+    opciones: [
+      { codigo: 'igual-que-seguro', texto: 'Sí: se segmenta el servicio y su IVA, y el IVA nunca es de la financiera frente a la DIAN' },
+      { codigo: 'iva-incluido', texto: 'No: el IVA sigue incluido en su cuenta, como hoy' },
+      { codigo: 'otro', texto: 'Otro tratamiento', detalle: 'Indique las cuentas en el comentario.', pideTexto: true },
+    ],
+  },
+]
+
+// Respondidas por el cuestionario (Diego, 31 de octubre de 2026): de las rondas 10 y 11, 6 de 11 (docs/respuestas-diego-2026-10-31-ronda10-11.md). Quedan decididas D65 a D69 de decisiones.md; lo que dejó abierto va a la ronda 12.
+const REF_RONDA_10_11 = 'Rondas 10 y 11'
+const RESPONDIDAS_RONDA_10_11: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R10-VALOR-COBRANZA': { referencia: REF_RONDA_10_11, respuesta: 'Lo define el director financiero, como parámetro configurable con vigencias; los 3.000 diarios y los 40.000 por periodo quedan solo como valores provisionales de ejemplo (D65).' },
+  'R10-PRIMERA-CUOTA': { referencia: REF_RONDA_10_11, nota: 'Pendiente de detalle: qué pasa con el capital y los servicios que la primera cuota proporcional no cobra (R12-PRIMERA-CUOTA-DETALLE). Mientras tanto el motor sigue prorrateando solo el interés (D48).', respuesta: 'Proporcional a los días: la cuota entera (capital, interés y servicios), como se hace hoy en el sistema actual (D66).' },
+  'R10-MARCA-RECUPERACION': { referencia: REF_RONDA_10_11, respuesta: 'La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día (como funciona hoy) (D67).' },
+  'R11-BASE-FINANCIACION-INICIAL': { referencia: REF_RONDA_10_11, respuesta: 'El monto financiado a secas (valor de la moto menos la cuota inicial), la misma base del seguro de vida (D68).' },
+  'R11-PERIODIZACION-SEGURO': { referencia: REF_RONDA_10_11, respuesta: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida (D68).' },
+  'R11-CONTABILIDAD-SEGURO-IVA': { referencia: REF_RONDA_10_11, respuesta: 'La contabilidad segmenta CxP seguros 10.000 / IVA por pagar por seguros 1.900 / CxP aseguradoras 11.900; el IVA nunca es responsabilidad de la financiera frente a la DIAN (D69).' },
+}
+
 // Respondidas por el cuestionario (Diego, 22 de octubre de 2026, 19:53): las rondas 5 y 6, 9 de 9 con la opción y el
 // comentario coincidentes (docs/respuestas-diego-2026-10-22-ronda5-6.md). 7 quedan decididas (D48 a D54). Las dos que
 // marcó pendientes (política de cobranza) se reformularon en la ronda 7 (ya respondida) y no cuentan en el total: las cuenta la nueva.
@@ -2142,7 +2184,8 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12].map((p) => {
+  if (RESPONDIDAS_RONDA_10_11[p.id]) return { ...p, respondida: { fecha: '31 oct 2026', ...RESPONDIDAS_RONDA_10_11[p.id] } }
   if (RESPONDIDAS_RONDA_9[p.id]) return { ...p, respondida: { fecha: '30 oct 2026', ...RESPONDIDAS_RONDA_9[p.id] } }
   if (RESPONDIDAS_RONDA_8[p.id]) return { ...p, respondida: { fecha: '28 oct 2026', ...RESPONDIDAS_RONDA_8[p.id] } }
   if (RESPONDIDAS_RONDA_7[p.id]) return { ...p, respondida: { fecha: '27 oct 2026', ...RESPONDIDAS_RONDA_7[p.id] } }

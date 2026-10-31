@@ -41,12 +41,17 @@ public enum Cuenta {
      */
     CXP_SOBRANTE_CLIENTE("CxP sobrante por devolver al cliente (provisional, PUC pendiente)"),
     /**
-     * R9-SEGURO-TODO-RIESGO (Diego, ronda 9, 2026-10-30): el IVA (19 %) del seguro todo riesgo, que se registra aparte
-     * del seguro ("en la contabilidad debe quedar segmentado lo que es el SEGURO y el IVA"). El motor no tenía una
-     * cuenta de IVA: el del fondo y las asistencias va incluido en sus cuentas ("IVA incl.") como en el Excel.
-     * PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
+     * R11-CONTABILIDAD-SEGURO-IVA (Diego, ronda 11, 2026-10-31): el seguro todo riesgo, sin IVA, es una cuenta por
+     * pagar a la aseguradora ("CxP seguros"). Con {@link #IVA_SEGUROS_POR_PAGAR} suma la "CxP aseguradoras" (por
+     * ejemplo 10.000 + 1.900 = 11.900). PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
      */
-    IVA_POR_PAGAR("IVA generado por pagar (provisional, PUC pendiente)");
+    CXP_SEGUROS("CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)"),
+    /**
+     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA (Diego, rondas 9 y 11): el IVA (19 %) del seguro, aparte del
+     * seguro. Es IVA por pagar por seguros: se debe a la aseguradora junto con el seguro y NUNCA es responsabilidad de
+     * la financiera frente a la DIAN. PROVISIONAL: la subcuenta del PUC está pendiente (C2/P9).
+     */
+    IVA_SEGUROS_POR_PAGAR("IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)");
 
     private final String nombreExcel;
 

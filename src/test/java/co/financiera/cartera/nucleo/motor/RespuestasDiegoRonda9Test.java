@@ -245,10 +245,9 @@ class RespuestasDiegoRonda9Test {
             List<Movimiento> m = motor.ejecutar(conOperacionDelExcel().conReglas(negocio()));
             Asiento cuota = Contabilizador.para(negocio()).contabilizar(fila(m, 1)).getFirst();
             assertThat(cuota.cuadra()).isTrue();
-            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.IVA_POR_PAGAR).singleElement()
+            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR).singleElement()
                     .satisfies(l -> assertThat(l.credito()).isCloseTo(IVA_TODO_RIESGO, within(TOLERANCIA)));
-            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SERVICIOS_TERCEROS
-                    && l.explicacion().contains("todo riesgo")).singleElement()
+            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SEGUROS).singleElement()
                     .satisfies(l -> assertThat(l.credito()).isCloseTo(TODO_RIESGO, within(TOLERANCIA)));
             // Fondo + asistencia + seguro de vida siguen en su línea de siempre.
             assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SERVICIOS_TERCEROS
@@ -259,7 +258,7 @@ class RespuestasDiegoRonda9Test {
             for (Escenario e : List.of(EscenariosExcel.caso1(P), EscenariosExcel.caso3(P, true), EscenariosExcel.caso8(P),
                     EscenariosExcel.caso9(P))) {
                 assertThat(Contabilizador.estandar().contabilizar(motor.ejecutar(e)))
-                        .flatMap(Asiento::lineas).noneMatch(l -> l.cuenta() == Cuenta.IVA_POR_PAGAR);
+                        .flatMap(Asiento::lineas).noneMatch(l -> l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR);
             }
         }
 
