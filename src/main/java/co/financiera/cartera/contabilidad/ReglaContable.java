@@ -79,17 +79,30 @@ public interface ReglaContable {
     }
 
     /**
-     * R9-SEGURO-TODO-RIESGO: las líneas del seguro todo riesgo recaudado, segmentado en el seguro (CxP a terceros, el
-     * tratamiento del seguro de vida: se recauda por cuenta de la aseguradora) y su IVA ({@link Cuenta#IVA_POR_PAGAR}).
+     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA: las líneas del seguro todo riesgo recaudado, segmentado en
+     * el seguro ({@link Cuenta#CXP_SEGUROS}, por ejemplo 10.000) y su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}, 1.900).
+     * Las dos suman la deuda con la aseguradora ({@link #cxpAseguradoras}, 11.900); el IVA nunca es de la financiera
+     * frente a la DIAN.
      * {@code detalle} es el reparto por concepto del movimiento; lo que se toma nunca pasa de {@code total}.
      */
     static List<Asiento.Linea> seguroTodoRiesgo(BigDecimal total, Servicios detalle) {
         Servicios tr = todoRiesgoDe(total, detalle);
         return List.of(
-                Asiento.Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS, tr.seguroTodoRiesgo(),
+                Asiento.Linea.credito(Cuenta.CXP_SEGUROS, tr.seguroTodoRiesgo(),
                         "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"),
-                Asiento.Linea.credito(Cuenta.IVA_POR_PAGAR, tr.ivaSeguroTodoRiesgo(),
-                        "IVA del seguro todo riesgo (R9-SEGURO-TODO-RIESGO)"));
+                Asiento.Linea.credito(Cuenta.IVA_SEGUROS_POR_PAGAR, tr.ivaSeguroTodoRiesgo(),
+                        "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"));
+    }
+
+    /**
+     * R11-CONTABILIDAD-SEGURO-IVA: "CxP aseguradoras", lo que se debe a las aseguradoras por el seguro todo riesgo
+     * recaudado en el asiento: el seguro ({@link Cuenta#CXP_SEGUROS}) más su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}).
+     */
+    static BigDecimal cxpAseguradoras(Asiento asiento) {
+        return asiento.lineas().stream()
+                .filter(l -> l.cuenta() == Cuenta.CXP_SEGUROS || l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR)
+                .map(Asiento.Linea::credito)
+                .reduce(Calc.CERO, Calc::sumar);
     }
 
     /** Las dos listas de líneas, una tras otra. */
