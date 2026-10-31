@@ -2059,25 +2059,12 @@ const RONDA_11: Pregunta[] = [
     bloque: SERVICIOS,
     titulo: 'El 0,3 % mensual del seguro todo riesgo es "sobre la financiación inicial": ¿qué monto es esa base?',
     contexto:
-      'Usted pactó el seguro todo riesgo como un porcentaje mensual de 0,3 % sobre la financiación inicial. Hoy el motor calcula los servicios sobre el monto financiado. Falta saber si la base es el monto financiado a secas (valor de la moto menos la cuota inicial) o si incluye los servicios y gastos que también se financian. Con una base mayor, el seguro cobra más cada mes.',
+      'Usted pactó el seguro todo riesgo como un porcentaje mensual de 0,3 % sobre la financiación inicial. Hoy el motor calcula los servicios sobre el monto financiado. Falta saber si la base es el monto financiado a secas (valor de la moto menos la cuota inicial) o si incluye los servicios y gastos que también se financian. Con una base mayor, el seguro cobra más cada mes. Ejemplo ilustrativo: si la moto vale 6.000.000 y la cuota inicial es 1.000.000, el monto financiado es 5.000.000 y el 0,3 % da 15.000 al mes; si además se financian 400.000 de servicios y gastos, la base es 5.400.000 y el 0,3 % da 16.200 al mes (sin IVA).',
     excelHoy: 'El Excel no tiene seguro todo riesgo; el seguro de vida se calcula sobre el monto financiado.',
     opciones: [
       { codigo: 'monto-financiado', texto: 'El monto financiado a secas (valor de la moto menos la cuota inicial)', detalle: 'Es la base con que el motor calcula hoy el seguro de vida.' },
       { codigo: 'incluye-servicios-gastos', texto: 'El monto financiado más los servicios y gastos que se financian', detalle: 'Indique en el comentario cuáles conceptos se suman.' },
       { codigo: 'otro', texto: 'Otra base', pideTexto: true },
-    ],
-  },
-  {
-    id: 'R11-PERIODIZACION-SEGURO',
-    bloque: SERVICIOS,
-    titulo: 'El 0,3 % es mensual y "se paga igual que el de vida": ¿se convierte a semanal y quincenal de la misma forma que el seguro de vida?',
-    contexto:
-      'Los servicios se pactan por mes pero se cobran por periodo del crédito. El motor convierte el seguro de vida de mensual a semanal o quincenal de una forma fija. Entendemos que el seguro todo riesgo usa la misma conversión, de modo que el 0,3 % mensual se reparte igual que el seguro de vida en créditos semanales, quincenales y mensuales. Necesitamos su confirmación.',
-    excelHoy: 'El Excel convierte el seguro de vida de mensual a semanal dividiendo entre 4,333; no tiene seguro todo riesgo.',
-    opciones: [
-      { codigo: 'igual-que-vida', texto: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida' },
-      { codigo: 'otra-conversion', texto: 'No: tiene otra forma de conversión', detalle: 'Explique la conversión en el comentario.', pideTexto: true },
-      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
   {
@@ -2091,6 +2078,20 @@ const RONDA_11: Pregunta[] = [
       { codigo: 'pasivo-aseguradora-iva-generado', texto: 'El seguro es un pasivo a pagar a la aseguradora y el IVA es IVA generado' },
       { codigo: 'ingreso-propio-iva-generado', texto: 'El seguro es ingreso propio de la financiera y el IVA es IVA generado' },
       { codigo: 'otro', texto: 'Otro tratamiento contable', detalle: 'Indique las cuentas en el comentario.', pideTexto: true },
+      { codigo: 'consulto-contabilidad', texto: 'Lo consulto con contabilidad y respondo después', detalle: 'El motor deja las cuentas provisionales hasta tener la respuesta.' },
+    ],
+  },
+  {
+    id: 'R11-PERIODIZACION-SEGURO',
+    bloque: SERVICIOS,
+    titulo: 'El 0,3 % es mensual y "se paga igual que el de vida": ¿se convierte a semanal y quincenal de la misma forma que el seguro de vida?',
+    contexto:
+      'Los servicios se pactan por mes pero se cobran por periodo del crédito. El motor convierte el seguro de vida de mensual a semanal o quincenal de una forma fija. Entendemos que el seguro todo riesgo usa la misma conversión, de modo que el 0,3 % mensual se reparte igual que el seguro de vida en créditos semanales, quincenales y mensuales. Necesitamos su confirmación.',
+    excelHoy: 'El Excel convierte el seguro de vida de mensual a semanal dividiendo entre 4,333; no tiene seguro todo riesgo.',
+    opciones: [
+      { codigo: 'igual-que-vida', texto: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida' },
+      { codigo: 'otra-conversion', texto: 'No: tiene otra forma de conversión', detalle: 'Explique la conversión en el comentario.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
     ],
   },
 ]

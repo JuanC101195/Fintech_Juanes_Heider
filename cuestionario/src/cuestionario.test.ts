@@ -81,7 +81,7 @@ describe('preguntas', () => {
     expect(cod('R11-BASE-FINANCIACION-INICIAL')).toEqual(['monto-financiado', 'incluye-servicios-gastos', 'otro'])
     expect(q('R11-BASE-FINANCIACION-INICIAL').contexto).toContain('0,3 %')
     expect(cod('R11-PERIODIZACION-SEGURO')).toEqual(['igual-que-vida', 'otra-conversion', 'otro'])
-    expect(cod('R11-CONTABILIDAD-SEGURO-IVA')).toEqual(['pasivo-aseguradora-iva-generado', 'ingreso-propio-iva-generado', 'otro'])
+    expect(cod('R11-CONTABILIDAD-SEGURO-IVA')).toEqual(['pasivo-aseguradora-iva-generado', 'ingreso-propio-iva-generado', 'otro', 'consulto-contabilidad'])
     expect(q('R11-CONTABILIDAD-SEGURO-IVA').contexto).toContain('11.900')
     for (const p of PREGUNTAS.filter((x) => x.id.startsWith('R11-'))) {
       expect(p.bloque, p.id).toBe('Servicios complementarios')
