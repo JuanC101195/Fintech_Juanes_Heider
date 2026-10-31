@@ -13,7 +13,7 @@ Seguimiento de la ronda 9, que Diego respondió el 30 oct (`respuestas-diego-202
 | R11-SEGUROS-TRAS-SUSPENSION | Tras 2 periodos atrasados, cuando «solo se causa el seguro», ¿se siguen causando los dos seguros (vida y todo riesgo) o solo uno? | (a) Los dos (supuesto provisional del motor). (b) Solo el de vida. (c) Solo el todo riesgo. (d) Otra regla. |
 | R11-BASE-FINANCIACION-INICIAL | El 0,3 % mensual es «sobre la financiación inicial»: ¿qué monto es esa base? | (a) El monto financiado a secas. (b) El monto financiado más los servicios y gastos que se financian. (c) Otra base. |
 | R11-PERIODIZACION-SEGURO | El 0,3 % es mensual y «se paga igual que el de vida»: ¿se convierte a semanal y quincenal igual que el seguro de vida? | (a) Sí, igual. (b) No, otra conversión. (c) Otra regla. |
-| R11-CONTABILIDAD-SEGURO-IVA | En la contabilidad, ¿el seguro todo riesgo es ingreso propio o pasivo a pagar a la aseguradora, y el IVA es IVA generado? | (a) Pasivo a la aseguradora e IVA generado. (b) Ingreso propio e IVA generado. (c) Otro tratamiento. |
+| R11-CONTABILIDAD-SEGURO-IVA | En la contabilidad, ¿el seguro todo riesgo es ingreso propio o pasivo a pagar a la aseguradora, y el IVA es IVA generado? | (a) Pasivo a la aseguradora e IVA generado. (b) Ingreso propio e IVA generado. (c) Otro tratamiento. (d) Lo consulto con contabilidad y respondo después. |
 
 ## Ronda 10 · Abierta (29 oct 2026)
 
