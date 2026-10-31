@@ -43,7 +43,8 @@ class RespuestasDiegoDocumentoTest {
     /** El NEGOCIO de antes de R7-COBRANZA-ACTIVA: aísla COB-4 (cobranza solo en mora) del umbral de periodos. */
     private static ReglasNegocio sinUmbralDeCobranza() {
         // Ronda 8: también sin el cobro fijo por periodo (R8-COBRANZA-PAGO-TARDIO), para seguir viendo días × valor diario.
-        return negocio().conCuotasVencidasParaCobranza(null).conCobranzaPorPeriodo(null);
+        // Ronda 10: también sin el cociente de cobranza (R10-CONTADOR-VENCIDAS, D71).
+        return negocio().conCuotasVencidasParaCobranza(null).conCobranzaPorPeriodo(null).conUmbralCocienteCobranza(null);
     }
 
     private static ReglasNegocio negocio() {
@@ -193,7 +194,10 @@ class RespuestasDiegoDocumentoTest {
                     // Todo periodo del plazo vigente causa al menos el seguro (D17: en atraso solo el seguro). Los
                     // "Periodo adicional" (después de la última cuota, o del plazo que acortó un abono, SRV-2) no
                     // causan servicios: es la pregunta P6, que X1 no responde.
-                    m.stream().filter(x -> x.periodo() >= 1 && !x.evento().equals("Periodo adicional")).forEach(x ->
+                    // R10 (D70): con SIEMPRE la dación o la retoma suspenden por completo los servicios en su periodo.
+                    boolean cierreSinServicios = reglas.causacionServicios() == ReglasNegocio.CausacionServicios.SIEMPRE;
+                    m.stream().filter(x -> x.periodo() >= 1 && !x.evento().equals("Periodo adicional"))
+                            .filter(x -> !(cierreSinServicios && x.estado() == EstadoCredito.CERRADO_POR_EVENTO)).forEach(x ->
                             assertThat(x.serviciosCausados().seguro()).as("%s, periodo %d", nombre, x.periodo()).isPositive());
                     // Los periodos pagados al día causan los tres.
                     m.stream().filter(x -> x.periodo() >= 1 && x.evento().startsWith("Pago normal")).forEach(x ->
@@ -309,14 +313,21 @@ class RespuestasDiegoDocumentoTest {
                     .conReglas(negocio()));
             assertThat(m.getLast().periodo()).isEqualTo(45);
             assertThat(m.getLast().estado()).isEqualTo(EstadoCredito.CERRADO_POR_EVENTO);
-            // R7-COBRANZA-ACTIVA con R9-COBRO-MOMENTO (lectura A): la 2.ª cuota atrasada (periodo 44) ya cobra. Con la
-            // lectura B de la ronda 7 empezaba en la tercera (periodo 45).
+            // R10-CONTADOR-VENCIDAS (D71, ADR 0006): la cobranza nace cuando saldo en mora / cuota total > 2, evaluado al
+            // iniciar el periodo. Con el 40 % pagado en el 43 y sin pago en el 44 y el 45, al iniciar el 45 debe ~1,6
+            // cuotas: sin cobranza; al iniciar el 46 (~2,6 cuotas) sí.
             List<Movimiento> largo = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
-            assertThat(fila(largo, 43).cobranzaCausada()).isZero();
-            assertThat(fila(largo, 44).cobranzaCausada()).isPositive();
-            assertThat(fila(largo, 45).cobranzaCausada()).isPositive();
+            assertThat(fila(largo, 44).cobranzaCausada()).isZero();
+            assertThat(fila(largo, 45).cobranzaCausada()).isZero();
+            assertThat(fila(largo, 46).cobranzaCausada()).isPositive();
+            // Con la ronda 9 (R7-COBRANZA-ACTIVA con R9-COBRO-MOMENTO, lectura A) la 2.ª cuota atrasada (periodo 44) ya
+            // cobraba; con la lectura B de la ronda 7, desde la tercera (periodo 45).
+            List<Movimiento> lecturaA = motor.ejecutar(EscenariosExcel.caso11(P)
+                    .conReglas(ReglasNegocioConfiguradaTest.negocioRonda9()));
+            assertThat(fila(lecturaA, 43).cobranzaCausada()).isZero();
+            assertThat(fila(lecturaA, 44).cobranzaCausada()).isPositive();
             List<Movimiento> lecturaB = motor.ejecutar(EscenariosExcel.caso11(P)
-                    .conReglas(negocio().conUmbralesCuentanCuotaEnCurso(false)));
+                    .conReglas(ReglasNegocioConfiguradaTest.negocioRonda9().conUmbralesCuentanCuotaEnCurso(false)));
             assertThat(fila(lecturaB, 44).cobranzaCausada()).isZero();
             assertThat(fila(lecturaB, 45).cobranzaCausada()).isPositive();
         }

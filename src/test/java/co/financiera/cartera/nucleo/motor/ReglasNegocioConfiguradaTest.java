@@ -43,6 +43,40 @@ class ReglasNegocioConfiguradaTest {
         return mapa;
     }
 
+    /** NEGOCIO vigente, leído de {@link #ARCHIVO}. */
+    static ReglasNegocio negocio() {
+        try {
+            return ReglasNegocio.desde(configuracion());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * NEGOCIO tal como quedó tras la ronda 9 (D60 a D64, ADR 0005), antes del rediseño de la ronda 10 (D70, D71, ADR
+     * 0006): fondo y asistencia suspendidos desde la 2.ª cuota atrasada ({@code SUSPENDER_POR_UMBRAL} con umbral 2),
+     * cobranza por cuotas vencidas que cuenta la cuota en curso (lectura A) y sin cociente de cobranza. Lo usan las
+     * pruebas de las rondas 8 y 9 para seguir documentando esas respuestas.
+     */
+    static ReglasNegocio negocioRonda9() {
+        return negocio().copia()
+                .causacionServicios(ReglasNegocio.CausacionServicios.SUSPENDER_POR_UMBRAL)
+                .cuotasVencidasParaSuspenderServicios(2)
+                .cuotasVencidasParaCobranza(2)
+                .umbralesCuentanCuotaEnCurso(true)
+                .umbralCocienteCobranza(null)
+                .construir();
+    }
+
+    @Test
+    void lasReglasDeLaRondaNueveSeReconstruyenDesdeNegocio() {
+        ReglasNegocio r9 = negocioRonda9();
+        assertThat(r9.suspendeServicios(2)).isTrue();
+        assertThat(r9.cobranzaPorCociente()).isFalse();
+        assertThat(negocio().suspendeServicios(5)).as("NEGOCIO ya no suspende por atraso (D70)").isFalse();
+        assertThat(negocio().cobranzaPorCociente()).isTrue();
+    }
+
     @Test
     void leeLasClavesDelArchivoYDejaLoDemasComoElExcel() {
         ReglasNegocio r = ReglasNegocio.desde(Map.of("prelacion", "CAPITAL_ANTES_DE_SERVICIOS", "topeCobranzaPorPago", "20000"));

@@ -51,7 +51,15 @@ public enum Cuenta {
      * seguro. Es IVA por pagar por seguros: se debe a la aseguradora junto con el seguro y NUNCA es responsabilidad de
      * la financiera frente a la DIAN. PROVISIONAL: la subcuenta del PUC está pendiente (C2/P9).
      */
-    IVA_SEGUROS_POR_PAGAR("IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)");
+    IVA_SEGUROS_POR_PAGAR("IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)"),
+    /**
+     * R10-CONTADOR-VENCIDAS (Diego, ronda 10, 2026-10-31, D72): los servicios (fondo, asistencia y seguro de vida) que el
+     * cliente paga de verdad se registran como ingresos recibidos para terceros; la cuenta con el tercero solo nace con el
+     * recaudo efectivo, nunca con la causación. Reemplaza a {@link #CXP_SERVICIOS_TERCEROS} en el perfil de negocio con
+     * {@code causacionServicios = SIEMPRE} ({@code Contabilizador.para}); el Excel conserva su nombre. PROVISIONAL: PUC
+     * 2815 a confirmar con contabilidad (pregunta R12-CUENTA-TERCEROS).
+     */
+    INGRESOS_RECIBIDOS_PARA_TERCEROS("Ingresos recibidos para terceros (PUC 2815, provisional)");
 
     private final String nombreExcel;
 

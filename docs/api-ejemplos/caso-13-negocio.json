@@ -41,10 +41,10 @@
     "modalidad" : "MENOR_PLAZO"
   } ],
   "resumen" : {
-    "periodoFinal" : 85,
+    "periodoFinal" : 86,
     "estadoFinal" : "CANCELADO",
     "saldoFinal" : "0",
-    "totalPagadoCliente" : "15254443.73611812334883190327164781",
+    "totalPagadoCliente" : "15388570.95521405852162145410753746",
     "cuotasVencidasMax" : 2,
     "montoFinanciado" : "5904400",
     "perfilReglas" : "NEGOCIO",
@@ -3927,31 +3927,31 @@
     "etiqueta" : "Pago tardío + cobranza",
     "saldoInicial" : "4491408.967277723673110171728239243",
     "tasaPeriodica" : "0.0121744443208027",
-    "cuotaFinanciera" : "100406.2981538461538461538461538462",
-    "interesCorriente" : "54123.74535887882388320127891539562",
+    "cuotaFinanciera" : "100406.5104615384615384615384615385",
+    "interesCorriente" : "54123.95766657113157550897122308792",
     "interesMora" : "796.6760435444937872703819281838571",
     "capitalContractual" : "46282.55279496732996295256723845059",
-    "cobranzaCausada" : "40000",
+    "cobranzaCausada" : "0",
     "serviciosCausados" : {
-      "fondoGarantias" : "0",
-      "asistencia" : "0",
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
       "seguro" : "3406.384615384615384615384615384616",
-      "total" : "8270.701846153846153846153846153847",
+      "total" : "67898.48953846153846153846153846154",
       "seguroTodoRiesgo" : "4087.661538461538461538461538461539",
       "ivaSeguroTodoRiesgo" : "776.6556923076923076923076923076924"
     },
     "pagoRecibido" : "5000",
-    "pagoCobranza" : "5000",
-    "pagoMora" : "0",
-    "pagoInteresCorriente" : "0",
+    "pagoCobranza" : "0",
+    "pagoMora" : "796.6760435444937872703819281838571",
+    "pagoInteresCorriente" : "4203.323956455506212729618071816143",
     "pagoServicios" : "0",
     "pagoCapital" : "0",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
-    "cxcCobranza" : "35000",
-    "cxcMora" : "796.6760435444937872703819281838571",
-    "cxcInteresCorriente" : "108804.3900325053859602367763445283",
-    "cxcServicios" : "76169.19138461538461538461538461538",
+    "cxcCobranza" : "0",
+    "cxcMora" : "0",
+    "cxcInteresCorriente" : "104601.2783837421874398148505804045",
+    "cxcServicios" : "135796.9790769230769230769230769231",
     "capitalVencido" : "92008.41858287922942437860827085643",
     "capitalVigente" : "4399400.548694844443685793119968387",
     "saldoFinal" : "4491408.967277723673110171728239243",
@@ -3973,10 +3973,10 @@
       "total" : "0"
     },
     "cxcServiciosPorConcepto" : {
-      "fondoGarantias" : "48643.17230769230769230769230769231",
-      "asistencia" : "10984.61538461538461538461538461538",
+      "fondoGarantias" : "97286.34461538461538461538461538462",
+      "asistencia" : "21969.23076923076923076923076923076",
       "seguro" : "6812.769230769230769230769230769232",
-      "total" : "76169.19138461538461538461538461538",
+      "total" : "135796.9790769230769230769230769231",
       "seguroTodoRiesgo" : "8175.323076923076923076923076923078",
       "ivaSeguroTodoRiesgo" : "1553.311384615384615384615384615385"
     },
@@ -4021,16 +4021,16 @@
     "etiqueta" : "Cuota + abono extra",
     "saldoInicial" : "4491408.967277723673110171728239243",
     "tasaPeriodica" : "0.0121744443208027",
-    "cuotaFinanciera" : "100406.2981538461538461538461538462",
-    "interesCorriente" : "53560.28099685188274321972494698879",
+    "cuotaFinanciera" : "100406.5104615384615384615384615385",
+    "interesCorriente" : "53560.49330454419043552741725468109",
     "interesMora" : "1120.151369082371641508080174451582",
     "capitalContractual" : "46846.01715699427110293412120685743",
-    "cobranzaCausada" : "40000",
+    "cobranzaCausada" : "0",
     "serviciosCausados" : {
-      "fondoGarantias" : "0",
-      "asistencia" : "0",
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
       "seguro" : "3406.384615384615384615384615384616",
-      "total" : "8270.701846153846153846153846153847",
+      "total" : "67898.48953846153846153846153846154",
       "seguroTodoRiesgo" : "4087.661538461538461538461538461539",
       "ivaSeguroTodoRiesgo" : "776.6556923076923076923076923076924"
     },
@@ -4040,15 +4040,15 @@
     "pagoInteresCorriente" : "0",
     "pagoServicios" : "0",
     "pagoCapital" : "0",
-    "abonoExtra" : "1037424.172587373134571221537897364",
+    "abonoExtra" : "998168.1725873731345712215378973644",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
     "cxcMora" : "0",
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3315130.358950477038011637460864165",
-    "saldoFinal" : "3315130.358950477038011637460864165",
+    "capitalVigente" : "3354386.358950477038011637460864165",
+    "saldoFinal" : "3354386.358950477038011637460864165",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4087,25 +4087,25 @@
     },
     "capitalVencidoInicial" : "92008.41858287922942437860827085643",
     "pendientesPagadosExtra" : {
-      "cobranza" : "75000",
-      "mora" : "1916.827412626865428778462102635439",
-      "interesCorriente" : "162364.6710293572687034565012915171",
+      "cobranza" : "0",
+      "mora" : "1120.151369082371641508080174451582",
+      "interesCorriente" : "158161.7716882863778753422678350856",
       "servicios" : {
-        "fondoGarantias" : "48643.17230769230769230769230769231",
-        "asistencia" : "10984.61538461538461538461538461538",
+        "fondoGarantias" : "145929.5169230769230769230769230769",
+        "asistencia" : "32953.84615384615384615384615384614",
         "seguro" : "10219.15384615384615384615384615385",
-        "total" : "84439.89323076923076923076923076924",
+        "total" : "203695.4686153846153846153846153845",
         "seguroTodoRiesgo" : "12262.98461538461538461538461538462",
         "ivaSeguroTodoRiesgo" : "2329.967076923076923076923076923077"
       },
       "capital" : "138854.4357398735005273127294777139",
-      "total" : "462575.8274126268654287784621026356"
+      "total" : "501831.8274126268654287784621026356"
     },
     "interesPrepago" : "0",
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
-    "pagoTotalCliente" : "1499999.9999999999999999999999999996",
-    "pagoExtraordinario" : "1499999.9999999999999999999999999996",
+    "pagoTotalCliente" : "1500000",
+    "pagoExtraordinario" : "1500000",
     "listoParaRecuperacion" : true
   }, {
     "periodo" : 43,
@@ -4113,12 +4113,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3315130.358950477038011637460864165",
+    "saldoInicial" : "3354386.358950477038011637460864165",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "40360.1062507952107402167534033692",
+    "interesCorriente" : "40838.0262370526415314167534033692",
     "interesMora" : "0",
-    "capitalContractual" : "60046.4042107432507982447850581693",
+    "capitalContractual" : "59568.4842244858200070447850581693",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4131,9 +4131,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "40360.1062507952107402167534033692",
+    "pagoInteresCorriente" : "40838.0262370526415314167534033692",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "60046.40421074325079824478505816926",
+    "pagoCapital" : "59568.48422448582000704478505816926",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4141,18 +4141,18 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3255083.954739733787213392675805996",
-    "saldoFinal" : "3255083.954739733787213392675805996",
+    "capitalVigente" : "3294817.874725991218004592675805996",
+    "saldoFinal" : "3294817.874725991218004592675805996",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
     "cxcFondoGarantias" : "0",
     "cxpDeudor" : "0",
     "pagoTerceros" : {
-      "fondoGarantias" : "97286.34461538461538461538461538462",
-      "asistencia" : "21969.23076923076923076923076923076",
+      "fondoGarantias" : "194572.6892307692307692307692307692",
+      "asistencia" : "43938.46153846153846153846153846152",
       "seguro" : "13625.53846153846153846153846153847",
-      "total" : "152338.3827692307692307692307692309",
+      "total" : "271593.9581538461538461538461538462",
       "seguroTodoRiesgo" : "16350.64615384615384615384615384616",
       "ivaSeguroTodoRiesgo" : "3106.622769230769230769230769230769"
     },
@@ -4209,12 +4209,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3255083.954739733787213392675805996",
+    "saldoInicial" : "3294817.874725991218004592675805996",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "39629.0746460671042388977631065324",
+    "interesCorriente" : "40112.8130425870249128244498922125",
     "interesMora" : "0",
-    "capitalContractual" : "60777.4358154713572995637753550061",
+    "capitalContractual" : "60293.697418951436625637088569326",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4227,9 +4227,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "39629.0746460671042388977631065324",
+    "pagoInteresCorriente" : "40112.8130425870249128244498922125",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "60777.43581547135729956377535500606",
+    "pagoCapital" : "60293.69741895143662563708856932596",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4237,8 +4237,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3194306.51892426242991382890045099",
-    "saldoFinal" : "3194306.51892426242991382890045099",
+    "capitalVigente" : "3234524.17730703978137895558723667",
+    "saldoFinal" : "3234524.17730703978137895558723667",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4303,12 +4303,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3194306.51892426242991382890045099",
+    "saldoInicial" : "3234524.17730703978137895558723667",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "38889.14313777048835717031950467953",
+    "interesCorriente" : "39378.77078046467518392343015471893",
     "interesMora" : "0",
-    "capitalContractual" : "61517.36732376797318129121895685897",
+    "capitalContractual" : "61027.73968107378635453810830681957",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4321,9 +4321,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "38889.14313777048835717031950467953",
+    "pagoInteresCorriente" : "39378.77078046467518392343015471893",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "61517.36732376797318129121895685896",
+    "pagoCapital" : "61027.73968107378635453810830681956",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4331,8 +4331,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3132789.151600494456732537681494131",
-    "saldoFinal" : "3132789.151600494456732537681494131",
+    "capitalVigente" : "3173496.43762596599502441747892985",
+    "saldoFinal" : "3173496.43762596599502441747892985",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4397,12 +4397,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3132789.151600494456732537681494131",
+    "saldoInicial" : "3173496.43762596599502441747892985",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "38140.2033745249077643246477417117",
+    "interesCorriente" : "38635.79196169300084749653224751263",
     "interesMora" : "0",
-    "capitalContractual" : "62266.3070870135537741368907198268",
+    "capitalContractual" : "61770.71849984546069096500621402587",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4415,9 +4415,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "38140.2033745249077643246477417117",
+    "pagoInteresCorriente" : "38635.79196169300084749653224751263",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "62266.30708701355377413689071982676",
+    "pagoCapital" : "61770.71849984546069096500621402586",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4425,8 +4425,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3070522.844513480902958400790774304",
-    "saldoFinal" : "3070522.844513480902958400790774304",
+    "capitalVigente" : "3111725.719126120534333452472715824",
+    "saldoFinal" : "3111725.719126120534333452472715824",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4491,12 +4491,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3070522.844513480902958400790774304",
+    "saldoInicial" : "3111725.719126120534333452472715824",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "37382.14568583205869411734652997074",
+    "interesCorriente" : "37883.76778866065500196980410099488",
     "interesMora" : "0",
-    "capitalContractual" : "63024.36477570640284434419193156776",
+    "capitalContractual" : "62522.74267287780653649173436054362",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4509,9 +4509,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "37382.14568583205869411734652997074",
+    "pagoInteresCorriente" : "37883.76778866065500196980410099488",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "63024.36477570640284434419193156776",
+    "pagoCapital" : "62522.74267287780653649173436054356",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4519,8 +4519,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "3007498.479737774500114056598842736",
-    "saldoFinal" : "3007498.479737774500114056598842736",
+    "capitalVigente" : "3049202.97645324272779696073835528",
+    "saldoFinal" : "3049202.97645324272779696073835528",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4587,12 +4587,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "3007498.479737774500114056598842736",
+    "saldoInicial" : "3049202.97645324272779696073835528",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "36614.85906601626214641592900882132",
+    "interesCorriente" : "37122.58813920582916658403441757537",
     "interesMora" : "0",
-    "capitalContractual" : "63791.65139552219939204560945271718",
+    "capitalContractual" : "63283.92232233263237187750404396313",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4605,9 +4605,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "36614.85906601626214641592900882132",
+    "pagoInteresCorriente" : "37122.58813920582916658403441757537",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "63791.65139552219939204560945271716",
+    "pagoCapital" : "63283.92232233263237187750404396306",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4615,8 +4615,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2943706.828342252300722010989390019",
-    "saldoFinal" : "2943706.828342252300722010989390019",
+    "capitalVigente" : "2985919.054130910095425083234311317",
+    "saldoFinal" : "2985919.054130910095425083234311317",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4681,12 +4681,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2943706.828342252300722010989390019",
+    "saldoInicial" : "2985919.054130910095425083234311317",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "35838.23115796942127401834621618676",
+    "interesCorriente" : "36352.14155049058743680544580672666",
     "interesMora" : "0",
-    "capitalContractual" : "64568.27930356904026444319224535174",
+    "capitalContractual" : "64054.36891104787410165609265481184",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4699,9 +4699,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "35838.23115796942127401834621618676",
+    "pagoInteresCorriente" : "36352.14155049058743680544580672666",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "64568.27930356904026444319224535166",
+    "pagoCapital" : "64054.36891104787410165609265481176",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4709,8 +4709,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2879138.549038683260457567797144667",
-    "saldoFinal" : "2879138.549038683260457567797144667",
+    "capitalVigente" : "2921864.685219862221323427141656505",
+    "saldoFinal" : "2921864.685219862221323427141656505",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4775,12 +4775,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2879138.549038683260457567797144667",
+    "saldoInicial" : "2921864.685219862221323427141656505",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "35052.14823669808265824606962777239",
+    "interesCorriente" : "35572.31520267887961877556555837049",
     "interesMora" : "0",
-    "capitalContractual" : "65354.36222484037888021546883376611",
+    "capitalContractual" : "64834.19525885958191968597290316801",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4793,9 +4793,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "35052.14823669808265824606962777239",
+    "pagoInteresCorriente" : "35572.31520267887961877556555837049",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "65354.36222484037888021546883376606",
+    "pagoCapital" : "64834.19525885958191968597290316796",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4803,8 +4803,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2813784.186813842881577352328310901",
-    "saldoFinal" : "2813784.186813842881577352328310901",
+    "capitalVigente" : "2857030.489961002639403741168753337",
+    "saldoFinal" : "2857030.489961002639403741168753337",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4869,12 +4869,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2813784.186813842881577352328310901",
+    "saldoInicial" : "2857030.489961002639403741168753337",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "34256.49519267019219812330308072586",
+    "interesCorriente" : "34782.99490241584324346158338296891",
     "interesMora" : "0",
-    "capitalContractual" : "66150.01526886826934033823538081264",
+    "capitalContractual" : "65623.51555912261829499995507856959",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4887,9 +4887,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "34256.49519267019219812330308072586",
+    "pagoInteresCorriente" : "34782.99490241584324346158338296891",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "66150.01526886826934033823538081256",
+    "pagoCapital" : "65623.51555912261829499995507856956",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4897,8 +4897,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2747634.171544974612237014092930088",
-    "saldoFinal" : "2747634.171544974612237014092930088",
+    "capitalVigente" : "2791406.974401880021108741213674767",
+    "saldoFinal" : "2791406.974401880021108741213674767",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -4963,12 +4963,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2747634.171544974612237014092930088",
+    "saldoInicial" : "2791406.974401880021108741213674767",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "33451.15551495910700636827154431561",
+    "interesCorriente" : "33984.06506610597526303718536975696",
     "interesMora" : "0",
-    "capitalContractual" : "66955.35494657935453209326691722289",
+    "capitalContractual" : "66422.44539543248627542435309178154",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -4981,9 +4981,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "33451.15551495910700636827154431561",
+    "pagoInteresCorriente" : "33984.06506610597526303718536975696",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "66955.35494657935453209326691722286",
+    "pagoCapital" : "66422.44539543248627542435309178146",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -4991,8 +4991,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2680678.816598395257704920826012865",
-    "saldoFinal" : "2680678.816598395257704920826012865",
+    "capitalVigente" : "2724984.529006447534833316860582986",
+    "saldoFinal" : "2724984.529006447534833316860582986",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5059,12 +5059,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2680678.816598395257704920826012865",
+    "saldoInicial" : "2724984.529006447534833316860582986",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "32636.01127418239501674014316530207",
+    "interesCorriente" : "33175.40870298772477963895374193577",
     "interesMora" : "0",
-    "capitalContractual" : "67770.49918735606652172139529623643",
+    "capitalContractual" : "67231.10175855073675882258471960274",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5077,9 +5077,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "32636.01127418239501674014316530207",
+    "pagoInteresCorriente" : "33175.40870298772477963895374193577",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "67770.49918735606652172139529623636",
+    "pagoCapital" : "67231.10175855073675882258471960266",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5087,8 +5087,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2612908.317411039191183199430716629",
-    "saldoFinal" : "2612908.317411039191183199430716629",
+    "capitalVigente" : "2657753.427247896798074494275863383",
+    "saldoFinal" : "2657753.427247896798074494275863383",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5153,12 +5153,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2612908.317411039191183199430716629",
+    "saldoInicial" : "2657753.427247896798074494275863383",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "31810.94310523292395715953925311835",
+    "interesCorriente" : "32356.90739800202834569210223911217",
     "interesMora" : "0",
-    "capitalContractual" : "68595.56735630553758130199920842015",
+    "capitalContractual" : "68049.60306353643319276943622242634",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5171,9 +5171,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "31810.94310523292395715953925311835",
+    "pagoInteresCorriente" : "32356.90739800202834569210223911217",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "68595.56735630553758130199920842006",
+    "pagoCapital" : "68049.60306353643319276943622242626",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5181,8 +5181,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2544312.750054733653601897431508209",
-    "saldoFinal" : "2544312.750054733653601897431508209",
+    "capitalVigente" : "2589703.824184360364881724839640957",
+    "saldoFinal" : "2589703.824184360364881724839640957",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5247,12 +5247,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2544312.750054733653601897431508209",
+    "saldoInicial" : "2589703.824184360364881724839640957",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "30975.83018979971092705140413563425",
+    "interesCorriente" : "31528.44129445227920111623021630062",
     "interesMora" : "0",
-    "capitalContractual" : "69430.68027173875061141013432590425",
+    "capitalContractual" : "68878.06916708618233734530824523789",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5265,9 +5265,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "30975.83018979971092705140413563425",
+    "pagoInteresCorriente" : "31528.44129445227920111623021630062",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "69430.68027173875061141013432590426",
+    "pagoCapital" : "68878.06916708618233734530824523786",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5275,8 +5275,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2474882.069782994902990487297182305",
-    "saldoFinal" : "2474882.069782994902990487297182305",
+    "capitalVigente" : "2520825.755017274182544379531395719",
+    "saldoFinal" : "2520825.755017274182544379531395719",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5341,12 +5341,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2474882.069782994902990487297182305",
+    "saldoInicial" : "2520825.755017274182544379531395719",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "30130.55023867597303109230080348403",
+    "interesCorriente" : "30689.88907645319127148843222589355",
     "interesMora" : "0",
-    "capitalContractual" : "70275.96022286248850736923765805447",
+    "capitalContractual" : "69716.62138508527026697310623564497",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5359,9 +5359,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "30130.55023867597303109230080348403",
+    "pagoInteresCorriente" : "30689.88907645319127148843222589355",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "70275.96022286248850736923765805446",
+    "pagoCapital" : "69716.62138508527026697310623564486",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5369,8 +5369,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2404606.109560132414483118059524251",
-    "saldoFinal" : "2404606.109560132414483118059524251",
+    "capitalVigente" : "2451109.133632188912277406425160074",
+    "saldoFinal" : "2451109.133632188912277406425160074",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5437,12 +5437,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2404606.109560132414483118059524251",
+    "saldoInicial" : "2451109.133632188912277406425160074",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "29274.97947385178836047180239041034",
+    "interesCorriente" : "29841.12795116598783818520866264694",
     "interesMora" : "0",
-    "capitalContractual" : "71131.53098768667317798973607112816",
+    "capitalContractual" : "70565.38251037247370027632979889157",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5455,9 +5455,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "29274.97947385178836047180239041034",
+    "pagoInteresCorriente" : "29841.12795116598783818520866264694",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "71131.53098768667317798973607112816",
+    "pagoCapital" : "70565.38251037247370027632979889156",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5465,8 +5465,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2333474.578572445741305128323453123",
-    "saldoFinal" : "2333474.578572445741305128323453123",
+    "capitalVigente" : "2380543.751121816438577130095361182",
+    "saldoFinal" : "2380543.751121816438577130095361182",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5531,12 +5531,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2333474.578572445741305128323453123",
+    "saldoInicial" : "2380543.751121816438577130095361182",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "28408.99261038874507233651280652092",
+    "interesCorriente" : "28982.03363081731350211945413225716",
     "interesMora" : "0",
-    "capitalContractual" : "71997.51785114971646612502565501758",
+    "capitalContractual" : "71424.47683072114803634208432928135",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5549,9 +5549,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "28408.99261038874507233651280652092",
+    "pagoInteresCorriente" : "28982.03363081731350211945413225716",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "71997.51785114971646612502565501756",
+    "pagoCapital" : "71424.47683072114803634208432928126",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5559,8 +5559,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2261477.060721296024839003297798105",
-    "saldoFinal" : "2261477.060721296024839003297798105",
+    "capitalVigente" : "2309119.274291095290540788011031901",
+    "saldoFinal" : "2309119.274291095290540788011031901",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5625,12 +5625,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2261477.060721296024839003297798105",
+    "saldoInicial" : "2309119.274291095290540788011031901",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "27532.46283807392439365676863811798",
+    "interesCorriente" : "28112.48031449923639235251022458882",
     "interesMora" : "0",
-    "capitalContractual" : "72874.04762346453714480476982342052",
+    "capitalContractual" : "72294.0301470392251461090282369497",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5643,9 +5643,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "27532.46283807392439365676863811798",
+    "pagoInteresCorriente" : "28112.48031449923639235251022458882",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "72874.04762346453714480476982342046",
+    "pagoCapital" : "72294.03014703922514610902823694966",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5653,8 +5653,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2188603.013097831487694198527974685",
-    "saldoFinal" : "2188603.013097831487694198527974685",
+    "capitalVigente" : "2236825.244144056065394678982794951",
+    "saldoFinal" : "2236825.244144056065394678982794951",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5719,12 +5719,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2188603.013097831487694198527974685",
+    "saldoInicial" : "2236825.244144056065394678982794951",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "26645.2618028505310626654162066662",
+    "interesCorriente" : "27232.34066974767551495623360964398",
     "interesMora" : "0",
-    "capitalContractual" : "73761.24865868793047579612225487231",
+    "capitalContractual" : "73174.16979179078602350530485189453",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5737,9 +5737,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "26645.2618028505310626654162066662",
+    "pagoInteresCorriente" : "27232.34066974767551495623360964398",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "73761.24865868793047579612225487226",
+    "pagoCapital" : "73174.16979179078602350530485189446",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5747,8 +5747,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2114841.764439143557218402405719813",
-    "saldoFinal" : "2114841.764439143557218402405719813",
+    "capitalVigente" : "2163651.074352265279371173677943057",
+    "saldoFinal" : "2163651.074352265279371173677943057",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5815,12 +5815,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2114841.764439143557218402405719813",
+    "saldoInicial" : "2163651.074352265279371173677943057",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "25747.25958802245201453347640680942",
+    "interesCorriente" : "26341.4858138965556913321636005589",
     "interesMora" : "0",
-    "capitalContractual" : "74659.25087351600952392806205472909",
+    "capitalContractual" : "74065.02464764190584712937486097962",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5833,9 +5833,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "25747.25958802245201453347640680942",
+    "pagoInteresCorriente" : "26341.4858138965556913321636005589",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "74659.25087351600952392806205472906",
+    "pagoCapital" : "74065.02464764190584712937486097956",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5843,8 +5843,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "2040182.513565627547694474343665084",
-    "saldoFinal" : "2040182.513565627547694474343665084",
+    "capitalVigente" : "2089586.049704623373524044303082077",
+    "saldoFinal" : "2089586.049704623373524044303082077",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -5909,12 +5909,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "2040182.513565627547694474343665084",
+    "saldoInicial" : "2089586.049704623373524044303082077",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "24838.32469522999101327965320679376",
+    "interesCorriente" : "25439.785295204959694012942436654",
     "interesMora" : "0",
-    "capitalContractual" : "75568.18576630847052518188525474475",
+    "capitalContractual" : "74966.72516633350184444859602488452",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -5927,9 +5927,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "24838.32469522999101327965320679376",
+    "pagoInteresCorriente" : "25439.785295204959694012942436654",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "75568.18576630847052518188525474466",
+    "pagoCapital" : "74966.72516633350184444859602488446",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -5937,8 +5937,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1964614.327799319077169292458410339",
-    "saldoFinal" : "1964614.327799319077169292458410339",
+    "capitalVigente" : "2014619.324538289871679595707057193",
+    "saldoFinal" : "2014619.324538289871679595707057193",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6003,12 +6003,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1964614.327799319077169292458410339",
+    "saldoInicial" : "2014619.324538289871679595707057193",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "23918.32402519399342421184937759668",
+    "interesCorriente" : "24527.10707375451394696606980131634",
     "interesMora" : "0",
-    "capitalContractual" : "76488.18643634446811424968908394183",
+    "capitalContractual" : "75879.4033877839475914954686602222",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6021,9 +6021,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "23918.32402519399342421184937759668",
+    "pagoInteresCorriente" : "24527.10707375451394696606980131634",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "76488.18643634446811424968908394176",
+    "pagoCapital" : "75879.40338778394759149546866022216",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6031,8 +6031,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1888126.141362974609055042769326397",
-    "saldoFinal" : "1888126.141362974609055042769326397",
+    "capitalVigente" : "1938739.921150505924088100238396971",
+    "saldoFinal" : "1938739.921150505924088100238396971",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6097,12 +6097,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1888126.141362974609055042769326397",
+    "saldoInicial" : "1938739.921150505924088100238396971",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "22987.12285822554140556244743471161",
+    "interesCorriente" : "23603.31750211421051172423593784847",
     "interesMora" : "0",
-    "capitalContractual" : "77419.38760331292013289909102682691",
+    "capitalContractual" : "76803.19295942425102673730252369007",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6115,9 +6115,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "22987.12285822554140556244743471161",
+    "pagoInteresCorriente" : "23603.31750211421051172423593784847",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "77419.38760331292013289909102682686",
+    "pagoCapital" : "76803.19295942425102673730252368996",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6125,8 +6125,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1810706.75375966168892214367829957",
-    "saldoFinal" : "1810706.75375966168892214367829957",
+    "capitalVigente" : "1861936.728191081673061362935873281",
+    "saldoFinal" : "1861936.728191081673061362935873281",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6191,12 +6191,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1810706.75375966168892214367829957",
+    "saldoInicial" : "1861936.728191081673061362935873281",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "22044.58483449836546943868116983621",
+    "interesCorriente" : "22668.28130576983402535298997070765",
     "interesMora" : "0",
-    "capitalContractual" : "78361.9256270400960690228572917023",
+    "capitalContractual" : "77738.22915576862751310854849083089",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6209,9 +6209,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "22044.58483449836546943868116983621",
+    "pagoInteresCorriente" : "22668.28130576983402535298997070765",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "78361.92562704009606902285729170226",
+    "pagoCapital" : "77738.22915576862751310854849083086",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6219,8 +6219,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1732344.828132621592853120821007868",
-    "saldoFinal" : "1732344.828132621592853120821007868",
+    "capitalVigente" : "1784198.49903531304554825438738245",
+    "saldoFinal" : "1784198.49903531304554825438738245",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6287,12 +6287,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1732344.828132621592853120821007868",
+    "saldoInicial" : "1784198.49903531304554825438738245",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "21090.57193408108361573808643181648",
+    "interesCorriente" : "21721.86156331512778634849439968523",
     "interesMora" : "0",
-    "capitalContractual" : "79315.93852745737792272345202972204",
+    "capitalContractual" : "78684.6488982233337521130440618533",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6305,9 +6305,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "21090.57193408108361573808643181648",
+    "pagoInteresCorriente" : "21721.86156331512778634849439968523",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "79315.93852745737792272345202972196",
+    "pagoCapital" : "78684.64889822333375211304406185326",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6315,8 +6315,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1653028.889605164214930397368978146",
-    "saldoFinal" : "1653028.889605164214930397368978146",
+    "capitalVigente" : "1705513.850137089711796141343320597",
+    "saldoFinal" : "1705513.850137089711796141343320597",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6381,12 +6381,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1653028.889605164214930397368978146",
+    "saldoInicial" : "1705513.850137089711796141343320597",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "20124.94445672634407318870246506386",
+    "interesCorriente" : "20763.91968640179829498801359240567",
     "interesMora" : "0",
-    "capitalContractual" : "80281.56600481211746527283599647465",
+    "capitalContractual" : "79642.59077513666324347352486913286",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6399,9 +6399,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "20124.94445672634407318870246506386",
+    "pagoInteresCorriente" : "20763.91968640179829498801359240567",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "80281.56600481211746527283599647456",
+    "pagoCapital" : "79642.59077513666324347352486913276",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6409,8 +6409,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1572747.323600352097465124532981671",
-    "saldoFinal" : "1572747.323600352097465124532981671",
+    "capitalVigente" : "1625871.259361953048552667818451464",
+    "saldoFinal" : "1625871.259361953048552667818451464",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6475,12 +6475,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1572747.323600352097465124532981671",
+    "saldoInicial" : "1625871.259361953048552667818451464",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "19147.56100141391208401437610292691",
+    "interesCorriente" : "19794.31539944542224032455236090674",
     "interesMora" : "0",
-    "capitalContractual" : "81258.9494601245494544471623586116",
+    "capitalContractual" : "80612.19506209303929813698610063179",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6493,9 +6493,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "19147.56100141391208401437610292691",
+    "pagoInteresCorriente" : "19794.31539944542224032455236090674",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "81258.94946012454945444716235861157",
+    "pagoCapital" : "80612.19506209303929813698610063176",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6503,8 +6503,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1491488.374140227548010677370623059",
-    "saldoFinal" : "1491488.374140227548010677370623059",
+    "capitalVigente" : "1545259.064299860009254530832350832",
+    "saldoFinal" : "1545259.064299860009254530832350832",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6569,12 +6569,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1491488.374140227548010677370623059",
+    "saldoInicial" : "1545259.064299860009254530832350832",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "18158.27844564470513768448077256291",
+    "interesCorriente" : "18812.90671908428418175346966124737",
     "interesMora" : "0",
-    "capitalContractual" : "82248.23201589375640077705768897561",
+    "capitalContractual" : "81593.60374245417735670806880029117",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6587,9 +6587,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "18158.27844564470513768448077256291",
+    "pagoInteresCorriente" : "18812.90671908428418175346966124737",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "82248.23201589375640077705768897557",
+    "pagoCapital" : "81593.60374245417735670806880029107",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6597,8 +6597,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1409240.142124333791609900312934083",
-    "saldoFinal" : "1409240.142124333791609900312934083",
+    "capitalVigente" : "1463665.460557405831897822763550541",
+    "saldoFinal" : "1463665.460557405831897822763550541",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6665,12 +6665,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1409240.142124333791609900312934083",
+    "saldoInicial" : "1463665.460557405831897822763550541",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "17156.95192448274458950841896073214",
+    "interesCorriente" : "17819.54993338813699364875453097927",
     "interesMora" : "0",
-    "capitalContractual" : "83249.55853705571694895311950080638",
+    "capitalContractual" : "82586.96052815032454481278393055927",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6683,9 +6683,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "17156.95192448274458950841896073214",
+    "pagoInteresCorriente" : "17819.54993338813699364875453097927",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "83249.55853705571694895311950080637",
+    "pagoCapital" : "82586.96052815032454481278393055917",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6693,8 +6693,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1325990.583587278074660947193433277",
-    "saldoFinal" : "1325990.583587278074660947193433277",
+    "capitalVigente" : "1381078.500029255507353009979619982",
+    "saldoFinal" : "1381078.500029255507353009979619982",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6759,12 +6759,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1325990.583587278074660947193433277",
+    "saldoInicial" : "1381078.500029255507353009979619982",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "16143.43480934195468613801430108434",
+    "interesCorriente" : "16814.09958081384052167205568268037",
     "interesMora" : "0",
-    "capitalContractual" : "84263.07565219650685232352416045417",
+    "capitalContractual" : "83592.41088072462101678948277885817",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6777,9 +6777,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "16143.43480934195468613801430108434",
+    "pagoInteresCorriente" : "16814.09958081384052167205568268037",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "84263.07565219650685232352416045417",
+    "pagoCapital" : "83592.41088072462101678948277885807",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6787,8 +6787,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1241727.507935081567808623669272823",
-    "saldoFinal" : "1241727.507935081567808623669272823",
+    "capitalVigente" : "1297486.089148530886336220496841124",
+    "saldoFinal" : "1297486.089148530886336220496841124",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6853,12 +6853,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1241727.507935081567808623669272823",
+    "saldoInicial" : "1297486.089148530886336220496841124",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "15117.57868651470265693988495751636",
+    "interesCorriente" : "15796.40842890479683363609268613738",
     "interesMora" : "0",
-    "capitalContractual" : "85288.93177502375888152165350402215",
+    "capitalContractual" : "84610.10203263366470482544577540115",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6871,9 +6871,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "15117.57868651470265693988495751636",
+    "pagoInteresCorriente" : "15796.40842890479683363609268613738",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "85288.93177502375888152165350402207",
+    "pagoCapital" : "84610.10203263366470482544577540107",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6881,8 +6881,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1156438.576160057808927102015768801",
-    "saldoFinal" : "1156438.576160057808927102015768801",
+    "capitalVigente" : "1212875.987115897221631395051065723",
+    "saldoFinal" : "1212875.987115897221631395051065723",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -6947,12 +6947,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1156438.576160057808927102015768801",
+    "saldoInicial" : "1212875.987115897221631395051065723",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "14079.23333543893571222388253880311",
+    "interesCorriente" : "14766.32745273106293082805101856702",
     "interesMora" : "0",
-    "capitalContractual" : "86327.2771260995258262376559227354",
+    "capitalContractual" : "85640.18300880739860763348744297151",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -6965,9 +6965,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "14079.23333543893571222388253880311",
+    "pagoInteresCorriente" : "14766.32745273106293082805101856702",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "86327.27712609952582623765592273537",
+    "pagoCapital" : "85640.18300880739860763348744297147",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -6975,8 +6975,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "1070111.299033958283100864359846066",
-    "saldoFinal" : "1070111.299033958283100864359846066",
+    "capitalVigente" : "1127235.804107089823023761563622752",
+    "saldoFinal" : "1127235.804107089823023761563622752",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7043,12 +7043,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "1070111.299033958283100864359846066",
+    "saldoInicial" : "1127235.804107089823023761563622752",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "13028.24670670073251092483011230374",
+    "interesCorriente" : "13723.70581306698381197420189986281",
     "interesMora" : "0",
-    "capitalContractual" : "87378.26375483772902753670834923477",
+    "capitalContractual" : "86682.80464847147772648733656167574",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7061,9 +7061,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "13028.24670670073251092483011230374",
+    "pagoInteresCorriente" : "13723.70581306698381197420189986281",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "87378.26375483772902753670834923477",
+    "pagoCapital" : "86682.80464847147772648733656167567",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7071,8 +7071,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "982733.0352791205540733276514968312",
-    "saldoFinal" : "982733.0352791205540733276514968312",
+    "capitalVigente" : "1040552.999458618345297274227061076",
+    "saldoFinal" : "1040552.999458618345297274227061076",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7137,12 +7137,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "982733.0352791205540733276514968312",
+    "saldoInicial" : "1040552.999458618345297274227061076",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "11964.4648997690479159278284646595",
+    "interesCorriente" : "12668.39083430315034599363357653653",
     "interesMora" : "0",
-    "capitalContractual" : "88442.04556176941362253370999687902",
+    "capitalContractual" : "87738.11962723531119246790488500202",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7155,9 +7155,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "11964.4648997690479159278284646595",
+    "pagoInteresCorriente" : "12668.39083430315034599363357653653",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "88442.04556176941362253370999687897",
+    "pagoCapital" : "87738.11962723531119246790488500197",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7165,8 +7165,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "894290.9897173511404507939414999522",
-    "saldoFinal" : "894290.9897173511404507939414999522",
+    "capitalVigente" : "952814.879831383034104806322176074",
+    "saldoFinal" : "952814.879831383034104806322176074",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7231,12 +7231,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "894290.9897173511404507939414999522",
+    "saldoInicial" : "952814.879831383034104806322176074",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "10887.73214045939063912881000666466",
+    "interesCorriente" : "11600.22798208944750571827848083282",
     "interesMora" : "0",
-    "capitalContractual" : "89518.77832107907089933272845487385",
+    "capitalContractual" : "88806.28247944901403274325998070573",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7249,9 +7249,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "10887.73214045939063912881000666466",
+    "pagoInteresCorriente" : "11600.22798208944750571827848083282",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "89518.77832107907089933272845487377",
+    "pagoCapital" : "88806.28247944901403274325998070567",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7259,8 +7259,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "804772.2113962720695514612130450784",
-    "saldoFinal" : "804772.2113962720695514612130450784",
+    "capitalVigente" : "864008.5973519340200720630621953683",
+    "saldoFinal" : "864008.5973519340200720630621953683",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7325,12 +7325,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "804772.2113962720695514612130450784",
+    "saldoInicial" : "864008.5973519340200720630621953683",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "9797.890758123133684789221208726223",
+    "interesCorriente" : "10519.06084070591913715149328177835",
     "interesMora" : "0",
-    "capitalContractual" : "90608.61970341532785367231725281229",
+    "capitalContractual" : "89887.4496208325424013100451797602",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7343,9 +7343,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "9797.890758123133684789221208726223",
+    "pagoInteresCorriente" : "10519.06084070591913715149328177835",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "90608.61970341532785367231725281227",
+    "pagoCapital" : "89887.44962083254240131004517976007",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7353,8 +7353,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "714163.5916928567416977888957922661",
-    "saldoFinal" : "714163.5916928567416977888957922661",
+    "capitalVigente" : "774121.1477311014776707530170156082",
+    "saldoFinal" : "774121.1477311014776707530170156082",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7419,12 +7419,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "714163.5916928567416977888957922661",
+    "saldoInicial" : "774121.1477311014776707530170156082",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "8694.781162559117322964210991138341",
+    "interesCorriente" : "9424.731090158135581832062759895148",
     "interesMora" : "0",
-    "capitalContractual" : "91711.72929897934421549732747040017",
+    "capitalContractual" : "90981.7793713803259566294757016434",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7437,9 +7437,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "8694.781162559117322964210991138341",
+    "pagoInteresCorriente" : "9424.731090158135581832062759895148",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "91711.72929897934421549732747040017",
+    "pagoCapital" : "90981.77937138032595662947570164337",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7447,8 +7447,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "622451.8623938773974822915683218659",
-    "saldoFinal" : "622451.8623938773974822915683218659",
+    "capitalVigente" : "683139.3683597211517141235413139648",
+    "saldoFinal" : "683139.3683597211517141235413139648",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7515,12 +7515,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "622451.8623938773974822915683218659",
+    "saldoInicial" : "683139.3683597211517141235413139648",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "7578.241820644163658874233977139368",
+    "interesCorriente" : "8317.078482993710127628219485449311",
     "interesMora" : "0",
-    "capitalContractual" : "92828.26864089429787958730448439914",
+    "capitalContractual" : "92089.43197854475141083331897608924",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7533,9 +7533,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "7578.241820644163658874233977139368",
+    "pagoInteresCorriente" : "8317.078482993710127628219485449311",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "92828.26864089429787958730448439905",
+    "pagoCapital" : "92089.43197854475141083331897608915",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7543,8 +7543,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "529623.5937529830996027042638374668",
-    "saldoFinal" : "529623.5937529830996027042638374668",
+    "capitalVigente" : "591049.9363811764003032902223378756",
+    "saldoFinal" : "591049.9363811764003032902223378756",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7609,12 +7609,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "529623.5937529830996027042638374668",
+    "saldoInicial" : "591049.9363811764003032902223378756",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "6448.10923267908070309565842120722",
+    "interesCorriente" : "7195.940820836569429899609926816638",
     "interesMora" : "0",
-    "capitalContractual" : "93958.40122885938083536588004033129",
+    "capitalContractual" : "93210.56964070189210856192853472191",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7627,9 +7627,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "6448.10923267908070309565842120722",
+    "pagoInteresCorriente" : "7195.940820836569429899609926816638",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "93958.40122885938083536588004033125",
+    "pagoCapital" : "93210.56964070189210856192853472185",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7637,8 +7637,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "435665.1925241237187673383837971356",
-    "saldoFinal" : "435665.1925241237187673383837971356",
+    "capitalVigente" : "497839.3667404745081947282938031538",
+    "saldoFinal" : "497839.3667404745081947282938031538",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7703,12 +7703,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "435665.1925241237187673383837971356",
+    "saldoInicial" : "497839.3667404745081947282938031538",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "5304.21790844669218533941600283186",
+    "interesCorriente" : "6061.153930635541714454683923803305",
     "interesMora" : "0",
-    "capitalContractual" : "95102.29255309176935312212245870665",
+    "capitalContractual" : "94345.35653090291982400685453773525",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7721,9 +7721,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "5304.21790844669218533941600283186",
+    "pagoInteresCorriente" : "6061.153930635541714454683923803305",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "95102.29255309176935312212245870655",
+    "pagoCapital" : "94345.35653090291982400685453773515",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7731,8 +7731,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "340562.899971031949414216261338429",
-    "saldoFinal" : "340562.899971031949414216261338429",
+    "capitalVigente" : "403494.0102095715883707214392654186",
+    "saldoFinal" : "403494.0102095715883707214392654186",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7797,12 +7797,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "340562.899971031949414216261338429",
+    "saldoInicial" : "403494.0102095715883707214392654186",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "4146.400342978387185267181541538364",
+    "interesCorriente" : "4912.551640623784740044532500192579",
     "interesMora" : "0",
-    "capitalContractual" : "96260.11011856007435319435692000015",
+    "capitalContractual" : "95493.95882091467679841700596134597",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7815,9 +7815,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "4146.400342978387185267181541538364",
+    "pagoInteresCorriente" : "4912.551640623784740044532500192579",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "96260.11011856007435319435692000007",
+    "pagoCapital" : "95493.95882091467679841700596134587",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7825,8 +7825,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "244302.7898524718750610219044184289",
-    "saldoFinal" : "244302.7898524718750610219044184289",
+    "capitalVigente" : "308000.0513886569115723044333040727",
+    "saldoFinal" : "308000.0513886569115723044333040727",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7893,12 +7893,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "244302.7898524718750610219044184289",
+    "saldoInicial" : "308000.0513886569115723044333040727",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "2974.486992025640971086988657394307",
+    "interesCorriente" : "3749.965755985533155145860585908975",
     "interesMora" : "0",
-    "capitalContractual" : "97432.02346951282056737454980414421",
+    "capitalContractual" : "96656.54470555292838331567787562958",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -7911,9 +7911,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "2974.486992025640971086988657394307",
+    "pagoInteresCorriente" : "3749.965755985533155145860585908975",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "97432.02346951282056737454980414417",
+    "pagoCapital" : "96656.54470555292838331567787562947",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -7921,8 +7921,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "146870.7663829590544936473546142847",
-    "saldoFinal" : "146870.7663829590544936473546142847",
+    "capitalVigente" : "211343.5066831039831889887554284432",
+    "saldoFinal" : "211343.5066831039831889887554284432",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -7987,12 +7987,12 @@
     "estado" : "VIGENTE_AL_DIA",
     "evento" : "Pago normal",
     "etiqueta" : "Pago normal",
-    "saldoInicial" : "146870.7663829590544936473546142847",
+    "saldoInicial" : "211343.5066831039831889887554284432",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "1788.306247232915234324358451149255",
+    "interesCorriente" : "2573.226034226602025295088913015781",
     "interesMora" : "0",
-    "capitalContractual" : "98618.20421430554630413718001038926",
+    "capitalContractual" : "97833.28442731185951316644954852277",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -8005,9 +8005,9 @@
     "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "1788.306247232915234324358451149255",
+    "pagoInteresCorriente" : "2573.226034226602025295088913015781",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "98618.20421430554630413718001038917",
+    "pagoCapital" : "97833.28442731185951316644954852267",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -8015,8 +8015,8 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "48252.56216865350818951017460389553",
-    "saldoFinal" : "48252.56216865350818951017460389553",
+    "capitalVigente" : "113510.2222557921236758223058799205",
+    "saldoFinal" : "113510.2222557921236758223058799205",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
@@ -8078,15 +8078,15 @@
   }, {
     "periodo" : 85,
     "mes" : 20,
-    "estado" : "CANCELADO",
-    "evento" : "Pago final",
-    "etiqueta" : "Pago final",
-    "saldoInicial" : "48252.56216865350818951017460389553",
+    "estado" : "VIGENTE_AL_DIA",
+    "evento" : "Pago normal",
+    "etiqueta" : "Pago normal",
+    "saldoInicial" : "113510.2222557921236758223058799205",
     "tasaPeriodica" : "0.0121744443208027",
     "cuotaFinanciera" : "100406.5104615384615384615384615385",
-    "interesCorriente" : "587.684411008302180854635505452624",
+    "interesCorriente" : "1382.160160245039926966578436463983",
     "interesMora" : "0",
-    "capitalContractual" : "48252.56216865350818951017460389414",
+    "capitalContractual" : "99024.35030129342161149496002507457",
     "cobranzaCausada" : "0",
     "serviciosCausados" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -8096,12 +8096,12 @@
       "seguroTodoRiesgo" : "4087.661538461538461538461538461539",
       "ivaSeguroTodoRiesgo" : "776.6556923076923076923076923076924"
     },
-    "pagoRecibido" : "116738.7361181233488319032716478097",
+    "pagoRecibido" : "168305",
     "pagoCobranza" : "0",
     "pagoMora" : "0",
-    "pagoInteresCorriente" : "587.684411008302180854635505452624",
+    "pagoInteresCorriente" : "1382.160160245039926966578436463983",
     "pagoServicios" : "67898.48953846153846153846153846154",
-    "pagoCapital" : "48252.56216865350818951017460389553",
+    "pagoCapital" : "99024.35030129342161149496002507447",
     "abonoExtra" : "0",
     "prepagoCapital" : "0",
     "cxcCobranza" : "0",
@@ -8109,20 +8109,18 @@
     "cxcInteresCorriente" : "0",
     "cxcServicios" : "0",
     "capitalVencido" : "0",
-    "capitalVigente" : "0",
-    "saldoFinal" : "0",
+    "capitalVigente" : "14485.87195449870206432734585484603",
+    "saldoFinal" : "14485.87195449870206432734585484603",
     "cuotasVencidas" : 0,
     "deudaAExtinguir" : "0",
     "inventario" : "0",
     "cxcFondoGarantias" : "0",
     "cxpDeudor" : "0",
     "pagoTerceros" : {
-      "fondoGarantias" : "145929.5169230769230769230769230769",
-      "asistencia" : "32953.84615384615384615384615384614",
-      "seguro" : "10219.15384615384615384615384615385",
-      "total" : "203695.4686153846153846153846153845",
-      "seguroTodoRiesgo" : "12262.98461538461538461538461538462",
-      "ivaSeguroTodoRiesgo" : "2329.967076923076923076923076923077"
+      "fondoGarantias" : "0",
+      "asistencia" : "0",
+      "seguro" : "0",
+      "total" : "0"
     },
     "pagosServicios" : {
       "fondoGarantias" : "48643.17230769230769230769230769231",
@@ -8168,7 +8166,103 @@
     "interesPrepago" : "0",
     "costoRecuperacion" : "0",
     "costoRecuperacionAsumido" : "0",
-    "pagoTotalCliente" : "116738.7361181233488319032716478097",
+    "pagoTotalCliente" : "168305",
+    "pagoExtraordinario" : "0",
+    "listoParaRecuperacion" : true
+  }, {
+    "periodo" : 86,
+    "mes" : 20,
+    "estado" : "CANCELADO",
+    "evento" : "Pago final",
+    "etiqueta" : "Pago final",
+    "saldoInicial" : "14485.87195449870206432734585484603",
+    "tasaPeriodica" : "0.0121744443208027",
+    "cuotaFinanciera" : "100406.5104615384615384615384615385",
+    "interesCorriente" : "176.5937210982810955883001441505414",
+    "interesMora" : "0",
+    "capitalContractual" : "14485.87195449870206432734585484143",
+    "cobranzaCausada" : "0",
+    "serviciosCausados" : {
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
+      "seguro" : "3406.384615384615384615384615384616",
+      "total" : "67898.48953846153846153846153846154",
+      "seguroTodoRiesgo" : "4087.661538461538461538461538461539",
+      "ivaSeguroTodoRiesgo" : "776.6556923076923076923076923076924"
+    },
+    "pagoRecibido" : "82560.95521405852162145410753745811",
+    "pagoCobranza" : "0",
+    "pagoMora" : "0",
+    "pagoInteresCorriente" : "176.5937210982810955883001441505414",
+    "pagoServicios" : "67898.48953846153846153846153846154",
+    "pagoCapital" : "14485.87195449870206432734585484603",
+    "abonoExtra" : "0",
+    "prepagoCapital" : "0",
+    "cxcCobranza" : "0",
+    "cxcMora" : "0",
+    "cxcInteresCorriente" : "0",
+    "cxcServicios" : "0",
+    "capitalVencido" : "0",
+    "capitalVigente" : "0",
+    "saldoFinal" : "0",
+    "cuotasVencidas" : 0,
+    "deudaAExtinguir" : "0",
+    "inventario" : "0",
+    "cxcFondoGarantias" : "0",
+    "cxpDeudor" : "0",
+    "pagoTerceros" : {
+      "fondoGarantias" : "194572.6892307692307692307692307692",
+      "asistencia" : "43938.46153846153846153846153846152",
+      "seguro" : "13625.53846153846153846153846153847",
+      "total" : "271593.9581538461538461538461538462",
+      "seguroTodoRiesgo" : "16350.64615384615384615384615384616",
+      "ivaSeguroTodoRiesgo" : "3106.622769230769230769230769230769"
+    },
+    "pagosServicios" : {
+      "fondoGarantias" : "48643.17230769230769230769230769231",
+      "asistencia" : "10984.61538461538461538461538461538",
+      "seguro" : "3406.384615384615384615384615384616",
+      "total" : "67898.48953846153846153846153846154",
+      "seguroTodoRiesgo" : "4087.661538461538461538461538461539",
+      "ivaSeguroTodoRiesgo" : "776.6556923076923076923076923076924"
+    },
+    "cxcServiciosPorConcepto" : {
+      "fondoGarantias" : "0",
+      "asistencia" : "0",
+      "seguro" : "0",
+      "total" : "0"
+    },
+    "extinguido" : {
+      "cobranza" : "0",
+      "mora" : "0",
+      "interesCorriente" : "0",
+      "servicios" : {
+        "fondoGarantias" : "0",
+        "asistencia" : "0",
+        "seguro" : "0",
+        "total" : "0"
+      },
+      "capital" : "0",
+      "total" : "0"
+    },
+    "capitalVencidoInicial" : "0",
+    "pendientesPagadosExtra" : {
+      "cobranza" : "0",
+      "mora" : "0",
+      "interesCorriente" : "0",
+      "servicios" : {
+        "fondoGarantias" : "0",
+        "asistencia" : "0",
+        "seguro" : "0",
+        "total" : "0"
+      },
+      "capital" : "0",
+      "total" : "0"
+    },
+    "interesPrepago" : "0",
+    "costoRecuperacion" : "0",
+    "costoRecuperacionAsumido" : "0",
+    "pagoTotalCliente" : "82560.95521405852162145410753745811",
     "pagoExtraordinario" : "0",
     "listoParaRecuperacion" : false
   } ],
@@ -8194,8 +8288,8 @@
       "credito" : "28523.48513424104039408553675589816",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8237,8 +8331,8 @@
       "credito" : "28870.74271584310146733945726357449",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8280,8 +8374,8 @@
       "credito" : "29222.22796553735343318769904211672",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8323,8 +8417,8 @@
       "credito" : "29577.99235283359150382814035781471",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8366,8 +8460,8 @@
       "credito" : "29938.0879738542921122787406433502",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8409,8 +8503,8 @@
       "credito" : "30302.56755896327411060930619991091",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8452,8 +8546,8 @@
       "credito" : "30671.48448048723467917339653964414",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8495,8 +8589,8 @@
       "credito" : "31044.89276053129064483825322271829",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8538,8 +8632,8 @@
       "credito" : "31422.84707888966967183045189898494",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8581,8 +8675,8 @@
       "credito" : "31805.40278105270972202356914595515",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8624,8 +8718,8 @@
       "credito" : "32192.61588631133928433181877634416",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8667,8 +8761,8 @@
       "credito" : "32584.54309596022514740548726448456",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8710,8 +8804,8 @@
       "credito" : "32981.24180160078893814036643437436",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8753,8 +8847,8 @@
       "credito" : "33382.77009354530827272997320315466",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8796,8 +8890,8 @@
       "credito" : "33789.18676932333316924764845526206",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8839,8 +8933,8 @@
       "credito" : "34200.55134229166335321319892720656",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8882,8 +8976,8 @@
       "credito" : "34616.92405034914725246953502880856",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8925,8 +9019,8 @@
       "credito" : "35038.36586475757882718942162601266",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -8968,8 +9062,8 @@
       "credito" : "35464.93849906998391719869105021616",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9011,8 +9105,8 @@
       "credito" : "35896.70441816760351431512548087416",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9054,8 +9148,8 @@
       "credito" : "36333.72684740689728436445443431586",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9097,8 +9191,8 @@
       "credito" : "36776.06978187790677427732220786376",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9140,8 +9234,8 @@
       "credito" : "37223.79799577533404655282567108986",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9183,8 +9277,8 @@
       "credito" : "37676.97705188370798878319219580036",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9226,8 +9320,8 @@
       "credito" : "38135.67331117802725228731940614256",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9269,8 +9363,8 @@
       "credito" : "38599.95394254128568364461657137016",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9312,8 +9406,8 @@
       "credito" : "39069.88693260030322853103898050426",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9355,8 +9449,8 @@
       "credito" : "39545.54109568130261124270461336576",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9398,8 +9492,8 @@
       "credito" : "40026.98608388668962818585290829336",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9441,8 +9535,8 @@
       "credito" : "40514.29239729451264198285892290166",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9484,8 +9578,8 @@
       "credito" : "41007.53139428209482729152363855066",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9527,8 +9621,8 @@
       "credito" : "41506.77530197535090258953454701406",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9570,8 +9664,8 @@
       "credito" : "42012.09722682531848670046819334086",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9613,8 +9707,8 @@
       "credito" : "42523.57116531345284742704238702796",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9656,8 +9750,8 @@
       "credito" : "43041.27201478725266503938547843166",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9699,8 +9793,8 @@
       "credito" : "43565.27558442780351830194881526006",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9742,8 +9836,8 @@
       "credito" : "44095.65860635084511800703618994316",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9785,8 +9879,8 @@
       "credito" : "44632.49874684298786544447450478206",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9828,8 +9922,8 @@
       "credito" : "45175.87461773472410373885477805176",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -9853,18 +9947,6 @@
     "periodo" : 41,
     "evento" : "Pago tardío + cobranza",
     "lineas" : [ {
-      "cuenta" : "CXC_GASTOS_COBRANZA",
-      "nombreCuenta" : "CxC gastos de cobranza",
-      "debito" : "40000",
-      "credito" : "0",
-      "explicacion" : "Causación de cobranza por días de atraso"
-    }, {
-      "cuenta" : "INGRESOS_NO_OPERACIONALES_COBRANZA",
-      "nombreCuenta" : "Ingresos no operacionales por gastos de cobranza (PUC 42)",
-      "debito" : "0",
-      "credito" : "40000",
-      "explicacion" : "Contrapartida de la cobranza causada"
-    }, {
       "cuenta" : "CXC_INTERES_MORA",
       "nombreCuenta" : "CxC interés mora",
       "debito" : "796.6760435444937872703819281838571",
@@ -9881,16 +9963,34 @@
       "nombreCuenta" : "Caja",
       "debito" : "5000",
       "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total (financiera + servicios)"
+      "explicacion" : "Recaudo de la cuota más lo atrasado"
     }, {
-      "cuenta" : "CXC_GASTOS_COBRANZA",
-      "nombreCuenta" : "CxC gastos de cobranza",
+      "cuenta" : "CXC_INTERES_MORA",
+      "nombreCuenta" : "CxC interés mora",
       "debito" : "0",
-      "credito" : "5000",
-      "explicacion" : "Primera prioridad"
+      "credito" : "796.6760435444937872703819281838571",
+      "explicacion" : "Segunda prioridad"
+    }, {
+      "cuenta" : "CXC_INTERES_CORRIENTE",
+      "nombreCuenta" : "CxC interés corriente",
+      "debito" : "0",
+      "credito" : "4203.323956455506212729618071816143",
+      "explicacion" : "Tercera prioridad"
+    }, {
+      "cuenta" : "CARTERA_VENCIDA",
+      "nombreCuenta" : "Cartera capital vencida",
+      "debito" : "46282.55279496732996295256723845059",
+      "credito" : "0",
+      "explicacion" : "Capital contractual de la semana que quedó vencido"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "46282.55279496732996295256723845059",
+      "explicacion" : "Contrapartida de la reclasificación a vencida"
     } ],
-    "totalDebitos" : "45796.67604354449378727038192818386",
-    "totalCreditos" : "45796.67604354449378727038192818386",
+    "totalDebitos" : "52079.22883851182375022294916663445",
+    "totalCreditos" : "52079.22883851182375022294916663445",
     "cuadra" : true
   }, {
     "periodo" : 42,
@@ -9898,44 +9998,38 @@
     "lineas" : [ {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "1037424.172587373134571221537897364",
+      "debito" : "998168.1725873731345712215378973644",
       "credito" : "0",
       "explicacion" : "Abono extraordinario recibido"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "1037424.172587373134571221537897364",
+      "credito" : "998168.1725873731345712215378973644",
       "explicacion" : "Aplicación 100% a capital"
     }, {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "462575.8274126268654287784621026356",
+      "debito" : "501831.8274126268654287784621026356",
       "credito" : "0",
       "explicacion" : "Recaudo extraordinario aplicado a pendientes"
-    }, {
-      "cuenta" : "CXC_GASTOS_COBRANZA",
-      "nombreCuenta" : "CxC gastos de cobranza",
-      "debito" : "0",
-      "credito" : "75000",
-      "explicacion" : "Pendiente de cobranza (prelación 1)"
     }, {
       "cuenta" : "CXC_INTERES_MORA",
       "nombreCuenta" : "CxC interés mora",
       "debito" : "0",
-      "credito" : "1916.827412626865428778462102635439",
+      "credito" : "1120.151369082371641508080174451582",
       "explicacion" : "Pendiente de mora (prelación 2)"
     }, {
       "cuenta" : "CXC_INTERES_CORRIENTE",
       "nombreCuenta" : "CxC interés corriente",
       "debito" : "0",
-      "credito" : "162364.6710293572687034565012915171",
+      "credito" : "158161.7716882863778753422678350856",
       "explicacion" : "Pendiente de interés corriente (prelación 3)"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "69846.94153846153846153846153846154",
+      "credito" : "189102.5169230769230769230769230768",
       "explicacion" : "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"
     }, {
       "cuenta" : "CARTERA_VENCIDA",
@@ -9957,38 +10051,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "1500000",
-    "totalCreditos" : "1500000",
-    "cuadra" : true
-  }, {
-    "periodo" : 42,
-    "evento" : "Cuota + abono extra",
-    "lineas" : [ {
-      "cuenta" : "CXC_GASTOS_COBRANZA",
-      "nombreCuenta" : "CxC gastos de cobranza",
-      "debito" : "40000",
-      "credito" : "0",
-      "explicacion" : "Causación de cobranza por días de atraso"
-    }, {
-      "cuenta" : "INGRESOS_NO_OPERACIONALES_COBRANZA",
-      "nombreCuenta" : "Ingresos no operacionales por gastos de cobranza (PUC 42)",
-      "debito" : "0",
-      "credito" : "40000",
-      "explicacion" : "Contrapartida de la cobranza causada"
-    }, {
-      "cuenta" : "CXC_INTERES_MORA",
-      "nombreCuenta" : "CxC interés mora",
-      "debito" : "1120.151369082371641508080174451582",
-      "credito" : "0",
-      "explicacion" : "Causación de mora"
-    }, {
-      "cuenta" : "INGRESOS_MORA",
-      "nombreCuenta" : "Ingresos por mora",
-      "debito" : "0",
-      "credito" : "1120.151369082371641508080174451582",
-      "explicacion" : "Contrapartida del interés de mora"
-    } ],
-    "totalDebitos" : "41120.15136908237164150808017445158",
-    "totalCreditos" : "41120.15136908237164150808017445158",
+    "totalCreditos" : "1500000.000000000000000000000000001",
     "cuadra" : true
   }, {
     "periodo" : 43,
@@ -10003,17 +10066,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "40360.1062507952107402167534033692",
+      "credito" : "40838.0262370526415314167534033692",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "60046.40421074325079824478505816926",
+      "credito" : "59568.48422448582000704478505816926",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10046,17 +10109,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "39629.0746460671042388977631065324",
+      "credito" : "40112.8130425870249128244498922125",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "60777.43581547135729956377535500606",
+      "credito" : "60293.69741895143662563708856932596",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10089,17 +10152,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "38889.14313777048835717031950467953",
+      "credito" : "39378.77078046467518392343015471893",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "61517.36732376797318129121895685896",
+      "credito" : "61027.73968107378635453810830681956",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10132,17 +10195,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "38140.2033745249077643246477417117",
+      "credito" : "38635.79196169300084749653224751263",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "62266.30708701355377413689071982676",
+      "credito" : "61770.71849984546069096500621402586",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10175,17 +10238,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "37382.14568583205869411734652997074",
+      "credito" : "37883.76778866065500196980410099488",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "63024.36477570640284434419193156776",
+      "credito" : "62522.74267287780653649173436054356",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10203,7 +10266,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 48,
@@ -10218,17 +10281,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "36614.85906601626214641592900882132",
+      "credito" : "37122.58813920582916658403441757537",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "63791.65139552219939204560945271716",
+      "credito" : "63283.92232233263237187750404396306",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10246,7 +10309,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 49,
@@ -10261,17 +10324,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "35838.23115796942127401834621618676",
+      "credito" : "36352.14155049058743680544580672666",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "64568.27930356904026444319224535166",
+      "credito" : "64054.36891104787410165609265481176",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10304,17 +10367,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "35052.14823669808265824606962777239",
+      "credito" : "35572.31520267887961877556555837049",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "65354.36222484037888021546883376606",
+      "credito" : "64834.19525885958191968597290316796",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10347,60 +10410,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "34256.49519267019219812330308072586",
+      "credito" : "34782.99490241584324346158338296891",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "66150.01526886826934033823538081256",
+      "credito" : "65623.51555912261829499995507856956",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
-    "cuadra" : true
-  }, {
-    "periodo" : 52,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "33451.15551495910700636827154431561",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "66955.35494657935453209326691722286",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10421,6 +10441,49 @@
     "totalCreditos" : "168305",
     "cuadra" : true
   }, {
+    "periodo" : 52,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "33984.06506610597526303718536975696",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "66422.44539543248627542435309178146",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
+    "cuadra" : true
+  }, {
     "periodo" : 53,
     "evento" : "Pago normal",
     "lineas" : [ {
@@ -10433,17 +10496,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "32636.01127418239501674014316530207",
+      "credito" : "33175.40870298772477963895374193577",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "67770.49918735606652172139529623636",
+      "credito" : "67231.10175855073675882258471960266",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10476,17 +10539,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "31810.94310523292395715953925311835",
+      "credito" : "32356.90739800202834569210223911217",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "68595.56735630553758130199920842006",
+      "credito" : "68049.60306353643319276943622242626",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10519,17 +10582,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "30975.83018979971092705140413563425",
+      "credito" : "31528.44129445227920111623021630062",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "69430.68027173875061141013432590426",
+      "credito" : "68878.06916708618233734530824523786",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10562,17 +10625,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "30130.55023867597303109230080348403",
+      "credito" : "30689.88907645319127148843222589355",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "70275.96022286248850736923765805446",
+      "credito" : "69716.62138508527026697310623564486",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10590,7 +10653,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 57,
@@ -10605,17 +10668,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "29274.97947385178836047180239041034",
+      "credito" : "29841.12795116598783818520866264694",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "71131.53098768667317798973607112816",
+      "credito" : "70565.38251037247370027632979889156",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10648,60 +10711,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "28408.99261038874507233651280652092",
+      "credito" : "28982.03363081731350211945413225716",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "71997.51785114971646612502565501756",
+      "credito" : "71424.47683072114803634208432928126",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
-    "cuadra" : true
-  }, {
-    "periodo" : 59,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "27532.46283807392439365676863811798",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "72874.04762346453714480476982342046",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10722,7 +10742,7 @@
     "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
-    "periodo" : 60,
+    "periodo" : 59,
     "evento" : "Pago normal",
     "lineas" : [ {
       "cuenta" : "CAJA",
@@ -10734,17 +10754,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "26645.2618028505310626654162066662",
+      "credito" : "28112.48031449923639235251022458882",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "73761.24865868793047579612225487226",
+      "credito" : "72294.03014703922514610902823694966",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10765,6 +10785,49 @@
     "totalCreditos" : "168305",
     "cuadra" : true
   }, {
+    "periodo" : 60,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "27232.34066974767551495623360964398",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "73174.16979179078602350530485189446",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
+    "cuadra" : true
+  }, {
     "periodo" : 61,
     "evento" : "Pago normal",
     "lineas" : [ {
@@ -10777,17 +10840,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "25747.25958802245201453347640680942",
+      "credito" : "26341.4858138965556913321636005589",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "74659.25087351600952392806205472906",
+      "credito" : "74065.02464764190584712937486097956",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10820,103 +10883,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "24838.32469522999101327965320679376",
+      "credito" : "25439.785295204959694012942436654",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "75568.18576630847052518188525474466",
+      "credito" : "74966.72516633350184444859602488446",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
-    "cuadra" : true
-  }, {
-    "periodo" : 63,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "23918.32402519399342421184937759668",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "76488.18643634446811424968908394176",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
-    "cuadra" : true
-  }, {
-    "periodo" : 64,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "22987.12285822554140556244743471161",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "77419.38760331292013289909102682686",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10937,6 +10914,92 @@
     "totalCreditos" : "168305",
     "cuadra" : true
   }, {
+    "periodo" : 63,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "24527.10707375451394696606980131634",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "75879.40338778394759149546866022216",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168305",
+    "cuadra" : true
+  }, {
+    "periodo" : 64,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "23603.31750211421051172423593784847",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "76803.19295942425102673730252368996",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
+    "cuadra" : true
+  }, {
     "periodo" : 65,
     "evento" : "Pago normal",
     "lineas" : [ {
@@ -10949,17 +11012,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "22044.58483449836546943868116983621",
+      "credito" : "22668.28130576983402535298997070765",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "78361.92562704009606902285729170226",
+      "credito" : "77738.22915576862751310854849083086",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -10992,17 +11055,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "21090.57193408108361573808643181648",
+      "credito" : "21721.86156331512778634849439968523",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "79315.93852745737792272345202972196",
+      "credito" : "78684.64889822333375211304406185326",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11020,7 +11083,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
+    "totalCreditos" : "168305",
     "cuadra" : true
   }, {
     "periodo" : 67,
@@ -11035,17 +11098,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "20124.94445672634407318870246506386",
+      "credito" : "20763.91968640179829498801359240567",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "80281.56600481211746527283599647456",
+      "credito" : "79642.59077513666324347352486913276",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11078,17 +11141,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "19147.56100141391208401437610292691",
+      "credito" : "19794.31539944542224032455236090674",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "81258.94946012454945444716235861157",
+      "credito" : "80612.19506209303929813698610063176",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11121,17 +11184,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "18158.27844564470513768448077256291",
+      "credito" : "18812.90671908428418175346966124737",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "82248.23201589375640077705768897557",
+      "credito" : "81593.60374245417735670806880029107",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11149,7 +11212,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 70,
@@ -11164,17 +11227,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "17156.95192448274458950841896073214",
+      "credito" : "17819.54993338813699364875453097927",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "83249.55853705571694895311950080637",
+      "credito" : "82586.96052815032454481278393055917",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11192,7 +11255,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 71,
@@ -11207,17 +11270,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "16143.43480934195468613801430108434",
+      "credito" : "16814.09958081384052167205568268037",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "84263.07565219650685232352416045417",
+      "credito" : "83592.41088072462101678948277885807",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11235,7 +11298,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
     "periodo" : 72,
@@ -11250,17 +11313,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "15117.57868651470265693988495751636",
+      "credito" : "15796.40842890479683363609268613738",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "85288.93177502375888152165350402207",
+      "credito" : "84610.10203263366470482544577540107",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11293,17 +11356,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "14079.23333543893571222388253880311",
+      "credito" : "14766.32745273106293082805101856702",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "86327.27712609952582623765592273537",
+      "credito" : "85640.18300880739860763348744297147",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11336,17 +11399,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "13028.24670670073251092483011230374",
+      "credito" : "13723.70581306698381197420189986281",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "87378.26375483772902753670834923477",
+      "credito" : "86682.80464847147772648733656167567",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11379,17 +11442,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "11964.4648997690479159278284646595",
+      "credito" : "12668.39083430315034599363357653653",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "88442.04556176941362253370999687897",
+      "credito" : "87738.11962723531119246790488500197",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11422,60 +11485,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "10887.73214045939063912881000666466",
+      "credito" : "11600.22798208944750571827848083282",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "89518.77832107907089933272845487377",
+      "credito" : "88806.28247944901403274325998070567",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
-    "cuadra" : true
-  }, {
-    "periodo" : 77,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "9797.890758123133684789221208726223",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "90608.61970341532785367231725281227",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11496,6 +11516,49 @@
     "totalCreditos" : "168305",
     "cuadra" : true
   }, {
+    "periodo" : 77,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "10519.06084070591913715149328177835",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "89887.44962083254240131004517976007",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168304.9999999999999999999999999999",
+    "cuadra" : true
+  }, {
     "periodo" : 78,
     "evento" : "Pago normal",
     "lineas" : [ {
@@ -11508,17 +11571,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "8694.781162559117322964210991138341",
+      "credito" : "9424.731090158135581832062759895148",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "91711.72929897934421549732747040017",
+      "credito" : "90981.77937138032595662947570164337",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11551,17 +11614,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "7578.241820644163658874233977139368",
+      "credito" : "8317.078482993710127628219485449311",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "92828.26864089429787958730448439905",
+      "credito" : "92089.43197854475141083331897608915",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11579,7 +11642,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
+    "totalCreditos" : "168305",
     "cuadra" : true
   }, {
     "periodo" : 80,
@@ -11594,17 +11657,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "6448.10923267908070309565842120722",
+      "credito" : "7195.940820836569429899609926816638",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "93958.40122885938083536588004033125",
+      "credito" : "93210.56964070189210856192853472185",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11637,17 +11700,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "5304.21790844669218533941600283186",
+      "credito" : "6061.153930635541714454683923803305",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "95102.29255309176935312212245870655",
+      "credito" : "94345.35653090291982400685453773515",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11665,7 +11728,7 @@
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
-    "totalCreditos" : "168304.9999999999999999999999999999",
+    "totalCreditos" : "168305",
     "cuadra" : true
   }, {
     "periodo" : 82,
@@ -11680,17 +11743,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "4146.400342978387185267181541538364",
+      "credito" : "4912.551640623784740044532500192579",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "96260.11011856007435319435692000007",
+      "credito" : "95493.95882091467679841700596134587",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11723,60 +11786,17 @@
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "2974.486992025640971086988657394307",
+      "credito" : "3749.965755985533155145860585908975",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "97432.02346951282056737454980414417",
+      "credito" : "96656.54470555292838331567787562947",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
-      "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
-      "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
-    } ],
-    "totalDebitos" : "168305",
-    "totalCreditos" : "168305",
-    "cuadra" : true
-  }, {
-    "periodo" : 84,
-    "evento" : "Pago normal",
-    "lineas" : [ {
-      "cuenta" : "CAJA",
-      "nombreCuenta" : "Caja",
-      "debito" : "168305",
-      "credito" : "0",
-      "explicacion" : "Recaudo de la cuota total"
-    }, {
-      "cuenta" : "INGRESOS_INTERESES",
-      "nombreCuenta" : "Ingresos por intereses",
-      "debito" : "0",
-      "credito" : "1788.306247232915234324358451149255",
-      "explicacion" : "Interés corriente causado"
-    }, {
-      "cuenta" : "CARTERA_VIGENTE",
-      "nombreCuenta" : "Cartera de créditos",
-      "debito" : "0",
-      "credito" : "98618.20421430554630413718001038917",
-      "explicacion" : "Amortización de capital"
-    }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11797,29 +11817,29 @@
     "totalCreditos" : "168304.9999999999999999999999999999",
     "cuadra" : true
   }, {
-    "periodo" : 85,
-    "evento" : "Pago final",
+    "periodo" : 84,
+    "evento" : "Pago normal",
     "lineas" : [ {
       "cuenta" : "CAJA",
       "nombreCuenta" : "Caja",
-      "debito" : "116738.7361181233488319032716478097",
+      "debito" : "168305",
       "credito" : "0",
       "explicacion" : "Recaudo de la cuota total"
     }, {
       "cuenta" : "INGRESOS_INTERESES",
       "nombreCuenta" : "Ingresos por intereses",
       "debito" : "0",
-      "credito" : "587.684411008302180854635505452624",
+      "credito" : "2573.226034226602025295088913015781",
       "explicacion" : "Interés corriente causado"
     }, {
       "cuenta" : "CARTERA_VIGENTE",
       "nombreCuenta" : "Cartera de créditos",
       "debito" : "0",
-      "credito" : "48252.56216865350818951017460389553",
+      "credito" : "97833.28442731185951316644954852267",
       "explicacion" : "Amortización de capital"
     }, {
-      "cuenta" : "CXP_SERVICIOS_TERCEROS",
-      "nombreCuenta" : "CxP servicios a terceros",
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
       "credito" : "63034.17230769230769230769230769231",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
@@ -11836,8 +11856,94 @@
       "credito" : "776.6556923076923076923076923076924",
       "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
-    "totalDebitos" : "116738.7361181233488319032716478097",
-    "totalCreditos" : "116738.7361181233488319032716478097",
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168305",
+    "cuadra" : true
+  }, {
+    "periodo" : 85,
+    "evento" : "Pago normal",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "168305",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "1382.160160245039926966578436463983",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "99024.35030129342161149496002507447",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "168305",
+    "totalCreditos" : "168305",
+    "cuadra" : true
+  }, {
+    "periodo" : 86,
+    "evento" : "Pago final",
+    "lineas" : [ {
+      "cuenta" : "CAJA",
+      "nombreCuenta" : "Caja",
+      "debito" : "82560.95521405852162145410753745811",
+      "credito" : "0",
+      "explicacion" : "Recaudo de la cuota total"
+    }, {
+      "cuenta" : "INGRESOS_INTERESES",
+      "nombreCuenta" : "Ingresos por intereses",
+      "debito" : "0",
+      "credito" : "176.5937210982810955883001441505414",
+      "explicacion" : "Interés corriente causado"
+    }, {
+      "cuenta" : "CARTERA_VIGENTE",
+      "nombreCuenta" : "Cartera de créditos",
+      "debito" : "0",
+      "credito" : "14485.87195449870206432734585484603",
+      "explicacion" : "Amortización de capital"
+    }, {
+      "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
+      "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
+      "debito" : "0",
+      "credito" : "63034.17230769230769230769230769231",
+      "explicacion" : "Servicios recaudados por cuenta de terceros"
+    }, {
+      "cuenta" : "CXP_SEGUROS",
+      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "4087.661538461538461538461538461539",
+      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
+    }, {
+      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
+      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
+      "debito" : "0",
+      "credito" : "776.6556923076923076923076923076924",
+      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
+    } ],
+    "totalDebitos" : "82560.95521405852162145410753745811",
+    "totalCreditos" : "82560.95521405852162145410753745811",
     "cuadra" : true
   } ]
 }

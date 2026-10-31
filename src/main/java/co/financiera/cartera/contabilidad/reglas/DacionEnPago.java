@@ -30,6 +30,21 @@ import java.util.Optional;
  */
 public final class DacionEnPago implements ReglaContable {
 
+    /**
+     * {@code null} = extinción del Excel (todos los servicios contra sus cuentas por cobrar). Con cuenta (R10, D72) la
+     * parte de los servicios que cubre la moto es recaudo efectivo y va a esa cuenta ({@link ReglaContable#extincionConRecaudo}).
+     */
+    private final Cuenta terceros;
+
+    /** Como el Excel (Caso3_Dacion AJ9:AM18). */
+    public DacionEnPago() {
+        this(null);
+    }
+
+    public DacionEnPago(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
     @Override
     public Optional<Asiento> contabilizar(Movimiento m) {
         if (m.estado() != EstadoCredito.CERRADO_POR_EVENTO || m.cxcFondoGarantias().signum() <= 0) {
@@ -38,7 +53,7 @@ public final class DacionEnPago implements ReglaContable {
         List<Linea> lineas = new ArrayList<>();
         lineas.add(Linea.debito(Cuenta.INVENTARIO_MOTOS, m.inventario(), "Ingreso de la moto por el valor definido para el evento"));
         lineas.add(Linea.debito(Cuenta.CXC_FONDO_GARANTIAS, m.cxcFondoGarantias(), "Residual de la deuda no cubierto por la moto"));
-        lineas.addAll(ReglaContable.extincion(m.extinguido()));
+        lineas.addAll(terceros == null ? ReglaContable.extincion(m.extinguido()) : ReglaContable.extincionConRecaudo(m, terceros));
         // R4-R2: costo real de la recuperación (con costoRecuperacionAlFondo ya va dentro de la CxC al fondo).
         lineas.addAll(ReglaContable.costosRecuperacion(m));
         return ReglaContable.asiento(m, lineas);

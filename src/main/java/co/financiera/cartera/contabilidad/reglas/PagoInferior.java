@@ -32,6 +32,22 @@ import java.util.Optional;
  */
 public final class PagoInferior implements ReglaContable {
 
+    /**
+     * Cuenta de los servicios recaudados por cuenta de terceros: "CxP servicios a terceros" del Excel o, con
+     * {@code causacionServicios = SIEMPRE} (R10-CONTADOR-VENCIDAS, D72), "Ingresos recibidos para terceros" (PUC 2815,
+     * provisional). La resuelve {@code Contabilizador.para}.
+     */
+    private final Cuenta terceros;
+
+    /** Con la cuenta del Excel ("CxP servicios a terceros"). */
+    public PagoInferior() {
+        this(Cuenta.CXP_SERVICIOS_TERCEROS);
+    }
+
+    public PagoInferior(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
     /** Evento con que el motor marca la semana de un pago inferior (columna C de la hoja). */
     public static final String EVENTO = "Pago inferior";
 
@@ -63,7 +79,7 @@ public final class PagoInferior implements ReglaContable {
                 credito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.pagoMora()), "Aplicación del pago a interés de mora"),
                 credito(Cuenta.CXC_INTERES_CORRIENTE, sinResiduo(m.pagoInteresCorriente()),
                         "Aplicación del pago a interés corriente"),
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
+                credito(terceros, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
                         "Aplicación del pago a servicios, después de intereses (Excel: Servicios complementarios)"),
                 credito(Cuenta.CARTERA_VIGENTE, sinResiduo(m.pagoCapital()), "Aplicación del remanente a capital"),
                 debito(Cuenta.CARTERA_VENCIDA, reclasificacion, "Reclasificación del capital contractual no pagado"),

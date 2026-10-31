@@ -32,6 +32,22 @@ import java.util.Optional;
  */
 public final class RecaudoConVencidos implements ReglaContable {
 
+    /**
+     * Cuenta de los servicios recaudados por cuenta de terceros: "CxP servicios a terceros" del Excel o, con
+     * {@code causacionServicios = SIEMPRE} (R10-CONTADOR-VENCIDAS, D72), "Ingresos recibidos para terceros" (PUC 2815,
+     * provisional). La resuelve {@code Contabilizador.para}.
+     */
+    private final Cuenta terceros;
+
+    /** Con la cuenta del Excel ("CxP servicios a terceros"). */
+    public RecaudoConVencidos() {
+        this(Cuenta.CXP_SERVICIOS_TERCEROS);
+    }
+
+    public RecaudoConVencidos(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
     /** Verdadero si la semana tiene pago y ninguna otra regla de recaudo la contabiliza. */
     public static boolean aplica(Movimiento m) {
         return m.pagoRecibido().signum() > 0 && !RecaudoCuota.esRecaudoNormal(m) && !PagoInferior.aplica(m)
@@ -55,7 +71,7 @@ public final class RecaudoConVencidos implements ReglaContable {
                 credito(Cuenta.CXC_GASTOS_COBRANZA, sinResiduo(m.pagoCobranza()), "Primera prioridad"),
                 credito(Cuenta.CXC_INTERES_MORA, sinResiduo(m.pagoMora()), "Segunda prioridad"),
                 credito(Cuenta.CXC_INTERES_CORRIENTE, sinResiduo(m.pagoInteresCorriente()), "Tercera prioridad"),
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
+                credito(terceros, ReglaContable.serviciosSinTodoRiesgo(servicios, m.pagosServicios()),
                         "Fondo, asistencia y seguro"),
                 credito(Cuenta.CARTERA_VIGENTE, sinResiduo(m.pagoCapital()), "Remanente aplicado a capital"),
                 debito(Cuenta.CARTERA_VENCIDA, aVencida, "Capital contractual de la semana que quedó vencido"),

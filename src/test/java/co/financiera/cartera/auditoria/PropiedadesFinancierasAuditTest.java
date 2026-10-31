@@ -135,7 +135,12 @@ class PropiedadesFinancierasAuditTest {
                 .conSobranteComoCuentaPorPagar(r.nextBoolean())
                 // Ronda 9 (Diego 2026-10-30).
                 .conUmbralesCuentanCuotaEnCurso(r.nextBoolean())
-                .conSeguroTodoRiesgoPorcentajeMensual(r.nextBoolean() ? null : bd(1 + r.nextInt(9)).movePointLeft(3));
+                .conSeguroTodoRiesgoPorcentajeMensual(r.nextBoolean() ? null : bd(1 + r.nextInt(9)).movePointLeft(3))
+                // Ronda 10 (Diego 2026-10-31): causación de servicios y cobranza por cociente.
+                .conCausacionServicios(ReglasNegocio.CausacionServicios.values()[r.nextInt(ReglasNegocio.CausacionServicios.values().length)])
+                .conUmbralCocienteCobranza(r.nextBoolean() ? null : bd(1 + r.nextInt(3)))
+                .conBaseMoraCobranza(ReglasNegocio.BaseMoraCobranza.values()[r.nextInt(ReglasNegocio.BaseMoraCobranza.values().length)])
+                .conComparacionCobranza(ReglasNegocio.ComparacionCobranza.values()[r.nextInt(ReglasNegocio.ComparacionCobranza.values().length)]);
         return x;
     }
 
@@ -296,16 +301,21 @@ class PropiedadesFinancierasAuditTest {
             boolean puedeAtrasar = cierreSinPago || pagoDelPeriodo instanceof Instruccion.SinPago
                     || pagoDelPeriodo instanceof Instruccion.PagoParcial || pagoDelPeriodo instanceof PagoValor;
             boolean seguroAtrasa = cierreSinPago || pagoDelPeriodo instanceof Instruccion.SinPago;
-            boolean enCurso = e.reglas().umbralesCuentanCuotaEnCurso();
+            ReglasNegocio rn = e.reglas();
+            boolean enCurso = rn.umbralesCuentanCuotaEnCurso() && !rn.cobranzaPorCociente();
             int cuentanComoMaximo = enCurso && puedeAtrasar ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
             int cuentanComoMinimo = enCurso && seguroAtrasa ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
-            // I8 (R7-COBRANZA-ACTIVA, Diego 2026-10-27): con umbral de cobranza, nunca se causa cobranza si el cliente
-            // llegaba al periodo con menos cuotas vencidas que el umbral (con 2, empieza en la tercera cuota vencida; con la
-            // lectura A de la ronda 9, en la segunda si la del periodo queda atrasada).
-            Integer umbral = e.reglas().cuotasVencidasParaCobranza();
-            if (umbral != null && m.cobranzaCausada().signum() > 0 && cuentanComoMaximo < umbral) {
-                violacion("I8 cobranza antes del umbral de cuotas vencidas", id + " cuotasVencidasPrevias=" + prev.cuotasVencidas()
-                        + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
+            if (rn.cobranzaPorCociente()) {
+                cobranzaPorCociente(m, prev, e, monto, id, repro);
+            } else {
+                // I8 (R7-COBRANZA-ACTIVA, Diego 2026-10-27): con umbral de cobranza, nunca se causa cobranza si el cliente
+                // llegaba al periodo con menos cuotas vencidas que el umbral (con 2, empieza en la tercera cuota vencida;
+                // con la lectura A de la ronda 9, en la segunda si la del periodo queda atrasada).
+                Integer umbral = rn.cuotasVencidasParaCobranza();
+                if (umbral != null && m.cobranzaCausada().signum() > 0 && cuentanComoMaximo < umbral) {
+                    violacion("I8 cobranza antes del umbral de cuotas vencidas", id + " cuotasVencidasPrevias="
+                            + prev.cuotasVencidas() + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
+                }
             }
             // I12 (R8-PAGO-MAYOR-EXIGIBLE): el sobrante nunca es negativo, solo existe con la clave y con un PagoValor, y
             // entonces el pago entregado = lo aplicado + el sobrante (nada se recorta en silencio).
@@ -322,8 +332,10 @@ class PropiedadesFinancierasAuditTest {
             // I13 (R8-PAGO-INCOMPLETO-EN-FECHA): con la clave, desde `clave` cuotas vencidas previas solo se causa el seguro;
             // antes del umbral, si hay servicios causados, no se suspenden fondo y asistencia a la vez. Con la lectura A
             // (R9-COBRO-MOMENTO) un periodo sin pago también cuenta su propia cuota.
-            Integer suspension = e.reglas().cuotasVencidasParaSuspenderServicios();
-            if (suspension != null) {
+            Integer suspension = rn.cuotasVencidasParaSuspenderServicios();
+            if (rn.causacionServicios() == ReglasNegocio.CausacionServicios.SIEMPRE) {
+                serviciosSiempre(m, id, repro);
+            } else if (suspension != null && rn.causacionServicios() == ReglasNegocio.CausacionServicios.SUSPENDER_POR_UMBRAL) {
                 var sc = m.serviciosCausados();
                 boolean soloSeguro = sc.fondoGarantias().signum() == 0 && sc.asistencia().signum() == 0;
                 if (cuentanComoMinimo >= suspension && !soloSeguro) {
@@ -437,6 +449,56 @@ class PropiedadesFinancierasAuditTest {
                 violacion("I11b caja contable != pago total del cliente", "periodo " + m.periodo() + " (" + m.evento()
                         + ") caja=" + c.toPlainString() + " pagoTotal=" + m.pagoTotalCliente().toPlainString(), repro);
             }
+        }
+    }
+
+    /**
+     * I8 con el cociente de cobranza (R10-CONTADOR-VENCIDAS, Diego 2026-10-31, D71): la cobranza se causa si y solo si,
+     * al iniciar el periodo, saldo en mora / valor total de la cuota supera el umbral. El numerador sale del cierre del
+     * periodo anterior (capital vencido + interés + servicios pendientes, y con TODO_PENDIENTE además mora y cobranza); el
+     * denominador es la cuota del periodo + los servicios por cuota. Holgura de 1 peso en el denominador por el redondeo al
+     * peso (el residuo va en la cuota de la fila). En particular, con abonos parciales que dejan el cociente en 2 o menos
+     * no hay cobranza (pero la mora se sigue causando: no depende de esto).
+     */
+    private void cobranzaPorCociente(Movimiento m, Movimiento prev, Escenario e, BigDecimal monto, String id, String repro) {
+        ReglasNegocio rn = e.reglas();
+        BigDecimal numerador = Calc.sumar(prev.capitalVencido(), prev.cxcInteresCorriente(), prev.cxcServicios());
+        if (rn.baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TODO_PENDIENTE) {
+            numerador = Calc.sumar(numerador, prev.cxcMora(), prev.cxcCobranza());
+        }
+        BigDecimal servicios = co.financiera.cartera.nucleo.Servicios.porCuota(monto, e.parametros(), rn.porcentajeTodoRiesgo()).total();
+        BigDecimal cuotaTotal = Calc.sumar(m.cuotaFinanciera(), servicios);
+        BigDecimal umbral = rn.umbralCocienteCobranza();
+        BigDecimal minimo = Calc.multiplicar(umbral, Calc.restar(cuotaTotal, BigDecimal.ONE));
+        BigDecimal holgado = Calc.multiplicar(umbral, Calc.sumar(cuotaTotal, BigDecimal.ONE));
+        boolean cobra = m.cobranzaCausada().signum() > 0;
+        if (cobra && numerador.compareTo(minimo) < 0) {
+            violacion("I8 cobranza con el cociente en el umbral o por debajo", id + " saldoEnMora=" + numerador.toPlainString()
+                    + " cuotaTotal=" + cuotaTotal.toPlainString() + " cobranza=" + m.cobranzaCausada().toPlainString(), repro);
+        }
+        boolean debeCobrar = e.cobranzaActiva() && !Calc.esCero(m.saldoInicial()) && numerador.compareTo(holgado) > 0;
+        if (debeCobrar && !cobra) {
+            violacion("I8 sin cobranza con el cociente por encima del umbral", id + " saldoEnMora=" + numerador.toPlainString()
+                    + " cuotaTotal=" + cuotaTotal.toPlainString(), repro);
+        }
+    }
+
+    /**
+     * I13 con {@code SIEMPRE} (R10-CONTADOR-VENCIDAS y R11-SEGUROS-TRAS-SUSPENSION, D70): dentro del plazo (hay capital
+     * contractual) fondo, asistencia y seguro se causan siempre, al día o atrasado; el periodo de una dación o una retoma
+     * no causa ningún servicio (la recuperación los suspende por completo).
+     */
+    private void serviciosSiempre(Movimiento m, String id, String repro) {
+        var sc = m.serviciosCausados();
+        if (m.estado() == EstadoCredito.CERRADO_POR_EVENTO) {
+            if (sc.total().signum() != 0) {
+                violacion("I13 servicios causados en el periodo de la dación o la retoma", id + " servicios="
+                        + sc.total().toPlainString(), repro);
+            }
+        } else if (m.capitalContractual().signum() > 0
+                && (sc.fondoGarantias().signum() <= 0 || sc.asistencia().signum() <= 0 || sc.seguro().signum() <= 0)) {
+            violacion("I13 servicios no causados dentro del plazo con SIEMPRE", id + " fondo=" + sc.fondoGarantias().toPlainString()
+                    + " asistencia=" + sc.asistencia().toPlainString() + " seguro=" + sc.seguro().toPlainString(), repro);
         }
     }
 

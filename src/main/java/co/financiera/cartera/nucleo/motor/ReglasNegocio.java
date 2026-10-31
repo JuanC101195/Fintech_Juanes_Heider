@@ -117,6 +117,21 @@ import java.math.BigDecimal;
  *                                 y con el IVA de servicios encima ({@code ParametrosProducto.iva}, 19 %), que se
  *                                 lleva segmentado ({@code Servicios.ivaSeguroTodoRiesgo}). {@code 0} o {@code null}
  *                                 = no existe (el Excel).
+ * @param causacionServicios       cómo se causan fondo, asistencia y seguros dentro del plazo ({@link CausacionServicios}):
+ *                                 {@code SOLO_AL_DIA} = D17, el Excel (fondo y asistencia solo en periodos pagados al día);
+ *                                 {@code SUSPENDER_POR_UMBRAL} = rondas 8 y 9 (se causan siempre y se suspenden con
+ *                                 {@link #cuotasVencidasParaSuspenderServicios}); {@code SIEMPRE} = R10-CONTADOR-VENCIDAS
+ *                                 (Diego 2026-10-31, D70): el cliente siempre paga los servicios en la cuota, al día o
+ *                                 atrasado, y solo la dación o la retoma los suspenden (cierran el crédito).
+ * @param umbralCocienteCobranza   R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D71): la cobranza se ejecuta cuando saldo en
+ *                                 mora / valor total de la cuota supera este cociente (2 en NEGOCIO). Con valor se ignoran
+ *                                 {@link #cuotasVencidasParaCobranza} y {@link #umbralesCuentanCuotaEnCurso} para la
+ *                                 cobranza. Se evalúa al iniciar cada periodo con los saldos del cierre del anterior (ADR
+ *                                 0006). {@code null} = umbral por cuotas vencidas (el Excel y las rondas 7 a 9).
+ * @param baseMoraCobranza         qué entra en el saldo en mora del cociente (supuesto provisional {@code TODO_PENDIENTE},
+ *                                 pregunta R12-COBRANZA-SALDO-MORA)
+ * @param comparacionCobranza      si el cociente debe ser estrictamente mayor que el umbral o basta igualarlo (supuesto
+ *                                 provisional {@code MAYOR}: Diego escribió «&gt; 2»)
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -144,12 +159,20 @@ public record ReglasNegocio(
         boolean redondeoCuotaAlPeso,
         boolean sobranteComoCuentaPorPagar,
         boolean umbralesCuentanCuotaEnCurso,
-        BigDecimal seguroTodoRiesgoPorcentajeMensual) {
+        BigDecimal seguroTodoRiesgoPorcentajeMensual,
+        CausacionServicios causacionServicios,
+        BigDecimal umbralCocienteCobranza,
+        BaseMoraCobranza baseMoraCobranza,
+        ComparacionCobranza comparacionCobranza) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
     /** Clave de {@link #modalidadUsura}; se repite en la validación y en {@link #desde}. */
     private static final String MODALIDAD_USURA = "modalidadUsura";
+    /** Claves de las enumeraciones de la ronda 10; se repiten en la validación y en {@link #desde}. */
+    private static final String CAUSACION_SERVICIOS = "causacionServicios";
+    private static final String BASE_MORA_COBRANZA = "baseMoraCobranza";
+    private static final String COMPARACION_COBRANZA = "comparacionCobranza";
 
     /**
      * Único punto de validación: todo pasa por aquí (el {@link Constructor}, los métodos {@code conX} y
@@ -186,6 +209,19 @@ public record ReglasNegocio(
             throw new IllegalArgumentException("El porcentaje del seguro todo riesgo no puede ser negativo: "
                     + seguroTodoRiesgoPorcentajeMensual);
         }
+        validarRonda10(causacionServicios, umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
+    }
+
+    /** Validación de las claves de la ronda 10 (D70, D71), aparte para no complicar la del constructor. */
+    private static void validarRonda10(CausacionServicios causacionServicios, BigDecimal umbralCocienteCobranza,
+            BaseMoraCobranza baseMoraCobranza, ComparacionCobranza comparacionCobranza) {
+        java.util.Objects.requireNonNull(causacionServicios, CAUSACION_SERVICIOS);
+        if (umbralCocienteCobranza != null && umbralCocienteCobranza.signum() < 0) {
+            throw new IllegalArgumentException("El umbral del cociente de cobranza no puede ser negativo: "
+                    + umbralCocienteCobranza);
+        }
+        java.util.Objects.requireNonNull(baseMoraCobranza, BASE_MORA_COBRANZA);
+        java.util.Objects.requireNonNull(comparacionCobranza, COMPARACION_COBRANZA);
     }
 
     /** Margen bajo la usura acordado con negocio y confirmado por Diego (T2, 2026-10-20): 1 punto de EA. */
@@ -224,7 +260,44 @@ public record ReglasNegocio(
             .sobranteComoCuentaPorPagar(false)
             .umbralesCuentanCuotaEnCurso(false)
             .seguroTodoRiesgoPorcentajeMensual(BigDecimal.ZERO)
+            .causacionServicios(CausacionServicios.SOLO_AL_DIA)
+            .umbralCocienteCobranza(null)
+            .baseMoraCobranza(BaseMoraCobranza.TODO_PENDIENTE)
+            .comparacionCobranza(ComparacionCobranza.MAYOR)
             .construir();
+
+    /** Cómo se causan el fondo de garantías, la asistencia y los seguros en los periodos dentro del plazo (D17, D60, D70). */
+    public enum CausacionServicios {
+        /** D17 (el Excel, Inputs ⑥): fondo y asistencia solo en periodos pagados al día; en los demás solo los seguros. */
+        SOLO_AL_DIA,
+        /**
+         * Rondas 8 y 9 (D60, D62): se causan siempre y, desde {@link ReglasNegocio#cuotasVencidasParaSuspenderServicios}
+         * cuotas atrasadas, solo los seguros. Se conserva para que las pruebas de esas rondas sigan documentándolas.
+         */
+        SUSPENDER_POR_UMBRAL,
+        /**
+         * R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D70): el cliente siempre paga los servicios en la cuota, al día o
+         * atrasado; no hay suspensión por atraso. Solo la dación o la retoma los suspenden por completo: el periodo del
+         * cierre no causa servicios.
+         */
+        SIEMPRE
+    }
+
+    /** Qué entra en el saldo en mora del cociente de cobranza (D71; supuesto provisional, R12-COBRANZA-SALDO-MORA). */
+    public enum BaseMoraCobranza {
+        /** Solo lo que fue cuota: capital vencido + interés corriente pendiente + servicios pendientes. */
+        CUOTAS_VENCIDAS,
+        /** Todo lo pendiente: capital vencido + interés corriente + servicios + interés de mora + cobranza (supuesto). */
+        TODO_PENDIENTE
+    }
+
+    /** Cómo se compara el cociente de cobranza con el umbral (D71; supuesto provisional: {@code MAYOR}). */
+    public enum ComparacionCobranza {
+        /** Estrictamente mayor: «&gt; 2» (lo que escribió Diego). */
+        MAYOR,
+        /** Mayor o igual. */
+        MAYOR_O_IGUAL
+    }
 
     public enum OrdenPrelacion {
         /** Cobranza → mora → interés corriente → servicios → capital (fórmulas de los casos 8 y 9). */
@@ -416,7 +489,11 @@ public record ReglasNegocio(
             booleana("redondeoCuotaAlPeso", Constructor::redondeoCuotaAlPeso),
             booleana("sobranteComoCuentaPorPagar", Constructor::sobranteComoCuentaPorPagar),
             booleana("umbralesCuentanCuotaEnCurso", Constructor::umbralesCuentanCuotaEnCurso),
-            decimal("seguroTodoRiesgoPorcentajeMensual", Constructor::seguroTodoRiesgoPorcentajeMensual));
+            decimal("seguroTodoRiesgoPorcentajeMensual", Constructor::seguroTodoRiesgoPorcentajeMensual),
+            enumerada(CAUSACION_SERVICIOS, CausacionServicios.class, Constructor::causacionServicios),
+            decimal("umbralCocienteCobranza", Constructor::umbralCocienteCobranza),
+            enumerada(BASE_MORA_COBRANZA, BaseMoraCobranza.class, Constructor::baseMoraCobranza),
+            enumerada(COMPARACION_COBRANZA, ComparacionCobranza.class, Constructor::comparacionCobranza));
 
     static {
         verificarTabla();
@@ -557,6 +634,26 @@ public record ReglasNegocio(
         return copia().seguroTodoRiesgoPorcentajeMensual(valor).construir();
     }
 
+    /** R10-CONTADOR-VENCIDAS: cómo se causan los servicios (D17, rondas 8 y 9, o siempre). */
+    public ReglasNegocio conCausacionServicios(CausacionServicios valor) {
+        return copia().causacionServicios(valor).construir();
+    }
+
+    /** R10-CONTADOR-VENCIDAS: cociente saldo en mora / cuota total desde el que se cobra; {@code null} = por cuotas. */
+    public ReglasNegocio conUmbralCocienteCobranza(BigDecimal valor) {
+        return copia().umbralCocienteCobranza(valor).construir();
+    }
+
+    /** Qué entra en el saldo en mora del cociente de cobranza. */
+    public ReglasNegocio conBaseMoraCobranza(BaseMoraCobranza valor) {
+        return copia().baseMoraCobranza(valor).construir();
+    }
+
+    /** Si el cociente de cobranza debe ser mayor que el umbral o basta igualarlo. */
+    public ReglasNegocio conComparacionCobranza(ComparacionCobranza valor) {
+        return copia().comparacionCobranza(valor).construir();
+    }
+
     /** El % mensual del seguro todo riesgo, con {@code null} como 0 (no existe). */
     public BigDecimal porcentajeTodoRiesgo() {
         return seguroTodoRiesgoPorcentajeMensual == null ? BigDecimal.ZERO : seguroTodoRiesgoPorcentajeMensual;
@@ -594,6 +691,10 @@ public record ReglasNegocio(
         private boolean sobranteComoCuentaPorPagar;
         private boolean umbralesCuentanCuotaEnCurso;
         private BigDecimal seguroTodoRiesgoPorcentajeMensual;
+        private CausacionServicios causacionServicios;
+        private BigDecimal umbralCocienteCobranza;
+        private BaseMoraCobranza baseMoraCobranza;
+        private ComparacionCobranza comparacionCobranza;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -627,6 +728,10 @@ public record ReglasNegocio(
             sobranteComoCuentaPorPagar = r.sobranteComoCuentaPorPagar;
             umbralesCuentanCuotaEnCurso = r.umbralesCuentanCuotaEnCurso;
             seguroTodoRiesgoPorcentajeMensual = r.seguroTodoRiesgoPorcentajeMensual;
+            causacionServicios = r.causacionServicios;
+            umbralCocienteCobranza = r.umbralCocienteCobranza;
+            baseMoraCobranza = r.baseMoraCobranza;
+            comparacionCobranza = r.comparacionCobranza;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -759,6 +864,26 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor causacionServicios(CausacionServicios valor) {
+            causacionServicios = valor;
+            return this;
+        }
+
+        public Constructor umbralCocienteCobranza(BigDecimal valor) {
+            umbralCocienteCobranza = valor;
+            return this;
+        }
+
+        public Constructor baseMoraCobranza(BaseMoraCobranza valor) {
+            baseMoraCobranza = valor;
+            return this;
+        }
+
+        public Constructor comparacionCobranza(ComparacionCobranza valor) {
+            comparacionCobranza = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
@@ -767,11 +892,11 @@ public record ReglasNegocio(
                     cobranzaIngresoNoOperacional, plazoLimiteMeses, cambioTasaSobreCapitalVigente,
                     cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora,
                     cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar,
-                    umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual);
+                    umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual, causacionServicios,
+                    umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
         }
     }
 
-    /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */
     /**
      * Si, con estas cuotas atrasadas, el periodo en curso ya debe causar cobranza. El motor pasa las de periodos
      * anteriores y, con {@link #umbralesCuentanCuotaEnCurso} (R9-COBRO-MOMENTO), suma la del periodo en curso si queda
@@ -785,13 +910,39 @@ public record ReglasNegocio(
      * R8-PAGO-INCOMPLETO-EN-FECHA: si, con estas cuotas atrasadas, el periodo solo causa los seguros (fondo y asistencia
      * suspendidos). Con 2 y sin {@link #umbralesCuentanCuotaEnCurso}, desde la tercera cuota vencida, como la cobranza;
      * con esa clave (R9-COBRO-MOMENTO) el motor suma la cuota en curso si queda atrasada y la suspensión empieza en la
-     * segunda. Siempre {@code false} sin la clave.
+     * segunda. Siempre {@code false} sin la clave o si {@link #causacionServicios} no es
+     * {@link CausacionServicios#SUSPENDER_POR_UMBRAL} (D70).
      */
     public boolean suspendeServicios(int cuotasVencidasPrevias) {
-        return cuotasVencidasParaSuspenderServicios != null
+        return causacionServicios == CausacionServicios.SUSPENDER_POR_UMBRAL && cuotasVencidasParaSuspenderServicios != null
                 && cuotasVencidasPrevias >= cuotasVencidasParaSuspenderServicios;
     }
 
+    /** R10-CONTADOR-VENCIDAS: si la cobranza se decide por el cociente saldo en mora / cuota total (D71). */
+    public boolean cobranzaPorCociente() {
+        return umbralCocienteCobranza != null;
+    }
+
+    /**
+     * R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D71): si el cociente {@code saldoEnMora / valorCuota} supera el umbral
+     * ({@link #umbralCocienteCobranza}) con la comparación de {@link #comparacionCobranza}. Compara sin dividir (saldo
+     * frente a umbral × cuota) y con la tolerancia de medio centavo de los saldos ({@code Calc.EPSILON_SALDO}): un cliente
+     * que debe exactamente 2 cuotas no queda "por encima" por un residuo DECIMAL128. Sin umbral de cociente, o con cuota
+     * 0, devuelve {@code false} (la cobranza sigue por cuotas vencidas, {@link #llegaAlUmbralDeCobranza(int)}).
+     */
+    public boolean llegaAlUmbralDeCobranza(BigDecimal saldoEnMora, BigDecimal valorCuota) {
+        if (umbralCocienteCobranza == null || valorCuota.signum() <= 0) {
+            return false;
+        }
+        BigDecimal exceso = co.financiera.cartera.nucleo.Calc.restar(saldoEnMora,
+                co.financiera.cartera.nucleo.Calc.multiplicar(valorCuota, umbralCocienteCobranza));
+        BigDecimal epsilon = co.financiera.cartera.nucleo.Calc.EPSILON_SALDO;
+        return comparacionCobranza == ComparacionCobranza.MAYOR
+                ? exceso.compareTo(epsilon) > 0
+                : exceso.compareTo(epsilon.negate()) >= 0;
+    }
+
+    /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */
     public boolean llegaAlUmbralDeRecuperacion(int cuotasVencidas) {
         return cuotasVencidasParaRecuperacion != null && cuotasVencidas >= cuotasVencidasParaRecuperacion;
     }
