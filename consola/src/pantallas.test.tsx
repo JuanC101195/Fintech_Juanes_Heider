@@ -51,15 +51,15 @@ describe('fixtures de demostración', () => {
     expect(cop(s.resumen.cuotaTotal).replaceAll(' ', ' ')).toBe('$ 738.233')
     expect(cop(s.resumen.totalPagado).replaceAll(' ', ' ')).toBe('$ 17.717.592')
   })
-  it('el caso 13 en la semana 42 trae las cifras acordadas y termina en la 85', async () => {
+  it('el caso 13 en la semana 42 trae las cifras acordadas y termina en la 86', async () => {
     const c: CasoDetalle = await demo.caso(13, 'NEGOCIO')
     const m = c.movimientos.find((x) => x.periodo === 42)!
-    expect(sp(copCentavos(m.saldoFinal))).toBe('$ 3.315.130,36')
-    expect(sp(copCentavos(m.abonoExtra))).toBe('$ 1.037.424,17')
-    expect(sp(copCentavos(m.pendientesPagadosExtra.total))).toBe('$ 462.575,83')
+    expect(sp(copCentavos(m.saldoFinal))).toBe('$ 3.354.386,36')
+    expect(sp(copCentavos(m.abonoExtra))).toBe('$ 998.168,17')
+    expect(sp(copCentavos(m.pendientesPagadosExtra.total))).toBe('$ 501.831,83')
     expect(sp(copCentavos(sumar(m.abonoExtra, m.pendientesPagadosExtra.total)))).toBe('$ 1.500.000,00')
     expect(m.evento).toBe('Cuota + abono extra')
-    expect(c.resumen.periodoFinal).toBe(85)
+    expect(c.resumen.periodoFinal).toBe(86)
     expect(c.asientos?.every((a) => a.cuadra)).toBe(true)
   })
   it('el perfil EXCEL del caso 13 no paga los pendientes con el abono', async () => {
@@ -142,11 +142,11 @@ describe('Casos', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Caso 13'))
     await waitFor(() => expect(screen.getByRole('region', { name: 'Tabla periodo a periodo' })).toBeTruthy())
     const t = texto()
-    expect(t).toContain('$ 462.575,83')
-    expect(t).toContain('$ 1.037.424,17')
+    expect(t).toContain('$ 501.831,83')
+    expect(t).toContain('$ 998.168,17')
     expect(t).toContain('Recaudo extraordinario aplicado a pendientes')
-    expect(t).toContain('$ 3.315.130,36')
-    expect(t).toContain('Termina en el periodo 85')
+    expect(t).toContain('$ 3.354.386,36')
+    expect(t).toContain('Termina en el periodo 86')
     expect(screen.getByRole('list', { name: 'Línea de tiempo de eventos' }).textContent).toContain('Periodo 40')
     // Por defecto solo los asientos de periodos con eventos; el botón despliega todos.
     const destacados = screen.getAllByText('✓ Cuadra').length
@@ -159,10 +159,10 @@ describe('Casos', () => {
 
   it('cambiar el perfil a EXCEL recarga el caso con otro resultado', async () => {
     abrir('#/casos/13')
-    await waitFor(() => expect(texto()).toContain('Termina en el periodo 85'))
-    expect(texto()).toContain('$ 3.315.130,36')
+    await waitFor(() => expect(texto()).toContain('Termina en el periodo 86'))
+    expect(texto()).toContain('$ 3.354.386,36')
     fireEvent.click(screen.getByRole('radio', { name: /Excel/ }))
-    await waitFor(() => expect(texto()).not.toContain('$ 3.315.130,36'))
+    await waitFor(() => expect(texto()).not.toContain('$ 3.354.386,36'))
     await waitFor(() => expect(texto()).toContain('$ 2.991.408,97'))
   })
 
@@ -214,7 +214,7 @@ describe('Laboratorio', () => {
     await waitFor(() => expect(screen.getAllByRole('button', { name: /Editar el evento del periodo 42/ }).length).toBeGreaterThan(0))
     expect(partidaActual()).toBe('Caso 13 · Abono extra con pendientes')
     fireEvent.click(screen.getByRole('button', { name: 'Calcular resultado' }))
-    await waitFor(() => expect(texto()).toContain('Termina en el periodo 85'))
+    await waitFor(() => expect(texto()).toContain('Termina en el periodo 86'))
     expect(screen.getByRole('region', { name: 'Tabla periodo a periodo' })).toBeTruthy()
   })
 
@@ -273,7 +273,7 @@ describe('Reglas', () => {
   it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
     const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
-    expect(within(lista).getAllByRole('listitem')).toHaveLength(26)
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(30)
     expect(within(lista).getAllByText('Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)').length).toBeGreaterThan(0)
     expect(within(lista).getByText(/A4/)).toBeTruthy()
     expect(lista.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)

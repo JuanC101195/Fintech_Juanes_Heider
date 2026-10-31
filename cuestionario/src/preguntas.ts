@@ -2125,9 +2125,131 @@ const RONDA_12: Pregunta[] = [
       { codigo: 'otro', texto: 'Otro tratamiento', detalle: 'Indique las cuentas en el comentario.', pideTexto: true },
     ],
   },
+  // Detalles de R10-CONTADOR-VENCIDAS (servicios siempre y cobranza por cociente, D70 a D72). El motor ya aplica el
+  // supuesto indicado en cada una; la respuesta lo confirma o lo cambia.
+  {
+    id: 'R12-COBRANZA-SALDO-MORA',
+    bloque: PAGOS,
+    titulo: 'Cobranza por cociente: ¿qué entra en el "saldo total en mora", es estrictamente más de 2 y cuándo se mide?',
+    contexto:
+      'Usted indicó que la cobranza se ejecuta cuando el saldo total en mora dividido entre el valor total de la cuota es mayor que 2, y que con abonos parciales que no llegan a 2 cuotas no hay cobranza pero sí interés de mora. Para calcularlo el motor supone tres cosas: (1) el saldo en mora es todo lo pendiente: capital vencido, interés corriente, servicios, interés de mora y la cobranza ya cobrada; (2) debe ser estrictamente mayor que 2: quien debe exactamente 2 cuotas no paga cobranza; (3) se mide al cierre de cada periodo (que es el inicio del siguiente) y la cobranza se cobra en ese periodo siguiente, sin mirar si el cliente paga o no. Ejemplo: si deja de pagar desde la semana 1, al cerrar la semana 2 debe 2 cuotas más la mora de la semana 2 (más de 2): la semana 3 cobra 40.000 y la 4 otros 40.000. Si el saldo en mora fuera solo lo de las cuotas (sin mora ni cobranza), con exactamente 2 cuotas no cobraría hasta la semana 4.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso en cada pago tardío; no usa un cociente.',
+    opciones: [
+      { codigo: 'todo-pendiente-estricto', texto: 'Todo lo pendiente (con mora y cobranza), estrictamente más de 2, medido al cierre de cada periodo (lo que hace el motor)' },
+      { codigo: 'solo-cuotas-estricto', texto: 'Solo lo que fue cuota (capital, interés y servicios vencidos), estrictamente más de 2' },
+      { codigo: 'todo-pendiente-desde-2', texto: 'Todo lo pendiente, desde 2 cuotas (2 o más)' },
+      { codigo: 'otro', texto: 'Otra regla', detalle: 'Aclare qué entra en el saldo, si es más de 2 o desde 2, y cuándo se mide.', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-COBRANZA-DENOMINADOR',
+    bloque: PAGOS,
+    titulo: 'Cobranza por cociente: ¿cuál es el "valor total de la cuota" cuando la cuota cambia?',
+    contexto:
+      'El motor divide entre la cuota vigente del periodo más los servicios por cuota (fondo, asistencia y seguros), redondeada al peso. Si el cliente hizo un abono a menor cuota o cambió la tasa, la cuota baja o sube y con ella el umbral: con una cuota menor, la misma deuda pesa más cuotas y la cobranza llega antes. Falta saber si se usa la cuota vigente (supuesto del motor) o la cuota pactada al originar el crédito.',
+    excelHoy: 'El Excel no usa un cociente para la cobranza.',
+    opciones: [
+      { codigo: 'cuota-vigente', texto: 'La cuota vigente del periodo más los servicios (lo que hace el motor)' },
+      { codigo: 'cuota-pactada', texto: 'La cuota pactada al originar el crédito más los servicios, aunque la cuota cambie después' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-COBRANZA-PERIODICIDADES',
+    bloque: PAGOS,
+    titulo: 'Cobranza por cociente: ¿el umbral de 2 cuotas es el mismo en créditos semanales, quincenales y mensuales?',
+    contexto:
+      'Con el umbral de 2 cuotas, un crédito semanal llega a cobranza con unas 2 semanas de atraso, uno quincenal con un mes y uno mensual con dos meses. El motor usa 2 en las tres periodicidades y cobra 40.000 por periodo en las tres (el valor lo define el director financiero). Falta saber si el umbral o el valor cambian según la periodicidad.',
+    excelHoy: 'El Excel solo modela créditos semanales.',
+    opciones: [
+      { codigo: 'igual-en-todas', texto: 'Igual en las tres: más de 2 cuotas y el mismo valor por periodo (lo que hace el motor)' },
+      { codigo: 'por-dias', texto: 'El umbral se mide en días de atraso, igual para todas', detalle: 'Indique los días en el comentario.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otro umbral o valor por periodicidad', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-MARCA-POR-COCIENTE',
+    bloque: RECUPERACION,
+    titulo: 'La marca "listo para recuperar", ¿se sigue dando por eventos o también por el cociente de 2 cuotas?',
+    contexto:
+      'La cobranza ahora se decide con el cociente saldo en mora / cuota total. La marca "listo para recuperar" sigue como usted la confirmó: la primera vez que el crédito llega a 2 periodos atrasados, contando eventos (cada pago incompleto o sin pago suma 1) y aunque luego se ponga al día. Con dos pagos casi completos el contador llega a 2 y el crédito queda marcado aunque deba mucho menos de 2 cuotas, y entonces la marca y la cobranza ya no coinciden.',
+    excelHoy: 'El Excel no marca créditos para recuperación.',
+    opciones: [
+      { codigo: 'por-eventos', texto: 'Por eventos, como hoy: 2 periodos atrasados, aunque deba menos de 2 cuotas' },
+      { codigo: 'por-cociente', texto: 'Por el cociente: se marca cuando el saldo en mora supera 2 cuotas totales, igual que la cobranza' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-SERVICIOS-CIERRE',
+    bloque: RECUPERACION,
+    titulo: 'En la dación o la retoma, ¿qué pasa con los servicios del periodo del cierre y con los cobrados que nunca se recaudaron?',
+    contexto:
+      'Usted indicó que en la dación o la retoma se suspenden por completo los servicios porque se cierra el crédito. El motor supone que el periodo en que se recibe la moto ya no causa fondo, asistencia ni seguros. De los servicios que quedaron pendientes de periodos anteriores, la parte que alcanza a cubrir el valor de la moto se registra como recaudo efectivo para terceros; la parte que no alcanza (la cubre el faltante a cargo del fondo de garantías) se extingue contra la cuenta por cobrar de cada servicio, como en el Excel. Falta saber si el periodo del cierre causa servicios y si los no recaudados se llevan a cuentas de orden o se le pagan igual al tercero.',
+    excelHoy: 'El Excel causa el seguro en la semana del cierre y extingue todos los servicios pendientes contra sus cuentas por cobrar.',
+    opciones: [
+      { codigo: 'sin-servicios-cierre-cuentas-orden', texto: 'El periodo del cierre no causa servicios; los no recaudados van a cuentas de orden y no se le pagan al tercero' },
+      { codigo: 'sin-servicios-cierre-se-pagan', texto: 'El periodo del cierre no causa servicios; los no recaudados se le pagan igual al tercero (con el fondo de garantías)' },
+      { codigo: 'cierre-causa-servicios', texto: 'El periodo del cierre sí causa los servicios; se suspenden desde el siguiente' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-SERVICIOS-DESPUES-PLAZO',
+    bloque: SERVICIOS,
+    titulo: '"El cliente siempre paga los servicios": ¿también después de la última cuota pactada, mientras siga debiendo?',
+    contexto:
+      'Un cliente atrasado puede seguir debiendo después de la fecha de su última cuota. Hoy el motor causa los servicios solo dentro del plazo pactado: después de la última cuota sigue la mora sobre el capital vencido, pero no se causan más fondo, asistencia ni seguros. Si los servicios siguen mientras haya deuda, el cliente paga más por cada periodo adicional y el tercero recibe más.',
+    excelHoy: 'El Excel no causa servicios después de la última cuota.',
+    opciones: [
+      { codigo: 'solo-dentro-del-plazo', texto: 'Solo dentro del plazo pactado (lo que hace el motor)' },
+      { codigo: 'mientras-haya-deuda', texto: 'Mientras el crédito siga con deuda, también después de la última cuota' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-VALOR-EXIGIBLE',
+    bloque: PAGOS,
+    titulo: 'El valor a pagar que se le muestra al cliente, ¿incluye lo que tiene pendiente o solo la cuota del periodo?',
+    contexto:
+      'Usted confirmó que el capital no cubierto queda vencido, se suma a la cuota siguiente y genera mora. El motor aplica cada pago primero a lo pendiente (cobranza, mora, interés, servicios y capital vencido) y después a la cuota del periodo. Falta saber qué se le muestra al cliente como valor a pagar en el periodo: la cuota del periodo más todo lo pendiente (lo que necesita para quedar al día) o solo la cuota del periodo.',
+    excelHoy: 'El Excel muestra la cuota del periodo; lo pendiente va en columnas aparte.',
+    opciones: [
+      { codigo: 'cuota-mas-pendiente', texto: 'La cuota del periodo más todo lo pendiente: lo que necesita para quedar al día' },
+      { codigo: 'solo-cuota', texto: 'Solo la cuota del periodo, y lo pendiente aparte' },
+      { codigo: 'otro', texto: 'Otra forma de mostrarlo', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-GIRO-TERCEROS',
+    bloque: SERVICIOS,
+    titulo: '¿Cada cuánto se gira a los terceros (fondo, asistencia, aseguradoras) lo recaudado por sus servicios?',
+    contexto:
+      'Con la regla de que la cuenta con el tercero solo nace cuando hay recaudo efectivo, el motor acumula lo recaudado de cada servicio y lo gira al tercero al cerrar cada mes (o al terminar el crédito), como el Excel. Falta saber si el giro es mensual para todos los terceros o tiene otra frecuencia.',
+    excelHoy: 'El Excel gira al cerrar cada mes lo recaudado del fondo de garantías en el mes.',
+    opciones: [
+      { codigo: 'mensual', texto: 'Mensual, al cerrar cada mes, para todos los terceros (lo que hace el motor)' },
+      { codigo: 'por-tercero', texto: 'Depende del tercero', detalle: 'Indique la frecuencia de cada uno en el comentario.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otra frecuencia', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R12-CUENTA-TERCEROS',
+    bloque: CONTABILIDAD,
+    titulo: '¿En qué cuenta del PUC se registran los servicios recaudados por cuenta de terceros?',
+    contexto:
+      'Usted indicó que la cuenta por pagar a los terceros solo se registra cuando hay recaudo efectivo. El motor registra el fondo de garantías, la asistencia y el seguro de vida recaudados en "Ingresos recibidos para terceros" (PUC 2815, provisional); el seguro todo riesgo y su IVA siguen en "CxP seguros" e "IVA por pagar por seguros", como usted indicó en la ronda 11. El Excel usaba "CxP servicios a terceros". Necesitamos la cuenta definitiva.',
+    excelHoy: 'El Excel usa "CxP servicios a terceros" (caso 1) y "Servicios complementarios" (casos 8 y 9).',
+    opciones: [
+      { codigo: 'ingresos-recibidos-para-terceros', texto: 'Ingresos recibidos para terceros (PUC 2815)' },
+      { codigo: 'cxp-terceros', texto: 'Una cuenta por pagar a terceros (PUC 23)', detalle: 'Indique la subcuenta en el comentario.' },
+      { codigo: 'otro', texto: 'Otra cuenta', pideTexto: true },
+      { codigo: 'consulto-contabilidad', texto: 'Lo consulto con contabilidad y respondo después' },
+    ],
+  },
 ]
 
-// Respondidas por el cuestionario (Diego, 31 de octubre de 2026): de las rondas 10 y 11, 6 de 11 (docs/respuestas-diego-2026-10-31-ronda10-11.md). Quedan decididas D65 a D69 de decisiones.md; lo que dejó abierto va a la ronda 12.
+// Respondidas por el cuestionario (Diego, 31 de octubre de 2026): de las rondas 10 y 11, 9 de 11 (docs/respuestas-diego-2026-10-31-ronda10-11.md). Quedan decididas D65 a D73 de decisiones.md; lo que dejó abierto va a la ronda 12.
 const REF_RONDA_10_11 = 'Rondas 10 y 11'
 const RESPONDIDAS_RONDA_10_11: Record<string, Omit<Respondida, 'fecha'>> = {
   'R10-VALOR-COBRANZA': { referencia: REF_RONDA_10_11, respuesta: 'Lo define el director financiero, como parámetro configurable con vigencias; los 3.000 diarios y los 40.000 por periodo quedan solo como valores provisionales de ejemplo (D65).' },
@@ -2136,6 +2258,10 @@ const RESPONDIDAS_RONDA_10_11: Record<string, Omit<Respondida, 'fecha'>> = {
   'R11-BASE-FINANCIACION-INICIAL': { referencia: REF_RONDA_10_11, respuesta: 'El monto financiado a secas (valor de la moto menos la cuota inicial), la misma base del seguro de vida (D68).' },
   'R11-PERIODIZACION-SEGURO': { referencia: REF_RONDA_10_11, respuesta: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida (D68).' },
   'R11-CONTABILIDAD-SEGURO-IVA': { referencia: REF_RONDA_10_11, respuesta: 'La contabilidad segmenta CxP seguros 10.000 / IVA por pagar por seguros 1.900 / CxP aseguradoras 11.900; el IVA nunca es responsabilidad de la financiera frente a la DIAN (D69).' },
+  // Rediseño de servicios y cobranza (D70 a D73, ADR 0006): respondidas en la misma fecha, implementadas aparte.
+  'R10-CONTADOR-VENCIDAS': { referencia: REF_RONDA_10_11, nota: 'Supuestos provisionales del motor que se confirman en la ronda 12: qué entra en el saldo en mora, si es estrictamente más de 2 y cuándo se mide (R12-COBRANZA-SALDO-MORA), la cuota del denominador (R12-COBRANZA-DENOMINADOR), las periodicidades (R12-COBRANZA-PERIODICIDADES) y si la marca de recuperación también va por cociente (R12-MARCA-POR-COCIENTE).', respuesta: 'Otra regla: el cliente siempre paga los servicios (fondo, asistencia y seguros) en la cuota, al día o atrasado; la cuenta con terceros solo nace con el recaudo efectivo; la cobranza se ejecuta cuando saldo total en mora / valor total de la cuota > 2 (con abonos parciales que no llegan a 2 cuotas no hay cobranza, pero sí interés de mora); en dación o retoma se suspenden por completo los servicios (D70 a D72).' },
+  'R10-PERIODO-ATRASADO': { referencia: REF_RONDA_10_11, respuesta: 'El capital no cubierto queda vencido, se suma a la cuota siguiente y genera mora (como funciona hoy) (D73).' },
+  'R11-SEGUROS-TRAS-SUSPENSION': { referencia: REF_RONDA_10_11, respuesta: 'Ya no hay suspensión por atraso: el cliente siempre paga los servicios, así que los dos seguros (vida y todo riesgo) se causan siempre; solo la dación o la retoma los suspenden (D70).' },
 }
 
 // Respondidas por el cuestionario (Diego, 22 de octubre de 2026, 19:53): las rondas 5 y 6, 9 de 9 con la opción y el

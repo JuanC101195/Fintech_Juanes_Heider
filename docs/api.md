@@ -110,11 +110,20 @@ Lo que agrega la ronda 8 de Diego (2026-10-28):
 | Clave | Qué hace | NEGOCIO | EXCEL |
 |---|---|---|---|
 | `cobranzaPorPeriodo` | R8-COBRANZA-PAGO-TARDIO: la cobranza no se prorratea por días; cada periodo que causaría cobranza (con el umbral `cuotasVencidasParaCobranza`) causa exactamente este cobro fijo, una vez (provisional: 40.000 es el ejemplo de Diego) | `40000` | `null` (días × valor diario) |
-| `cuotasVencidasParaSuspenderServicios` | R8-PAGO-INCOMPLETO-EN-FECHA: fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro | `2` | `null` (D17: fondo y asistencia solo en periodos al día) |
+| `cuotasVencidasParaSuspenderServicios` | R8-PAGO-INCOMPLETO-EN-FECHA: fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro. Desde la ronda 10 solo aplica con `causacionServicios = SUSPENDER_POR_UMBRAL` | `null` (D70: ya no se suspende) | `null` (D17: fondo y asistencia solo en periodos al día) |
 | `redondeoCuotaAlPeso` | R8-REDONDEO-PESO: la cuota exigible (cuota + servicios) se redondea a pesos enteros (HALF_UP); el residuo, de hasta medio peso, va al interés corriente del periodo | `true` | `false` |
 | `sobranteComoCuentaPorPagar` | R8-PAGO-MAYOR-EXIGIBLE: un `PAGO_VALOR` mayor que lo exigible se recibe completo y el sobrante queda en `sobranteCliente` y en la cuenta provisional `CXP_SOBRANTE_CLIENTE` (PUC pendiente) | `true` | `false` (se recorta sin registrar) |
-| `umbralesCuentanCuotaEnCurso` | R9-COBRO-MOMENTO (lectura A): los umbrales de cobranza y de suspensión de servicios cuentan también la cuota del periodo en curso si queda atrasada (`SIN_PAGO`, o `PAGO_PARCIAL` / `PAGO_VALOR` que no alcanzan la cuota mínima del periodo); con 2, la 2.ª cuota atrasada ya cobra y suspende | `true` | `false` (solo cuentan las de periodos anteriores: desde la 3.ª) |
+| `umbralesCuentanCuotaEnCurso` | R9-COBRO-MOMENTO (lectura A): los umbrales de cobranza y de suspensión de servicios cuentan también la cuota del periodo en curso si queda atrasada (`SIN_PAGO`, o `PAGO_PARCIAL` / `PAGO_VALOR` que no alcanzan la cuota mínima del periodo); con 2, la 2.ª cuota atrasada ya cobra y suspende | `false` (D71: decide `umbralCocienteCobranza`) | `false` (solo cuentan las de periodos anteriores: desde la 3.ª) |
 | `seguroTodoRiesgoPorcentajeMensual` | R9-SEGURO-TODO-RIESGO: seguro todo riesgo que se suma al de vida, % mensual sobre el monto financiado inicial, periodizado como el de vida, con IVA encima; viaja aparte en `seguroTodoRiesgo` e `ivaSeguroTodoRiesgo` y su IVA va a la cuenta provisional `IVA_SEGUROS_POR_PAGAR` (R11-CONTABILIDAD-SEGURO-IVA) | `0.003` | `0` (no existe) |
+
+Lo que agrega la ronda 10 de Diego (2026-10-31, R10-CONTADOR-VENCIDAS; ADR 0006):
+
+| Clave | Qué hace | NEGOCIO | EXCEL |
+|---|---|---|---|
+| `causacionServicios` | D70: cómo se causan fondo, asistencia y seguros. `SOLO_AL_DIA` (D17), `SUSPENDER_POR_UMBRAL` (rondas 8 y 9) o `SIEMPRE` (en cada periodo del plazo, al día o atrasado; el periodo de una dación o una retoma no causa servicios). Con `SIEMPRE` los servicios recaudados van a la cuenta provisional `INGRESOS_RECIBIDOS_PARA_TERCEROS` (D72) | `SIEMPRE` | `SOLO_AL_DIA` |
+| `umbralCocienteCobranza` | D71: la cobranza se causa cuando saldo en mora / cuota total (cuota vigente + servicios por cuota, al peso) supera este cociente, medido al iniciar el periodo; con valor se ignora `cuotasVencidasParaCobranza` | `2` | `null` (umbral por cuotas) |
+| `baseMoraCobranza` | D71: numerador del cociente, `CUOTAS_VENCIDAS` o `TODO_PENDIENTE` (con mora y cobranza); supuesto provisional | `TODO_PENDIENTE` | `TODO_PENDIENTE` |
+| `comparacionCobranza` | D71: `MAYOR` (estricto) o `MAYOR_O_IGUAL`; supuesto provisional | `MAYOR` | `MAYOR` |
 
 ### POST /api/v1/simulaciones
 

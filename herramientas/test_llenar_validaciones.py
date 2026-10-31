@@ -28,8 +28,9 @@ class ExtractoresTest(unittest.TestCase):
     def test_campo_del_periodo(self):
         self.assertEqual(v.campo('saldoFinal')(self.r, 0), Decimal('5904400'))
         # Ronda 9: los pendientes que paga el abono bajan 5.034 (R9-COBRO-MOMENTO y seguro todo riesgo), así que a capital
-        # va 5.034 más (antes 1032390.172587373134571221537897364).
-        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('1037424.172587373134571221537897364'))
+        # va 5.034 más (antes 1032390.172587373134571221537897364). Ronda 10 (D70, D71): fondo y asistencia de la 41 y la
+        # 42 se causan siempre y no hay cobranza por cociente: el abono paga 39.256 más de pendientes (antes 1037424,17...).
+        self.assertEqual(v.campo('abonoExtra')(self.r, 42), Decimal('998168.1725873731345712215378973644'))
         self.assertEqual(v.campo('cuotasVencidas')(self.r, 42), Decimal(0))
 
     def test_campo_anidado(self):
@@ -43,15 +44,15 @@ class ExtractoresTest(unittest.TestCase):
             leer(self.r, 104)
 
     def test_resultados_del_credito(self):
-        self.assertEqual(v.ultimo_periodo(self.r), Decimal(85))
-        self.assertEqual(v.cuotas_eliminadas(self.r), Decimal(104 - 85))
+        self.assertEqual(v.ultimo_periodo(self.r), Decimal(86))
+        self.assertEqual(v.cuotas_eliminadas(self.r), Decimal(104 - 86))
         self.assertEqual(v.periodos_adicionales(self.r), Decimal(0))
         self.assertEqual(v.estado_final(self.r), 'CANCELADO')
 
     def test_periodos_adicionales_cuenta_lo_que_pasa_de_las_cuotas(self):
         r = copy.deepcopy(self.r)
         r['credito']['cuotas'] = 80
-        self.assertEqual(v.periodos_adicionales(r), Decimal(5))
+        self.assertEqual(v.periodos_adicionales(r), Decimal(6))
 
     def test_primer_cambio_de_tasa(self):
         with self.assertRaises(KeyError):  # el caso 13 no cambia la tasa
