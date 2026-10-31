@@ -217,7 +217,8 @@ public final class MotorCartera {
             boolean atrasado = escenario.reglas().umbralesCuentanCuotaEnCurso() && !escenario.reglas().cobranzaPorCociente()
                     && atrasaElPeriodo(pago);
             int cuotasParaUmbrales = atrasado ? cuotasVencidas + 1 : cuotasVencidas;
-            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias),
+            Causacion causado = causador.causar(
+                    new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias)),
                     cuotasParaUmbrales, diasParaCobranza(pago, dias, atrasado), ordenes.cierre != null);
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia

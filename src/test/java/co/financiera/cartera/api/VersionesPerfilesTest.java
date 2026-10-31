@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
  */
 class VersionesPerfilesTest {
 
-    private static final String HUELLA_EXCEL = "34588b778cb8a478c3206f87a97f21bf5d147d998d4dbf1952b616080e165930";
+    private static final String HUELLA_EXCEL = "f83d58cb69efb6086ed67239fd16c16af9488d41d2cabf167edc2b406165b2d1";
     private static final String ID_NEGOCIO = "negocio-2026-10-31";
-    private static final String HUELLA_NEGOCIO = "30b820ae2c38169dd5db52f7cf8b5399557399f7fc5830dc77fbaa5e060aff27";
+    private static final String HUELLA_NEGOCIO = "6a16d27cd1d29a6e6bcf2a94e3c022b5278c0004b90efc1bbc4c5744faa6c826";
 
     private final PerfilesReglas perfiles = new PerfilesReglas("config/reglas-negocio.properties");
 

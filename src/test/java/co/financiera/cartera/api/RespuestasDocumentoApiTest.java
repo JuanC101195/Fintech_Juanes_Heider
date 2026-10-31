@@ -115,6 +115,13 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("redondeoCuotaAlPeso").asString()).isEqualTo("false");
         assertThat(negocio.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("true");
         assertThat(excel.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("false");
+    }
+
+    @Test
+    void lasClavesDeLasRondas9y10SalenEnLasReglas() throws Exception {
+        JsonNode r = leer(get("/api/v1/reglas"));
+        JsonNode negocio = r.get("perfiles").get("NEGOCIO");
+        JsonNode excel = r.get("perfiles").get("EXCEL");
         // Ronda 9 (Diego 2026-10-30).
         // D71 (ronda 10): la reemplaza el cociente de cobranza.
         assertThat(negocio.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("false");
@@ -126,7 +133,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("causacionServicios").asString()).isEqualTo("SOLO_AL_DIA");
         assertThat(negocio.get("umbralCocienteCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("umbralCocienteCobranza").isNull()).isTrue();
-        assertThat(negocio.get("baseMoraCobranza").asString()).isEqualTo("TODO_PENDIENTE");
+        assertThat(negocio.get("baseMoraCobranza").asString()).isEqualTo("TOTAL_PENDIENTE");
         assertThat(negocio.get("comparacionCobranza").asString()).isEqualTo("MAYOR");
         assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();

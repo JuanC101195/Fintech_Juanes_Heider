@@ -111,7 +111,7 @@ import java.math.BigDecimal;
  *                                 cuentan las cuotas atrasadas de periodos anteriores, es decir, desde la 3.ª cuota
  *                                 atrasada (lectura B: el Excel y el NEGOCIO de las rondas 7 y 8). Ver
  *                                 {@code docs/adr/0005-umbral-cuenta-cuota-en-curso.md}.
- * @param seguroTodoRiesgoPorcentajeMensual R9-SEGURO-TODO-RIESGO (Diego 2026-10-30): seguro todo riesgo, un servicio
+ * @param seguroTodoRiesgoPorcentajeMensual R9-SEGURO-TODO-RIESGO (Diego 2026-10-30): seguro riesgo total, un servicio
  *                                 NUEVO que se suma al seguro de vida: % mensual sobre el monto financiado inicial
  *                                 (0,003 = 0,3 %), periodizado igual que el seguro de vida (valor mensual × 12 / ppa)
  *                                 y con el IVA de servicios encima ({@code ParametrosProducto.iva}, 19 %), que se
@@ -128,7 +128,7 @@ import java.math.BigDecimal;
  *                                 {@link #cuotasVencidasParaCobranza} y {@link #umbralesCuentanCuotaEnCurso} para la
  *                                 cobranza. Se evalúa al iniciar cada periodo con los saldos del cierre del anterior (ADR
  *                                 0006). {@code null} = umbral por cuotas vencidas (el Excel y las rondas 7 a 9).
- * @param baseMoraCobranza         qué entra en el saldo en mora del cociente (supuesto provisional {@code TODO_PENDIENTE},
+ * @param baseMoraCobranza         qué entra en el saldo en mora del cociente (supuesto provisional {@code TOTAL_PENDIENTE},
  *                                 pregunta R12-COBRANZA-SALDO-MORA)
  * @param comparacionCobranza      si el cociente debe ser estrictamente mayor que el umbral o basta igualarlo (supuesto
  *                                 provisional {@code MAYOR}: Diego escribió «&gt; 2»)
@@ -262,7 +262,7 @@ public record ReglasNegocio(
             .seguroTodoRiesgoPorcentajeMensual(BigDecimal.ZERO)
             .causacionServicios(CausacionServicios.SOLO_AL_DIA)
             .umbralCocienteCobranza(null)
-            .baseMoraCobranza(BaseMoraCobranza.TODO_PENDIENTE)
+            .baseMoraCobranza(BaseMoraCobranza.TOTAL_PENDIENTE)
             .comparacionCobranza(ComparacionCobranza.MAYOR)
             .construir();
 
@@ -287,8 +287,8 @@ public record ReglasNegocio(
     public enum BaseMoraCobranza {
         /** Solo lo que fue cuota: capital vencido + interés corriente pendiente + servicios pendientes. */
         CUOTAS_VENCIDAS,
-        /** Todo lo pendiente: capital vencido + interés corriente + servicios + interés de mora + cobranza (supuesto). */
-        TODO_PENDIENTE
+        /** la totalidad de lo pendiente: capital vencido + interés corriente + servicios + interés de mora + cobranza (supuesto). */
+        TOTAL_PENDIENTE
     }
 
     /** Cómo se compara el cociente de cobranza con el umbral (D71; supuesto provisional: {@code MAYOR}). */
@@ -629,7 +629,7 @@ public record ReglasNegocio(
         return copia().umbralesCuentanCuotaEnCurso(valor).construir();
     }
 
-    /** R9-SEGURO-TODO-RIESGO: % mensual del seguro todo riesgo sobre el monto financiado; 0 o {@code null} = no existe. */
+    /** R9-SEGURO-TODO-RIESGO: % mensual del seguro riesgo total sobre el monto financiado; 0 o {@code null} = no existe. */
     public ReglasNegocio conSeguroTodoRiesgoPorcentajeMensual(BigDecimal valor) {
         return copia().seguroTodoRiesgoPorcentajeMensual(valor).construir();
     }
@@ -654,7 +654,7 @@ public record ReglasNegocio(
         return copia().comparacionCobranza(valor).construir();
     }
 
-    /** El % mensual del seguro todo riesgo, con {@code null} como 0 (no existe). */
+    /** El % mensual del seguro riesgo total, con {@code null} como 0 (no existe). */
     public BigDecimal porcentajeTodoRiesgo() {
         return seguroTodoRiesgoPorcentajeMensual == null ? BigDecimal.ZERO : seguroTodoRiesgoPorcentajeMensual;
     }

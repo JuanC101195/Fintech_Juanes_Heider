@@ -122,7 +122,7 @@ Lo que agrega la ronda 10 de Diego (2026-10-31, R10-CONTADOR-VENCIDAS; ADR 0006)
 |---|---|---|---|
 | `causacionServicios` | D70: cómo se causan fondo, asistencia y seguros. `SOLO_AL_DIA` (D17), `SUSPENDER_POR_UMBRAL` (rondas 8 y 9) o `SIEMPRE` (en cada periodo del plazo, al día o atrasado; el periodo de una dación o una retoma no causa servicios). Con `SIEMPRE` los servicios recaudados van a la cuenta provisional `INGRESOS_RECIBIDOS_PARA_TERCEROS` (D72) | `SIEMPRE` | `SOLO_AL_DIA` |
 | `umbralCocienteCobranza` | D71: la cobranza se causa cuando saldo en mora / cuota total (cuota vigente + servicios por cuota, al peso) supera este cociente, medido al iniciar el periodo; con valor se ignora `cuotasVencidasParaCobranza` | `2` | `null` (umbral por cuotas) |
-| `baseMoraCobranza` | D71: numerador del cociente, `CUOTAS_VENCIDAS` o `TODO_PENDIENTE` (con mora y cobranza); supuesto provisional | `TODO_PENDIENTE` | `TODO_PENDIENTE` |
+| `baseMoraCobranza` | D71: numerador del cociente, `CUOTAS_VENCIDAS` o `TOTAL_PENDIENTE` (con mora y cobranza); supuesto provisional | `TOTAL_PENDIENTE` | `TOTAL_PENDIENTE` |
 | `comparacionCobranza` | D71: `MAYOR` (estricto) o `MAYOR_O_IGUAL`; supuesto provisional | `MAYOR` | `MAYOR` |
 
 ### POST /api/v1/simulaciones

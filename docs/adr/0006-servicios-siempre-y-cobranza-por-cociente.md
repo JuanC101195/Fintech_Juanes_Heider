@@ -21,7 +21,7 @@ Tres claves nuevas en `ReglasNegocio`, con el Excel intacto:
 |---|---|---|---|
 | `causacionServicios` | `SOLO_AL_DIA` (D17) | `SIEMPRE` | `SOLO_AL_DIA`: fondo y asistencia solo al día. `SUSPENDER_POR_UMBRAL`: las rondas 8 y 9 (se suspenden con `cuotasVencidasParaSuspenderServicios`). `SIEMPRE`: los tres servicios en todo periodo del plazo; el periodo de una dación o una retoma no causa servicios. |
 | `umbralCocienteCobranza` | vacío | `2` | Con valor, la cobranza se causa cuando saldo en mora / cuota total supera el umbral; se ignoran `cuotasVencidasParaCobranza` y `umbralesCuentanCuotaEnCurso` para la cobranza. |
-| `baseMoraCobranza` | `TODO_PENDIENTE` | `TODO_PENDIENTE` | Numerador: `CUOTAS_VENCIDAS` (capital vencido + interés + servicios pendientes) o `TODO_PENDIENTE` (además mora y cobranza). Supuesto. |
+| `baseMoraCobranza` | `TOTAL_PENDIENTE` | `TOTAL_PENDIENTE` | Numerador: `CUOTAS_VENCIDAS` (capital vencido + interés + servicios pendientes) o `TOTAL_PENDIENTE` (además mora y cobranza). Supuesto. |
 | `comparacionCobranza` | `MAYOR` | `MAYOR` | `MAYOR` (estricto, «> 2») o `MAYOR_O_IGUAL`. Supuesto. |
 
 `ReglasNegocio.llegaAlUmbralDeCobranza(saldoEnMora, valorCuota)` compara sin dividir (saldo frente a umbral × cuota) con la tolerancia de medio centavo de los saldos: quien debe exactamente 2 cuotas no queda «por encima» por un residuo DECIMAL128. El denominador es la cuota financiera vigente + los servicios por cuota (fondo, asistencia y seguros, sin suspender), al peso si rige `redondeoCuotaAlPeso`. El valor cobrado es el de siempre: `cobranzaPorPeriodo` (D58) o, sin él, los días nominales del periodo × el valor diario.

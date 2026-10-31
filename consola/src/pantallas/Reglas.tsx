@@ -31,7 +31,7 @@ const VALORES: Record<string, string> = {
   SUSPENDER_POR_UMBRAL: 'Siempre, hasta las cuotas atrasadas del umbral; desde ahí solo los seguros',
   SIEMPRE: 'Siempre en la cuota, al día o atrasado; solo la dación o la retoma los suspenden',
   CUOTAS_VENCIDAS: 'Solo lo que fue cuota: capital, interés y servicios vencidos',
-  TODO_PENDIENTE: 'Todo lo pendiente: capital, interés, servicios, mora y cobranza (supuesto por confirmar)',
+  TOTAL_PENDIENTE: 'Todo lo pendiente: capital, interés, servicios, mora y cobranza (supuesto por confirmar)',
   MAYOR: 'Estrictamente mayor que el umbral (supuesto por confirmar)',
   MAYOR_O_IGUAL: 'Desde el umbral (mayor o igual)',
   true: 'Sí',

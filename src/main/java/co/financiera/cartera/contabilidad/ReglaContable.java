@@ -56,7 +56,7 @@ public interface ReglaContable {
                 Asiento.Linea.credito(Cuenta.CXC_ASISTENCIAS, d.servicios().asistencia(),
                         "Extinción de asistencias (prelación 5)"),
                 Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().seguro(), "Extinción de seguros (prelación 6)"),
-                // R9-SEGURO-TODO-RIESGO: el seguro todo riesgo y su IVA, por separado (0 sin la regla: no hay línea).
+                // R9-SEGURO-TODO-RIESGO: el seguro riesgo total y su IVA, por separado (0 sin la regla: no hay línea).
                 Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().seguroTodoRiesgo(),
                         "Extinción del seguro todo riesgo, sin IVA (R9)"),
                 Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().ivaSeguroTodoRiesgo(),
@@ -67,14 +67,14 @@ public interface ReglaContable {
     /**
      * R10-CONTADOR-VENCIDAS (Diego, ronda 10, D72): la extinción de una dación o una retoma cuando la cuenta con terceros
      * solo nace con el recaudo efectivo. La parte de los servicios pendientes que cubre la moto es recaudo efectivo: va a
-     * {@code terceros} ("Ingresos recibidos para terceros") y el seguro todo riesgo con su IVA a sus cuentas (D69). La parte
+     * {@code terceros} ("Ingresos recibidos para terceros") y el seguro riesgo total con su IVA a sus cuentas (D69). La parte
      * que no cubre la moto (la cubre el faltante a cargo del fondo de garantías) se extingue contra las cuentas por cobrar
      * de cada servicio, como el Excel; si debe ir a cuentas de orden es la pregunta R12-SERVICIOS-NO-RECAUDADOS-CIERRE. Los
      * demás conceptos se extinguen como en {@link #extincion(DeudaExtinguida)}.
      *
      * <p>Lo que cubrió la moto sale del movimiento: {@code pagosServicios} (lo recaudado en el periodo) menos
      * {@code pagoServicios} (lo que pagó la cuota). La moto paga los servicios por su prelación (fondo, asistencia, seguro,
-     * todo riesgo, su IVA), la misma de {@link Servicios#pagarHasta}, así que el detalle por concepto se reconstruye igual.
+     * riesgo total, su IVA), la misma de {@link Servicios#pagarHasta}, así que el detalle por concepto se reconstruye igual.
      */
     static List<Asiento.Linea> extincionConRecaudo(Movimiento m, Cuenta terceros) {
         DeudaExtinguida d = m.extinguido();
@@ -103,8 +103,8 @@ public interface ReglaContable {
 
     /**
      * R9-SEGURO-TODO-RIESGO (Diego, ronda 9): de los servicios recaudados {@code total} que van a "CxP servicios a
-     * terceros", la parte que NO es seguro todo riesgo ni su IVA. Esas dos partes van en líneas aparte
-     * ({@link #seguroTodoRiesgo}). Sin seguro todo riesgo devuelve {@code total} tal cual (las cifras del Excel no
+     * terceros", la parte que NO es seguro riesgo total ni su IVA. Esas dos partes van en líneas aparte
+     * ({@link #seguroTodoRiesgo}). Sin seguro riesgo total devuelve {@code total} tal cual (las cifras del Excel no
      * cambian).
      */
     static BigDecimal serviciosSinTodoRiesgo(BigDecimal total, Servicios detalle) {
@@ -116,7 +116,7 @@ public interface ReglaContable {
     }
 
     /**
-     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA: las líneas del seguro todo riesgo recaudado, segmentado en
+     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA: las líneas del seguro riesgo total recaudado, segmentado en
      * el seguro ({@link Cuenta#CXP_SEGUROS}, por ejemplo 10.000) y su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}, 1.900).
      * Las dos suman la deuda con la aseguradora ({@link #cxpAseguradoras}, 11.900); el IVA nunca es de la financiera
      * frente a la DIAN.
@@ -132,7 +132,7 @@ public interface ReglaContable {
     }
 
     /**
-     * R11-CONTABILIDAD-SEGURO-IVA: "CxP aseguradoras", lo que se debe a las aseguradoras por el seguro todo riesgo
+     * R11-CONTABILIDAD-SEGURO-IVA: "CxP aseguradoras", lo que se debe a las aseguradoras por el seguro riesgo total
      * recaudado en el asiento: el seguro ({@link Cuenta#CXP_SEGUROS}) más su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}).
      */
     static BigDecimal cxpAseguradoras(Asiento asiento) {

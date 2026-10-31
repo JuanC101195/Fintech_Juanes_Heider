@@ -455,7 +455,7 @@ class PropiedadesFinancierasAuditTest {
     /**
      * I8 con el cociente de cobranza (R10-CONTADOR-VENCIDAS, Diego 2026-10-31, D71): la cobranza se causa si y solo si,
      * al iniciar el periodo, saldo en mora / valor total de la cuota supera el umbral. El numerador sale del cierre del
-     * periodo anterior (capital vencido + interés + servicios pendientes, y con TODO_PENDIENTE además mora y cobranza); el
+     * periodo anterior (capital vencido + interés + servicios pendientes, y con TOTAL_PENDIENTE además mora y cobranza); el
      * denominador es la cuota del periodo + los servicios por cuota. Holgura de 1 peso en el denominador por el redondeo al
      * peso (el residuo va en la cuota de la fila). En particular, con abonos parciales que dejan el cociente en 2 o menos
      * no hay cobranza (pero la mora se sigue causando: no depende de esto).
@@ -463,7 +463,7 @@ class PropiedadesFinancierasAuditTest {
     private void cobranzaPorCociente(Movimiento m, Movimiento prev, Escenario e, BigDecimal monto, String id, String repro) {
         ReglasNegocio rn = e.reglas();
         BigDecimal numerador = Calc.sumar(prev.capitalVencido(), prev.cxcInteresCorriente(), prev.cxcServicios());
-        if (rn.baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TODO_PENDIENTE) {
+        if (rn.baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TOTAL_PENDIENTE) {
             numerador = Calc.sumar(numerador, prev.cxcMora(), prev.cxcCobranza());
         }
         BigDecimal servicios = co.financiera.cartera.nucleo.Servicios.porCuota(monto, e.parametros(), rn.porcentajeTodoRiesgo()).total();

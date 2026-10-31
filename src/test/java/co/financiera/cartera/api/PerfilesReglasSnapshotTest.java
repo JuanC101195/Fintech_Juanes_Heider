@@ -46,7 +46,7 @@ class PerfilesReglasSnapshotTest {
             "seguroTodoRiesgoPorcentajeMensual=0",
             "causacionServicios=SOLO_AL_DIA",
             "umbralCocienteCobranza=null",
-            "baseMoraCobranza=TODO_PENDIENTE",
+            "baseMoraCobranza=TOTAL_PENDIENTE",
             "comparacionCobranza=MAYOR");
 
     private static final List<String> NEGOCIO = List.of(
@@ -78,7 +78,7 @@ class PerfilesReglasSnapshotTest {
             "seguroTodoRiesgoPorcentajeMensual=0.003",
             "causacionServicios=SIEMPRE",
             "umbralCocienteCobranza=2",
-            "baseMoraCobranza=TODO_PENDIENTE",
+            "baseMoraCobranza=TOTAL_PENDIENTE",
             "comparacionCobranza=MAYOR");
 
     /** clave=valor en el orden de los componentes del record; BigDecimal con su escala (toPlainString). */

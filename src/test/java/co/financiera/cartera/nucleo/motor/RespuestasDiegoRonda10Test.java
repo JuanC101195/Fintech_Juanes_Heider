@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
  *       2 cuotas no hay cobranza pero sí interés de mora ({@code umbralCocienteCobranza = 2}).</li>
  *   <li>En dación o retoma se suspenden por completo los servicios (cierra el crédito).</li>
  * </ol>
- * Supuestos provisionales (ronda 12): el saldo en mora es todo lo pendiente ({@code TODO_PENDIENTE}), la comparación es
+ * Supuestos provisionales (ronda 12): el saldo en mora es la totalidad de lo pendiente ({@code TOTAL_PENDIENTE}), la comparación es
  * estricta ({@code MAYOR}) y el cociente se evalúa al iniciar el periodo con los saldos del cierre del anterior.
  */
 class RespuestasDiegoRonda10Test {
@@ -86,7 +86,7 @@ class RespuestasDiegoRonda10Test {
         ReglasNegocio n = negocio();
         assertThat(n.causacionServicios()).isEqualTo(CausacionServicios.SIEMPRE);
         assertThat(n.umbralCocienteCobranza()).isEqualByComparingTo("2");
-        assertThat(n.baseMoraCobranza()).isEqualTo(BaseMoraCobranza.TODO_PENDIENTE);
+        assertThat(n.baseMoraCobranza()).isEqualTo(BaseMoraCobranza.TOTAL_PENDIENTE);
         assertThat(n.comparacionCobranza()).isEqualTo(ComparacionCobranza.MAYOR);
         // Lo que reemplazan queda fuera de NEGOCIO (las rondas 8 y 9 lo siguen probando con negocioRonda9()).
         assertThat(n.cuotasVencidasParaSuspenderServicios()).isNull();
@@ -99,7 +99,8 @@ class RespuestasDiegoRonda10Test {
         assertThat(leidas.causacionServicios()).isEqualTo(CausacionServicios.SIEMPRE);
         assertThat(leidas.baseMoraCobranza()).isEqualTo(BaseMoraCobranza.CUOTAS_VENCIDAS);
         assertThat(leidas.comparacionCobranza()).isEqualTo(ComparacionCobranza.MAYOR_O_IGUAL);
-        assertThatThrownBy(() -> ReglasNegocio.EXCEL.conUmbralCocienteCobranza(bd(-1))).isInstanceOf(IllegalArgumentException.class);
+        BigDecimal negativo = bd(-1);
+        assertThatThrownBy(() -> ReglasNegocio.EXCEL.conUmbralCocienteCobranza(negativo)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ReglasNegocio.EXCEL.conCausacionServicios(null)).isInstanceOf(NullPointerException.class);
     }
 
@@ -160,7 +161,7 @@ class RespuestasDiegoRonda10Test {
                 assertThat(creditos(c.contabilizar(fila(m, k)), Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS)).as("semana %d", k).isZero();
                 assertThat(creditos(c.contabilizar(fila(m, k)), Cuenta.CXP_SERVICIOS_TERCEROS)).as("semana %d", k).isZero();
             }
-            // La semana 7 recauda los servicios de la 5, la 6 y la 7: ahí nace la cuenta con terceros (sin el todo riesgo,
+            // La semana 7 recauda los servicios de la 5, la 6 y la 7: ahí nace la cuenta con terceros (sin el riesgo total,
             // que va a CxP seguros y su IVA, D69).
             Movimiento siete = fila(m, 7);
             BigDecimal esperado = Calc.restar(siete.pagoServicios(), siete.pagosServicios().todoRiesgoConIva());
@@ -236,7 +237,7 @@ class RespuestasDiegoRonda10Test {
         @Test
         void sinCobranzaActivaElCocienteNoCobra() {
             List<Movimiento> m = motor.ejecutar(sinPagarDesdeLaUno.conReglas(negocio()).conCobranzaActiva(false));
-            assertThat(m).allSatisfy(x -> assertThat(x.cobranzaCausada()).isZero());
+            assertThat(m).isNotEmpty().allSatisfy(x -> assertThat(x.cobranzaCausada()).isZero());
         }
 
         @Test
@@ -279,7 +280,7 @@ class RespuestasDiegoRonda10Test {
             BigDecimal cxc = creditos(asientos, Cuenta.CXC_FONDO_CLIENTE).add(creditos(asientos, Cuenta.CXC_ASISTENCIAS))
                     .add(creditos(asientos, Cuenta.CXC_SEGUROS));
             assertThat(cxc).isCloseTo(Calc.restar(cierre.extinguido().servicios().total(), cubiertos), within(bd("0.01")));
-            // El Excel conserva la extinción de su panel (todo contra las CxC).
+            // El Excel conserva la extinción de su panel (la totalidad contra las CxC).
             List<Asiento> excel = Contabilizador.estandar().contabilizar(motor.ejecutar(EscenariosExcel.caso11(P)).getLast());
             assertThat(creditos(excel, Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS)).isZero();
         }

@@ -34,11 +34,16 @@ final class Causador {
         return (pago instanceof PagoContractual || pago instanceof PagoAlDia || pago instanceof PagoValor) && dias == 0;
     }
 
+    /** Lo que identifica al periodo que se causa: su número, el saldo con que arranca y cómo se pagó. */
+    record PeriodoACausar(int numero, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
+    }
+
     /**
      * 2. Interés corriente, capital contractual, servicios, mora y cobranza del periodo. Las
      * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
      * el Excel tal cual.
      *
+     * @param p                     el periodo que se causa
      * @param cuotasVencidasPrevias cuotas atrasadas que cuentan para los umbrales de cobranza y de suspensión: las de
      *                              periodos anteriores y, con {@code umbralesCuentanCuotaEnCurso} (R9-COBRO-MOMENTO),
      *                              también la del periodo en curso si queda atrasado (lo decide el motor con la
@@ -46,8 +51,12 @@ final class Causador {
      * @param cierraElCredito       si el periodo tiene una dación o una retoma: con {@code SIEMPRE} (R10, D70) no causa
      *                              servicios porque la recuperación los suspende por completo
      */
-    Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia,
-            int cuotasVencidasPrevias, int diasCobranza, boolean cierraElCredito) {
+    Causacion causar(PeriodoACausar p, int cuotasVencidasPrevias, int diasCobranza, boolean cierraElCredito) {
+        int periodo = p.numero();
+        BigDecimal saldoInicial = p.saldoInicial();
+        boolean sinPagoSinMora = p.sinPagoSinMora();
+        int dias = p.dias();
+        boolean alDia = p.alDia();
         ReglasNegocio reglas = s.reglas();
         BigDecimal tasa = s.tasas.periodica();
         boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
@@ -219,12 +228,12 @@ final class Causador {
 
     /**
      * Numerador del cociente de cobranza: lo pendiente al iniciar el periodo. Con {@code CUOTAS_VENCIDAS}, lo que fue
-     * cuota (capital vencido + interés corriente + servicios pendientes); con {@code TODO_PENDIENTE} (supuesto de
+     * cuota (capital vencido + interés corriente + servicios pendientes); con {@code TOTAL_PENDIENTE} (supuesto de
      * NEGOCIO) además la mora y la cobranza pendientes.
      */
     BigDecimal saldoEnMora() {
         BigDecimal cuotas = sumar(s.capitalVencido, s.cxcInteres, s.cxcServicios.total());
-        return s.reglas().baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TODO_PENDIENTE
+        return s.reglas().baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TOTAL_PENDIENTE
                 ? sumar(cuotas, s.cxcMora, s.cxcCobranza) : cuotas;
     }
 
