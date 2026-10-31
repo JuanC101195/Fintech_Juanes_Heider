@@ -101,7 +101,7 @@ class CarteraControllerTest {
                     .andExpect(jsonPath("$.perfiles.EXCEL.plazoLimiteMeses").value(org.hamcrest.Matchers.nullValue()))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.modalidadUsura").value("MISMA_CUOTA"))
                     .andExpect(jsonPath("$.perfiles.NEGOCIO.margenUsura").value("1"))
-                    .andExpect(jsonPath("$.claves", hasSize(26)))
+                    .andExpect(jsonPath("$.claves", hasSize(30)))
                     .andExpect(jsonPath("$.claves[0].clave").value("prelacion"))
                     .andExpect(jsonPath("$.archivoNegocio").value("config/reglas-negocio.properties"));
         }
@@ -282,11 +282,15 @@ class CarteraControllerTest {
             // la 42 los suspende (solo seguro), así que el abono ya no los paga: 388.982,59 → 467.609,83. Ronda 9: la 41
             // (2.ª cuota atrasada, R9-COBRO-MOMENTO) ya cobra 40.000 y suspende fondo y asistencia (−59.627,79 + 40.000), y
             // las semanas 40 a 42 suman el seguro todo riesgo con IVA (3 × 4.864,32 = 14.592,95; el resto, menos de un peso,
-            // son los residuos del redondeo al peso): 467.609,83 → 462.575,83.
+            // son los residuos del redondeo al peso): 467.609,83 → 462.575,83. Ronda 10 (D70, D71): los servicios se causan
+            // siempre (la 41 y la 42 vuelven a causar fondo y asistencia, +2 × 59.627,79) y la cobranza va por cociente:
+            // al iniciar la 41 y la 42 el saldo en mora no supera 2 cuotas totales, así que no hay cobranza (−2 × 40.000);
+            // el resto, menos de un peso, son residuos del redondeo al peso: 462.575,83 → 501.831,83.
             assertThat(new BigDecimal(semana.get("pendientesPagadosExtra").get("total").asString()))
-                    .isCloseTo(new BigDecimal("462575.83"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
+                    .isCloseTo(new BigDecimal("501831.83"), org.assertj.core.data.Offset.offset(BigDecimal.ONE));
             assertThat(semana.get("estado").asString()).isEqualTo("VIGENTE_AL_DIA");
-            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(85);
+            // Ronda 10: el abono paga 39.256 más de pendientes y va menos a capital: el crédito termina un periodo después.
+            assertThat(r.get("resumen").get("periodoFinal").asInt()).isEqualTo(86);
             assertThat(r.get("instrucciones").size()).isEqualTo(4);
             assertThat(r.get("instrucciones").get(3).get("tipo").asString()).isEqualTo("ABONO_EXTRA");
             assertThat(r.get("instrucciones").get(3).get("valor").asString()).isEqualTo("1500000");

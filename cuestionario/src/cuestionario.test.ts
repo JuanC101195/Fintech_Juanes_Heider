@@ -78,9 +78,22 @@ describe('preguntas', () => {
     }
     expect(TODAS.find((p) => p.id === 'R11-CONTABILIDAD-SEGURO-IVA')!.respondida!.respuesta).toContain('11.900')
 
+    // El rediseño de servicios y cobranza (D70 a D73): el contador queda con salvedad (supuestos de la ronda 12).
+    for (const id of ['R10-CONTADOR-VENCIDAS', 'R10-PERIODO-ATRASADO', 'R11-SEGUROS-TRAS-SUSPENSION']) {
+      const p = TODAS.find((x) => x.id === id)!
+      expect(p.respondida!.referencia, id).toBe('Rondas 10 y 11')
+      expect(p.respondida!.fecha, id).toBe('31 oct 2026')
+    }
+    expect(TODAS.find((p) => p.id === 'R10-CONTADOR-VENCIDAS')!.respondida!.nota).toContain('R12-COBRANZA-SALDO-MORA')
+    expect(TODAS.find((p) => p.id === 'R10-CONTADOR-VENCIDAS')!.respondida!.respuesta).toContain('> 2')
+    expect(TODAS.find((p) => p.id === 'R10-PERIODO-ATRASADO')!.respondida!.nota).toBeUndefined()
+    expect(TODAS.find((p) => p.id === 'R11-SEGUROS-TRAS-SUSPENSION')!.respondida!.nota).toBeUndefined()
+
     expect(PREGUNTAS.map((p) => p.id).sort()).toEqual([
-      'R10-CONTADOR-VENCIDAS', 'R10-JUSTIFICACIONES', 'R10-PERIODO-ATRASADO', 'R10-VALOR-MOTO-REENTREGADA',
-      'R11-SEGUROS-TRAS-SUSPENSION', 'R12-IVA-FONDO-ASISTENCIAS', 'R12-PRIMERA-CUOTA-DETALLE',
+      'R10-JUSTIFICACIONES', 'R10-VALOR-MOTO-REENTREGADA',
+      'R12-COBRANZA-DENOMINADOR', 'R12-COBRANZA-PERIODICIDADES', 'R12-COBRANZA-SALDO-MORA', 'R12-CUENTA-TERCEROS',
+      'R12-GIRO-TERCEROS', 'R12-IVA-FONDO-ASISTENCIAS', 'R12-MARCA-POR-COCIENTE', 'R12-PRIMERA-CUOTA-DETALLE',
+      'R12-SERVICIOS-CIERRE', 'R12-SERVICIOS-DESPUES-PLAZO', 'R12-VALOR-EXIGIBLE',
     ])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
@@ -101,6 +114,7 @@ describe('preguntas', () => {
       expect(p.previsualizacion, p.id).toBeUndefined()
       for (const o of p.opciones) expect(o.ajustes, `${p.id} ${o.codigo}`).toBeUndefined()
     }
+    for (const p of TODAS.filter((x) => x.id.startsWith('R11-'))) expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
     for (const p of PREGUNTAS) expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
   })
 
@@ -133,7 +147,7 @@ describe('preguntas', () => {
   it('la ronda 12 pregunta los detalles que dejaron las respuestas del 31 oct: primera cuota proporcional e IVA del fondo y las asistencias', () => {
     const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
     const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
-    expect(PREGUNTAS.filter((p) => p.id.startsWith('R12-'))).toHaveLength(2)
+    expect(PREGUNTAS.filter((p) => p.id.startsWith('R12-'))).toHaveLength(11)
     expect(cod('R12-PRIMERA-CUOTA-DETALLE')).toEqual(['se-pierden', 'se-difieren', 'solo-interes-y-servicios', 'otro'])
     expect(q('R12-PRIMERA-CUOTA-DETALLE').contexto).toContain('96.000')
     expect(q('R12-PRIMERA-CUOTA-DETALLE').bloque).toBe('Pagos, mora y cobranza')
@@ -275,7 +289,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ 'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'ambos-seguros' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
+    expect(avance({ 'R12-SERVICIOS-CIERRE': { codigo: 'sin-servicios-cierre-cuentas-orden' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -285,7 +299,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { 'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'otro', texto: 'Comité trimestral' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Así' } },
+    respuestas: { 'R12-SERVICIOS-CIERRE': { codigo: 'otro', texto: 'Comité trimestral' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -295,7 +309,7 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'R11-SEGUROS-TRAS-SUSPENSION')).toContain('Comité trimestral')
+    expect(filas.find((f) => f[0] === 'R12-SERVICIOS-CIERRE')).toContain('Comité trimestral')
     expect(filas.find((f) => f[0] === 'R12-IVA-FONDO-ASISTENCIAS')).toContain('Así')
     expect(filas.find((f) => f[0] === 'R12-IVA-FONDO-ASISTENCIAS')![10]).toBe('Sí')
   })
@@ -330,7 +344,7 @@ describe('exportación a Excel', () => {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
         'R12-IVA-FONDO-ASISTENCIAS': { codigo: 'igual-que-seguro', comentario: 'Así lo hacemos hoy' },
-        'R11-SEGUROS-TRAS-SUSPENSION': { codigo: 'otro', texto: 'Comité trimestral' },
+        'R12-SERVICIOS-CIERRE': { codigo: 'otro', texto: 'Comité trimestral' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -354,8 +368,8 @@ describe('exportación a Excel', () => {
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
     expect(fila('R4-QUIN')).toBeUndefined()
-    expect(fila('R11-SEGUROS-TRAS-SUSPENSION').getCell(8).value).toBe('Comité trimestral')
-    expect(fila('R11-SEGUROS-TRAS-SUSPENSION').getCell(11).value).toBe('Sí')
+    expect(fila('R12-SERVICIOS-CIERRE').getCell(8).value).toBe('Comité trimestral')
+    expect(fila('R12-SERVICIOS-CIERRE').getCell(11).value).toBe('Sí')
     expect(fila('R12-IVA-FONDO-ASISTENCIAS').getCell(11).value).toBe('Sí')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!

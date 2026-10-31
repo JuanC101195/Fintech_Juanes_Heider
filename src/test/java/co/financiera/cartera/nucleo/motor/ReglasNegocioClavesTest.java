@@ -104,7 +104,8 @@ class ReglasNegocioClavesTest {
 
     @Test
     void lasClavesSonLosComponentesDelRecordEnSuOrden() {
-        // Las 26 (las 20 de antes, las 4 de la ronda 8 y las 2 de la ronda 9), también en CLAVES_MOTOR de herramientas/importar_respuestas.py.
+        // Las 30 (las 20 de antes, las 4 de la ronda 8, las 2 de la ronda 9 y las 4 de la ronda 10), también en CLAVES_MOTOR
+        // de herramientas/importar_respuestas.py.
         assertThat(ReglasNegocio.CLAVES).containsExactly("prelacion", "formulaMora", "baseInteres",
                 "topeCobranzaPorPago", "baseServicios", "serviciosDespuesDelPlazo", "moraAntesDeRecuperacion",
                 "aplicacionAbono", "interesPrepagoPorDias", "margenUsura", "modalidadUsura",
@@ -112,6 +113,7 @@ class ReglasNegocioClavesTest {
                 "cambioTasaSobreCapitalVigente", "cobranzaDiaria", "cuotasVencidasParaRecuperacion", "cuotasVencidasParaCobranza",
                 "prorrateoPrimeraCuota", "diasMora", "cobranzaPorPeriodo", "cuotasVencidasParaSuspenderServicios",
                 "redondeoCuotaAlPeso", "sobranteComoCuentaPorPagar", "umbralesCuentanCuotaEnCurso",
-                "seguroTodoRiesgoPorcentajeMensual");
+                "seguroTodoRiesgoPorcentajeMensual", "causacionServicios", "umbralCocienteCobranza", "baseMoraCobranza",
+                "comparacionCobranza");
     }
 }

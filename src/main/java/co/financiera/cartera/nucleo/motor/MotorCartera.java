@@ -212,10 +212,14 @@ public final class MotorCartera {
             // 2. Causación del periodo. R9-COBRO-MOMENTO (lectura A): con umbralesCuentanCuotaEnCurso los umbrales de
             // cobranza y de suspensión cuentan también la cuota de este periodo si queda atrasada; como la causación va
             // antes del pago, se decide con la instrucción del periodo (atrasaElPeriodo), no con el pago ya repartido.
-            boolean atrasado = escenario.reglas().umbralesCuentanCuotaEnCurso() && atrasaElPeriodo(pago);
+            // R10-CONTADOR-VENCIDAS (ADR 0006): con el cociente de cobranza (umbralCocienteCobranza) la cobranza ya no
+            // depende de la instrucción del periodo y los umbrales por cuotas no se usan.
+            boolean atrasado = escenario.reglas().umbralesCuentanCuotaEnCurso() && !escenario.reglas().cobranzaPorCociente()
+                    && atrasaElPeriodo(pago);
             int cuotasParaUmbrales = atrasado ? cuotasVencidas + 1 : cuotasVencidas;
-            Causacion causado = causador.causar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias),
-                    cuotasParaUmbrales, diasParaCobranza(pago, dias, atrasado));
+            Causacion causado = causador.causar(
+                    new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias)),
+                    cuotasParaUmbrales, diasParaCobranza(pago, dias, atrasado), ordenes.cierre != null);
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el

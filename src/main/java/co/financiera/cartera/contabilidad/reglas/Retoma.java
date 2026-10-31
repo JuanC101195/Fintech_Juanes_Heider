@@ -30,6 +30,21 @@ import java.util.Optional;
 public final class Retoma implements ReglaContable {
 
     /**
+     * {@code null} = extinción del Excel (todos los servicios contra sus cuentas por cobrar). Con cuenta (R10, D72) la
+     * parte de los servicios que cubre la moto es recaudo efectivo y va a esa cuenta ({@link ReglaContable#extincionConRecaudo}).
+     */
+    private final Cuenta terceros;
+
+    /** Como el Excel (Caso4_Retoma AJ13:AM22). */
+    public Retoma() {
+        this(null);
+    }
+
+    public Retoma(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
+    /**
      * Retoma con excedente, o sin excedente ni faltante porque el costo de la recuperación se comió el
      * excedente y lo asumió la financiera (R4-R2, sin cargo al fondo).
      */
@@ -45,7 +60,7 @@ public final class Retoma implements ReglaContable {
         }
         List<Linea> lineas = new ArrayList<>();
         lineas.add(Linea.debito(Cuenta.INVENTARIO_MOTOS, m.inventario(), "Ingreso de la moto por el valor definido para el evento"));
-        lineas.addAll(ReglaContable.extincion(m.extinguido()));
+        lineas.addAll(terceros == null ? ReglaContable.extincion(m.extinguido()) : ReglaContable.extincionConRecaudo(m, terceros));
         lineas.addAll(ReglaContable.costosRecuperacion(m));
         lineas.add(Linea.credito(Cuenta.CXP_DEUDOR, m.cxpDeudor(), "Excedente a favor del deudor"));
         return ReglaContable.asiento(m, lineas);

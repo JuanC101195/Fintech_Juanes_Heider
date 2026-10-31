@@ -30,6 +30,8 @@ public final class CobranzaYMora implements ReglaContable {
 
     /** Cuenta de ingreso de la cobranza causada: la del Excel o la no operacional de Diego (R4-COBRANZA-CONTABLE). */
     private final Cuenta ingresoCobranza;
+    /** Cuenta de los servicios recaudados por cuenta de terceros (ver el constructor). */
+    private final Cuenta terceros;
 
     /** Como el Excel (Caso9_Cobranza AE15:AG16): crédito a "Ingresos por cobranza". */
     public CobranzaYMora() {
@@ -37,7 +39,17 @@ public final class CobranzaYMora implements ReglaContable {
     }
 
     public CobranzaYMora(Cuenta ingresoCobranza) {
+        this(ingresoCobranza, Cuenta.CXP_SERVICIOS_TERCEROS);
+    }
+
+    /**
+     * @param terceros cuenta de los servicios recaudados por cuenta de terceros: "CxP servicios a terceros" del Excel o,
+     *                 con {@code causacionServicios = SIEMPRE} (D72), "Ingresos recibidos para terceros" (PUC 2815,
+     *                 provisional)
+     */
+    public CobranzaYMora(Cuenta ingresoCobranza, Cuenta terceros) {
         this.ingresoCobranza = java.util.Objects.requireNonNull(ingresoCobranza, "ingresoCobranza");
+        this.terceros = java.util.Objects.requireNonNull(terceros, "terceros");
     }
 
     /** Verdadero si el movimiento es un pago tardío con gastos de cobranza (columna H &gt; 0). */
@@ -63,7 +75,7 @@ public final class CobranzaYMora implements ReglaContable {
                 credito(Cuenta.CXC_INTERES_CORRIENTE, m.pagoInteresCorriente(), "Tercera prioridad"),
                 // El Excel la llama "Servicios complementarios (FCC, asistencia, seguro)"; el caso 1 usa
                 // "CxP servicios a terceros" para el mismo recaudo por cuenta de terceros (R-9.11).
-                credito(Cuenta.CXP_SERVICIOS_TERCEROS,
+                credito(terceros,
                         ReglaContable.serviciosSinTodoRiesgo(m.pagoServicios(), m.pagosServicios()), "Cuarta prioridad"),
                 credito(Cuenta.CARTERA_VIGENTE, m.pagoCapital(), "Remanente aplicado a capital")),
                 ReglaContable.seguroTodoRiesgo(m.pagoServicios(), m.pagosServicios())));

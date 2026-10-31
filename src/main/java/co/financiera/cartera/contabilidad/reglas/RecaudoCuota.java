@@ -36,6 +36,22 @@ import java.util.Optional;
  */
 public final class RecaudoCuota implements ReglaContable {
 
+    /**
+     * Cuenta de los servicios recaudados por cuenta de terceros: "CxP servicios a terceros" del Excel o, con
+     * {@code causacionServicios = SIEMPRE} (R10-CONTADOR-VENCIDAS, D72), "Ingresos recibidos para terceros" (PUC 2815,
+     * provisional). La resuelve {@code Contabilizador.para}.
+     */
+    private final Cuenta terceros;
+
+    /** Con la cuenta del Excel ("CxP servicios a terceros"). */
+    public RecaudoCuota() {
+        this(Cuenta.CXP_SERVICIOS_TERCEROS);
+    }
+
+    public RecaudoCuota(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
     @Override
     public Optional<Asiento> contabilizar(Movimiento m) {
         if (!esRecaudoNormal(m)) {
@@ -45,7 +61,7 @@ public final class RecaudoCuota implements ReglaContable {
                 Linea.debito(Cuenta.CAJA, m.pagoRecibido(), "Recaudo de la cuota total"),
                 Linea.credito(Cuenta.INGRESOS_INTERESES, m.pagoInteresCorriente(), "Interés corriente causado"),
                 Linea.credito(Cuenta.CARTERA_VIGENTE, m.pagoCapital(), "Amortización de capital"),
-                Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS,
+                Linea.credito(terceros,
                         ReglaContable.serviciosSinTodoRiesgo(m.pagoServicios(), m.pagosServicios()),
                         "Servicios recaudados por cuenta de terceros")),
                 ReglaContable.seguroTodoRiesgo(m.pagoServicios(), m.pagosServicios())));

@@ -9,7 +9,6 @@ import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoContractual;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
 import co.financiera.cartera.simulaciones.EscenariosExcel;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +28,13 @@ class RespuestasDiegoRonda8Test {
     private final MotorCartera motor = new MotorCartera();
 
     /**
-     * NEGOCIO con la lectura B de los umbrales (la de la ronda 8: solo cuentan las cuotas atrasadas de periodos
-     * anteriores). La lectura A de la ronda 9 (R9-COBRO-MOMENTO) se prueba en {@code RespuestasDiegoRonda9Test}.
+     * NEGOCIO de la ronda 8: suspensión de servicios por umbral ({@code SUSPENDER_POR_UMBRAL}, 2) y cobranza por cuotas
+     * vencidas con la lectura B de los umbrales (solo cuentan las cuotas atrasadas de periodos anteriores). La lectura A
+     * de la ronda 9 (R9-COBRO-MOMENTO) se prueba en {@code RespuestasDiegoRonda9Test}; el rediseño de la ronda 10 (D70,
+     * D71: servicios siempre y cobranza por cociente), en {@code RespuestasDiegoRonda10Test}.
      */
     private static ReglasNegocio negocio() {
-        try {
-            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion()).conUmbralesCuentanCuotaEnCurso(false);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return ReglasNegocioConfiguradaTest.negocioRonda9().conUmbralesCuentanCuotaEnCurso(false);
     }
 
     private static Movimiento fila(List<Movimiento> m, int periodo) {
@@ -46,9 +43,12 @@ class RespuestasDiegoRonda8Test {
 
     @Test
     void lasClavesDeLaRondaOchoEstanEnNegocioYNoEnElExcel() {
-        ReglasNegocio n = negocio();
+        ReglasNegocio n = ReglasNegocioConfiguradaTest.negocio();
         assertThat(n.cobranzaPorPeriodo()).isEqualByComparingTo(CUARENTA_MIL);
-        assertThat(n.cuotasVencidasParaSuspenderServicios()).isEqualTo(2);
+        // D70 (ronda 10): NEGOCIO ya no suspende servicios por atraso; la clave de la ronda 8 sale del archivo.
+        assertThat(n.cuotasVencidasParaSuspenderServicios()).isNull();
+        assertThat(n.causacionServicios()).isEqualTo(ReglasNegocio.CausacionServicios.SIEMPRE);
+        assertThat(negocio().cuotasVencidasParaSuspenderServicios()).isEqualTo(2);
         assertThat(n.redondeoCuotaAlPeso()).isTrue();
         assertThat(n.sobranteComoCuentaPorPagar()).isTrue();
         assertThat(ReglasNegocio.EXCEL.cobranzaPorPeriodo()).isNull();
@@ -146,7 +146,7 @@ class RespuestasDiegoRonda8Test {
         @Test
         void conD17ElPeriodoSinPagoSoloCausabaElSeguro() {
             Escenario e = new Escenario(Operacion.ejemploExcel(), P).entre(10, 11, new SinPago(true))
-                    .conReglas(negocio().conCuotasVencidasParaSuspenderServicios(null));
+                    .conReglas(negocio().conCausacionServicios(ReglasNegocio.CausacionServicios.SOLO_AL_DIA));
             Movimiento diez = fila(motor.ejecutar(e), 10);
             assertThat(diez.serviciosCausados().fondoGarantias()).isZero();
             assertThat(diez.serviciosCausados().seguro()).isPositive();

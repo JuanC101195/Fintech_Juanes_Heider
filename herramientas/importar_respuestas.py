@@ -29,7 +29,8 @@ CLAVES_MOTOR = {'prelacion', 'formulaMora', 'baseInteres', 'topeCobranzaPorPago'
                 'cambioTasaSobreCapitalVigente', 'cobranzaDiaria', 'cuotasVencidasParaRecuperacion', 'cuotasVencidasParaCobranza',
                 'prorrateoPrimeraCuota', 'diasMora', 'cobranzaPorPeriodo', 'cuotasVencidasParaSuspenderServicios',
                 'redondeoCuotaAlPeso', 'sobranteComoCuentaPorPagar', 'umbralesCuentanCuotaEnCurso',
-                'seguroTodoRiesgoPorcentajeMensual'}
+                'seguroTodoRiesgoPorcentajeMensual', 'causacionServicios', 'umbralCocienteCobranza', 'baseMoraCobranza',
+                'comparacionCobranza'}
 # Preguntas cuyos ajustes NO se aplican porque el comentario de negocio contradice la opción marcada
 # (la opción era de relleno: el formulario no guardaba sin elegir una). Se versiona aquí; para
 # descartar otra pregunta basta agregar su ID. Aparecen en el md como "Opción contradicha por el comentario".

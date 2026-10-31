@@ -2,24 +2,33 @@
 
 Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reproduce el Excel tal cual** en los 9 casos; estas preguntas son para decidir si el Excel es la regla final. El detalle de cada una está en `docs/reglas/caso-N.md`.
 
-> **Estado al 2026-10-31 (el detalle de rondas es del 22 oct).** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. Las rondas 7, 8 y 9 ya están respondidas (D56 a D64). Diego respondió el 31 oct 6 de las rondas 10 y 11 (`respuestas-diego-2026-10-31-ronda10-11.md`, D65 a D69). **Abiertas hoy:** 4 de la ronda 10 (backtesting), 1 de la ronda 11 y las 2 de la ronda 12 (detalles de lo que respondió el 31 oct, abajo).
+> **Estado al 2026-10-31 (el detalle de rondas es del 22 oct).** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. Las rondas 7, 8 y 9 ya están respondidas (D56 a D64). Diego respondió el 31 oct 9 de las 11 de las rondas 10 y 11 (`respuestas-diego-2026-10-31-ronda10-11.md`, D65 a D73; el rediseño de servicios y cobranza en la ADR 0006). **Abiertas hoy:** 2 de la ronda 10 (backtesting) y las 11 de la ronda 12 (detalles de lo que respondió el 31 oct, abajo).
 
 ## Ronda 12 · Abierta (31 oct 2026)
 
-Detalles que dejaron las respuestas de Diego del 31 oct a las rondas 10 y 11 (`respuestas-diego-2026-10-31-ronda10-11.md`). Son 2 preguntas; aún no tienen clave del motor.
+Detalles que dejaron las respuestas de Diego del 31 oct a las rondas 10 y 11 (`respuestas-diego-2026-10-31-ronda10-11.md`). Son 11 preguntas; aún no tienen clave del motor propia. Las 9 que salen de R10-CONTADOR-VENCIDAS (D70 a D73, ADR 0006) confirman supuestos provisionales que el motor ya aplica.
 
 | ID | Pregunta | Opciones |
 |---|---|---|
 | R12-PRIMERA-CUOTA-DETALLE | Con la primera cuota proporcional a los días (la cuota entera: capital, interés y servicios), ¿qué pasa con el capital y los servicios que esa cuota no cobra? Ejemplo: con 3 días de 7, el cliente paga 96.000 de 225.000. | (a) No se cobran después: el plan sigue igual y el capital no cobrado queda en el saldo hasta la última cuota. (b) Se reparten en las cuotas siguientes y se recalcula la cuota. (c) Se prorratean interés y servicios, pero el capital va completo. (d) Otra regla (aclarar qué pasa si la entrega es más de un periodo antes del primer vencimiento). |
 | R12-IVA-FONDO-ASISTENCIAS | El IVA del fondo de garantías y de las asistencias, ¿también se segmenta en la contabilidad como el del seguro (el IVA nunca es de la financiera frente a la DIAN)? | (a) Sí, igual que el seguro. (b) No, el IVA sigue incluido en su cuenta como hoy. (c) Otro tratamiento. |
+| R12-COBRANZA-SALDO-MORA | Cobranza por cociente: ¿qué entra en el «saldo total en mora», es estrictamente más de 2 y cuándo se mide? Supuesto del motor: todo lo pendiente (capital vencido, interés, servicios, mora y cobranza), estrictamente > 2, al cierre de cada periodo (la cobranza va en el siguiente). | (a) Todo lo pendiente, estrictamente > 2 (supuesto). (b) Solo lo que fue cuota, estrictamente > 2. (c) Todo lo pendiente, desde 2. (d) Otra regla. |
+| R12-COBRANZA-DENOMINADOR | ¿El «valor total de la cuota» es la cuota vigente (tras un abono a menor cuota o un cambio de tasa) o la pactada al originar? | (a) La cuota vigente + servicios (supuesto). (b) La cuota pactada + servicios. (c) Otra regla. |
+| R12-COBRANZA-PERIODICIDADES | ¿El umbral de 2 cuotas y el valor por periodo son iguales en semanal, quincenal y mensual? | (a) Iguales en las tres (supuesto). (b) Umbral en días de atraso, igual para todas. (c) Otro umbral o valor por periodicidad. |
+| R12-MARCA-POR-COCIENTE | La marca «listo para recuperar», ¿sigue por eventos (2 periodos atrasados) o también por el cociente de 2 cuotas? | (a) Por eventos, como hoy. (b) Por el cociente, como la cobranza. (c) Otra regla. |
+| R12-SERVICIOS-CIERRE | En la dación o la retoma, ¿el periodo del cierre causa servicios y qué pasa con los cobrados que nunca se recaudaron? Supuesto: el periodo del cierre no los causa; lo que cubre la moto es recaudo efectivo y lo demás se extingue contra las CxC. | (a) Sin servicios en el cierre; los no recaudados a cuentas de orden. (b) Sin servicios en el cierre; los no recaudados se le pagan igual al tercero. (c) El cierre sí causa servicios. (d) Otra regla. |
+| R12-SERVICIOS-DESPUES-PLAZO | «El cliente siempre paga los servicios»: ¿también después de la última cuota pactada, mientras siga debiendo? | (a) Solo dentro del plazo (como hoy). (b) Mientras haya deuda. (c) Otra regla. |
+| R12-VALOR-EXIGIBLE | El valor a pagar que se le muestra al cliente, ¿incluye lo pendiente o solo la cuota del periodo? | (a) La cuota más todo lo pendiente. (b) Solo la cuota, lo pendiente aparte. (c) Otra forma. |
+| R12-GIRO-TERCEROS | ¿Cada cuánto se gira a los terceros lo recaudado por sus servicios? | (a) Mensual, para todos (como hoy). (b) Depende del tercero. (c) Otra frecuencia. |
+| R12-CUENTA-TERCEROS | ¿En qué cuenta del PUC se registran los servicios recaudados para terceros? Provisional: «Ingresos recibidos para terceros» (PUC 2815). | (a) 2815. (b) Una CxP a terceros (PUC 23). (c) Otra cuenta. (d) Lo consulta con contabilidad. |
 
-## Ronda 11 · Abierta (30 oct 2026)
+## Ronda 11 · Cerrada (30 oct 2026; la última se respondió el 31 oct)
 
 Seguimiento de la ronda 9, que Diego respondió el 30 oct (`respuestas-diego-2026-10-30-ronda9.md`, D62 a D64). Eran 4 preguntas del bloque Servicios complementarios; el 31 oct Diego respondió 3 (base, periodización y contabilidad del seguro; D68 y D69) y queda 1 abierta. Aún no tienen clave del motor; mientras responde, el motor hace el supuesto indicado.
 
 | ID | Pregunta | Opciones |
 |---|---|---|
-| R11-SEGUROS-TRAS-SUSPENSION | Tras 2 periodos atrasados, cuando «solo se causa el seguro», ¿se siguen causando los dos seguros (vida y todo riesgo) o solo uno? | (a) Los dos (supuesto provisional del motor). (b) Solo el de vida. (c) Solo el todo riesgo. (d) Otra regla. |
+| R11-SEGUROS-TRAS-SUSPENSION | Tras 2 periodos atrasados, cuando «solo se causa el seguro», ¿se siguen causando los dos seguros (vida y todo riesgo) o solo uno? | **Respondida el 31 oct (D70):** ya no hay suspensión por atraso; los dos seguros se causan siempre. |
 
 ## Ronda 10 · Abierta (29 oct 2026)
 
@@ -36,9 +45,9 @@ Lo que encontramos:
 
 | ID | Pregunta | Opciones |
 |---|---|---|
-| R10-PERIODO-ATRASADO | ¿Qué cuenta como un periodo atrasado? | (a) Cualquier saldo pendiente, aunque sea pequeño (como hoy). (b) Solo si falta más de un porcentaje de la cuota (indique el porcentaje; por ejemplo, 10 %). (c) Solo pasados unos días de gracia después del vencimiento (indique los días). (d) Otra regla. |
+| R10-PERIODO-ATRASADO | ¿Qué cuenta como un periodo atrasado? | **Respondida el 31 oct (D73):** el capital no cubierto queda vencido, se suma a la cuota siguiente y genera mora (como hoy). |
 | R10-JUSTIFICACIONES | Con una justificación aprobada (enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía, en fiscalía), ¿qué se perdona mientras dura? | La mora, la cobranza, los servicios (fondo, asistencia, seguro), que el periodo cuente como atrasado para la marca de recuperación, o nada. En el comentario: si la moto retirada temporalmente (en oficina, en realquiler, pendiente de triage) debe congelar el crédito, y qué hacer con los «permisos de geocerca» y las «motos varadas». |
-| R10-CONTADOR-VENCIDAS | ¿Cómo debe contarse el número de cuotas vencidas de un crédito? Además: ¿la marca «listo para recuperar» debe poder quitarse cuando el cliente se pone al día? | (a) Por deuda acumulada: deuda vencida pendiente dividida entre la cuota (baja al pagar de más o ponerse al día). (b) Por eventos, sin reinicio (como hoy). (c) Por eventos, con reinicio al pagar una cuota completa más lo vencido o ponerse al día. (d) Otra regla (aclarar también lo de la marca). |
+| R10-CONTADOR-VENCIDAS | ¿Cómo debe contarse el número de cuotas vencidas de un crédito? Además: ¿la marca «listo para recuperar» debe poder quitarse cuando el cliente se pone al día? | **Respondida el 31 oct con salvedad (D70 a D72, ADR 0006):** servicios siempre en la cuota, cuenta con terceros solo con recaudo, cobranza cuando saldo en mora / cuota total > 2, la dación o la retoma suspenden los servicios. Supuestos en la ronda 12. |
 | R10-VALOR-MOTO-REENTREGADA | Cuando una moto se entrega a un segundo cliente, ¿cuál es el valor que se financia? | (a) Valor de la moto usada según avalúo. (b) Valor en libros (costo menos depreciación). (c) Lo no recuperado de la inversión original. (d) Solo el costo de reacondicionarla. (e) Otra regla. En el comentario: cómo se calcula hoy. |
 
 ## Bloque 1 · Las que más cambian el cálculo (resolver primero)

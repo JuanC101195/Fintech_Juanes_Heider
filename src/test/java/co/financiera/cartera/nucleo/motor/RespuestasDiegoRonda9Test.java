@@ -21,7 +21,6 @@ import co.financiera.cartera.nucleo.motor.Instruccion.PagoParcial;
 import co.financiera.cartera.nucleo.motor.Instruccion.PagoValor;
 import co.financiera.cartera.nucleo.motor.Instruccion.SinPago;
 import co.financiera.cartera.simulaciones.EscenariosExcel;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +55,12 @@ class RespuestasDiegoRonda9Test {
     private static final BigDecimal IVA_TODO_RIESGO = new BigDecimal("776.6557");
     private final MotorCartera motor = new MotorCartera();
 
+    /**
+     * NEGOCIO tal como quedó tras la ronda 9 (suspensión por umbral y cobranza por cuotas con la lectura A). El rediseño
+     * de la ronda 10 (D70, D71) se prueba en {@code RespuestasDiegoRonda10Test}.
+     */
     private static ReglasNegocio negocio() {
-        try {
-            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion());
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        return ReglasNegocioConfiguradaTest.negocioRonda9();
     }
 
     private static Movimiento fila(List<Movimiento> m, int periodo) {
@@ -74,6 +73,8 @@ class RespuestasDiegoRonda9Test {
 
     @Test
     void lasClavesDeLaRondaNueveEstanEnNegocioYNoEnElExcel() {
+        // D71 (ronda 10): NEGOCIO ya no fija umbralesCuentanCuotaEnCurso (decide el cociente de cobranza).
+        assertThat(ReglasNegocioConfiguradaTest.negocio().umbralesCuentanCuotaEnCurso()).isFalse();
         ReglasNegocio n = negocio();
         assertThat(n.umbralesCuentanCuotaEnCurso()).isTrue();
         assertThat(n.seguroTodoRiesgoPorcentajeMensual()).isEqualByComparingTo("0.003");

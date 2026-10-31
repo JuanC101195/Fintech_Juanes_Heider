@@ -37,6 +37,22 @@ import java.util.Optional;
  */
 public final class AbonoExtraordinario implements ReglaContable {
 
+    /**
+     * Cuenta de los servicios recaudados por cuenta de terceros: "CxP servicios a terceros" del Excel o, con
+     * {@code causacionServicios = SIEMPRE} (R10-CONTADOR-VENCIDAS, D72), "Ingresos recibidos para terceros" (PUC 2815,
+     * provisional). La resuelve {@code Contabilizador.para}.
+     */
+    private final Cuenta terceros;
+
+    /** Con la cuenta del Excel ("CxP servicios a terceros"). */
+    public AbonoExtraordinario() {
+        this(Cuenta.CXP_SERVICIOS_TERCEROS);
+    }
+
+    public AbonoExtraordinario(Cuenta terceros) {
+        this.terceros = terceros;
+    }
+
     @Override
     public Optional<Asiento> contabilizar(Movimiento m) {
         co.financiera.cartera.nucleo.Servicios pendientes = m.pendientesPagadosExtra().servicios();
@@ -51,7 +67,7 @@ public final class AbonoExtraordinario implements ReglaContable {
                 Linea.credito(Cuenta.CXC_INTERES_MORA, m.pendientesPagadosExtra().mora(), "Pendiente de mora (prelación 2)"),
                 Linea.credito(Cuenta.CXC_INTERES_CORRIENTE, m.pendientesPagadosExtra().interesCorriente(),
                         "Pendiente de interés corriente (prelación 3)"),
-                Linea.credito(Cuenta.CXP_SERVICIOS_TERCEROS,
+                Linea.credito(terceros,
                         ReglaContable.serviciosSinTodoRiesgo(pendientes.total(), pendientes),
                         "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"),
                 Linea.credito(Cuenta.CARTERA_VENCIDA, m.pendientesPagadosExtra().capital(), "Capital vencido recuperado (prelación 7)"),

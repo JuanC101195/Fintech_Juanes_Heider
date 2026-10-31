@@ -287,9 +287,10 @@ class HallazgosAuditoriaTest {
             assertThat(tres.serviciosCausados().asistencia()).as("%s", pago).isPositive();
             assertThat(tres.serviciosCausados().seguro()).as("%s", pago).isPositive();
         }
-        // Sin la clave sigue D17: el pago parcial declarado solo causa el seguro.
+        // Con la causación del Excel (SOLO_AL_DIA, D17) el pago parcial declarado solo causa el seguro.
         Movimiento d17 = MOTOR.ejecutar(new Escenario(Operacion.ejemploExcel(), P)
-                .conReglas(negocio().conCuotasVencidasParaSuspenderServicios(null)).en(3, new PagoParcial(bd("0.4"), 0))).get(3);
+                .conReglas(negocio().conCausacionServicios(ReglasNegocio.CausacionServicios.SOLO_AL_DIA))
+                .en(3, new PagoParcial(bd("0.4"), 0))).get(3);
         assertThat(d17.serviciosCausados().fondoGarantias()).isZero();
         assertThat(d17.serviciosCausados().asistencia()).isZero();
     }

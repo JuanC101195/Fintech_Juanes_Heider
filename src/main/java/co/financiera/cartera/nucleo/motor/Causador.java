@@ -34,18 +34,29 @@ final class Causador {
         return (pago instanceof PagoContractual || pago instanceof PagoAlDia || pago instanceof PagoValor) && dias == 0;
     }
 
+    /** Lo que identifica al periodo que se causa: su número, el saldo con que arranca y cómo se pagó. */
+    record PeriodoACausar(int numero, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia) {
+    }
+
     /**
      * 2. Interés corriente, capital contractual, servicios, mora y cobranza del periodo. Las
      * variantes de ReglasNegocio son las opciones que se le preguntan a negocio; EXCEL reproduce
      * el Excel tal cual.
      *
+     * @param p                     el periodo que se causa
      * @param cuotasVencidasPrevias cuotas atrasadas que cuentan para los umbrales de cobranza y de suspensión: las de
      *                              periodos anteriores y, con {@code umbralesCuentanCuotaEnCurso} (R9-COBRO-MOMENTO),
      *                              también la del periodo en curso si queda atrasado (lo decide el motor con la
      *                              instrucción del periodo, antes de causar)
+     * @param cierraElCredito       si el periodo tiene una dación o una retoma: con {@code SIEMPRE} (R10, D70) no causa
+     *                              servicios porque la recuperación los suspende por completo
      */
-    Causacion causar(int periodo, BigDecimal saldoInicial, boolean sinPagoSinMora, int dias, boolean alDia,
-            int cuotasVencidasPrevias, int diasCobranza) {
+    Causacion causar(PeriodoACausar p, int cuotasVencidasPrevias, int diasCobranza, boolean cierraElCredito) {
+        int periodo = p.numero();
+        BigDecimal saldoInicial = p.saldoInicial();
+        boolean sinPagoSinMora = p.sinPagoSinMora();
+        int dias = p.dias();
+        boolean alDia = p.alDia();
         ReglasNegocio reglas = s.reglas();
         BigDecimal tasa = s.tasas.periodica();
         boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
@@ -55,25 +66,13 @@ final class Causador {
         if (dentroDelPlazo && !sinPagoSinMora && !esCero(s.saldoPlan)) {
             capitalContractual = capitalContractual(saldoInicial, tasa);
         }
-        boolean causaServicios = !sinPagoSinMora
+        // R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D70): con SIEMPRE la dación o la retoma suspenden por completo los
+        // servicios; el periodo del cierre no los causa (el crédito se cierra en él).
+        boolean suspendidosPorCierre = cierraElCredito && reglas.causacionServicios() == ReglasNegocio.CausacionServicios.SIEMPRE;
+        boolean causaServicios = !sinPagoSinMora && !suspendidosPorCierre
                 && (dentroDelPlazo || (reglas.serviciosDespuesDelPlazo() && !esCero(saldoInicial)));
-        Servicios servicios = Servicios.NINGUNO;
-        Servicios serviciosAlDia = Servicios.NINGUNO;
-        if (causaServicios) {
-            Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
-                    ? Servicios.porCuota(saldoInicial, s.p, reglas.porcentajeTodoRiesgo()) : s.serviciosPorCuota;
-            if (reglas.cuotasVencidasParaSuspenderServicios() == null) {
-                servicios = alDia ? base : base.soloSeguro();
-                serviciosAlDia = base;
-            } else {
-                // R8-PAGO-INCOMPLETO-EN-FECHA (Diego 2026-10-28): la causación genera siempre los tres servicios, haya
-                // o no pago en la fecha (D17 deja de aplicar); con previas >= clave se suspenden fondo y asistencia y
-                // solo se causa el seguro. Lo suspendido no es "no causado por falta de pago": un abono no lo revive
-                // (R4-CASO13), por eso serviciosAlDia = servicios.
-                servicios = reglas.suspendeServicios(cuotasVencidasPrevias) ? base.soloSeguro() : base;
-                serviciosAlDia = servicios;
-            }
-        }
+        ServiciosDelPeriodo sp = causaServicios
+                ? servicios(saldoInicial, alDia, cuotasVencidasPrevias) : ServiciosDelPeriodo.NINGUNOS;
         // P5-PRORRATEO (Diego, ronda 5; ADR 0002 paso 7): en la primera cuota solo el interés se prorratea por
         // los días reales entre el desembolso y la primera fecha de pago, con la tasa diaria como el prepago por
         // días (A6); capital contractual y servicios van completos. Con 365/ppa días daría exactamente la tasa
@@ -84,8 +83,34 @@ final class Causador {
             int diasReales = s.escenario.diasPrimerPeriodo().getAsInt();
             interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
         }
-        return new Causacion(interes, capitalContractual, servicios, mora(periodo, capitalContractual, dias),
-                cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias), serviciosAlDia, prorrateada);
+        return new Causacion(interes, capitalContractual, sp.causados(), mora(periodo, capitalContractual, dias),
+                cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias), sp.alDia(), prorrateada);
+    }
+
+    /** Servicios causados en el periodo y los que se habrían causado al día (los que un abono puede revivir, R4-CASO13). */
+    private record ServiciosDelPeriodo(Servicios causados, Servicios alDia) {
+        static final ServiciosDelPeriodo NINGUNOS = new ServiciosDelPeriodo(Servicios.NINGUNO, Servicios.NINGUNO);
+    }
+
+    /** Servicios de un periodo que sí los causa, según {@link ReglasNegocio#causacionServicios()}. */
+    private ServiciosDelPeriodo servicios(BigDecimal saldoInicial, boolean alDia, int cuotasVencidasPrevias) {
+        ReglasNegocio reglas = s.reglas();
+        Servicios base = reglas.baseServicios() == ReglasNegocio.BaseServicios.SALDO
+                ? Servicios.porCuota(saldoInicial, s.p, reglas.porcentajeTodoRiesgo()) : s.serviciosPorCuota;
+        return switch (reglas.causacionServicios()) {
+            // D17 (el Excel): fondo y asistencia solo en periodos pagados al día.
+            case SOLO_AL_DIA -> new ServiciosDelPeriodo(alDia ? base : base.soloSeguro(), base);
+            // R8-PAGO-INCOMPLETO-EN-FECHA (Diego 2026-10-28): la causación genera siempre los tres servicios, haya o no
+            // pago en la fecha (D17 deja de aplicar); con previas >= clave se suspenden fondo y asistencia y solo se causa
+            // el seguro. Lo suspendido no es "no causado por falta de pago": un abono no lo revive (R4-CASO13), por eso
+            // alDia = causados. Sin la clave del umbral no se suspende nada.
+            case SUSPENDER_POR_UMBRAL -> {
+                Servicios causados = reglas.suspendeServicios(cuotasVencidasPrevias) ? base.soloSeguro() : base;
+                yield new ServiciosDelPeriodo(causados, causados);
+            }
+            // R10-CONTADOR-VENCIDAS (D70): el cliente siempre paga los servicios en la cuota, al día o atrasado.
+            case SIEMPRE -> new ServiciosDelPeriodo(base, base);
+        };
     }
 
     /**
@@ -159,6 +184,9 @@ final class Causador {
      * (con 2, la cobranza empieza en la tercera cuota vencida).
      */
     private BigDecimal cobranza(BigDecimal saldoInicial, int dias, int cuotasVencidasPrevias) {
+        if (s.reglas().cobranzaPorCociente()) {
+            return cobranzaPorCociente(saldoInicial);
+        }
         // R7-COBRANZA-ACTIVA (Diego): la cobranza empieza tras N periodos en mora (regla fija; con el Excel no hay umbral).
         if (!s.escenario.cobranzaActiva() || !s.reglas().llegaAlUmbralDeCobranza(cuotasVencidasPrevias)) {
             return CERO;
@@ -172,5 +200,50 @@ final class Causador {
         BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), s.p.cobranzaDiaria()) : CERO;
         BigDecimal tope = s.reglas().topeCobranzaPorPago();
         return tope == null ? cobranza : min(cobranza, tope);
+    }
+
+    /**
+     * R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D71; ADR 0006): la cobranza se ejecuta cuando saldo en mora / valor total
+     * de la cuota supera el umbral (2 en NEGOCIO). Se evalúa al iniciar el periodo con los saldos con que cerró el
+     * anterior: no mira la instrucción del periodo (determinístico) y el cierre del periodo k es el inicio del k + 1, así
+     * que la cobranza que «se ejecuta al cierre del periodo k» queda causada en la fila k + 1 y es lo primero que paga la
+     * prelación. Con abonos parciales que no llevan el cociente por encima del umbral no hay cobranza, pero la mora sí se
+     * causa (no depende de esto). El valor es el cobro fijo por periodo (D58) o, sin él, los días nominales del periodo
+     * × el valor diario (con el tope por pago si lo hay).
+     */
+    private BigDecimal cobranzaPorCociente(BigDecimal saldoInicial) {
+        ReglasNegocio reglas = s.reglas();
+        if (!s.escenario.cobranzaActiva() || esCero(saldoInicial)
+                || !reglas.llegaAlUmbralDeCobranza(saldoEnMora(), valorCuotaParaCobranza())) {
+            return CERO;
+        }
+        BigDecimal fija = reglas.cobranzaPorPeriodo();
+        if (fija != null) {
+            return fija;
+        }
+        BigDecimal cobranza = multiplicar(Calc.bd(s.p.periodicidad().diasNominales()), s.p.cobranzaDiaria());
+        BigDecimal tope = reglas.topeCobranzaPorPago();
+        return tope == null ? cobranza : min(cobranza, tope);
+    }
+
+    /**
+     * Numerador del cociente de cobranza: lo pendiente al iniciar el periodo. Con {@code CUOTAS_VENCIDAS}, lo que fue
+     * cuota (capital vencido + interés corriente + servicios pendientes); con {@code TOTAL_PENDIENTE} (supuesto de
+     * NEGOCIO) además la mora y la cobranza pendientes.
+     */
+    BigDecimal saldoEnMora() {
+        BigDecimal cuotas = sumar(s.capitalVencido, s.cxcInteres, s.cxcServicios.total());
+        return s.reglas().baseMoraCobranza() == ReglasNegocio.BaseMoraCobranza.TOTAL_PENDIENTE
+                ? sumar(cuotas, s.cxcMora, s.cxcCobranza) : cuotas;
+    }
+
+    /**
+     * Denominador del cociente de cobranza: el valor total de la cuota, cuota financiera vigente + servicios por cuota
+     * (fondo, asistencia y seguros, sin suspender), al peso si rige {@code redondeoCuotaAlPeso}. Tras un abono a menor
+     * cuota o un cambio de tasa usa la cuota nueva (supuesto, pregunta R12-COBRANZA-DENOMINADOR).
+     */
+    BigDecimal valorCuotaParaCobranza() {
+        BigDecimal total = sumar(s.cuota, s.serviciosPorCuota.total());
+        return s.reglas().redondeoCuotaAlPeso() ? total.setScale(0, java.math.RoundingMode.HALF_UP) : total;
     }
 }

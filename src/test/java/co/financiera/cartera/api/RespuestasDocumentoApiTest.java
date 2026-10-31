@@ -104,21 +104,37 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(26);
+        assertThat(r.get("claves")).hasSize(30);
         // Ronda 8 (Diego 2026-10-28).
         assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
         assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();
-        assertThat(negocio.get("cuotasVencidasParaSuspenderServicios").asString()).isEqualTo("2");
+        // D70 (ronda 10): NEGOCIO ya no suspende por umbral; la clave queda vacía.
+        assertThat(negocio.get("cuotasVencidasParaSuspenderServicios").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaSuspenderServicios").isNull()).isTrue();
         assertThat(negocio.get("redondeoCuotaAlPeso").asString()).isEqualTo("true");
         assertThat(excel.get("redondeoCuotaAlPeso").asString()).isEqualTo("false");
         assertThat(negocio.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("true");
         assertThat(excel.get("sobranteComoCuentaPorPagar").asString()).isEqualTo("false");
+    }
+
+    @Test
+    void lasClavesDeLasRondas9y10SalenEnLasReglas() throws Exception {
+        JsonNode r = leer(get("/api/v1/reglas"));
+        JsonNode negocio = r.get("perfiles").get("NEGOCIO");
+        JsonNode excel = r.get("perfiles").get("EXCEL");
         // Ronda 9 (Diego 2026-10-30).
-        assertThat(negocio.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("true");
+        // D71 (ronda 10): la reemplaza el cociente de cobranza.
+        assertThat(negocio.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("false");
         assertThat(excel.get("umbralesCuentanCuotaEnCurso").asString()).isEqualTo("false");
         assertThat(negocio.get("seguroTodoRiesgoPorcentajeMensual").asString()).isEqualTo("0.003");
         assertThat(excel.get("seguroTodoRiesgoPorcentajeMensual").asString()).isEqualTo("0");
+        // Ronda 10 (Diego 2026-10-31).
+        assertThat(negocio.get("causacionServicios").asString()).isEqualTo("SIEMPRE");
+        assertThat(excel.get("causacionServicios").asString()).isEqualTo("SOLO_AL_DIA");
+        assertThat(negocio.get("umbralCocienteCobranza").asString()).isEqualTo("2");
+        assertThat(excel.get("umbralCocienteCobranza").isNull()).isTrue();
+        assertThat(negocio.get("baseMoraCobranza").asString()).isEqualTo("TOTAL_PENDIENTE");
+        assertThat(negocio.get("comparacionCobranza").asString()).isEqualTo("MAYOR");
         assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();
         assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");

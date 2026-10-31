@@ -1,6 +1,6 @@
 # ADR 0005 · Umbrales de cobranza y suspensión que cuentan la cuota en curso
 
-**Estado:** aceptada · 2026-10-30 (ronda 9 de Diego, R9-COBRO-MOMENTO = segunda-cuota).
+**Estado:** reemplazada por la [ADR 0006](0006-servicios-siempre-y-cobranza-por-cociente.md) en NEGOCIO (2026-10-31, R10-CONTADOR-VENCIDAS). Aceptada el 2026-10-30 (ronda 9 de Diego, R9-COBRO-MOMENTO = segunda-cuota); sigue documentada con `umbralesCuentanCuotaEnCurso` en `RespuestasDiegoRonda9Test`.
 
 ## Contexto
 

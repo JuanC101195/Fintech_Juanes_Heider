@@ -27,26 +27,43 @@ const VALORES: Record<string, string> = {
   PRELACION_COMPLETA: 'Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)',
   MISMA_FECHA_FINAL: 'Se conserva la fecha final y cambia la cuota',
   MISMA_CUOTA: 'Se conserva la cuota y cambia el número de cuotas',
+  SOLO_AL_DIA: 'Fondo y asistencia solo en los periodos pagados al día; en los demás solo los seguros',
+  SUSPENDER_POR_UMBRAL: 'Siempre, hasta las cuotas atrasadas del umbral; desde ahí solo los seguros',
+  SIEMPRE: 'Siempre en la cuota, al día o atrasado; solo la dación o la retoma los suspenden',
+  CUOTAS_VENCIDAS: 'Solo lo que fue cuota: capital, interés y servicios vencidos',
+  TOTAL_PENDIENTE: 'Todo lo pendiente: capital, interés, servicios, mora y cobranza (supuesto por confirmar)',
+  MAYOR: 'Estrictamente mayor que el umbral (supuesto por confirmar)',
+  MAYOR_O_IGUAL: 'Desde el umbral (mayor o igual)',
   true: 'Sí',
   false: 'No',
+}
+
+const NUMERO = /^\d+(\.\d+)?$/
+
+/** Texto por clave; las que solo aplican a un número devuelven undefined si el valor no lo es. */
+const POR_CLAVE: Record<string, (valor: string) => string | undefined> = {
+  cobranzaDiaria: (v) => (NUMERO.test(v) ? `${cop(v)} por día de atraso (valor de ejemplo, por definir)` : undefined),
+  cuotasVencidasParaRecuperacion: (v) => `Con ${v} cuotas atrasadas el crédito queda listo para dación o retoma`,
+  cuotasVencidasParaCobranza: (v) => `La cobranza empieza al llegar a la cuota atrasada número ${v} (no aplica si rige el cociente de cobranza)`,
+  umbralCocienteCobranza: (v) => `La cobranza se cobra cuando lo pendiente supera ${v} cuotas totales (cuota + servicios)`,
+  cobranzaPorPeriodo: (v) => (NUMERO.test(v) ? `${cop(v)} por periodo atrasado (valor de ejemplo, por definir)` : undefined),
+  cuotasVencidasParaSuspenderServicios: (v) => `Tras ${v} cuotas vencidas se suspenden el fondo y la asistencia y solo se causa el seguro`,
+  seguroTodoRiesgoPorcentajeMensual: (v) => {
+    if (!NUMERO.test(v)) return undefined
+    if (Number(v) === 0) return 'No existe'
+    return `${(Number(v) * 100).toLocaleString('es-CO', { maximumFractionDigits: 4 })} % mensual sobre el monto financiado, más IVA`
+  },
+  plazoLimiteMeses: (v) => `${v} meses`,
+  margenUsura: (v) => `${v} ${v === '1' ? 'punto' : 'puntos'} por debajo de la usura`,
+  topeCobranzaPorPago: (v) => (NUMERO.test(v) ? `Hasta ${cop(v)} por pago` : undefined),
 }
 
 /** Valor de una regla para mostrar. Lo que no esté traducido se muestra en minúsculas y sin guiones bajos. */
 export function valorRegla(clave: string, valor: string | null): string {
   if (valor === null || valor === '') return clave === 'topeCobranzaPorPago' ? 'Sin tope' : 'Sin definir'
   if (VALORES[valor]) return VALORES[valor]
-  if (clave === 'cobranzaDiaria' && /^\d+(\.\d+)?$/.test(valor)) return `${cop(valor)} por día de atraso (valor de ejemplo, por definir)`
-  if (clave === 'cuotasVencidasParaRecuperacion') return `Con ${valor} cuotas atrasadas el crédito queda listo para dación o retoma`
-  if (clave === 'cuotasVencidasParaCobranza') return `La cobranza empieza al llegar a la cuota atrasada número ${valor}; con las reglas de negocio la cuota del periodo en curso ya cuenta`
-  if (clave === 'cobranzaPorPeriodo' && /^\d+(\.\d+)?$/.test(valor)) return `${cop(valor)} por periodo atrasado (valor de ejemplo, por definir)`
-  if (clave === 'cuotasVencidasParaSuspenderServicios') return `Tras ${valor} cuotas vencidas se suspenden el fondo y la asistencia y solo se causa el seguro`
-  if (clave === 'seguroTodoRiesgoPorcentajeMensual' && /^\d+(\.\d+)?$/.test(valor)) {
-    if (Number(valor) === 0) return 'No existe'
-    return `${(Number(valor) * 100).toLocaleString('es-CO', { maximumFractionDigits: 4 })} % mensual sobre el monto financiado, más IVA`
-  }
-  if (clave === 'plazoLimiteMeses') return `${valor} meses`
-  if (clave === 'margenUsura') return `${valor} ${valor === '1' ? 'punto' : 'puntos'} por debajo de la usura`
-  if (clave === 'topeCobranzaPorPago' && /^\d+(\.\d+)?$/.test(valor)) return `Hasta ${cop(valor)} por pago`
+  const porClave = POR_CLAVE[clave]?.(valor)
+  if (porClave !== undefined) return porClave
   const t = valor.replaceAll('_', ' ').toLowerCase()
   return t.charAt(0).toUpperCase() + t.slice(1)
 }

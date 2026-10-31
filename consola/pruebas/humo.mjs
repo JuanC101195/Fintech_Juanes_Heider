@@ -59,7 +59,7 @@ for (const { nombre, ancho, alto, escala, esquemas } of CONFIGURACIONES) {
     await revisar('casos')
     await page.getByRole('link', { name: /Caso 13/ }).click()
     await page.getByRole('region', { name: 'Tabla periodo a periodo' }).waitFor()
-    await page.getByText('Termina en el periodo 85').waitFor()
+    await page.getByText('Termina en el periodo 86').waitFor()
     await page.locator('details').first().locator('summary').click()
     await revisar('caso-13')
     const selector = page.getByRole('button', { name: /Ver otro caso/ })

@@ -84,7 +84,7 @@ final class CatalogoServicio {
                     "Cobro fijo de cobranza por periodo en mora (no se prorratea por días): se causa una vez en cada periodo que causaría cobranza; vacío = días × valor diario",
                     "R8-COBRANZA-PAGO-TARDIO"),
             new ClaveDto("cuotasVencidasParaSuspenderServicios",
-                    "Fondo, asistencia y seguro se causan siempre, haya o no pago en la fecha; desde estas cuotas atrasadas de periodos anteriores solo se causa el seguro; vacío = fondo y asistencia solo en periodos al día (D17)",
+                    "Con la causación de servicios con suspensión (rondas 8 y 9), desde estas cuotas atrasadas solo se causan los seguros (fondo y asistencia suspendidos); vacío = sin suspensión",
                     "R8-PAGO-INCOMPLETO-EN-FECHA"),
             new ClaveDto("redondeoCuotaAlPeso",
                     "Si la cuota exigible del periodo (cuota + servicios) se redondea al peso más cercano; el residuo va al interés corriente del periodo",
@@ -97,7 +97,19 @@ final class CatalogoServicio {
                     "R9-COBRO-MOMENTO"),
             new ClaveDto("seguroTodoRiesgoPorcentajeMensual",
                     "Seguro todo riesgo (se suma al seguro de vida): % mensual sobre el monto financiado inicial, periodizado como el seguro de vida y con IVA encima, segmentado en la contabilidad; 0 = no existe",
-                    "R9-SEGURO-TODO-RIESGO"));
+                    "R9-SEGURO-TODO-RIESGO"),
+            new ClaveDto("causacionServicios",
+                    "Cómo se causan fondo, asistencia y seguros: solo al día (D17), con suspensión tras las cuotas atrasadas del umbral (rondas 8 y 9) o siempre (el cliente siempre los paga en la cuota; solo la dación o la retoma los suspenden)",
+                    "R10-CONTADOR-VENCIDAS / R11-SEGUROS-TRAS-SUSPENSION"),
+            new ClaveDto("umbralCocienteCobranza",
+                    "La cobranza se causa cuando saldo en mora / valor total de la cuota supera este cociente (se evalúa al iniciar el periodo); con valor no rige el umbral por cuotas vencidas; vacío = umbral por cuotas vencidas",
+                    "R10-CONTADOR-VENCIDAS"),
+            new ClaveDto("baseMoraCobranza",
+                    "Qué entra en el saldo en mora del cociente de cobranza: solo lo que fue cuota (capital, interés y servicios pendientes) o todo lo pendiente (además mora y cobranza); supuesto provisional",
+                    "R10-CONTADOR-VENCIDAS / R12-COBRANZA-SALDO-MORA"),
+            new ClaveDto("comparacionCobranza",
+                    "Si el cociente de cobranza debe ser estrictamente mayor que el umbral o basta igualarlo; supuesto provisional",
+                    "R10-CONTADOR-VENCIDAS / R12-COBRANZA-SALDO-MORA"));
 
     private final PerfilesReglas perfiles;
 
