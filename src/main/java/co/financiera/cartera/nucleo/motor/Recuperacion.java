@@ -87,10 +87,11 @@ final class Recuperacion {
      * PPER-9 (Diego 2026-10-22): con 2 cuotas atrasadas el crédito queda listo para recuperación. R6-RECUP-AUTO
      * (Diego): el motor solo marca, nunca ejecuta la dación ni la retoma, y la marca persiste aunque el
      * cliente se ponga al día: una persona decide. Solo se apaga cuando el crédito termina (cancelado o
-     * cerrado por evento), porque ya no hay nada que recuperar.
+     * cerrado por evento), porque ya no hay nada que recuperar. R12-MARCA-POR-COCIENTE (D77): {@code llegaAlUmbral} lo
+     * decide el motor por cuotas vencidas (PPER-9) o por el cociente de la cobranza.
      */
-    boolean listoParaRecuperacion(EstadoCredito estado, int cuotasVencidas) {
-        if (estado == EstadoCredito.EN_MORA && s.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas)) {
+    boolean listoParaRecuperacion(EstadoCredito estado, boolean llegaAlUmbral) {
+        if (estado == EstadoCredito.EN_MORA && llegaAlUmbral) {
             marcadoParaRecuperacion = true;
         }
         boolean termino = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO;

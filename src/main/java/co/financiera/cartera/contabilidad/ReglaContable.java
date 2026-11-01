@@ -5,7 +5,6 @@ import co.financiera.cartera.nucleo.Servicios;
 import co.financiera.cartera.nucleo.motor.DeudaExtinguida;
 import co.financiera.cartera.nucleo.motor.Movimiento;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,21 +55,21 @@ public interface ReglaContable {
                 Asiento.Linea.credito(Cuenta.CXC_ASISTENCIAS, d.servicios().asistencia(),
                         "Extinción de asistencias (prelación 5)"),
                 Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().seguro(), "Extinción de seguros (prelación 6)"),
-                // R9-SEGURO-TODO-RIESGO: el seguro riesgo total y su IVA, por separado (0 sin la regla: no hay línea).
-                Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().seguroTodoRiesgo(),
-                        "Extinción del seguro todo riesgo, sin IVA (R9)"),
-                Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().ivaSeguroTodoRiesgo(),
-                        "Extinción del IVA del seguro todo riesgo (R9)"),
+                // R9 (seguro riesgo total) con R12-IVA-FONDO-ASISTENCIAS (D78): el seguro riesgo total con su IVA en un
+                // solo valor, como los demás servicios (0 sin la regla: no hay línea).
+                Asiento.Linea.credito(Cuenta.CXC_SEGUROS, d.servicios().todoRiesgoConIva(),
+                        "Extinción del seguro riesgo total, IVA incluido (R9, D78)"),
                 Asiento.Linea.credito(Cuenta.CXC_GASTOS_COBRANZA, d.cobranza(), "Extinción de gastos de cobranza (prelación 1)"));
     }
 
     /**
      * R10-CONTADOR-VENCIDAS (Diego, ronda 10, D72): la extinción de una dación o una retoma cuando la cuenta con terceros
-     * solo nace con el recaudo efectivo. La parte de los servicios pendientes que cubre la moto es recaudo efectivo: va a
-     * {@code terceros} ("Ingresos recibidos para terceros") y el seguro riesgo total con su IVA a sus cuentas (D69). La parte
-     * que no cubre la moto (la cubre el faltante a cargo del fondo de garantías) se extingue contra las cuentas por cobrar
-     * de cada servicio, como el Excel; si debe ir a cuentas de orden es la pregunta R12-SERVICIOS-NO-RECAUDADOS-CIERRE. Los
-     * demás conceptos se extinguen como en {@link #extincion(DeudaExtinguida)}.
+     * solo nace con el recaudo efectivo. La parte de los servicios pendientes que cubre la moto es recaudo efectivo: va
+     * completa a {@code terceros} ("Ingresos recibidos para terceros"), el seguro riesgo total con su IVA incluido (un gran
+     * total sin segmentar, D78). La parte que no cubre la moto (la cubre el faltante a cargo del fondo de garantías) se
+     * extingue contra las cuentas por cobrar de cada servicio, como el Excel; cómo se le paga al tercero lo no recaudado
+     * es la pregunta R13-SERVICIOS-CIERRE-ASIENTO. Los demás conceptos se extinguen como en
+     * {@link #extincion(DeudaExtinguida)}.
      *
      * <p>Lo que cubrió la moto sale del movimiento: {@code pagosServicios} (lo recaudado en el periodo) menos
      * {@code pagoServicios} (lo que pagó la cuota). La moto paga los servicios por su prelación (fondo, asistencia, seguro,
@@ -81,78 +80,19 @@ public interface ReglaContable {
         BigDecimal cubierto = Calc.noNegativo(Calc.restar(m.pagosServicios().total(), m.pagoServicios()));
         Servicios cubiertos = d.servicios().pagarHasta(cubierto);
         Servicios noCubiertos = d.servicios().menos(cubiertos).noNegativo();
-        BigDecimal cubiertoTotal = cubiertos.total();
-        List<Asiento.Linea> lineas = new ArrayList<>(List.of(
+        return List.of(
                 Asiento.Linea.credito(Cuenta.CARTERA_VIGENTE, d.capital(), "Extinción del capital (prelación 7)"),
                 Asiento.Linea.credito(Cuenta.CXC_INTERES_CORRIENTE, d.interesCorriente(),
                         "Extinción de intereses corrientes (prelación 3)"),
                 Asiento.Linea.credito(Cuenta.CXC_INTERES_MORA, d.mora(), "Extinción de intereses de mora (prelación 2)"),
-                Asiento.Linea.credito(terceros, serviciosSinTodoRiesgo(cubiertoTotal, cubiertos),
-                        "Servicios cubiertos con la moto: recaudo efectivo para terceros (R10, D72)")));
-        lineas.addAll(seguroTodoRiesgo(cubiertoTotal, cubiertos));
-        lineas.addAll(List.of(
+                Asiento.Linea.credito(terceros, cubiertos.total(),
+                        "Servicios cubiertos con la moto: recaudo efectivo para terceros (R10, D72)"),
                 Asiento.Linea.credito(Cuenta.CXC_FONDO_CLIENTE, noCubiertos.fondoGarantias(),
                         "Extinción de fondo de garantías no cubierto por la moto (prelación 4)"),
                 Asiento.Linea.credito(Cuenta.CXC_ASISTENCIAS, noCubiertos.asistencia(),
                         "Extinción de asistencias no cubiertas por la moto (prelación 5)"),
                 Asiento.Linea.credito(Cuenta.CXC_SEGUROS, Calc.sumar(noCubiertos.seguro(), noCubiertos.todoRiesgoConIva()),
                         "Extinción de seguros no cubiertos por la moto (prelación 6)"),
-                Asiento.Linea.credito(Cuenta.CXC_GASTOS_COBRANZA, d.cobranza(), "Extinción de gastos de cobranza (prelación 1)")));
-        return lineas;
-    }
-
-    /**
-     * R9-SEGURO-TODO-RIESGO (Diego, ronda 9): de los servicios recaudados {@code total} que van a "CxP servicios a
-     * terceros", la parte que NO es seguro riesgo total ni su IVA. Esas dos partes van en líneas aparte
-     * ({@link #seguroTodoRiesgo}). Sin seguro riesgo total devuelve {@code total} tal cual (las cifras del Excel no
-     * cambian).
-     */
-    static BigDecimal serviciosSinTodoRiesgo(BigDecimal total, Servicios detalle) {
-        Servicios tr = todoRiesgoDe(total, detalle);
-        if (tr.todoRiesgoConIva().signum() == 0) {
-            return total;
-        }
-        return Calc.restar(Calc.restar(total, tr.seguroTodoRiesgo()), tr.ivaSeguroTodoRiesgo());
-    }
-
-    /**
-     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA: las líneas del seguro riesgo total recaudado, segmentado en
-     * el seguro ({@link Cuenta#CXP_SEGUROS}, por ejemplo 10.000) y su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}, 1.900).
-     * Las dos suman la deuda con la aseguradora ({@link #cxpAseguradoras}, 11.900); el IVA nunca es de la financiera
-     * frente a la DIAN.
-     * {@code detalle} es el reparto por concepto del movimiento; lo que se toma nunca pasa de {@code total}.
-     */
-    static List<Asiento.Linea> seguroTodoRiesgo(BigDecimal total, Servicios detalle) {
-        Servicios tr = todoRiesgoDe(total, detalle);
-        return List.of(
-                Asiento.Linea.credito(Cuenta.CXP_SEGUROS, tr.seguroTodoRiesgo(),
-                        "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"),
-                Asiento.Linea.credito(Cuenta.IVA_SEGUROS_POR_PAGAR, tr.ivaSeguroTodoRiesgo(),
-                        "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"));
-    }
-
-    /**
-     * R11-CONTABILIDAD-SEGURO-IVA: "CxP aseguradoras", lo que se debe a las aseguradoras por el seguro riesgo total
-     * recaudado en el asiento: el seguro ({@link Cuenta#CXP_SEGUROS}) más su IVA ({@link Cuenta#IVA_SEGUROS_POR_PAGAR}).
-     */
-    static BigDecimal cxpAseguradoras(Asiento asiento) {
-        return asiento.lineas().stream()
-                .filter(l -> l.cuenta() == Cuenta.CXP_SEGUROS || l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR)
-                .map(Asiento.Linea::credito)
-                .reduce(Calc.CERO, Calc::sumar);
-    }
-
-    /** Las dos listas de líneas, una tras otra. */
-    static List<Asiento.Linea> con(List<Asiento.Linea> primeras, List<Asiento.Linea> despues) {
-        List<Asiento.Linea> todas = new ArrayList<>(primeras);
-        todas.addAll(despues);
-        return todas;
-    }
-
-    private static Servicios todoRiesgoDe(BigDecimal total, Servicios detalle) {
-        BigDecimal disponible = Calc.noNegativo(total);
-        BigDecimal seguro = Calc.min(disponible, detalle.seguroTodoRiesgo());
-        BigDecimal iva = Calc.min(Calc.restar(disponible, seguro), detalle.ivaSeguroTodoRiesgo());
-        return new Servicios(Calc.CERO, Calc.CERO, Calc.CERO, seguro, iva);
+                Asiento.Linea.credito(Cuenta.CXC_GASTOS_COBRANZA, d.cobranza(), "Extinción de gastos de cobranza (prelación 1)"));
     }
 }

@@ -115,7 +115,8 @@ import java.math.BigDecimal;
  *                                 NUEVO que se suma al seguro de vida: % mensual sobre el monto financiado inicial
  *                                 (0,003 = 0,3 %), periodizado igual que el seguro de vida (valor mensual × 12 / ppa)
  *                                 y con el IVA de servicios encima ({@code ParametrosProducto.iva}, 19 %), que se
- *                                 lleva segmentado ({@code Servicios.ivaSeguroTodoRiesgo}). {@code 0} o {@code null}
+ *                                 muestra aparte ({@code Servicios.ivaSeguroTodoRiesgo}) y en la contabilidad va en un
+ *                                 gran total con los demás servicios (D78). {@code 0} o {@code null}
  *                                 = no existe (el Excel).
  * @param causacionServicios       cómo se causan fondo, asistencia y seguros dentro del plazo ({@link CausacionServicios}):
  *                                 {@code SOLO_AL_DIA} = D17, el Excel (fondo y asistencia solo en periodos pagados al día);
@@ -130,8 +131,19 @@ import java.math.BigDecimal;
  *                                 0006). {@code null} = umbral por cuotas vencidas (el Excel y las rondas 7 a 9).
  * @param baseMoraCobranza         qué entra en el saldo en mora del cociente (supuesto provisional {@code TOTAL_PENDIENTE},
  *                                 pregunta R12-COBRANZA-SALDO-MORA)
- * @param comparacionCobranza      si el cociente debe ser estrictamente mayor que el umbral o basta igualarlo (supuesto
- *                                 provisional {@code MAYOR}: Diego escribió «&gt; 2»)
+ * @param comparacionCobranza      si el cociente debe ser estrictamente mayor que el umbral o basta igualarlo. Diego
+ *                                 (R12-COBRANZA-SALDO-MORA, 2026-11-01, D74): «aplica desde IGUAL o MAYOR a 2»
+ *                                 ({@code MAYOR_O_IGUAL} en NEGOCIO); el Excel no tiene cociente
+ * @param marcaPorCociente         R12-MARCA-POR-COCIENTE (Diego 2026-11-01, D77): la marca «listo para recuperación» se
+ *                                 mide con el mismo cociente de la cobranza ({@link #umbralCocienteCobranza},
+ *                                 {@link #comparacionCobranza} y el saldo en mora de {@link #baseMoraCobranza}) al cerrar
+ *                                 cada periodo, en vez de contar cuotas vencidas por eventos
+ *                                 ({@link #cuotasVencidasParaRecuperacion}, que se ignora). La marca persiste aunque el
+ *                                 cociente baje (R10-MARCA-RECUPERACION, D67). Sin {@link #umbralCocienteCobranza} no aplica
+ *                                 (sigue por eventos). {@code false} en el Excel.
+ * @param alcanceProrrateoPrimeraCuota qué se prorratea en la primera cuota cuando rige {@link #prorrateoPrimeraCuota}
+ *                                 ({@link AlcanceProrrateo}): solo el interés (P5-PRORRATEO, D48) o la cuota completa
+ *                                 (R10-PRIMERA-CUOTA y R12-PRIMERA-CUOTA-DETALLE, Diego 2026-11-01, D79)
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -163,7 +175,9 @@ public record ReglasNegocio(
         CausacionServicios causacionServicios,
         BigDecimal umbralCocienteCobranza,
         BaseMoraCobranza baseMoraCobranza,
-        ComparacionCobranza comparacionCobranza) {
+        ComparacionCobranza comparacionCobranza,
+        boolean marcaPorCociente,
+        AlcanceProrrateo alcanceProrrateoPrimeraCuota) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
@@ -173,6 +187,8 @@ public record ReglasNegocio(
     private static final String CAUSACION_SERVICIOS = "causacionServicios";
     private static final String BASE_MORA_COBRANZA = "baseMoraCobranza";
     private static final String COMPARACION_COBRANZA = "comparacionCobranza";
+    /** Clave de {@link #alcanceProrrateoPrimeraCuota}; se repite en la validación y en {@link #desde}. */
+    private static final String ALCANCE_PRORRATEO = "alcanceProrrateoPrimeraCuota";
 
     /**
      * Único punto de validación: todo pasa por aquí (el {@link Constructor}, los métodos {@code conX} y
@@ -210,6 +226,7 @@ public record ReglasNegocio(
                     + seguroTodoRiesgoPorcentajeMensual);
         }
         validarRonda10(causacionServicios, umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
+        java.util.Objects.requireNonNull(alcanceProrrateoPrimeraCuota, ALCANCE_PRORRATEO);
     }
 
     /** Validación de las claves de la ronda 10 (D70, D71), aparte para no complicar la del constructor. */
@@ -264,6 +281,8 @@ public record ReglasNegocio(
             .umbralCocienteCobranza(null)
             .baseMoraCobranza(BaseMoraCobranza.TOTAL_PENDIENTE)
             .comparacionCobranza(ComparacionCobranza.MAYOR)
+            .marcaPorCociente(false)
+            .alcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES)
             .construir();
 
     /** Cómo se causan el fondo de garantías, la asistencia y los seguros en los periodos dentro del plazo (D17, D60, D70). */
@@ -291,12 +310,26 @@ public record ReglasNegocio(
         TOTAL_PENDIENTE
     }
 
-    /** Cómo se compara el cociente de cobranza con el umbral (D71; supuesto provisional: {@code MAYOR}). */
+    /** Cómo se compara el cociente de cobranza con el umbral (D71, D74). */
     public enum ComparacionCobranza {
-        /** Estrictamente mayor: «&gt; 2» (lo que escribió Diego). */
+        /** Estrictamente mayor: «&gt; 2» (lo que escribió Diego en la ronda 10; supuesto hasta la ronda 12). */
         MAYOR,
-        /** Mayor o igual. */
+        /** Mayor o igual: «aplica desde IGUAL o MAYOR a 2» (Diego, R12-COBRANZA-SALDO-MORA, D74; NEGOCIO). */
         MAYOR_O_IGUAL
+    }
+
+    /** Qué se prorratea en la primera cuota por los días reales desde el desembolso (D48, D79). */
+    public enum AlcanceProrrateo {
+        /** P5-PRORRATEO (D48): solo el interés corriente; capital y servicios van completos. */
+        SOLO_INTERES,
+        /**
+         * R10-PRIMERA-CUOTA + R12-PRIMERA-CUOTA-DETALLE (Diego 2026-11-01, D79): la cuota completa. El interés va por
+         * los días reales (como {@link #SOLO_INTERES}); el capital contractual y los servicios se cobran en proporción
+         * días reales / días nominales del periodo (como máximo la cuota entera). El capital no cobrado queda en el
+         * saldo, causa interés corriente y lo recoge la última cuota del plan (la cuota fija no cambia); los servicios no
+         * cobrados se pierden.
+         */
+        CUOTA_COMPLETA
     }
 
     public enum OrdenPrelacion {
@@ -493,7 +526,9 @@ public record ReglasNegocio(
             enumerada(CAUSACION_SERVICIOS, CausacionServicios.class, Constructor::causacionServicios),
             decimal("umbralCocienteCobranza", Constructor::umbralCocienteCobranza),
             enumerada(BASE_MORA_COBRANZA, BaseMoraCobranza.class, Constructor::baseMoraCobranza),
-            enumerada(COMPARACION_COBRANZA, ComparacionCobranza.class, Constructor::comparacionCobranza));
+            enumerada(COMPARACION_COBRANZA, ComparacionCobranza.class, Constructor::comparacionCobranza),
+            booleana("marcaPorCociente", Constructor::marcaPorCociente),
+            enumerada(ALCANCE_PRORRATEO, AlcanceProrrateo.class, Constructor::alcanceProrrateoPrimeraCuota));
 
     static {
         verificarTabla();
@@ -654,6 +689,16 @@ public record ReglasNegocio(
         return copia().comparacionCobranza(valor).construir();
     }
 
+    /** R12-MARCA-POR-COCIENTE: si la marca de recuperación se mide con el cociente de la cobranza. */
+    public ReglasNegocio conMarcaPorCociente(boolean valor) {
+        return copia().marcaPorCociente(valor).construir();
+    }
+
+    /** R12-PRIMERA-CUOTA-DETALLE: qué se prorratea en la primera cuota (solo el interés o la cuota completa). */
+    public ReglasNegocio conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo valor) {
+        return copia().alcanceProrrateoPrimeraCuota(valor).construir();
+    }
+
     /** El % mensual del seguro riesgo total, con {@code null} como 0 (no existe). */
     public BigDecimal porcentajeTodoRiesgo() {
         return seguroTodoRiesgoPorcentajeMensual == null ? BigDecimal.ZERO : seguroTodoRiesgoPorcentajeMensual;
@@ -695,6 +740,8 @@ public record ReglasNegocio(
         private BigDecimal umbralCocienteCobranza;
         private BaseMoraCobranza baseMoraCobranza;
         private ComparacionCobranza comparacionCobranza;
+        private boolean marcaPorCociente;
+        private AlcanceProrrateo alcanceProrrateoPrimeraCuota;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -732,6 +779,8 @@ public record ReglasNegocio(
             umbralCocienteCobranza = r.umbralCocienteCobranza;
             baseMoraCobranza = r.baseMoraCobranza;
             comparacionCobranza = r.comparacionCobranza;
+            marcaPorCociente = r.marcaPorCociente;
+            alcanceProrrateoPrimeraCuota = r.alcanceProrrateoPrimeraCuota;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -884,6 +933,16 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor marcaPorCociente(boolean valor) {
+            marcaPorCociente = valor;
+            return this;
+        }
+
+        public Constructor alcanceProrrateoPrimeraCuota(AlcanceProrrateo valor) {
+            alcanceProrrateoPrimeraCuota = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
@@ -893,7 +952,8 @@ public record ReglasNegocio(
                     cobranzaDiaria, cuotasVencidasParaRecuperacion, cuotasVencidasParaCobranza, prorrateoPrimeraCuota, diasMora,
                     cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar,
                     umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual, causacionServicios,
-                    umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
+                    umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza, marcaPorCociente,
+                    alcanceProrrateoPrimeraCuota);
         }
     }
 
@@ -940,6 +1000,16 @@ public record ReglasNegocio(
         return comparacionCobranza == ComparacionCobranza.MAYOR
                 ? exceso.compareTo(epsilon) > 0
                 : exceso.compareTo(epsilon.negate()) >= 0;
+    }
+
+    /** R12-MARCA-POR-COCIENTE (D77): si la marca de recuperación se decide con el cociente (y hay umbral de cociente). */
+    public boolean marcaRecuperacionPorCociente() {
+        return marcaPorCociente && umbralCocienteCobranza != null;
+    }
+
+    /** R12-PRIMERA-CUOTA-DETALLE (D79): si la primera cuota prorrateada prorratea también capital y servicios. */
+    public boolean prorrateaCuotaCompleta() {
+        return prorrateoPrimeraCuota && alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA;
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */

@@ -148,7 +148,7 @@ public final class Dtos {
      *
      * @param seguroTodoRiesgo    R9-SEGURO-TODO-RIESGO: seguro todo riesgo sin IVA; solo viaja cuando él o su IVA no
      *                            son cero (nunca con EXCEL)
-     * @param ivaSeguroTodoRiesgo IVA del seguro todo riesgo, segmentado; viaja junto con {@code seguroTodoRiesgo}.
+     * @param ivaSeguroTodoRiesgo IVA del seguro riesgo total, aparte para el cliente (la contabilidad no lo segmenta, D78); viaja junto con {@code seguroTodoRiesgo}.
      *                            {@code total} ya incluye los dos
      */
     public record ServiciosDto(String fondoGarantias, String asistencia, String seguro, String total,

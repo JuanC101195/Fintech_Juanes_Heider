@@ -47,7 +47,9 @@ class PerfilesReglasSnapshotTest {
             "causacionServicios=SOLO_AL_DIA",
             "umbralCocienteCobranza=null",
             "baseMoraCobranza=TOTAL_PENDIENTE",
-            "comparacionCobranza=MAYOR");
+            "comparacionCobranza=MAYOR",
+            "marcaPorCociente=false",
+            "alcanceProrrateoPrimeraCuota=SOLO_INTERES");
 
     private static final List<String> NEGOCIO = List.of(
             "prelacion=SERVICIOS_ANTES_DE_CAPITAL",
@@ -55,7 +57,7 @@ class PerfilesReglasSnapshotTest {
             "baseInteres=SALDO_VIGENTE",
             "topeCobranzaPorPago=null",
             "baseServicios=MONTO_INICIAL",
-            "serviciosDespuesDelPlazo=false",
+            "serviciosDespuesDelPlazo=true",
             "moraAntesDeRecuperacion=true",
             "aplicacionAbono=PRELACION_COMPLETA",
             "interesPrepagoPorDias=true",
@@ -79,7 +81,9 @@ class PerfilesReglasSnapshotTest {
             "causacionServicios=SIEMPRE",
             "umbralCocienteCobranza=2",
             "baseMoraCobranza=TOTAL_PENDIENTE",
-            "comparacionCobranza=MAYOR");
+            "comparacionCobranza=MAYOR_O_IGUAL",
+            "marcaPorCociente=true",
+            "alcanceProrrateoPrimeraCuota=CUOTA_COMPLETA");
 
     /** clave=valor en el orden de los componentes del record; BigDecimal con su escala (toPlainString). */
     private static List<String> valores(ReglasNegocio r) throws ReflectiveOperationException {

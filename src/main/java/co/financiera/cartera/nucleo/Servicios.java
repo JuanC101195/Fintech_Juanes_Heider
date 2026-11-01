@@ -12,7 +12,8 @@ import java.math.BigDecimal;
  *
  * <p>R9-SEGURO-TODO-RIESGO (Diego 2026-10-30): el seguro todo riesgo es un servicio aparte que se suma al seguro de
  * vida. {@link #seguroTodoRiesgo} es el seguro sin IVA y {@link #ivaSeguroTodoRiesgo} su IVA (19 %), separados para
- * que la contabilidad los registre por separado ("si el seguro da $10.000, el cobro al cliente es de $11.900"). En la
+ * mostrarle al cliente el detalle ("si el seguro da $10.000, el cobro al cliente es de $11.900"). La contabilidad ya no
+ * los segmenta: van en un gran total con los demás servicios (R12-IVA-FONDO-ASISTENCIAS, D78, supera a D69). En la
  * prelación van después del seguro de vida: seguro todo riesgo y luego su IVA. Sin la regla los dos son 0 y todo queda
  * como antes (el Excel no los tiene).
  */
@@ -76,6 +77,13 @@ public record Servicios(BigDecimal fondoGarantias, BigDecimal asistencia, BigDec
     public Servicios noNegativo() {
         return new Servicios(Calc.noNegativo(fondoGarantias), Calc.noNegativo(asistencia), Calc.noNegativo(seguro),
                 Calc.noNegativo(seguroTodoRiesgo), Calc.noNegativo(ivaSeguroTodoRiesgo));
+    }
+
+    /** Cada servicio multiplicado por {@code factor} (R12-PRIMERA-CUOTA-DETALLE: la parte proporcional de la primera cuota). */
+    public Servicios por(BigDecimal factor) {
+        return new Servicios(Calc.multiplicar(fondoGarantias, factor), Calc.multiplicar(asistencia, factor),
+                Calc.multiplicar(seguro, factor), Calc.multiplicar(seguroTodoRiesgo, factor),
+                Calc.multiplicar(ivaSeguroTodoRiesgo, factor));
     }
 
     public Servicios mas(Servicios otro) {

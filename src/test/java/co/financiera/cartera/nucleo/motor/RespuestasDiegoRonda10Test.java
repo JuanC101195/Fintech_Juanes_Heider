@@ -39,8 +39,9 @@ import org.junit.jupiter.api.Test;
  *       2 cuotas no hay cobranza pero sí interés de mora ({@code umbralCocienteCobranza = 2}).</li>
  *   <li>En dación o retoma se suspenden por completo los servicios (cierra el crédito).</li>
  * </ol>
- * Supuestos provisionales (ronda 12): el saldo en mora es la totalidad de lo pendiente ({@code TOTAL_PENDIENTE}), la comparación es
- * estricta ({@code MAYOR}) y el cociente se evalúa al iniciar el periodo con los saldos del cierre del anterior.
+ * Confirmados en la ronda 12 (Diego 2026-11-01, D74): el saldo en mora es la totalidad de lo pendiente
+ * ({@code TOTAL_PENDIENTE}) y la cobranza aplica desde 2 ({@code MAYOR_O_IGUAL}; hasta la ronda 12 el supuesto era estricto); el
+ * cociente se evalúa al iniciar el periodo con los saldos del cierre del anterior.
  */
 class RespuestasDiegoRonda10Test {
 
@@ -87,7 +88,7 @@ class RespuestasDiegoRonda10Test {
         assertThat(n.causacionServicios()).isEqualTo(CausacionServicios.SIEMPRE);
         assertThat(n.umbralCocienteCobranza()).isEqualByComparingTo("2");
         assertThat(n.baseMoraCobranza()).isEqualTo(BaseMoraCobranza.TOTAL_PENDIENTE);
-        assertThat(n.comparacionCobranza()).isEqualTo(ComparacionCobranza.MAYOR);
+        assertThat(n.comparacionCobranza()).as("D74: desde igual o mayor a 2").isEqualTo(ComparacionCobranza.MAYOR_O_IGUAL);
         // Lo que reemplazan queda fuera de NEGOCIO (las rondas 8 y 9 lo siguen probando con negocioRonda9()).
         assertThat(n.cuotasVencidasParaSuspenderServicios()).isNull();
         assertThat(n.umbralesCuentanCuotaEnCurso()).isFalse();
@@ -161,11 +162,11 @@ class RespuestasDiegoRonda10Test {
                 assertThat(creditos(c.contabilizar(fila(m, k)), Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS)).as("semana %d", k).isZero();
                 assertThat(creditos(c.contabilizar(fila(m, k)), Cuenta.CXP_SERVICIOS_TERCEROS)).as("semana %d", k).isZero();
             }
-            // La semana 7 recauda los servicios de la 5, la 6 y la 7: ahí nace la cuenta con terceros (sin el riesgo total,
-            // que va a CxP seguros y su IVA, D69).
+            // La semana 7 recauda los servicios de la 5, la 6 y la 7: ahí nace la cuenta con terceros, con el seguro riesgo
+            // total y su IVA en el mismo gran total (D78, supera la segmentación de D69).
             Movimiento siete = fila(m, 7);
-            BigDecimal esperado = Calc.restar(siete.pagoServicios(), siete.pagosServicios().todoRiesgoConIva());
-            assertThat(creditos(c.contabilizar(siete), Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS)).isCloseTo(esperado, within(bd("0.01")));
+            assertThat(creditos(c.contabilizar(siete), Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS))
+                    .isCloseTo(siete.pagoServicios(), within(bd("0.01")));
             assertThat(creditos(c.contabilizar(siete), Cuenta.CXP_SERVICIOS_TERCEROS)).isZero();
             // El Excel conserva su cuenta.
             List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso1(P));
@@ -195,7 +196,8 @@ class RespuestasDiegoRonda10Test {
         @Test
         void conExactamenteDosCuotasLaComparacionEstrictaNoCobraYLaNoEstrictaSi() {
             // Sin la mora en el numerador (CUOTAS_VENCIDAS), al iniciar la semana 3 el cociente es 2 exacto (cuotas al peso).
-            ReglasNegocio soloCuotas = negocio().conBaseMoraCobranza(BaseMoraCobranza.CUOTAS_VENCIDAS);
+            ReglasNegocio soloCuotas = negocio().conBaseMoraCobranza(BaseMoraCobranza.CUOTAS_VENCIDAS)
+                    .conComparacionCobranza(ComparacionCobranza.MAYOR);
             assertThat(fila(motor.ejecutar(sinPagarDesdeLaUno.conReglas(soloCuotas)), 3).cobranzaCausada()).isZero();
             assertThat(fila(motor.ejecutar(sinPagarDesdeLaUno.conReglas(soloCuotas
                     .conComparacionCobranza(ComparacionCobranza.MAYOR_O_IGUAL))), 3).cobranzaCausada()).isEqualByComparingTo(CUARENTA_MIL);
@@ -273,8 +275,8 @@ class RespuestasDiegoRonda10Test {
             BigDecimal cubiertos = Calc.restar(cierre.pagosServicios().total(), cierre.pagoServicios());
             assertThat(cubiertos).as("la moto (3.000.000) cubre los servicios pendientes").isPositive();
             List<Asiento> asientos = Contabilizador.para(negocio()).contabilizar(cierre);
-            BigDecimal aTerceros = creditos(asientos, Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS)
-                    .add(creditos(asientos, Cuenta.CXP_SEGUROS)).add(creditos(asientos, Cuenta.IVA_SEGUROS_POR_PAGAR));
+            // D78: el seguro riesgo total con su IVA va en el mismo gran total para terceros.
+            BigDecimal aTerceros = creditos(asientos, Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS);
             assertThat(aTerceros).isCloseTo(cubiertos, within(bd("0.01")));
             // Lo cubierto ya no se extingue contra las cuentas por cobrar de cada servicio.
             BigDecimal cxc = creditos(asientos, Cuenta.CXC_FONDO_CLIENTE).add(creditos(asientos, Cuenta.CXC_ASISTENCIAS))

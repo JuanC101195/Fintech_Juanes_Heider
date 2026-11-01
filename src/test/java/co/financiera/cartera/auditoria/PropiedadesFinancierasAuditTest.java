@@ -140,7 +140,10 @@ class PropiedadesFinancierasAuditTest {
                 .conCausacionServicios(ReglasNegocio.CausacionServicios.values()[r.nextInt(ReglasNegocio.CausacionServicios.values().length)])
                 .conUmbralCocienteCobranza(r.nextBoolean() ? null : bd(1 + r.nextInt(3)))
                 .conBaseMoraCobranza(ReglasNegocio.BaseMoraCobranza.values()[r.nextInt(ReglasNegocio.BaseMoraCobranza.values().length)])
-                .conComparacionCobranza(ReglasNegocio.ComparacionCobranza.values()[r.nextInt(ReglasNegocio.ComparacionCobranza.values().length)]);
+                .conComparacionCobranza(ReglasNegocio.ComparacionCobranza.values()[r.nextInt(ReglasNegocio.ComparacionCobranza.values().length)])
+                // Ronda 12 (Diego 2026-11-01): marca por cociente y primera cuota completa prorrateada.
+                .conMarcaPorCociente(r.nextBoolean())
+                .conAlcanceProrrateoPrimeraCuota(ReglasNegocio.AlcanceProrrateo.values()[r.nextInt(ReglasNegocio.AlcanceProrrateo.values().length)]);
         return x;
     }
 
@@ -351,6 +354,7 @@ class PropiedadesFinancierasAuditTest {
                 violacion("I14 cobranza distinta del cobro fijo por periodo", id + " cobranza=" + m.cobranzaCausada().toPlainString()
                         + " fija=" + fija.toPlainString(), repro);
             }
+            marcaPorCociente(m, prev, rn, id, repro);
             // I2 continuidad
             if (dif(m.saldoInicial(), prev.saldoFinal())) {
                 violacion("I2 saldoInicial != saldoFinal anterior", id, repro);
@@ -467,7 +471,18 @@ class PropiedadesFinancierasAuditTest {
             numerador = Calc.sumar(numerador, prev.cxcMora(), prev.cxcCobranza());
         }
         BigDecimal servicios = co.financiera.cartera.nucleo.Servicios.porCuota(monto, e.parametros(), rn.porcentajeTodoRiesgo()).total();
-        BigDecimal cuotaTotal = Calc.sumar(m.cuotaFinanciera(), servicios);
+        BigDecimal cuota = m.cuotaFinanciera();
+        if (esUltimaConSaldo(m, prev, e)) {
+            // D79: la última cuota recoge el capital que la primera no cobró (capital + interés), pero el denominador del
+            // cociente sigue siendo la cuota fija vigente (D75), la de la fila anterior. Si la anterior es la primera
+            // (prorrateada) o si este mismo periodo cambió la tasa (la cuota fija se recalculó al leerlo), no hay con qué
+            // comparar.
+            if (prev.periodo() <= 1 || m.tasaPeriodica().compareTo(prev.tasaPeriodica()) != 0) {
+                return;
+            }
+            cuota = prev.cuotaFinanciera();
+        }
+        BigDecimal cuotaTotal = Calc.sumar(cuota, servicios);
         BigDecimal umbral = rn.umbralCocienteCobranza();
         BigDecimal minimo = Calc.multiplicar(umbral, Calc.restar(cuotaTotal, BigDecimal.ONE));
         BigDecimal holgado = Calc.multiplicar(umbral, Calc.sumar(cuotaTotal, BigDecimal.ONE));
@@ -481,6 +496,38 @@ class PropiedadesFinancierasAuditTest {
             violacion("I8 sin cobranza con el cociente por encima del umbral", id + " saldoEnMora=" + numerador.toPlainString()
                     + " cuotaTotal=" + cuotaTotal.toPlainString(), repro);
         }
+    }
+
+    /**
+     * I15 (R12-MARCA-POR-COCIENTE, D77): con la marca por cociente, la marca y la cobranza miden el mismo cociente en el
+     * mismo instante (el cierre del periodo anterior es el inicio de este), así que un periodo que causa cobranza viene de
+     * un periodo ya marcado (salvo si este periodo cambió la tasa y con ella la cuota del denominador). Y la marca nunca se
+     * quita mientras el crédito siga abierto (D67).
+     */
+    private void marcaPorCociente(Movimiento m, Movimiento prev, ReglasNegocio rn, String id, String repro) {
+        if (!rn.marcaRecuperacionPorCociente()) {
+            return;
+        }
+        boolean mismaTasa = m.tasaPeriodica().compareTo(prev.tasaPeriodica()) == 0;
+        if (m.cobranzaCausada().signum() > 0 && prev.periodo() >= 1 && mismaTasa && !prev.listoParaRecuperacion()) {
+            violacion("I15 cobranza por cociente sin la marca del periodo anterior", id + " cobranza="
+                    + m.cobranzaCausada().toPlainString(), repro);
+        }
+        boolean abierto = m.estado() != EstadoCredito.CANCELADO && m.estado() != EstadoCredito.CERRADO_POR_EVENTO;
+        if (prev.listoParaRecuperacion() && abierto && !m.listoParaRecuperacion()) {
+            violacion("I15b la marca se quitó con el crédito abierto", id, repro);
+        }
+    }
+
+    /**
+     * Con la primera cuota completa prorrateada (D79), la fila de la última cuota del plan: vence el capital vigente
+     * completo que quedaba (capital contractual = saldo inicial − capital vencido inicial).
+     */
+    private static boolean esUltimaConSaldo(Movimiento m, Movimiento prev, Escenario e) {
+        if (!e.reglas().prorrateaCuotaCompleta() || e.diasPrimerPeriodo().isEmpty() || m.capitalContractual().signum() <= 0) {
+            return false;
+        }
+        return !dif(m.capitalContractual(), Calc.restar(m.saldoInicial(), prev.capitalVencido()));
     }
 
     /**

@@ -112,19 +112,20 @@ class RespuestasDiegoRonda10y11Test {
                 .isCloseTo(new BigDecimal("4087.6615"), within(TOLERANCIA));
     }
 
-    /** R11-CONTABILIDAD-SEGURO-IVA con la corrida del motor: segmenta seguro e IVA, cuadra, IVA = 19 % del seguro. */
+    /**
+     * R11-CONTABILIDAD-SEGURO-IVA (D69) quedó superada por R12-IVA-FONDO-ASISTENCIAS (Diego 2026-11-01, D78): el cliente
+     * sigue pagando el seguro más su 19 % de IVA, pero la contabilidad no los segmenta; van en el gran total para terceros
+     * con el fondo, la asistencia y el seguro de vida.
+     */
     @Test
-    void laCuotaDeNegocioSegmentaElSeguroYElIvaYCuadra() {
+    void laCuotaDeNegocioLlevaElSeguroConSuIvaEnElGranTotalYCuadra() {
         List<Movimiento> m = motor.ejecutar(conOperacionDelExcel().conReglas(negocio()));
         Asiento cuota = Contabilizador.para(negocio()).contabilizar(periodoUno(m)).getFirst();
         assertThat(cuota.cuadra()).isTrue();
-        BigDecimal seguro = periodoUno(m).serviciosCausados().seguroTodoRiesgo();
-        BigDecimal iva = periodoUno(m).serviciosCausados().ivaSeguroTodoRiesgo();
-        assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SEGUROS).singleElement()
-                .satisfies(l -> assertThat(l.credito()).isCloseTo(seguro, within(TOLERANCIA)));
-        assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR).singleElement()
-                .satisfies(l -> assertThat(l.credito()).isCloseTo(iva, within(TOLERANCIA)));
-        assertThat(iva).isCloseTo(seguro.multiply(new BigDecimal("0.19")), within(TOLERANCIA));
-        assertThat(Cuenta.IVA_SEGUROS_POR_PAGAR.nombreExcel()).contains("no a la DIAN");
+        Servicios causados = periodoUno(m).serviciosCausados();
+        assertThat(causados.ivaSeguroTodoRiesgo())
+                .isCloseTo(causados.seguroTodoRiesgo().multiply(new BigDecimal("0.19")), within(TOLERANCIA));
+        assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.INGRESOS_RECIBIDOS_PARA_TERCEROS).singleElement()
+                .satisfies(l -> assertThat(l.credito()).isCloseTo(causados.total(), within(TOLERANCIA)));
     }
 }
