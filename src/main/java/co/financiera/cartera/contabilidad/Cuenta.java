@@ -41,23 +41,12 @@ public enum Cuenta {
      */
     CXP_SOBRANTE_CLIENTE("CxP sobrante por devolver al cliente (provisional, PUC pendiente)"),
     /**
-     * R11-CONTABILIDAD-SEGURO-IVA (Diego, ronda 11, 2026-10-31): el seguro todo riesgo, sin IVA, es una cuenta por
-     * pagar a la aseguradora ("CxP seguros"). Con {@link #IVA_SEGUROS_POR_PAGAR} suma la "CxP aseguradoras" (por
-     * ejemplo 10.000 + 1.900 = 11.900). PROVISIONAL: la subcuenta del PUC está pendiente con contabilidad (C2/P9).
-     */
-    CXP_SEGUROS("CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)"),
-    /**
-     * R9-SEGURO-TODO-RIESGO / R11-CONTABILIDAD-SEGURO-IVA (Diego, rondas 9 y 11): el IVA (19 %) del seguro, aparte del
-     * seguro. Es IVA por pagar por seguros: se debe a la aseguradora junto con el seguro y NUNCA es responsabilidad de
-     * la financiera frente a la DIAN. PROVISIONAL: la subcuenta del PUC está pendiente (C2/P9).
-     */
-    IVA_SEGUROS_POR_PAGAR("IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)"),
-    /**
-     * R10-CONTADOR-VENCIDAS (Diego, ronda 10, 2026-10-31, D72): los servicios (fondo, asistencia y seguro de vida) que el
-     * cliente paga de verdad se registran como ingresos recibidos para terceros; la cuenta con el tercero solo nace con el
+     * R10-CONTADOR-VENCIDAS (Diego, ronda 10, 2026-10-31, D72): los servicios (fondo, asistencia y seguros) que el cliente
+     * paga de verdad se registran como ingresos recibidos para terceros; la cuenta con el tercero solo nace con el
      * recaudo efectivo, nunca con la causación. Reemplaza a {@link #CXP_SERVICIOS_TERCEROS} en el perfil de negocio con
      * {@code causacionServicios = SIEMPRE} ({@code Contabilizador.para}); el Excel conserva su nombre. PROVISIONAL: PUC
-     * 2815 a confirmar con contabilidad (pregunta R12-CUENTA-TERCEROS).
+     * 2815 a confirmar con contabilidad (R12-CUENTA-TERCEROS no fijó el código). R12-IVA-FONDO-ASISTENCIAS (D78): el seguro
+     * riesgo total con su IVA también va aquí, en un gran total sin segmentar, como el fondo y las asistencias.
      */
     INGRESOS_RECIBIDOS_PARA_TERCEROS("Ingresos recibidos para terceros (PUC 2815, provisional)");
 

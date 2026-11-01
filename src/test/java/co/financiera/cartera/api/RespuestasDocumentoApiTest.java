@@ -104,7 +104,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(30);
+        assertThat(r.get("claves")).hasSize(32);
         // Ronda 8 (Diego 2026-10-28).
         assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
         assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();
@@ -134,11 +134,25 @@ class RespuestasDocumentoApiTest {
         assertThat(negocio.get("umbralCocienteCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("umbralCocienteCobranza").isNull()).isTrue();
         assertThat(negocio.get("baseMoraCobranza").asString()).isEqualTo("TOTAL_PENDIENTE");
-        assertThat(negocio.get("comparacionCobranza").asString()).isEqualTo("MAYOR");
+        assertThat(negocio.get("comparacionCobranza").asString()).as("D74").isEqualTo("MAYOR_O_IGUAL");
         assertThat(negocio.get("cuotasVencidasParaCobranza").asString()).isEqualTo("2");
         assertThat(excel.get("cuotasVencidasParaCobranza").isNull()).isTrue();
         assertThat(negocio.get("diasMora").asString()).isEqualTo("DIAS_CALENDARIO_MENSUAL");
         assertThat(excel.get("diasMora").asString()).isEqualTo("PERIODO_NOMINAL");
+    }
+
+    /** Ronda 12 (Diego 2026-11-01, D76, D77 y D79): las claves nuevas o que cambian salen en /reglas. */
+    @Test
+    void lasClavesDeLaRonda12SalenEnLasReglas() throws Exception {
+        JsonNode r = leer(get("/api/v1/reglas"));
+        JsonNode negocio = r.get("perfiles").get("NEGOCIO");
+        JsonNode excel = r.get("perfiles").get("EXCEL");
+        assertThat(negocio.get("serviciosDespuesDelPlazo").asString()).isEqualTo("true");
+        assertThat(excel.get("serviciosDespuesDelPlazo").asString()).isEqualTo("false");
+        assertThat(negocio.get("marcaPorCociente").asString()).isEqualTo("true");
+        assertThat(excel.get("marcaPorCociente").asString()).isEqualTo("false");
+        assertThat(negocio.get("alcanceProrrateoPrimeraCuota").asString()).isEqualTo("CUOTA_COMPLETA");
+        assertThat(excel.get("alcanceProrrateoPrimeraCuota").asString()).isEqualTo("SOLO_INTERES");
     }
 
     /**

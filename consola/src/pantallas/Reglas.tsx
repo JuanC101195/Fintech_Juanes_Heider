@@ -31,9 +31,11 @@ const VALORES: Record<string, string> = {
   SUSPENDER_POR_UMBRAL: 'Siempre, hasta las cuotas atrasadas del umbral; desde ahí solo los seguros',
   SIEMPRE: 'Siempre en la cuota, al día o atrasado; solo la dación o la retoma los suspenden',
   CUOTAS_VENCIDAS: 'Solo lo que fue cuota: capital, interés y servicios vencidos',
-  TOTAL_PENDIENTE: 'Todo lo pendiente: capital, interés, servicios, mora y cobranza (supuesto por confirmar)',
-  MAYOR: 'Estrictamente mayor que el umbral (supuesto por confirmar)',
+  TOTAL_PENDIENTE: 'Todo lo pendiente: capital, interés, servicios, mora y cobranza',
+  MAYOR: 'Estrictamente mayor que el umbral',
   MAYOR_O_IGUAL: 'Desde el umbral (mayor o igual)',
+  SOLO_INTERES: 'Solo el interés, por los días reales; capital y servicios completos',
+  CUOTA_COMPLETA: 'La cuota completa, proporcional a los días: el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden',
   true: 'Sí',
   false: 'No',
 }
@@ -45,7 +47,7 @@ const POR_CLAVE: Record<string, (valor: string) => string | undefined> = {
   cobranzaDiaria: (v) => (NUMERO.test(v) ? `${cop(v)} por día de atraso (valor de ejemplo, por definir)` : undefined),
   cuotasVencidasParaRecuperacion: (v) => `Con ${v} cuotas atrasadas el crédito queda listo para dación o retoma`,
   cuotasVencidasParaCobranza: (v) => `La cobranza empieza al llegar a la cuota atrasada número ${v} (no aplica si rige el cociente de cobranza)`,
-  umbralCocienteCobranza: (v) => `La cobranza se cobra cuando lo pendiente supera ${v} cuotas totales (cuota + servicios)`,
+  umbralCocienteCobranza: (v) => `La cobranza se cobra cuando lo pendiente llega a ${v} cuotas totales (cuota + servicios)`,
   cobranzaPorPeriodo: (v) => (NUMERO.test(v) ? `${cop(v)} por periodo atrasado (valor de ejemplo, por definir)` : undefined),
   cuotasVencidasParaSuspenderServicios: (v) => `Tras ${v} cuotas vencidas se suspenden el fondo y la asistencia y solo se causa el seguro`,
   seguroTodoRiesgoPorcentajeMensual: (v) => {

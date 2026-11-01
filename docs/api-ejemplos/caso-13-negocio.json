@@ -49,7 +49,7 @@
     "montoFinanciado" : "5904400",
     "perfilReglas" : "NEGOCIO",
     "listoParaRecuperacion" : false,
-    "periodoListoParaRecuperacion" : 41
+    "periodoListoParaRecuperacion" : null
   },
   "movimientos" : [ {
     "periodo" : 0,
@@ -4012,7 +4012,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "5000",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 42,
     "mes" : 10,
@@ -4106,7 +4106,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "1500000",
     "pagoExtraordinario" : "1500000",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 43,
     "mes" : 10,
@@ -4202,7 +4202,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 44,
     "mes" : 11,
@@ -4296,7 +4296,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 45,
     "mes" : 11,
@@ -4390,7 +4390,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 46,
     "mes" : 11,
@@ -4484,7 +4484,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 47,
     "mes" : 11,
@@ -4580,7 +4580,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 48,
     "mes" : 12,
@@ -4674,7 +4674,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 49,
     "mes" : 12,
@@ -4768,7 +4768,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 50,
     "mes" : 12,
@@ -4862,7 +4862,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 51,
     "mes" : 12,
@@ -4956,7 +4956,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 52,
     "mes" : 12,
@@ -5052,7 +5052,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 53,
     "mes" : 13,
@@ -5146,7 +5146,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 54,
     "mes" : 13,
@@ -5240,7 +5240,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 55,
     "mes" : 13,
@@ -5334,7 +5334,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 56,
     "mes" : 13,
@@ -5430,7 +5430,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 57,
     "mes" : 14,
@@ -5524,7 +5524,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 58,
     "mes" : 14,
@@ -5618,7 +5618,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 59,
     "mes" : 14,
@@ -5712,7 +5712,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 60,
     "mes" : 14,
@@ -5808,7 +5808,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 61,
     "mes" : 15,
@@ -5902,7 +5902,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 62,
     "mes" : 15,
@@ -5996,7 +5996,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 63,
     "mes" : 15,
@@ -6090,7 +6090,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 64,
     "mes" : 15,
@@ -6184,7 +6184,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 65,
     "mes" : 15,
@@ -6280,7 +6280,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 66,
     "mes" : 16,
@@ -6374,7 +6374,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 67,
     "mes" : 16,
@@ -6468,7 +6468,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 68,
     "mes" : 16,
@@ -6562,7 +6562,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 69,
     "mes" : 16,
@@ -6658,7 +6658,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 70,
     "mes" : 17,
@@ -6752,7 +6752,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 71,
     "mes" : 17,
@@ -6846,7 +6846,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 72,
     "mes" : 17,
@@ -6940,7 +6940,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 73,
     "mes" : 17,
@@ -7036,7 +7036,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 74,
     "mes" : 18,
@@ -7130,7 +7130,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 75,
     "mes" : 18,
@@ -7224,7 +7224,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 76,
     "mes" : 18,
@@ -7318,7 +7318,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 77,
     "mes" : 18,
@@ -7412,7 +7412,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 78,
     "mes" : 18,
@@ -7508,7 +7508,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 79,
     "mes" : 19,
@@ -7602,7 +7602,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 80,
     "mes" : 19,
@@ -7696,7 +7696,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 81,
     "mes" : 19,
@@ -7790,7 +7790,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 82,
     "mes" : 19,
@@ -7886,7 +7886,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 83,
     "mes" : 20,
@@ -7980,7 +7980,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 84,
     "mes" : 20,
@@ -8074,7 +8074,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 85,
     "mes" : 20,
@@ -8168,7 +8168,7 @@
     "costoRecuperacionAsumido" : "0",
     "pagoTotalCliente" : "168305",
     "pagoExtraordinario" : "0",
-    "listoParaRecuperacion" : true
+    "listoParaRecuperacion" : false
   }, {
     "periodo" : 86,
     "mes" : 20,
@@ -8291,20 +8291,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8334,20 +8322,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8377,20 +8353,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8420,20 +8384,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8463,20 +8415,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8506,20 +8446,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8549,20 +8477,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8592,20 +8508,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8635,20 +8539,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8678,20 +8570,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8721,20 +8601,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8764,20 +8632,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -8807,20 +8663,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -8850,20 +8694,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -8893,20 +8725,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -8936,20 +8756,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -8979,20 +8787,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9022,20 +8818,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9065,20 +8849,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9108,20 +8880,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9151,20 +8911,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9194,20 +8942,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9237,20 +8973,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9280,20 +9004,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9323,20 +9035,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9366,20 +9066,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9409,20 +9097,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9452,20 +9128,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9495,20 +9159,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9538,20 +9190,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9581,20 +9221,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9624,20 +9252,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9667,20 +9283,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9710,20 +9314,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9753,20 +9345,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9796,20 +9376,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -9839,20 +9407,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9882,20 +9438,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -9925,20 +9469,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10029,7 +9561,7 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "189102.5169230769230769230769230768",
+      "credito" : "203695.4686153846153846153846153845",
       "explicacion" : "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"
     }, {
       "cuenta" : "CARTERA_VENCIDA",
@@ -10037,21 +9569,9 @@
       "debito" : "0",
       "credito" : "138854.4357398735005273127294777139",
       "explicacion" : "Capital vencido recuperado (prelación 7)"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "12262.98461538461538461538461538462",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "2329.967076923076923076923076923077",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "1500000",
-    "totalCreditos" : "1500000.000000000000000000000000001",
+    "totalCreditos" : "1500000",
     "cuadra" : true
   }, {
     "periodo" : 43,
@@ -10078,20 +9598,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10121,20 +9629,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10164,20 +9660,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10207,20 +9691,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10250,20 +9722,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10293,20 +9753,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10336,20 +9784,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10379,20 +9815,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10422,20 +9846,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10465,20 +9877,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10508,20 +9908,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10551,20 +9939,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10594,20 +9970,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10637,20 +10001,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10680,20 +10032,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10723,20 +10063,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10766,20 +10094,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10809,20 +10125,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -10852,20 +10156,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10895,20 +10187,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10938,20 +10218,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -10981,20 +10249,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11024,20 +10280,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11067,20 +10311,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11110,20 +10342,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11153,20 +10373,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11196,20 +10404,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11239,20 +10435,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11282,20 +10466,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11325,20 +10497,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11368,20 +10528,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11411,20 +10559,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11454,20 +10590,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11497,20 +10621,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11540,20 +10652,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11583,20 +10683,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11626,20 +10714,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11669,20 +10745,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11712,20 +10776,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11755,20 +10807,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11798,20 +10838,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168304.9999999999999999999999999999",
@@ -11841,20 +10869,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11884,20 +10900,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "168305",
     "totalCreditos" : "168305",
@@ -11927,20 +10931,8 @@
       "cuenta" : "INGRESOS_RECIBIDOS_PARA_TERCEROS",
       "nombreCuenta" : "Ingresos recibidos para terceros (PUC 2815, provisional)",
       "debito" : "0",
-      "credito" : "63034.17230769230769230769230769231",
+      "credito" : "67898.48953846153846153846153846154",
       "explicacion" : "Servicios recaudados por cuenta de terceros"
-    }, {
-      "cuenta" : "CXP_SEGUROS",
-      "nombreCuenta" : "CxP seguros (a la aseguradora, sin IVA; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "4087.661538461538461538461538461539",
-      "explicacion" : "Seguro todo riesgo recaudado, sin IVA (R9-SEGURO-TODO-RIESGO)"
-    }, {
-      "cuenta" : "IVA_SEGUROS_POR_PAGAR",
-      "nombreCuenta" : "IVA por pagar por seguros (a la aseguradora, no a la DIAN; provisional, PUC pendiente)",
-      "debito" : "0",
-      "credito" : "776.6556923076923076923076923076924",
-      "explicacion" : "IVA por pagar por seguros, a la aseguradora y no a la DIAN (R11-CONTABILIDAD-SEGURO-IVA)"
     } ],
     "totalDebitos" : "82560.95521405852162145410753745811",
     "totalCreditos" : "82560.95521405852162145410753745811",

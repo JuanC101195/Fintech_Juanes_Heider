@@ -16,7 +16,7 @@ class VersionReglasTest {
      * Huella fija del perfil EXCEL. Si cambia, cambió el formato canónico o una regla del Excel: las dos cosas son
      * versiones nuevas y deben decidirse a propósito (ADR 0004), nunca regenerarse en silencio.
      */
-    private static final String HUELLA_EXCEL = "f83d58cb69efb6086ed67239fd16c16af9488d41d2cabf167edc2b406165b2d1";
+    private static final String HUELLA_EXCEL = "2b9f665bc1ce29fb58290570cd88a3ff5d2696b663113a01f8e80431cb5b0ec2";
 
     @Test
     void elContenidoCanonicoTieneElFormatoYTodasLasClavesEnOrden() {
@@ -37,6 +37,8 @@ causacionServicios=SOLO_AL_DIA
 umbralCocienteCobranza=
 baseMoraCobranza=TOTAL_PENDIENTE
 comparacionCobranza=MAYOR
+marcaPorCociente=false
+alcanceProrrateoPrimeraCuota=SOLO_INTERES
 """);
     }
 

@@ -52,7 +52,15 @@ class RespuestasDiegoRonda5Test {
      * periodo hasta medio peso.
      */
     private static ReglasNegocio negocioSinRedondeo() {
-        return negocio().conRedondeoCuotaAlPeso(false);
+        return negocioP5().conRedondeoCuotaAlPeso(false);
+    }
+
+    /**
+     * NEGOCIO con el prorrateo de P5 (solo el interés, D48): desde la ronda 12 (D79) NEGOCIO prorratea la cuota completa;
+     * estas pruebas siguen documentando la respuesta de la ronda 5 (la cuota completa se prueba en RespuestasDiegoRonda12Test).
+     */
+    private static ReglasNegocio negocioP5() {
+        return negocio().conAlcanceProrrateoPrimeraCuota(ReglasNegocio.AlcanceProrrateo.SOLO_INTERES);
     }
 
     private static Movimiento fila(List<Movimiento> m, int periodo) {
@@ -108,7 +116,7 @@ class RespuestasDiegoRonda5Test {
         void quincenalUsaLosDiasHastaEl5oEl20() {
             ParametrosProducto q = ParametrosProducto.de(LineaCredito.CPPU, Periodicidad.QUINCENAL, 48);
             CalendarioPagos cal = CalendarioPagos.quincenal(LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 20));
-            Movimiento uno = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), q).conReglas(negocio())
+            Movimiento uno = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), q).conReglas(negocioP5())
                     .conCalendario(cal)), 1);
             // A mano: cuota 219.092,94; interés normal 156.852,86; capital 62.240,08; interés de 12 días 123.420,22.
             assertThat(uno.capitalContractual()).isCloseTo(bd("62240.08"), within(UN_PESO));
@@ -124,9 +132,9 @@ class RespuestasDiegoRonda5Test {
             CalendarioPagos largo = CalendarioPagos.mensual(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 11, 5));
             assertThat(corto.diasDelPeriodo(1)).isEqualTo(21);
             assertThat(largo.diasDelPeriodo(1)).isEqualTo(35);
-            Movimiento c = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), mes).conReglas(negocio())
+            Movimiento c = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), mes).conReglas(negocioP5())
                     .conCalendario(corto)), 1);
-            Movimiento l = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), mes).conReglas(negocio())
+            Movimiento l = fila(motor.ejecutar(new Escenario(Operacion.ejemploExcel(), mes).conReglas(negocioP5())
                     .conCalendario(largo)), 1);
             // A mano: cuota 444.006,17; interés del mes 317.872,58; capital 126.133,58.
             assertThat(c.capitalContractual()).isCloseTo(bd("126133.58"), within(UN_PESO));

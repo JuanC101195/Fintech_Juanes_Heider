@@ -96,7 +96,7 @@ final class CatalogoServicio {
                     "Si los umbrales de cobranza y de suspensión de servicios cuentan también la cuota atrasada del periodo en curso: con 2, la 2.ª cuota atrasada ya cobra la cobranza y suspende fondo y asistencia (lectura A); si no, desde la 3.ª",
                     "R9-COBRO-MOMENTO"),
             new ClaveDto("seguroTodoRiesgoPorcentajeMensual",
-                    "Seguro todo riesgo (se suma al seguro de vida): % mensual sobre el monto financiado inicial, periodizado como el seguro de vida y con IVA encima, segmentado en la contabilidad; 0 = no existe",
+                    "Seguro todo riesgo (se suma al seguro de vida): % mensual sobre el monto financiado inicial, periodizado como el seguro de vida y con IVA encima; en la contabilidad va en un gran total con los demás servicios, sin segmentar el IVA; 0 = no existe",
                     "R9-SEGURO-TODO-RIESGO"),
             new ClaveDto("causacionServicios",
                     "Cómo se causan fondo, asistencia y seguros: solo al día (D17), con suspensión tras las cuotas atrasadas del umbral (rondas 8 y 9) o siempre (el cliente siempre los paga en la cuota; solo la dación o la retoma los suspenden)",
@@ -105,11 +105,17 @@ final class CatalogoServicio {
                     "La cobranza se causa cuando saldo en mora / valor total de la cuota supera este cociente (se evalúa al iniciar el periodo); con valor no rige el umbral por cuotas vencidas; vacío = umbral por cuotas vencidas",
                     "R10-CONTADOR-VENCIDAS"),
             new ClaveDto("baseMoraCobranza",
-                    "Qué entra en el saldo en mora del cociente de cobranza: solo lo que fue cuota (capital, interés y servicios pendientes) o todo lo pendiente (además mora y cobranza); supuesto provisional",
+                    "Qué entra en el saldo en mora del cociente de cobranza: solo lo que fue cuota (capital, interés y servicios pendientes) o la totalidad de lo pendiente (además mora y cobranza; Diego, ronda 12)",
                     "R10-CONTADOR-VENCIDAS / R12-COBRANZA-SALDO-MORA"),
             new ClaveDto("comparacionCobranza",
-                    "Si el cociente de cobranza debe ser estrictamente mayor que el umbral o basta igualarlo; supuesto provisional",
-                    "R10-CONTADOR-VENCIDAS / R12-COBRANZA-SALDO-MORA"));
+                    "Si el cociente de cobranza debe ser estrictamente mayor que el umbral o basta igualarlo (Diego, ronda 12: desde igual o mayor a 2)",
+                    "R10-CONTADOR-VENCIDAS / R12-COBRANZA-SALDO-MORA"),
+            new ClaveDto("marcaPorCociente",
+                    "Si la marca «listo para recuperación» se mide con el mismo cociente de la cobranza al cerrar cada periodo (en vez de contar cuotas vencidas); la marca persiste aunque el cociente baje",
+                    "R12-MARCA-POR-COCIENTE"),
+            new ClaveDto("alcanceProrrateoPrimeraCuota",
+                    "Qué se prorratea en la primera cuota por los días reales: solo el interés o la cuota completa (capital y servicios en proporción a los días; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden)",
+                    "P5-PRORRATEO / R10-PRIMERA-CUOTA / R12-PRIMERA-CUOTA-DETALLE"));
 
     private final PerfilesReglas perfiles;
 

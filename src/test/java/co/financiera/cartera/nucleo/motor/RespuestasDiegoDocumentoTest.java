@@ -341,9 +341,11 @@ class RespuestasDiegoDocumentoTest {
         @Test
         void elCaso11SeMarcaConDosCuotasAtrasadasPeroLaDacionSigueEnElCuartoPeriodo() {
             // Este escenario conserva los 4 periodos de espera del Excel; con NEGOCIO el catálogo usa 2 (ver
-            // elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaSegundaCuota).
+            // elCaso11CorregidoEspera2PeriodosYLaCobranzaNaceEnLaSegundaCuota). PPER-9 contaba eventos; desde la ronda 12
+            // (D77) NEGOCIO marca por el cociente y el caso 11 (~1,6 cuotas al cierre del 44) ya no queda marcado: esta
+            // prueba documenta la marca por eventos.
             List<Movimiento> excel = motor.ejecutar(EscenariosExcel.caso11(P));
-            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio()));
+            List<Movimiento> m = motor.ejecutar(EscenariosExcel.caso11(P).conReglas(negocio().conMarcaPorCociente(false)));
             assertThat(fila(m, 43).cuotasVencidas()).isEqualTo(1);
             assertThat(fila(m, 43).listoParaRecuperacion()).isFalse();
             assertThat(fila(m, 44).cuotasVencidas()).isEqualTo(2);

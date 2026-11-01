@@ -2249,17 +2249,109 @@ const RONDA_12: Pregunta[] = [
   },
 ]
 
+// Ronda 13 (1 nov 2026): lo que quedó ambiguo en las respuestas de Diego a la ronda 12 (docs/respuestas-diego-2026-11-01-ronda12.md).
+// El motor ya aplica el supuesto indicado en cada una ("lo que hace el motor"); la respuesta lo confirma o lo cambia.
+const RONDA_13: Pregunta[] = [
+  {
+    id: 'R13-COBRANZA-TRAS-MARCA',
+    bloque: PAGOS,
+    titulo: 'Crédito ya marcado "listo para recuperar": si abona y baja de 2 cuotas, ¿se sigue cobrando la cobranza?',
+    contexto:
+      'Usted indicó que la marca se da cuando el saldo en mora llega a 2 cuotas totales o más, igual que la cobranza, y que la marca es lo que activa el cobro de cobranza. También confirmó (ronda 10) que la marca no se quita aunque el cliente se ponga al día. Ejemplo con la operación del Excel (cuota total 168.305 semanal): no paga las semanas 1, 2 y 3; al cerrar la semana 2 queda marcado y la semana 3 cobra 40.000. En la semana 4 paga 600.000: sigue debiendo, pero menos de 2 cuotas. Supuesto provisional del motor: el crédito sigue marcado, pero la cobranza solo se cobra mientras el saldo en mora siga en 2 cuotas o más, así que las semanas 5 y 6 no cobran. Si la cobranza debe seguir mientras el crédito esté marcado, el cliente pagaría 40.000 cada semana hasta ponerse al día o cerrar.',
+    excelHoy: 'El Excel no marca créditos ni usa un cociente para la cobranza.',
+    opciones: [
+      { codigo: 'solo-mientras-cociente', texto: 'Solo mientras el saldo en mora siga en 2 cuotas o más; la marca se queda aunque baje (lo que hace el motor)' },
+      { codigo: 'mientras-este-marcado', texto: 'Mientras el crédito esté marcado, aunque el saldo en mora baje de 2 cuotas, hasta que se ponga al día' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R13-PRIMERA-CUOTA-INTERES',
+    bloque: PAGOS,
+    titulo: 'Primera cuota proporcional: ¿el capital que no se cobra en la primera cuota causa interés hasta la última?',
+    contexto:
+      'Usted indicó que el cliente solo paga la parte proporcional de la primera cuota y que el plan sigue igual, con la última cuota quedando con el saldo. Ejemplo semanal con la operación del Excel y 3 días de 7: la primera semana paga 71.940 en vez de 168.305 y quedan 16.299,13 de capital sin cobrar. Supuesto provisional del motor: ese capital sigue en el saldo y causa interés corriente como el resto. Como la cuota fija no cambia, cada cuota amortiza un poco menos y la cuota 104 sube de 100.406,51 a 157.091,51 (más servicios): el cliente termina pagando unos 40.386 más que si ese capital no causara interés. Si ese capital no causara interés, la cuota 104 sería 116.705,64 (100.406,51 + 16.299,13).',
+    excelHoy: 'El Excel no prorratea la primera cuota.',
+    opciones: [
+      { codigo: 'causa-interes', texto: 'Sí: causa interés como el resto del saldo y la última cuota recoge todo (lo que hace el motor; 157.091,51 en el ejemplo)' },
+      { codigo: 'sin-interes', texto: 'No: ese capital no causa interés y la última cuota solo suma lo no cobrado (116.705,64 en el ejemplo)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R13-PRIMERA-CUOTA-LARGA',
+    bloque: PAGOS,
+    titulo: 'Si la moto se entrega más de un periodo antes del primer vencimiento, ¿cómo se cobra la primera cuota?',
+    contexto:
+      'La primera cuota proporcional cubre el caso en que el primer vencimiento cae a pocos días de la entrega. Falta el caso contrario: por ejemplo, entrega el sábado 3 de octubre y primer martes el 13, 10 días para una cuota semanal de 7. Supuesto provisional del motor: capital y servicios van completos (28.523,48 y 67.898,48) y solo el interés cuenta los 10 días (102.672,02 en vez de 71.882,79): la primera semana paga 199.094. Si capital y servicios también fueran proporcionales (10/7), pagaría unos 240.418.',
+    excelHoy: 'El Excel no prorratea la primera cuota.',
+    opciones: [
+      { codigo: 'completa-mas-interes-dias', texto: 'Capital y servicios completos; solo el interés cuenta los días de más (lo que hace el motor)' },
+      { codigo: 'proporcional-mayor', texto: 'Todo proporcional a los días, también capital y servicios (10/7 en el ejemplo)' },
+      { codigo: 'no-se-permite', texto: 'No se permite: el primer vencimiento siempre cae dentro del primer periodo' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R13-SERVICIOS-CIERRE-ASIENTO',
+    bloque: CONTABILIDAD,
+    titulo: 'Dación o retoma: ¿con qué asiento se le paga al tercero lo que se causó y nunca se recaudó?',
+    contexto:
+      'Usted indicó que en el cierre los servicios no recaudados se le pagan igual al tercero, con el fondo de garantías. Hoy el motor registra la cuenta con el tercero solo cuando hay recaudo efectivo (ronda 10): de los servicios pendientes, la parte que cubre el valor de la moto es recaudo y va a "Ingresos recibidos para terceros"; la parte que no cubre se extingue contra la cuenta por cobrar de cada servicio y nunca se le paga al tercero. Para cambiarlo necesitamos el asiento exacto y de dónde sale el dinero. Ejemplo: quedan 121.465 de servicios pendientes y la moto solo cubre 21.465; faltan 100.000. Indique también, si ya lo tiene, el código PUC de la cuenta de terceros (hoy 2815, provisional).',
+    excelHoy: 'El Excel extingue todos los servicios pendientes contra sus cuentas por cobrar y no le paga nada al tercero.',
+    opciones: [
+      { codigo: 'cxc-fondo-garantias', texto: 'Débito a "CxC fondo de garantías" y crédito a la cuenta de terceros por los 100.000: los paga el fondo junto con el faltante de la dación' },
+      { codigo: 'gasto-financiera', texto: 'Débito a un gasto de la financiera y crédito a la cuenta de terceros: la financiera los asume' },
+      { codigo: 'otro', texto: 'Otro asiento', detalle: 'Indique las cuentas débito y crédito y el PUC.', pideTexto: true },
+      { codigo: 'consulto-contabilidad', texto: 'Lo consulto con contabilidad y respondo después' },
+    ],
+  },
+  {
+    id: 'R13-CONGELAR-CREDITO',
+    bloque: PAGOS,
+    titulo: 'Crédito congelado por una justificación: ¿qué significa "congelar" en el día a día?',
+    contexto:
+      'Usted indicó que en la fábrica de créditos habrá "Justificaciones que congelan el crédito" (enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía o en fiscalía; solo CPPU y CPPR), que se congela por un periodo que se revisa cada vez, y que se congela el crédito pero NO se perdonan cargos. Falta saber qué hace el motor en ese periodo. Ejemplo: crédito semanal congelado la semana 20. Si el calendario se corre, la cuota 20 se paga una semana después y el plan termina una semana más tarde. Si el calendario sigue, la cuota 20 queda pendiente igual y lo que cambia es que no se cobra cobranza ni se marca para recuperar. Esto no se implementa todavía (es de la fase 3); lo preguntamos para diseñarlo bien.',
+    excelHoy: 'El Excel no contempla justificaciones.',
+    opciones: [
+      { codigo: 'corre-calendario', texto: 'Se corre el calendario: ese periodo no causa cuota, interés, servicios, mora ni cobranza y el plan termina un periodo después' },
+      { codigo: 'corre-calendario-con-interes', texto: 'Se corre el calendario, pero el periodo sí causa interés y servicios, que quedan pendientes' },
+      { codigo: 'calendario-sigue-sin-cobranza', texto: 'El calendario sigue: se causa la cuota con su interés, servicios y mora, pero no se cobra cobranza ni se marca para recuperar' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+]
+
+// Respondidas por el cuestionario (Diego, 1 de noviembre de 2026): las 11 de la ronda 12 y las 2 que seguían abiertas de la
+// ronda 10 (docs/respuestas-diego-2026-11-01-ronda12.md). Quedan decididas D74 a D83; lo que dejó ambiguo va a la ronda 13.
+const REF_RONDA_12 = 'Ronda 12'
+const RESPONDIDAS_RONDA_12: Record<string, Omit<Respondida, 'fecha'>> = {
+  'R12-COBRANZA-SALDO-MORA': { referencia: REF_RONDA_12, respuesta: 'La totalidad de lo pendiente (con mora y cobranza) y desde IGUAL o MAYOR a 2; el ejemplo es correcto en la lógica matemática (D74).' },
+  'R12-COBRANZA-DENOMINADOR': { referencia: REF_RONDA_12, respuesta: 'La cuota vigente del periodo más los servicios (lo que hace el motor) (D75).' },
+  'R12-COBRANZA-PERIODICIDADES': { referencia: REF_RONDA_12, respuesta: 'Igual en las tres periodicidades: el mismo umbral y el mismo valor por periodo (D75).' },
+  'R12-GIRO-TERCEROS': { referencia: REF_RONDA_12, respuesta: 'Mensual, al cerrar cada mes, para todos los terceros (D75).' },
+  'R12-SERVICIOS-DESPUES-PLAZO': { referencia: REF_RONDA_12, respuesta: 'Mientras el crédito siga con deuda, también después de la última cuota (D76).' },
+  'R12-VALOR-EXIGIBLE': { referencia: REF_RONDA_12, respuesta: 'La cuota del periodo más la totalidad de lo pendiente: lo que necesita para quedar al día (D80). No cambia el cálculo; mostrarlo en el API es un pendiente técnico.' },
+  'R12-MARCA-POR-COCIENTE': { referencia: REF_RONDA_12, nota: 'Falta saber si la cobranza sigue mientras el crédito esté marcado aunque el cociente baje de 2 (R13-COBRANZA-TRAS-MARCA).', respuesta: 'Por el cociente: se marca cuando el saldo en mora llega a 2 cuotas totales o más, igual que la cobranza; la marca es lo que activa el cobro de cobranza (D77).' },
+  'R12-PRIMERA-CUOTA-DETALLE': { referencia: REF_RONDA_12, nota: 'Supuestos provisionales en la ronda 13: el interés del capital no cobrado (R13-PRIMERA-CUOTA-INTERES) y la entrega más de un periodo antes del primer vencimiento (R13-PRIMERA-CUOTA-LARGA).', respuesta: 'No se cobran después: el cliente solo paga la parte proporcional y el plan sigue igual (la última cuota queda con el saldo); los servicios no cobrados se pierden (D79).' },
+  'R12-IVA-FONDO-ASISTENCIAS': { referencia: REF_RONDA_12, respuesta: 'Se corrige la política del seguro: recibe el tratamiento de los fondos y las asistencias, un gran total como cuenta por pagar, sin segmentar el IVA (D78, supera a D69).' },
+  'R12-CUENTA-TERCEROS': { referencia: REF_RONDA_12, nota: 'Falta el código PUC definitivo de la cuenta de terceros (sigue 2815, provisional; se pregunta en R13-SERVICIOS-CIERRE-ASIENTO).', respuesta: 'El seguro riesgo total recibe el mismo tratamiento que los otros servicios (D78).' },
+  'R12-SERVICIOS-CIERRE': { referencia: REF_RONDA_12, nota: 'No implementado: falta el asiento exacto y de dónde sale el dinero (R13-SERVICIOS-CIERRE-ASIENTO).', respuesta: 'El periodo del cierre no causa servicios; los no recaudados se le pagan igual al tercero, con el fondo de garantías (D81).' },
+  'R10-JUSTIFICACIONES': { referencia: REF_RONDA_12, nota: 'Es de la fábrica de créditos (fase 3), no del motor. Falta qué significa "congelar" en el día a día (R13-CONGELAR-CREDITO).', respuesta: 'En el setup de la fábrica de créditos habrá "Justificaciones que congelan el crédito", definidas por el director financiero; solo con una de ellas se congela, por un periodo que se revisa cada vez; se congela el crédito pero NO se perdonan cargos. Inicialmente: enfermedad, familiar fallecido, moto varada, accidentada, en taller, en garantía o en fiscalía. Solo CPPU y CPPR (D82).' },
+  'R10-VALOR-MOTO-REENTREGADA': { referencia: REF_RONDA_12, respuesta: 'El motor no calcula ningún valor: se trata como un crédito nuevo y el asesor comercial ingresa el valor de la moto; ese valor sale de un proceso administrativo fuera del motor (D83).' },
+}
+
 // Respondidas por el cuestionario (Diego, 31 de octubre de 2026): de las rondas 10 y 11, 9 de 11 (docs/respuestas-diego-2026-10-31-ronda10-11.md). Quedan decididas D65 a D73 de decisiones.md; lo que dejó abierto va a la ronda 12.
 const REF_RONDA_10_11 = 'Rondas 10 y 11'
 const RESPONDIDAS_RONDA_10_11: Record<string, Omit<Respondida, 'fecha'>> = {
   'R10-VALOR-COBRANZA': { referencia: REF_RONDA_10_11, respuesta: 'Lo define el director financiero, como parámetro configurable con vigencias; los 3.000 diarios y los 40.000 por periodo quedan solo como valores provisionales de ejemplo (D65).' },
-  'R10-PRIMERA-CUOTA': { referencia: REF_RONDA_10_11, nota: 'Pendiente de detalle: qué pasa con el capital y los servicios que la primera cuota proporcional no cobra (R12-PRIMERA-CUOTA-DETALLE). Mientras tanto el motor sigue prorrateando solo el interés (D48).', respuesta: 'Proporcional a los días: la cuota entera (capital, interés y servicios), como se hace hoy en el sistema actual (D66).' },
+  'R10-PRIMERA-CUOTA': { referencia: REF_RONDA_10_11, nota: 'Detalle respondido en R12-PRIMERA-CUOTA-DETALLE e implementado (D79). Quedan dos supuestos en la ronda 13: el interés del capital no cobrado (R13-PRIMERA-CUOTA-INTERES) y la entrega más de un periodo antes del primer vencimiento (R13-PRIMERA-CUOTA-LARGA).', respuesta: 'Proporcional a los días: la cuota entera (capital, interés y servicios), como se hace hoy en el sistema actual (D66).' },
   'R10-MARCA-RECUPERACION': { referencia: REF_RONDA_10_11, respuesta: 'La primera vez que llega a 2 periodos atrasados, aunque luego se ponga al día (como funciona hoy) (D67).' },
   'R11-BASE-FINANCIACION-INICIAL': { referencia: REF_RONDA_10_11, respuesta: 'El monto financiado a secas (valor de la moto menos la cuota inicial), la misma base del seguro de vida (D68).' },
   'R11-PERIODIZACION-SEGURO': { referencia: REF_RONDA_10_11, respuesta: 'Sí: el 0,3 % mensual se convierte a semanal y quincenal igual que el seguro de vida (D68).' },
-  'R11-CONTABILIDAD-SEGURO-IVA': { referencia: REF_RONDA_10_11, respuesta: 'La contabilidad segmenta CxP seguros 10.000 / IVA por pagar por seguros 1.900 / CxP aseguradoras 11.900; el IVA nunca es responsabilidad de la financiera frente a la DIAN (D69).' },
+  'R11-CONTABILIDAD-SEGURO-IVA': { referencia: REF_RONDA_10_11, reemplazadaPor: 'R12-IVA-FONDO-ASISTENCIAS', nota: 'Superada en la ronda 12 (D78): el seguro y su IVA van en un gran total con los demás servicios, sin segmentar.', respuesta: 'La contabilidad segmenta CxP seguros 10.000 / IVA por pagar por seguros 1.900 / CxP aseguradoras 11.900; el IVA nunca es responsabilidad de la financiera frente a la DIAN (D69).' },
   // Rediseño de servicios y cobranza (D70 a D73, ADR 0006): respondidas en la misma fecha, implementadas aparte.
-  'R10-CONTADOR-VENCIDAS': { referencia: REF_RONDA_10_11, nota: 'Supuestos provisionales del motor que se confirman en la ronda 12: qué entra en el saldo en mora, si es estrictamente más de 2 y cuándo se mide (R12-COBRANZA-SALDO-MORA), la cuota del denominador (R12-COBRANZA-DENOMINADOR), las periodicidades (R12-COBRANZA-PERIODICIDADES) y si la marca de recuperación también va por cociente (R12-MARCA-POR-COCIENTE).', respuesta: 'Otra regla: el cliente siempre paga los servicios (fondo, asistencia y seguros) en la cuota, al día o atrasado; la cuenta con terceros solo nace con el recaudo efectivo; la cobranza se ejecuta cuando saldo total en mora / valor total de la cuota > 2 (con abonos parciales que no llegan a 2 cuotas no hay cobranza, pero sí interés de mora); en dación o retoma se suspenden por completo los servicios (D70 a D72).' },
+  'R10-CONTADOR-VENCIDAS': { referencia: REF_RONDA_10_11, respuesta: 'Otra regla: el cliente siempre paga los servicios (fondo, asistencia y seguros) en la cuota, al día o atrasado; la cuenta con terceros solo nace con el recaudo efectivo; la cobranza se ejecuta cuando saldo total en mora / valor total de la cuota > 2 (con abonos parciales que no llegan a 2 cuotas no hay cobranza, pero sí interés de mora); en dación o retoma se suspenden por completo los servicios (D70 a D72).' },
   'R10-PERIODO-ATRASADO': { referencia: REF_RONDA_10_11, respuesta: 'El capital no cubierto queda vencido, se suma a la cuota siguiente y genera mora (como funciona hoy) (D73).' },
   'R11-SEGUROS-TRAS-SUSPENSION': { referencia: REF_RONDA_10_11, respuesta: 'Ya no hay suspensión por atraso: el cliente siempre paga los servicios, así que los dos seguros (vida y todo riesgo) se causan siempre; solo la dación o la retoma los suspenden (D70).' },
 }
@@ -2310,7 +2402,8 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12, ...RONDA_13].map((p) => {
+  if (RESPONDIDAS_RONDA_12[p.id]) return { ...p, respondida: { fecha: '1 nov 2026', ...RESPONDIDAS_RONDA_12[p.id] } }
   if (RESPONDIDAS_RONDA_10_11[p.id]) return { ...p, respondida: { fecha: '31 oct 2026', ...RESPONDIDAS_RONDA_10_11[p.id] } }
   if (RESPONDIDAS_RONDA_9[p.id]) return { ...p, respondida: { fecha: '30 oct 2026', ...RESPONDIDAS_RONDA_9[p.id] } }
   if (RESPONDIDAS_RONDA_8[p.id]) return { ...p, respondida: { fecha: '28 oct 2026', ...RESPONDIDAS_RONDA_8[p.id] } }

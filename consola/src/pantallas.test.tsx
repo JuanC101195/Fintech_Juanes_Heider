@@ -273,7 +273,7 @@ describe('Reglas', () => {
   it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
     const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
-    expect(within(lista).getAllByRole('listitem')).toHaveLength(30)
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(32)
     expect(within(lista).getAllByText('Paga lo pendiente y el sobrante vuelve a pasar por la prelación (cobranza, mora, interés, servicios y capital)').length).toBeGreaterThan(0)
     expect(within(lista).getByText(/A4/)).toBeTruthy()
     expect(lista.textContent).not.toMatch(/[A-Z]{3,}_[A-Z]/)

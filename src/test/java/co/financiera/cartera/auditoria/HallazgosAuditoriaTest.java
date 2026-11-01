@@ -246,9 +246,13 @@ class HallazgosAuditoriaTest {
 
     @Test
     void h2SinRedondeoElPagoEnPesosEnterosQuedaComoPagoInferiorYLlegaARecuperacion() {
-        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(negocioSinTodoRiesgo().conRedondeoCuotaAlPeso(false)));
+        // Con la marca por eventos (PPER-9) los residuos de centavos suman cuotas vencidas y el crédito llega a la marca.
+        ReglasNegocio sinRedondeo = negocioSinTodoRiesgo().conRedondeoCuotaAlPeso(false);
+        List<Movimiento> movs = MOTOR.ejecutar(pagaEnPesosEnteros(sinRedondeo.conMarcaPorCociente(false)));
         assertThat(movs.get(1).evento()).isEqualTo("Pago inferior");
         assertThat(movs.stream().anyMatch(Movimiento::listoParaRecuperacion)).isTrue();
+        // Con la marca por cociente (R12-MARCA-POR-COCIENTE, D77) los centavos nunca llegan a 2 cuotas: no se marca.
+        assertThat(MOTOR.ejecutar(pagaEnPesosEnteros(sinRedondeo))).noneMatch(Movimiento::listoParaRecuperacion);
     }
 
     @Test

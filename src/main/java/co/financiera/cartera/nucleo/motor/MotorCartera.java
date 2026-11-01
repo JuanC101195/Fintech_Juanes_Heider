@@ -223,8 +223,10 @@ public final class MotorCartera {
 
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
-            // prorrateo de la primera cuota (P5-PRORRATEO) es su capital completo más el interés de los días reales.
-            BigDecimal cuotaDelPeriodo = causado.prorrateada() ? sumar(causado.capitalContractual(), causado.interes()) : s.cuota;
+            // prorrateo de la primera cuota (P5-PRORRATEO) es su capital más el interés de los días reales; con la cuota
+            // completa prorrateada (D79) también la última cuota, que recoge el capital que la primera no cobró.
+            BigDecimal cuotaDelPeriodo = causado.cuotaPorComponentes()
+                    ? sumar(causado.capitalContractual(), causado.interes()) : s.cuota;
             // R8-REDONDEO-PESO: la cuota exigible queda en pesos enteros; el residuo va al interés corriente del periodo.
             BigDecimal residuo = causador.residuoAlPeso(cuotaDelPeriodo, causado);
             if (residuo.signum() != 0) {
@@ -267,7 +269,12 @@ public final class MotorCartera {
             // R4-CASO13: los servicios del periodo que pagó el excedente del abono también quedan causados.
             Servicios serviciosDelPeriodo = causado.servicios().mas(s.serviciosCorrientesExtra);
             // PPER-9 / R6-RECUP-AUTO: el motor solo marca el crédito; la marca persiste hasta que termina.
-            boolean listoParaRecuperacion = recuperacion.listoParaRecuperacion(estado, cuotasVencidas);
+            // R12-MARCA-POR-COCIENTE (D77): con marcaPorCociente la marca se mide con el cociente de la cobranza al cierre
+            // (los saldos con que arranca el periodo siguiente, el mismo instante en que se decide su cobranza).
+            boolean llegaAlUmbral = escenario.reglas().marcaRecuperacionPorCociente()
+                    ? escenario.reglas().llegaAlUmbralDeCobranza(causador.saldoEnMora(), causador.valorCuotaParaCobranza())
+                    : escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas);
+            boolean listoParaRecuperacion = recuperacion.listoParaRecuperacion(estado, llegaAlUmbral);
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),

@@ -241,26 +241,15 @@ class RespuestasDiegoRonda9Test {
             assertThat(porCobrar.descontarDe(bd(250))).isEqualByComparingTo("46.2");
         }
 
+        /** D69 segmentaba seguro e IVA; D78 (ronda 12) los lleva en el gran total de los servicios para terceros. */
         @Test
-        void laContabilidadSegmentaElSeguroYElIva() {
+        void laContabilidadLlevaElSeguroYSuIvaEnElGranTotalDeTerceros() {
             List<Movimiento> m = motor.ejecutar(conOperacionDelExcel().conReglas(negocio()));
             Asiento cuota = Contabilizador.para(negocio()).contabilizar(fila(m, 1)).getFirst();
             assertThat(cuota.cuadra()).isTrue();
-            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR).singleElement()
-                    .satisfies(l -> assertThat(l.credito()).isCloseTo(IVA_TODO_RIESGO, within(TOLERANCIA)));
-            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SEGUROS).singleElement()
-                    .satisfies(l -> assertThat(l.credito()).isCloseTo(TODO_RIESGO, within(TOLERANCIA)));
-            // Fondo + asistencia + seguro de vida siguen en su línea de siempre.
-            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SERVICIOS_TERCEROS
-                    && !l.explicacion().contains("todo riesgo")).singleElement()
-                    .satisfies(l -> assertThat(l.credito()).isCloseTo(Calc.sumar(FONDO, ASISTENCIA, SEGURO_VIDA),
-                            within(TOLERANCIA)));
-            // Con el Excel no hay línea de IVA en ningún caso.
-            for (Escenario e : List.of(EscenariosExcel.caso1(P), EscenariosExcel.caso3(P, true), EscenariosExcel.caso8(P),
-                    EscenariosExcel.caso9(P))) {
-                assertThat(Contabilizador.estandar().contabilizar(motor.ejecutar(e)))
-                        .flatMap(Asiento::lineas).noneMatch(l -> l.cuenta() == Cuenta.IVA_SEGUROS_POR_PAGAR);
-            }
+            assertThat(cuota.lineas()).filteredOn(l -> l.cuenta() == Cuenta.CXP_SERVICIOS_TERCEROS).singleElement()
+                    .satisfies(l -> assertThat(l.credito()).isCloseTo(
+                            Calc.sumar(FONDO, ASISTENCIA, SEGURO_VIDA, TODO_RIESGO, IVA_TODO_RIESGO), within(TOLERANCIA)));
         }
 
         @Test

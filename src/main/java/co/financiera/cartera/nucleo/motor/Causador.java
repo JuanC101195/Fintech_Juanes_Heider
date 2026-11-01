@@ -63,8 +63,12 @@ final class Causador {
         BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
                 ? noNegativo(restar(saldoInicial, s.capitalVencido)) : saldoInicial;
         BigDecimal capitalContractual = CERO;
+        // R12-PRIMERA-CUOTA-DETALLE (D79): con la primera cuota completa prorrateada, la última cuota del plan recoge el
+        // capital que la primera no cobró (la cuota fija no cambia: «la última cuota queda con el saldo»). Solo si la
+        // primera cuota fue más corta que el periodo: con más días no queda capital sin cobrar.
+        boolean ultimaConSaldo = periodo == s.cuotasVigentes && reglas.prorrateaCuotaCompleta() && primeraCuotaCorta();
         if (dentroDelPlazo && !sinPagoSinMora && !esCero(s.saldoPlan)) {
-            capitalContractual = capitalContractual(saldoInicial, tasa);
+            capitalContractual = capitalContractual(saldoInicial, tasa, ultimaConSaldo);
         }
         // R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D70): con SIEMPRE la dación o la retoma suspenden por completo los
         // servicios; el periodo del cierre no los causa (el crédito se cierra en él).
@@ -78,18 +82,61 @@ final class Causador {
         // días (A6); capital contractual y servicios van completos. Con 365/ppa días daría exactamente la tasa
         // periódica. Sin fechas en el escenario, o con el Excel, no cambia nada.
         boolean prorrateada = periodo == 1 && reglas.prorrateoPrimeraCuota() && s.escenario.diasPrimerPeriodo().isPresent();
-        BigDecimal interes = multiplicar(baseInteres, tasa);
+        Cuota cuota = new Cuota(multiplicar(baseInteres, tasa), capitalContractual, sp);
         if (prorrateada) {
-            int diasReales = s.escenario.diasPrimerPeriodo().getAsInt();
-            interes = multiplicar(baseInteres, restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
+            cuota = prorratear(cuota, baseInteres, ultimaConSaldo);
         }
-        return new Causacion(interes, capitalContractual, sp.causados(), mora(periodo, capitalContractual, dias),
-                cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias), sp.alDia(), prorrateada);
+        return new Causacion(cuota.interes(), cuota.capital(), cuota.servicios().causados(),
+                mora(periodo, cuota.capital(), dias), cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias),
+                cuota.servicios().alDia(), prorrateada || (ultimaConSaldo && cuota.capital().signum() > 0));
+    }
+
+    /** Interés, capital contractual y servicios de un periodo, antes de la mora y la cobranza. */
+    private record Cuota(BigDecimal interes, BigDecimal capital, ServiciosDelPeriodo servicios) {
+    }
+
+    /**
+     * La primera cuota prorrateada. P5-PRORRATEO (D48): el interés va por los días reales. Con la cuota completa
+     * (R10-PRIMERA-CUOTA + R12-PRIMERA-CUOTA-DETALLE, Diego 2026-11-01, D79) también el capital y los servicios, en
+     * proporción a los días; lo no cobrado de capital sigue en el saldo y los servicios no cobrados se pierden. Un crédito
+     * de una sola cuota no tiene una última cuota después: esa cuota cobra el capital completo.
+     */
+    private Cuota prorratear(Cuota completa, BigDecimal baseInteres, boolean ultimaConSaldo) {
+        int diasReales = s.escenario.diasPrimerPeriodo().getAsInt();
+        BigDecimal interes = multiplicar(baseInteres,
+                restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
+        if (!s.reglas().prorrateaCuotaCompleta()) {
+            return new Cuota(interes, completa.capital(), completa.servicios());
+        }
+        BigDecimal fraccion = fraccionPrimerPeriodo(diasReales);
+        BigDecimal capital = ultimaConSaldo ? completa.capital() : multiplicar(completa.capital(), fraccion);
+        return new Cuota(interes, capital, completa.servicios().proporcion(fraccion));
+    }
+
+    /** Si el escenario trae fechas y el primer periodo tiene menos días reales que los nominales (D79). */
+    private boolean primeraCuotaCorta() {
+        java.util.OptionalInt dias = s.escenario.diasPrimerPeriodo();
+        return dias.isPresent() && dias.getAsInt() < s.p.periodicidad().diasNominales();
+    }
+
+    /**
+     * Fracción del periodo que cubre la primera cuota: días reales / días nominales de la periodicidad (7, 15 o 30), como
+     * máximo 1. Supuesto provisional (R13-PRIMERA-CUOTA-LARGA): si la entrega es más de un periodo antes del primer
+     * vencimiento, capital y servicios van completos y solo el interés cuenta los días de más.
+     */
+    private BigDecimal fraccionPrimerPeriodo(int diasReales) {
+        BigDecimal fraccion = Calc.dividir(Calc.bd(diasReales), Calc.bd(s.p.periodicidad().diasNominales()));
+        return min(fraccion, Calc.UNO);
     }
 
     /** Servicios causados en el periodo y los que se habrían causado al día (los que un abono puede revivir, R4-CASO13). */
     private record ServiciosDelPeriodo(Servicios causados, Servicios alDia) {
         static final ServiciosDelPeriodo NINGUNOS = new ServiciosDelPeriodo(Servicios.NINGUNO, Servicios.NINGUNO);
+
+        /** La parte proporcional de los dos (D79): lo que no se cobra tampoco lo revive un abono. */
+        ServiciosDelPeriodo proporcion(BigDecimal fraccion) {
+            return new ServiciosDelPeriodo(causados.por(fraccion), alDia.por(fraccion));
+        }
     }
 
     /** Servicios de un periodo que sí los causa, según {@link ReglasNegocio#causacionServicios()}. */
@@ -134,10 +181,15 @@ final class Causador {
         return residuo;
     }
 
-    /** Capital contractual del plan vigente en un periodo dentro del plazo, sin pasar del capital vigente. */
-    private BigDecimal capitalContractual(BigDecimal saldoInicial, BigDecimal tasa) {
+    /**
+     * Capital contractual del plan vigente en un periodo dentro del plazo, sin pasar del capital vigente. Con
+     * {@code ultimaConSaldo} (D79) es el saldo completo del plan: la última cuota recoge el capital que la primera cuota
+     * prorrateada no cobró.
+     */
+    private BigDecimal capitalContractual(BigDecimal saldoInicial, BigDecimal tasa, boolean ultimaConSaldo) {
         // Auditoría 2026-10-23 (H3): nunca negativo, aunque el saldo del plan lo fuera por un error aguas arriba.
-        BigDecimal capitalContractual = noNegativo(min(s.saldoPlan, restar(s.cuota, multiplicar(s.saldoPlan, tasa))));
+        BigDecimal capitalContractual = ultimaConSaldo ? s.saldoPlan
+                : noNegativo(min(s.saldoPlan, restar(s.cuota, multiplicar(s.saldoPlan, tasa))));
         // Auditoría 2026-10-23 (I8): el plan puede ir por encima del capital que de verdad queda vigente (un pago
         // mayor que la cuota baja el saldo pero no el plan). Sin este tope la cuota del plan vencía más capital
         // del que existe y el capital vencido superaba al saldo. Solo actúa si la diferencia supera el medio

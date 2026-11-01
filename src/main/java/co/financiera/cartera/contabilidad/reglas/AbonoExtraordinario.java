@@ -56,7 +56,7 @@ public final class AbonoExtraordinario implements ReglaContable {
     @Override
     public Optional<Asiento> contabilizar(Movimiento m) {
         co.financiera.cartera.nucleo.Servicios pendientes = m.pendientesPagadosExtra().servicios();
-        return ReglaContable.asiento(m, ReglaContable.con(List.of(
+        return ReglaContable.asiento(m, List.of(
                 Linea.debito(Cuenta.CAJA, m.prepagoCapital(), "Recaudo extraordinario por prepago de capital"),
                 Linea.credito(Cuenta.CARTERA_VIGENTE, m.prepagoCapital(),
                         "Extinción del saldo de capital después de la cuota ordinaria"),
@@ -67,12 +67,10 @@ public final class AbonoExtraordinario implements ReglaContable {
                 Linea.credito(Cuenta.CXC_INTERES_MORA, m.pendientesPagadosExtra().mora(), "Pendiente de mora (prelación 2)"),
                 Linea.credito(Cuenta.CXC_INTERES_CORRIENTE, m.pendientesPagadosExtra().interesCorriente(),
                         "Pendiente de interés corriente (prelación 3)"),
-                Linea.credito(terceros,
-                        ReglaContable.serviciosSinTodoRiesgo(pendientes.total(), pendientes),
+                Linea.credito(terceros, pendientes.total(),
                         "Servicios pendientes: fondo, asistencia y seguro (prelación 4 a 6)"),
                 Linea.credito(Cuenta.CARTERA_VENCIDA, m.pendientesPagadosExtra().capital(), "Capital vencido recuperado (prelación 7)"),
                 Linea.debito(Cuenta.CAJA, m.interesPrepago(), "Interés corriente de los días hasta el prepago"),
-                Linea.credito(Cuenta.INGRESOS_INTERESES, m.interesPrepago(), "Interés corriente causado por días")),
-                ReglaContable.seguroTodoRiesgo(pendientes.total(), pendientes)));
+                Linea.credito(Cuenta.INGRESOS_INTERESES, m.interesPrepago(), "Interés corriente causado por días")));
     }
 }
