@@ -48,21 +48,21 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
   await page.goto(archivo)
   await page.getByLabel('Nombre de quien responde').fill('Diego González')
   await page.getByRole('radio', { name: /Respondo en el comentario/ }).first().check()
-  await page.getByLabel('Comentario de la pregunta R10-JUSTIFICACIONES', { exact: true }).fill('Lo decide el director financiero')
+  await page.getByLabel('Comentario de la pregunta R13-COBRANZA-TRAS-MARCA', { exact: true }).fill('Lo decide el director financiero')
   const p = await problemas(page)
   console.log(`${nombre}: problemas de diseño ${JSON.stringify(p)} · errores JS ${errores.length}`)
   fallas += p.length + errores.length
   await page.screenshot({ path: path.join(salida, `cuestionario-${nombre}.png`), fullPage: true })
 
   if (nombre === 'escritorio') {
-    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R10-JUSTIFICACIONES, arriba).
+    // Una pregunta con solo comentario, sin escoger opción, también se guarda como completa (R13-COBRANZA-TRAS-MARCA, arriba).
     await page.screenshot({ path: path.join(salida, 'cuestionario-comentario.png'), fullPage: true })
-    // La ronda 12 (R12-*) aparece en su bloque (Servicios complementarios) y se puede responder escogiendo una opción.
-    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Servicios complementarios/ }).click()
-    await page.getByRole('radio', { name: /Sí: se segmenta el servicio y su IVA/i }).check()
-    // La ronda 10 (R10-*) también aparece en su bloque (Dación y retoma) y se puede responder.
-    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Dación y retoma/ }).click()
-    await page.getByRole('radio', { name: /valor de la moto usada según el avalúo/i }).check()
+    // La ronda 13 (R13-*) aparece en su bloque (Contabilidad) y se puede responder escogiendo una opción.
+    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Contabilidad/ }).click()
+    await page.getByRole('radio', { name: /CxC fondo de garantías/i }).check()
+    // También en Pagos, mora y cobranza (R13-PRIMERA-CUOTA-INTERES).
+    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Pagos, mora y cobranza/ }).click()
+    await page.getByRole('radio', { name: /No: ese capital no causa interés/i }).check()
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
     const ultimo = enviados.at(-1)

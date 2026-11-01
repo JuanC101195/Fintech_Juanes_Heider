@@ -20,7 +20,7 @@ describe('preguntas', () => {
     expect(RESPONDIDAS.length + PREGUNTAS.length).toBe(TODAS.length)
     expect(RESPONDIDAS.map((p) => p.id)).toEqual(expect.arrayContaining(['P1', 'P7', 'A1', 'A2', 'C4', 'PTOPE', 'S3', 'X4']))
     for (const p of PREGUNTAS) expect(p.respondida, p.id).toBeUndefined()
-    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Ronda 7|Ronda 8|Ronda 9|Rondas 10 y 11|Documento 22 oct)/)
+    for (const p of RESPONDIDAS) expect(p.respondida!.referencia, p.id).toMatch(/^(P-\d{2}|Excel|Respuestas 20 oct|Ronda 3|Ronda 4|Ronda 5|Ronda 6|Ronda 7|Ronda 8|Ronda 9|Rondas 10 y 11|Ronda 12|Documento 22 oct)/)
     for (const b of BLOQUES_ABIERTOS) expect(PREGUNTAS.some((p) => p.bloque === b), b).toBe(true)
     expect(BLOQUES_ABIERTOS.every((b) => (BLOQUES as readonly string[]).includes(b))).toBe(true)
   })
@@ -72,8 +72,9 @@ describe('preguntas', () => {
       const p = TODAS.find((x) => x.id === id)!
       expect(p.respondida!.referencia, id).toBe('Rondas 10 y 11')
       expect(p.respondida!.fecha, id).toBe('31 oct 2026')
-      // Solo la primera cuota queda con salvedad: falta el detalle del capital y los servicios (R12).
-      if (id === 'R10-PRIMERA-CUOTA') expect(p.respondida!.nota).toContain('R12-PRIMERA-CUOTA-DETALLE')
+      // La primera cuota queda con salvedad (supuestos de la ronda 13) y la contabilidad del seguro quedó superada (D78).
+      if (id === 'R10-PRIMERA-CUOTA') expect(p.respondida!.nota).toContain('R13-PRIMERA-CUOTA-INTERES')
+      else if (id === 'R11-CONTABILIDAD-SEGURO-IVA') expect(p.respondida!.reemplazadaPor).toBe('R12-IVA-FONDO-ASISTENCIAS')
       else expect(p.respondida!.nota, id).toBeUndefined()
     }
     expect(TODAS.find((p) => p.id === 'R11-CONTABILIDAD-SEGURO-IVA')!.respondida!.respuesta).toContain('11.900')
@@ -84,16 +85,15 @@ describe('preguntas', () => {
       expect(p.respondida!.referencia, id).toBe('Rondas 10 y 11')
       expect(p.respondida!.fecha, id).toBe('31 oct 2026')
     }
-    expect(TODAS.find((p) => p.id === 'R10-CONTADOR-VENCIDAS')!.respondida!.nota).toContain('R12-COBRANZA-SALDO-MORA')
+    // Sus supuestos se cerraron en la ronda 12 (D74, D75, D77): ya no lleva salvedad.
+    expect(TODAS.find((p) => p.id === 'R10-CONTADOR-VENCIDAS')!.respondida!.nota).toBeUndefined()
     expect(TODAS.find((p) => p.id === 'R10-CONTADOR-VENCIDAS')!.respondida!.respuesta).toContain('> 2')
     expect(TODAS.find((p) => p.id === 'R10-PERIODO-ATRASADO')!.respondida!.nota).toBeUndefined()
     expect(TODAS.find((p) => p.id === 'R11-SEGUROS-TRAS-SUSPENSION')!.respondida!.nota).toBeUndefined()
 
     expect(PREGUNTAS.map((p) => p.id).sort()).toEqual([
-      'R10-JUSTIFICACIONES', 'R10-VALOR-MOTO-REENTREGADA',
-      'R12-COBRANZA-DENOMINADOR', 'R12-COBRANZA-PERIODICIDADES', 'R12-COBRANZA-SALDO-MORA', 'R12-CUENTA-TERCEROS',
-      'R12-GIRO-TERCEROS', 'R12-IVA-FONDO-ASISTENCIAS', 'R12-MARCA-POR-COCIENTE', 'R12-PRIMERA-CUOTA-DETALLE',
-      'R12-SERVICIOS-CIERRE', 'R12-SERVICIOS-DESPUES-PLAZO', 'R12-VALOR-EXIGIBLE',
+      'R13-COBRANZA-TRAS-MARCA', 'R13-CONGELAR-CREDITO', 'R13-PRIMERA-CUOTA-INTERES', 'R13-PRIMERA-CUOTA-LARGA',
+      'R13-SERVICIOS-CIERRE-ASIENTO',
     ])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
@@ -144,16 +144,40 @@ describe('preguntas', () => {
     }
   })
 
-  it('la ronda 12 pregunta los detalles que dejaron las respuestas del 31 oct: primera cuota proporcional e IVA del fondo y las asistencias', () => {
+  it('la ronda 12 quedó respondida el 1 de noviembre, con las 2 que seguían abiertas de la ronda 10', () => {
+    const t = (id: string) => TODAS.find((p) => p.id === id)!
+    const ronda12 = TODAS.filter((p) => p.id.startsWith('R12-'))
+    expect(ronda12).toHaveLength(11)
+    for (const p of [...ronda12, t('R10-JUSTIFICACIONES'), t('R10-VALOR-MOTO-REENTREGADA')]) {
+      expect(p.respondida!.referencia, p.id).toBe('Ronda 12')
+      expect(p.respondida!.fecha, p.id).toBe('1 nov 2026')
+    }
+    // Con salvedad: lo que quedó ambiguo va a la ronda 13.
+    const conNota = [...ronda12, t('R10-JUSTIFICACIONES'), t('R10-VALOR-MOTO-REENTREGADA')].filter((p) => p.respondida!.nota).map((p) => p.id).sort()
+    expect(conNota).toEqual(['R10-JUSTIFICACIONES', 'R12-CUENTA-TERCEROS', 'R12-MARCA-POR-COCIENTE', 'R12-PRIMERA-CUOTA-DETALLE', 'R12-SERVICIOS-CIERRE'])
+    expect(t('R12-COBRANZA-SALDO-MORA').respondida!.respuesta).toContain('IGUAL o MAYOR a 2')
+    expect(t('R12-MARCA-POR-COCIENTE').respondida!.nota).toContain('R13-COBRANZA-TRAS-MARCA')
+    expect(t('R12-PRIMERA-CUOTA-DETALLE').respondida!.nota).toContain('R13-PRIMERA-CUOTA-LARGA')
+    expect(t('R12-SERVICIOS-CIERRE').respondida!.nota).toContain('R13-SERVICIOS-CIERRE-ASIENTO')
+    expect(t('R10-JUSTIFICACIONES').respondida!.nota).toContain('R13-CONGELAR-CREDITO')
+  })
+
+  it('la ronda 13 pregunta solo lo ambiguo de la ronda 12, con el supuesto del motor y cifras de ejemplo', () => {
     const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
     const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
-    expect(PREGUNTAS.filter((p) => p.id.startsWith('R12-'))).toHaveLength(11)
-    expect(cod('R12-PRIMERA-CUOTA-DETALLE')).toEqual(['se-pierden', 'se-difieren', 'solo-interes-y-servicios', 'otro'])
-    expect(q('R12-PRIMERA-CUOTA-DETALLE').contexto).toContain('96.000')
-    expect(q('R12-PRIMERA-CUOTA-DETALLE').bloque).toBe('Pagos, mora y cobranza')
-    expect(cod('R12-IVA-FONDO-ASISTENCIAS')).toEqual(['igual-que-seguro', 'iva-incluido', 'otro'])
-    expect(q('R12-IVA-FONDO-ASISTENCIAS').bloque).toBe('Servicios complementarios')
-    for (const p of PREGUNTAS.filter((x) => x.id.startsWith('R12-'))) {
+    const ronda13 = PREGUNTAS.filter((p) => p.id.startsWith('R13-'))
+    expect(ronda13).toHaveLength(5)
+    expect(cod('R13-COBRANZA-TRAS-MARCA')).toEqual(['solo-mientras-cociente', 'mientras-este-marcado', 'otro'])
+    expect(cod('R13-PRIMERA-CUOTA-INTERES')).toEqual(['causa-interes', 'sin-interes', 'otro'])
+    expect(q('R13-PRIMERA-CUOTA-INTERES').contexto).toContain('157.091,51')
+    expect(cod('R13-PRIMERA-CUOTA-LARGA')).toEqual(['completa-mas-interes-dias', 'proporcional-mayor', 'no-se-permite', 'otro'])
+    expect(q('R13-SERVICIOS-CIERRE-ASIENTO').bloque).toBe('Contabilidad')
+    expect(q('R13-CONGELAR-CREDITO').contexto).toContain('NO se perdonan cargos')
+    for (const p of ronda13) {
+      expect(p.contexto, p.id).toMatch(/[Ss]upuesto provisional del motor|no se implementa todavía|Hoy el motor/)
+      expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
+    }
+    for (const p of ronda13) {
       expect(p.previsualizacion, p.id).toBeUndefined()
       for (const o of p.opciones) expect(o.ajustes, `${p.id} ${o.codigo}`).toBeUndefined()
     }
@@ -193,7 +217,7 @@ describe('preguntas', () => {
 
   it('las reemplazadas apuntan a una pregunta que existe y las que esperan un documento no se vuelven a preguntar', () => {
     const reemplazadas = RESPONDIDAS.filter((p) => p.respondida!.reemplazadaPor)
-    expect(reemplazadas.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'CON-4', 'P5-LIMITE-DESDE', 'PPER-1', 'R2', 'R4-CASO13', 'R6-COBRANZA-ACTIVA', 'R6-RECUP-VS-CASO11', 'REC-6', 'ROL-1', 'T5', 'USU-3', 'USU-8'])
+    expect(reemplazadas.map((p) => p.id).sort()).toEqual(['A3', 'C5', 'CON-4', 'P5-LIMITE-DESDE', 'PPER-1', 'R11-CONTABILIDAD-SEGURO-IVA', 'R2', 'R4-CASO13', 'R6-COBRANZA-ACTIVA', 'R6-RECUP-VS-CASO11', 'REC-6', 'ROL-1', 'T5', 'USU-3', 'USU-8'])
     for (const p of reemplazadas) expect(TODAS.map((x) => x.id), p.id).toContain(p.respondida!.reemplazadaPor)
     for (const id of ['COB-1', 'COB-2', 'COB-3', 'PPER-8', 'CON-1']) {
       expect(RESPONDIDAS.find((p) => p.id === id)!.respondida!.nota, id).toMatch(/^Pendiente: /)
@@ -289,7 +313,7 @@ describe('respuestas', () => {
   })
 
   it('cuenta el avance', () => {
-    expect(avance({ 'R12-SERVICIOS-CIERRE': { codigo: 'sin-servicios-cierre-cuentas-orden' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
+    expect(avance({ 'R13-SERVICIOS-CIERRE-ASIENTO': { codigo: 'cxc-fondo-garantias' }, 'R13-PRIMERA-CUOTA-INTERES': { comentario: 'Depende de la política' }, 'R4-T5': { comentario: 'No cuenta' } }).completas).toBe(2)
     expect(avance({}).total).toBe(PREGUNTAS.length)
     // Lo que ya respondió negocio no cuenta en el avance.
     expect(avance({ P1: { codigo: 'servicios-antes' } }).completas).toBe(0)
@@ -299,7 +323,7 @@ describe('respuestas', () => {
 describe('guardado en la nube', () => {
   const estado: Estado = {
     respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
-    respuestas: { 'R12-SERVICIOS-CIERRE': { codigo: 'otro', texto: 'Comité trimestral' }, 'R12-IVA-FONDO-ASISTENCIAS': { comentario: 'Así' } },
+    respuestas: { 'R13-SERVICIOS-CIERRE-ASIENTO': { codigo: 'otro', texto: 'Comité trimestral' }, 'R13-PRIMERA-CUOTA-INTERES': { comentario: 'Así' } },
   }
 
   it('guarda las mismas filas que lee el importador', () => {
@@ -309,9 +333,9 @@ describe('guardado en la nube', () => {
     expect(JSON.parse(e.encabezados)).toEqual([...ENCABEZADOS])
     const filas: (string | number)[][] = JSON.parse(e.filas)
     expect(filas).toHaveLength(PREGUNTAS.length)
-    expect(filas.find((f) => f[0] === 'R12-SERVICIOS-CIERRE')).toContain('Comité trimestral')
-    expect(filas.find((f) => f[0] === 'R12-IVA-FONDO-ASISTENCIAS')).toContain('Así')
-    expect(filas.find((f) => f[0] === 'R12-IVA-FONDO-ASISTENCIAS')![10]).toBe('Sí')
+    expect(filas.find((f) => f[0] === 'R13-SERVICIOS-CIERRE-ASIENTO')).toContain('Comité trimestral')
+    expect(filas.find((f) => f[0] === 'R13-PRIMERA-CUOTA-INTERES')).toContain('Así')
+    expect(filas.find((f) => f[0] === 'R13-PRIMERA-CUOTA-INTERES')![10]).toBe('Sí')
   })
 
   it('manda la fila a la tabla y avisa si falla', async () => {
@@ -343,8 +367,8 @@ describe('exportación a Excel', () => {
     const estado: Estado = {
       respondente: { nombre: 'Diego González', cargo: 'Dueño de producto' },
       respuestas: {
-        'R12-IVA-FONDO-ASISTENCIAS': { codigo: 'igual-que-seguro', comentario: 'Así lo hacemos hoy' },
-        'R12-SERVICIOS-CIERRE': { codigo: 'otro', texto: 'Comité trimestral' },
+        'R13-PRIMERA-CUOTA-INTERES': { codigo: 'sin-interes', comentario: 'Así lo hacemos hoy' },
+        'R13-SERVICIOS-CIERRE-ASIENTO': { codigo: 'otro', texto: 'Comité trimestral' },
       },
     }
     const libro = await construirLibro(estado, new Date('2026-10-08T10:00:00'))
@@ -363,14 +387,14 @@ describe('exportación a Excel', () => {
       })
       return encontrada!
     }
-    expect(fila('R12-IVA-FONDO-ASISTENCIAS').getCell(4).value).toBe('igual-que-seguro')
-    expect(fila('R12-IVA-FONDO-ASISTENCIAS').getCell(9).value).toBe('Así lo hacemos hoy')
+    expect(fila('R13-PRIMERA-CUOTA-INTERES').getCell(4).value).toBe('sin-interes')
+    expect(fila('R13-PRIMERA-CUOTA-INTERES').getCell(9).value).toBe('Así lo hacemos hoy')
     // Las ya respondidas no van en la hoja.
     expect(fila('P1')).toBeUndefined()
     expect(fila('R4-QUIN')).toBeUndefined()
-    expect(fila('R12-SERVICIOS-CIERRE').getCell(8).value).toBe('Comité trimestral')
-    expect(fila('R12-SERVICIOS-CIERRE').getCell(11).value).toBe('Sí')
-    expect(fila('R12-IVA-FONDO-ASISTENCIAS').getCell(11).value).toBe('Sí')
+    expect(fila('R13-SERVICIOS-CIERRE-ASIENTO').getCell(8).value).toBe('Comité trimestral')
+    expect(fila('R13-SERVICIOS-CIERRE-ASIENTO').getCell(11).value).toBe('Sí')
+    expect(fila('R13-PRIMERA-CUOTA-INTERES').getCell(11).value).toBe('Sí')
 
     const efecto = leido.getWorksheet('Efecto de lo elegido')!
     expect(efecto.rowCount).toBe(1)

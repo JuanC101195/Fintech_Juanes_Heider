@@ -34,7 +34,7 @@ Ejemplo de Diego (deja de pagar desde la semana 1): al iniciar la 2 debe 1 cuota
 
 ### El contador de cuotas vencidas
 
-`contarCuotasVencidas` no cambia y ya no decide ni la cobranza ni los servicios en NEGOCIO: solo la marca «listo para recuperar» (D46, D54, D67), que sigue por eventos. Si la marca también debe ir por cociente es la pregunta R12-MARCA-POR-COCIENTE.
+`contarCuotasVencidas` no cambia y ya no decide ni la cobranza ni los servicios en NEGOCIO: solo la marca «listo para recuperar» (D46, D54, D67), que sigue por eventos. Si la marca también debe ir por cociente es la pregunta R12-MARCA-POR-COCIENTE. **Actualización 2026-11-01:** Diego respondió que sí; con `marcaPorCociente` (NEGOCIO) la marca va por el mismo cociente y el contador ya no decide nada en NEGOCIO ([ADR 0007](0007-marca-por-cociente-y-primera-cuota-completa.md)). La comparación pasó a «mayor o igual» (D74) y la contabilidad del seguro riesgo total dejó de segmentar el IVA (D78, supera a D69).
 
 ### Contabilidad
 
