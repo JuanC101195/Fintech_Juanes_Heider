@@ -242,6 +242,7 @@ class RespuestasDiegoRonda12Test {
         @Test
         void yaNoExistenLasCuentasSegmentadasDelSeguro() {
             assertThat(Arrays.stream(Cuenta.values()).map(Enum::name))
+                    .isNotEmpty()
                     .doesNotContain("CXP_SEGUROS", "IVA_SEGUROS_POR_PAGAR", "IVA_POR_PAGAR");
         }
 
