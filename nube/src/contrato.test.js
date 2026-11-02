@@ -208,5 +208,37 @@ test('si la base no tiene usura_ea, consulta sin esa columna y usuraEA queda en 
   const e = r.cuerpo.episodios[0]
   assert.strictEqual(e.corridas.sin_justificaciones.periodos[0].usuraEA, null)
   assert.strictEqual(e.corridas.con_justificaciones.resumen.realEA, null)
-  assert.strictEqual(llamadas.filter((q) => /FROM periodo/.test(q)).length, 2)
+  assert.strictEqual(llamadas.filter((q) => /FROM periodo/.test(q)).length, 3)
+})
+
+test('devuelve la lógica de cada periodo y, si la base aún no tiene esa columna, consulta sin ella y deja logica en null', async () => {
+  const llamadas = []
+  const m = crearManejador({
+    claveEsperada: CLAVE,
+    consultar: async (sql) => {
+      llamadas.push(sql)
+      if (/FROM contrato/.test(sql)) return [filaContrato('A', '2024-01-01')]
+      if (/FROM pago_real/.test(sql)) return []
+      if (/FROM resultado/.test(sql)) return [filaResultado('A', 'sin_justificaciones')]
+      if (/logica/.test(sql)) {
+        if (llamadas.filter((q) => /FROM periodo/.test(q)).length === 1 && process.env.PRUEBA_SIN_LOGICA === '1') {
+          throw Object.assign(new Error('column "logica" does not exist'), { code: '42703' })
+        }
+        return [{ ...filaPeriodo('A', 'sin_justificaciones', 1), logica: 'Pago a tiempo: amortización normal.' }]
+      }
+      return [filaPeriodo('A', 'sin_justificaciones', 1)]
+    },
+  })
+  const conLogica = await m(base)
+  assert.strictEqual(conLogica.cuerpo.episodios[0].corridas.sin_justificaciones.periodos[0].logica, 'Pago a tiempo: amortización normal.')
+  process.env.PRUEBA_SIN_LOGICA = '1'
+  llamadas.length = 0
+  try {
+    const sinLogica = await m(base)
+    assert.strictEqual(sinLogica.status, 200)
+    assert.strictEqual(sinLogica.cuerpo.episodios[0].corridas.sin_justificaciones.periodos[0].logica, null)
+    assert.strictEqual(llamadas.filter((q) => /FROM periodo/.test(q)).length, 2)
+  } finally {
+    delete process.env.PRUEBA_SIN_LOGICA
+  }
 })

@@ -52,6 +52,7 @@ jobs:
           mkdir -p sitio/consola
           cp docs/sitio/index.html sitio/index.html
           cp docs/sitio/contratos.html sitio/contratos.html
+          cp -r docs/sitio/vendor sitio/vendor
           cp docs/diagrama/agentes-motor-cartera.html sitio/diagrama.html
           cp cuestionario/dist/index.html sitio/cuestionario.html
           cp -r consola/dist/. sitio/consola/

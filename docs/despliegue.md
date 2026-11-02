@@ -52,6 +52,8 @@ página (GitHub Pages, contratos.html) --x-clave--> Azure Function GET /api/cont
 
 La página es pública pero no contiene datos; la función vive en la misma Function App `fn-motor-cartera-respuestas` (código en `nube/src/contrato.js`) y solo lee la base. Sin la cabecera `x-clave` correcta responde 401. Tiene un límite de 60 consultas por minuto por IP y CORS solo para `https://juanc101195.github.io` y `localhost:5173`. Si la Function App tiene CORS configurado en la plataforma, debe incluir el mismo origen de GitHub Pages.
 
+Las corridas `fija_sin_justificaciones` y `fija_con_justificaciones` (tasa fija de 88,44 % EA, sin tope de usura) también salen solas en `corridas`, y cada periodo trae `logica`: el texto de lo que hizo el motor esa semana (columna opcional `periodo.logica`; si no existe, la función consulta sin ella). La página descarga un Excel de tres hojas (motor con tasa histórica, sistema actual y motor con tasa fija) con la librería SheetJS 0.18.5, que va copiada en `docs/sitio/vendor/` y se publica con el sitio (no se carga de ningún CDN). La hoja del sistema actual no lleva lógica: los pagos reales los hizo la empresa.
+
 Las corridas `max_sin_justificaciones` y `max_con_justificaciones` (usura máxima) salen solas en `corridas`; la columna `periodo.usura_ea` es opcional: si no existe, la función consulta sin ella y `usuraEA` queda en `null`.
 
 Variables de la función (Configuración de la Function App; nunca en el repo):
