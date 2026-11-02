@@ -119,6 +119,18 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const csv = bytes.toString('utf8').replace(/^﻿/, '')
   const lineas = csv.trim().split(/\r?\n/)
   verificar(lineas.length === 13 && conBom && lineas[0].startsWith('Periodo;Vence;Pago real'), `CSV descargado (${descarga.suggestedFilename()}): ${lineas.length} líneas, cabecera correcta, con BOM UTF-8`)
+  // Excel de 3 hojas: motor con tasa histórica, sistema actual (sin lógica: la hizo la empresa) y motor con tasa fija 88,44 %
+  const [excel] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar Excel (3 hojas)' }).click()])
+  const b64 = readFileSync(await excel.path()).toString('base64')
+  const x = await page.evaluate((datos) => {
+    const X = window.XLSX
+    const libro = X.read(datos, { type: 'base64' })
+    const filas = (i) => X.utils.sheet_to_json(libro.Sheets[libro.SheetNames[i]], { header: 1 })
+    return { hojas: libro.SheetNames, cab1: filas(0)[0], cab2: filas(1)[0], filas1: filas(0).length, filas3: filas(2).length, tasa3: filas(2)[1][7] }
+  }, b64)
+  verificar(x.hojas.length === 3 && /histórica/.test(x.hojas[0]) && /real/.test(x.hojas[1]) && /fija/.test(x.hojas[2]), `Excel (${excel.suggestedFilename()}): 3 hojas ${JSON.stringify(x.hojas)}`)
+  verificar(x.cab1.at(-1) === 'Lógica aplicada' && !x.cab2.includes('Lógica aplicada'), 'la lógica va al final de las hojas del motor y no en la del sistema actual')
+  verificar(x.filas1 > 2 && x.filas3 > 2 && x.tasa3 === 0.8844, `hojas del motor con datos y fila de totales (${x.filas1} y ${x.filas3} filas; tasa hoja 3 = ${x.tasa3})`)
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }
