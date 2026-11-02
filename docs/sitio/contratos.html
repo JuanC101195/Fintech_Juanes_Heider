@@ -206,6 +206,7 @@ const COLUMNAS = [
   ['Cuotas vencidas', (p) => dec(p.cuotasVencidas), '', (p) => p.cuotasVencidas],
   ['Saldo inicial', (p) => cop(p.saldoInicial), '', (p) => p.saldoInicial],
   ['Tasa EA', (p) => pct(p.tasaEA), '', (p) => p.tasaEA],
+  ['Tasa mensual', (p) => pct(mensualDe(p.tasaEA), 3), '', (p) => mensualDe(p.tasaEA)],
   ['Interés', (p) => cop(p.interesCorriente), '', (p) => p.interesCorriente],
   ['Mora', (p) => cop(p.interesMora), '', (p) => p.interesMora],
   ['Cobranza', (p) => cop(p.cobranza), '', (p) => p.cobranza],
@@ -237,7 +238,12 @@ function tablaAmortizacion(periodos, leyendaCaption) {
     cuerpo.append(tr)
   }
   const cab = el('tr', {}, COLUMNAS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
-  const tabla = el('table', {}, el('caption', {}, leyendaCaption), el('thead', {}, cab), cuerpo)
+  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Capital pagado', 'Pago total']
+  const pie = el('tfoot', {}, el('tr', {}, COLUMNAS.map(([n, , alin, crudo], i) =>
+    i === 0 ? el('th', { scope: 'row', class: 'izq' }, 'Total')
+      : SUMABLES.includes(n) ? el('td', {}, cop(periodos.reduce((t, p) => t + (Number(crudo(p)) || 0), 0)))
+        : el('td', { class: alin }))))
+  const tabla = el('table', {}, el('caption', {}, leyendaCaption), el('thead', {}, cab), cuerpo, pie)
   // Las celdas de periodo son th de fila: se ven como celdas normales.
   for (const th of tabla.querySelectorAll('tbody th')) { th.style.position = 'static'; th.style.background = 'inherit'; th.style.fontSize = 'inherit'; th.style.fontWeight = '400' }
   return tabla
@@ -272,6 +278,8 @@ function resumenComparativo(ep, c) {
   const inversion = ep.inversion ?? 0
   const financiera = r.simTotalConDeuda ?? ((r.simPagado ?? 0) + (r.simSaldoFinal ?? 0))
   const dif = financiera - sistema
+  const bruto = (c.periodos || []).reduce((t, p) => t + (Number(p.pagoTotalCliente) || 0), 0)
+  const sobrante = bruto - (r.simPagado ?? 0)
   const difPct = sistema > 0 ? dif / sistema : null
   const signo = dif > 0 ? 'La financiera habría cobrado más' : dif < 0 ? 'La financiera habría cobrado menos' : 'Sin diferencia'
   return el('div', {},
@@ -286,7 +294,9 @@ function resumenComparativo(ep, c) {
           dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas)))),
       el('div', {}, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
-          dato('Pagado por el cliente', cop(r.simPagado)),
+          dato('Pagado por el cliente (aplicado al crédito)', cop(r.simPagado)),
+          sobrante > 1 ? dato('Pagado en los periodos (bruto)', cop(bruto)) : null,
+          sobrante > 1 ? dato('Sobrante sin aplicar (último pago, excede el saldo)', cop(sobrante)) : null,
           dato('Saldo pendiente', cop(r.simSaldoFinal)),
           dato('Otros pendientes', cop(r.simPendientes)),
           dato('Total (pagado + saldo + pendientes)', cop(financiera)),
@@ -435,6 +445,7 @@ function responsivo(dibujar) {
   setTimeout(pintar, 0)
   return cont
 }
+const mensualDe = (ea) => (ea === null || ea === undefined ? null : Math.pow(1 + Number(ea), 1 / 12) - 1)
 const pct1 = (v, d = 1) => (v * 100).toFixed(d).replace('.', ',') + ' %'
 
 function marcasX(n, anchoUtil) {
@@ -582,12 +593,12 @@ function tablaMensual(meses, ep, nombreCorrida) {
   const envoltura = el('div')
   if (!meses.length) return envoltura
   const filas = meses.map((g) => el('tr', {}, el('th', { scope: 'row', class: 'izq' }, g.mes),
-    [g.ic, g.im, g.cb, g.sv, g.pr, g.pa].map((v) => el('td', {}, cop(v))), el('td', {}, g.tasa === null ? '—' : pct(g.tasa))))
+    [g.ic, g.im, g.cb, g.sv, g.pr, g.pa].map((v) => el('td', {}, cop(v))), el('td', {}, g.tasa === null ? '—' : pct(mensualDe(g.tasa), 3))))
   const t = (k) => meses.reduce((s, g) => s + g[k], 0)
   const todas = meses.flatMap((g) => g.tasas)
   const pie = el('tfoot', {}, el('tr', {}, el('th', { scope: 'row', class: 'izq' }, 'Total'),
-    ['ic', 'im', 'cb', 'sv', 'pr', 'pa'].map((k) => el('td', {}, cop(t(k)))), el('td', {}, todas.length ? pct(todas.reduce((s, x) => s + x, 0) / todas.length) : '—')))
-  const cab = ['Mes', 'Interés corriente', 'Mora', 'Cobranza', 'Servicios', 'Pago real del cliente', 'Pago aplicado', 'Tasa aplicada promedio']
+    ['ic', 'im', 'cb', 'sv', 'pr', 'pa'].map((k) => el('td', {}, cop(t(k)))), el('td', {}, todas.length ? pct(mensualDe(todas.reduce((s, x) => s + x, 0) / todas.length), 3) : '—')))
+  const cab = ['Mes', 'Interés corriente', 'Mora', 'Cobranza', 'Servicios', 'Pago real del cliente', 'Pago aplicado', 'Tasa mensual promedio']
   envoltura.append(el('h3', {}, 'Resumen mensual'),
     el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Resumen mensual, ${nombreCorrida}` },
       el('table', { class: 'mensual' }, el('caption', {}, `Resumen mensual del contrato ${ep.id} · ${nombreCorrida}`),
