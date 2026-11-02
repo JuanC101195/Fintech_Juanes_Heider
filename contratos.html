@@ -78,6 +78,7 @@
     .selectores fieldset { flex: 1 1 260px; min-width: 0; }
     .selectores label:has(input:disabled) { opacity: .5; }
     .bloque-grafica { margin: 20px 0; min-width: 0; }
+    td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 12px; line-height: 1.35; }
     tfoot th, tfoot td { font-weight: 700; background: var(--cabecera); border-top: 2px solid var(--borde); }
     .tabla-chica { max-width: 520px; }
     details { margin: 12px 0; }
@@ -189,6 +190,7 @@ const texto = (s) => (s === null || s === undefined || s === '' ? '—' : String
 const titulo = {
   sin_justificaciones: 'Sin justificaciones', con_justificaciones: 'Con justificaciones',
   max_sin_justificaciones: 'Usura máxima, sin justificaciones', max_con_justificaciones: 'Usura máxima, con justificaciones',
+  fija_sin_justificaciones: 'Tasa fija 88,44 %, sin justificaciones', fija_con_justificaciones: 'Tasa fija 88,44 %, con justificaciones',
 }
 const rotuloCorrida = (k) => titulo[k] || texto(k)
 
@@ -214,6 +216,7 @@ const COLUMNAS = [
   ['Capital pagado', (p) => cop(p.pagoCapital), '', (p) => p.pagoCapital],
   ['Pago total', (p) => cop(p.pagoTotalCliente), '', (p) => p.pagoTotalCliente],
   ['Saldo final', (p) => cop(p.saldoFinal), '', (p) => p.saldoFinal],
+  ['Lógica aplicada', (p) => (p.logica ? p.logica : '—'), 'izq logica', (p) => p.logica ?? ''],
 ]
 
 function claseFila(p) {
@@ -338,7 +341,7 @@ function margenTexto(margen, inversion) {
 function tarjetaEpisodio(ep, i, total) {
   const pref = `ep${i}`
   const corridas = ep.corridas || {}
-  const claves = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones']
+  const claves = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones', 'fija_sin_justificaciones', 'fija_con_justificaciones']
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
   tarjeta.append(el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
@@ -360,11 +363,12 @@ function tarjetaEpisodio(ep, i, total) {
     return tarjeta
   }
   const hayMax = Object.keys(corridas).some((k) => k.startsWith('max_'))
+  const hayFija = Object.keys(corridas).some((k) => k.startsWith('fija_'))
   const zona = el('div')
-  // Corrida elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima) + justificaciones.
+  // Corrida elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima, 'fija_' = tasa fija 88,44 %) + justificaciones.
   const nombre = (t, j) => `${t}${j}_justificaciones`
   const arranque = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
-  const sel = { tasa: arranque.startsWith('max_') ? 'max_' : '', just: arranque.includes('con_') ? 'con' : 'sin' }
+  const sel = { tasa: arranque.startsWith('max_') ? 'max_' : arranque.startsWith('fija_') ? 'fija_' : '', just: arranque.includes('con_') ? 'con' : 'sin' }
   const radios = []
   const grupoDe = (leyenda, campo, opciones) => {
     const g = el('fieldset', {}, el('legend', {}, leyenda))
@@ -377,7 +381,9 @@ function tarjetaEpisodio(ep, i, total) {
     return g
   }
   const grupos = el('div', { class: 'selectores' })
-  if (hayMax) grupos.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ['max_', 'Usura máxima']]))
+  if (hayMax || hayFija) {
+    grupos.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [['max_', 'Usura máxima']] : []), ...(hayFija ? [['fija_', 'Tasa fija 88,44 %']] : [])]))
+  }
   grupos.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
   const pintar = () => {
     // Una opción se deshabilita si, combinada con la otra elección, la corrida no existe para este episodio.
@@ -389,7 +395,7 @@ function tarjetaEpisodio(ep, i, total) {
     const c = corridas[clave]
     zona.replaceChildren(resumenComparativo(ep, c), ...graficasYMensual(ep, c, clave), tablaCompleta(ep, c, clave))
   }
-  tarjeta.append(grupos, zona)
+  tarjeta.append(barraExcel(ep, () => sel.just, nombre), grupos, zona)
   pintar()
 
   const lista = ep.pagosReales || []
@@ -401,6 +407,97 @@ function tarjetaEpisodio(ep, i, total) {
       : el('p', { class: 'ayuda' }, 'Sin pagos reales registrados.'))
   tarjeta.append(detalle)
   return tarjeta
+}
+
+// ---------- descarga a Excel: 3 hojas (motor con tasa histórica, sistema actual, motor con tasa fija 88,44 %) ----------
+let promesaXLSX = null
+function cargarXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX)
+  promesaXLSX ??= new Promise((ok, mal) => {
+    const s = el('script', { src: 'vendor/xlsx.full.min.js' })
+    s.onload = () => ok(window.XLSX)
+    s.onerror = () => { promesaXLSX = null; mal(new Error('No se pudo cargar la librería de Excel. Recargue la página e inténtelo de nuevo.')) }
+    document.head.append(s)
+  })
+  return promesaXLSX
+}
+const FMT_COP = '"$ "#,##0;-"$ "#,##0;"$ "0'
+const FORMATO_COLUMNA = {
+  'Pago real': FMT_COP, 'Saldo inicial': FMT_COP, 'Interés': FMT_COP, 'Mora': FMT_COP, 'Cobranza': FMT_COP, 'Servicios': FMT_COP,
+  'Capital pagado': FMT_COP, 'Pago total': FMT_COP, 'Saldo final': FMT_COP, 'Tasa EA': '0.00%', 'Tasa mensual': '0.000%', 'Cuotas vencidas': '0.##',
+}
+const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Capital pagado', 'Pago total']
+
+function hojaMotor(XLSX, periodos) {
+  if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta corrida no está disponible para este contrato.']])
+  const cab = COLUMNAS.map(([n]) => n)
+  const filas = periodos.map((p) => COLUMNAS.map(([n, , , crudo]) => {
+    const v = crudo(p)
+    return n === 'Vence' ? fechaCorta(v) : v === null || v === undefined ? '' : v
+  }))
+  const pie = COLUMNAS.map(([n], i) => (i === 0 ? 'Total' : SUMABLES.includes(n) ? periodos.reduce((t, p) => t + (Number(COLUMNAS[i][3](p)) || 0), 0) : ''))
+  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 16, 16, 16, 120])
+}
+
+function hojaReal(XLSX, ep) {
+  const lista = ep.pagosReales || []
+  if (!lista.length) return XLSX.utils.aoa_to_sheet([['Sin pagos reales registrados.']])
+  const cuota = (Number(ep.cuotaRealMiles) || 0) * 1000
+  const cab = ['Fecha', 'Abono + transferencia', 'Multa', 'Total pagado', 'Acumulado pagado', 'Cuota registrada', 'Cuotas cubiertas (abonos acumulados ÷ cuota)']
+  let acum = 0, acumAbono = 0
+  const filas = lista.map((p) => {
+    const abono = (Number(p.valorMiles) || 0) * 1000, multa = (Number(p.multaMiles) || 0) * 1000
+    acum += abono + multa
+    acumAbono += abono
+    return [fechaCorta(p.fecha), abono, multa, abono + multa, acum, cuota, cuota > 0 ? Math.round((acumAbono / cuota) * 100) / 100 : '']
+  })
+  const suma = (i) => filas.reduce((t, f) => t + (Number(f[i]) || 0), 0)
+  const hoja = conFormato(XLSX, [cab, ...filas, ['Total', suma(1), suma(2), suma(3), '', '', '']], cab, [12, 20, 14, 16, 18, 16, 36],
+    { 'Abono + transferencia': FMT_COP, Multa: FMT_COP, 'Total pagado': FMT_COP, 'Acumulado pagado': FMT_COP, 'Cuota registrada': FMT_COP })
+  return hoja
+}
+
+function conFormato(XLSX, matriz, cab, anchos, formatos = FORMATO_COLUMNA) {
+  const hoja = XLSX.utils.aoa_to_sheet(matriz)
+  cab.forEach((n, c) => {
+    const z = formatos[n]
+    if (!z) return
+    for (let r = 1; r < matriz.length; r++) {
+      const celda = hoja[XLSX.utils.encode_cell({ r, c })]
+      if (celda && typeof celda.v === 'number') celda.z = z
+    }
+  })
+  hoja['!cols'] = anchos.map((wch) => ({ wch }))
+  hoja['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: matriz.length - 2, c: cab.length - 1 } }) }
+  return hoja
+}
+
+async function descargarExcel(ep, just, nombre) {
+  const XLSX = await cargarXLSX()
+  const libro = XLSX.utils.book_new()
+  const corridas = ep.corridas || {}
+  XLSX.utils.book_append_sheet(libro, hojaMotor(XLSX, corridas[nombre('', just)]?.periodos), 'Motor - tasa histórica')
+  XLSX.utils.book_append_sheet(libro, hojaReal(XLSX, ep), 'Sistema actual (real)')
+  XLSX.utils.book_append_sheet(libro, hojaMotor(XLSX, corridas[nombre('fija_', just)]?.periodos), 'Motor - tasa fija 88,44')
+  XLSX.writeFile(libro, `contrato-${ep.id}-${just}-justificaciones.xlsx`.replace(/[^\w.-]/g, '_'))
+}
+
+function barraExcel(ep, justActual, nombre) {
+  const boton = el('button', { type: 'button' }, 'Descargar Excel (3 hojas)')
+  const estado = el('span', { class: 'ayuda', role: 'status' }, 'Motor con tasa histórica · sistema actual · motor con tasa fija 88,44 %. Sigue la opción de justificaciones elegida.')
+  boton.addEventListener('click', async () => {
+    boton.disabled = true
+    estado.textContent = 'Preparando el Excel…'
+    try {
+      await descargarExcel(ep, justActual(), nombre)
+      estado.textContent = 'Excel descargado.'
+    } catch (e) {
+      estado.replaceChildren(el('span', { class: 'error', role: 'alert' }, e.message))
+    } finally {
+      boton.disabled = false
+    }
+  })
+  return el('div', { class: 'barra' }, boton, estado)
 }
 
 // ---------- gráficas (SVG en línea, sin librerías) ----------
@@ -656,7 +753,7 @@ function crearDemo() {
   // `margen` = lo que se resta a la usura (0,01 = usura − 1 punto; 0 = usura máxima). La usura de la demo sube en el periodo 7.
   const usuraDe = (n) => (n < 7 ? 0.27 : 0.285)
   const semanal = (ea) => Math.pow(1 + ea, 1 / 52) - 1
-  function simular(justificados, margen) {
+  function simular(justificados, margen, fija = null) {
     const filas = []
     let saldo = 1000000, vencidas = 0, atrasoSem = 0, marca = null
     for (let n = 1; n <= 12 && marca === null; n++) {
@@ -664,7 +761,7 @@ function crearDemo() {
       const sinPago = pago === 0
       if (sinPago && !just) vencidas += 1
       atrasoSem = vencidas
-      const tasa = usuraDe(n) - margen
+      const tasa = fija ?? usuraDe(n) - margen
       const interes = Math.round(saldo * semanal(tasa) / 100) * 100
       const mora = vencidas > 0 ? 2000 * vencidas : 0
       const cobranza = vencidas > 0 && !sinPago ? 40000 : 0
@@ -679,6 +776,7 @@ function crearDemo() {
         cuotasVencidas: vencidas, saldoInicial: saldo, interesCorriente: interes, interesMora: mora, cobranza, servicios: SERVICIOS,
         cuotaFinanciera: CUOTA, pagoCapital: pCap, pagoInteres: pInt, pagoMora: pMora, pagoCobranza: pCob, pagoServicios: pServ,
         pagoTotalCliente: pago, capitalVencido: vencidas * CAPITAL, saldoFinal: saldo - pCap, listoRecuperacion: listo, tasaEA: tasa, usuraEA: usuraDe(n),
+        logica: sinPago ? 'Sin pago en la semana: el motor causa interés, servicios y mora sobre la cuota y esta queda vencida.' : 'Pago a tiempo: amortización normal (demostración).',
       })
       saldo -= pCap
       if (listo) marca = n
@@ -706,6 +804,7 @@ function crearDemo() {
       corridas: {
         sin_justificaciones: simular([], 0.01), con_justificaciones: simular([7], 0.01),
         max_sin_justificaciones: simular([], 0), max_con_justificaciones: simular([7], 0),
+        fija_sin_justificaciones: simular([], 0, 0.8844), fija_con_justificaciones: simular([7], 0, 0.8844),
       },
     }],
   }
