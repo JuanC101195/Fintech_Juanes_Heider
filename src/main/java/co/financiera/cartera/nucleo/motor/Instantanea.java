@@ -37,6 +37,8 @@ import java.util.Objects;
  * @param versionReglas           referencia opcional al perfil de reglas con que se corrió; {@code null} si no se fijó
  * @param calendario              fechas del crédito, o {@code null} si el escenario no tiene fechas
  * @param usuraPorAplicar         usura publicada en este periodo que rige desde la cuota siguiente, o {@code null}
+ * @param capitalSinInteres       R13-PRIMERA-CUOTA-INTERES (D84): capital que la primera cuota prorrateada no cobró y que no
+ *                                causa interés hasta la última cuota; cero si no aplica
  */
 public record Instantanea(
         int periodo,
@@ -59,7 +61,8 @@ public record Instantanea(
         int cuotasVencidas,
         Servicios recaudadoDelMes,
         BigDecimal usuraPorAplicar,
-        boolean marcadoParaRecuperacion) {
+        boolean marcadoParaRecuperacion,
+        BigDecimal capitalSinInteres) {
 
     public Instantanea {
         if (periodo < 0) {
@@ -80,6 +83,7 @@ public record Instantanea(
         Objects.requireNonNull(cxcCobranza, "cxcCobranza");
         Objects.requireNonNull(cxcServicios, "cxcServicios");
         Objects.requireNonNull(recaudadoDelMes, "recaudadoDelMes");
+        Objects.requireNonNull(capitalSinInteres, "capitalSinInteres");
         if (calendario != null && calendario.periodicidad() != parametros.periodicidad()) {
             throw new IllegalArgumentException("El calendario es " + calendario.periodicidad().adjetivo()
                     + " y el crédito " + parametros.periodicidad().adjetivo());
@@ -90,7 +94,7 @@ public record Instantanea(
     public Instantanea conVersionReglas(String version) {
         return new Instantanea(periodo, terminado, version, operacion, parametros, cobranzaActiva, calendario, tasas, cuota,
                 saldo, saldoPlan, capitalVencido, cxcInteres, cxcMora, cxcCobranza, cxcServicios, cuotasVigentes,
-                cuotasVencidas, recaudadoDelMes, usuraPorAplicar, marcadoParaRecuperacion);
+                cuotasVencidas, recaudadoDelMes, usuraPorAplicar, marcadoParaRecuperacion, capitalSinInteres);
     }
 
     /**
@@ -109,7 +113,7 @@ public record Instantanea(
         }
         return new Instantanea(periodo, terminado, versionReglas, operacion, parametros, cobranzaActiva, calendario, tasas,
                 cuota, saldo, saldoPlan, capitalVencido, cxcInteres, cxcMora, cxcCobranza, cxcServicios, cuotasVigentes,
-                cuotasVencidas, recaudadoDelMes, usuraEA, marcadoParaRecuperacion);
+                cuotasVencidas, recaudadoDelMes, usuraEA, marcadoParaRecuperacion, capitalSinInteres);
     }
 
     /** El escenario base del crédito (sin instrucciones) con el perfil de reglas que se pasa aparte. */

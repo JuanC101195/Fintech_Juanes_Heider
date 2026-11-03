@@ -42,6 +42,11 @@ class ProrrateoApiTest {
             "fechaDesembolso":"2026-10-23","primerVencimiento":"2026-12-05"
             """.strip();
 
+    /** 2026-10-23 (viernes) → 2026-11-05: 13 días, dentro del primer periodo mensual. */
+    static final String MENSUAL_13_DIAS = """
+            "fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-05"
+            """.strip();
+
     @Autowired
     MockMvc mvc;
 
@@ -80,42 +85,52 @@ class ProrrateoApiTest {
     class Simulaciones {
 
         @Test
-        void conNegocioSoloElInteresDelPeriodoUnoSeProrrateaPorLosDiasReales() throws Exception {
-            JsonNode con = postJson("/api/v1/simulaciones", credito("MENSUAL", 24, "NEGOCIO", MENSUAL_43_DIAS));
+        void conNegocioElInteresDelPeriodoUnoSeProrrateaPorLosDiasRealesYCapitalYServiciosEnProporcion() throws Exception {
+            JsonNode con = postJson("/api/v1/simulaciones", credito("MENSUAL", 24, "NEGOCIO", MENSUAL_13_DIAS));
             JsonNode sin = postJson("/api/v1/simulaciones", credito("MENSUAL", 24, "NEGOCIO", ""));
             JsonNode pr = con.get("resumen").get("prorrateoPrimeraCuota");
+            BigDecimal fraccion = Calc.dividir(Calc.bd(13), Calc.bd(30));
 
             assertThat(pr.get("fechaDesembolso").asString()).isEqualTo("2026-10-23");
-            assertThat(pr.get("primerVencimiento").asString()).isEqualTo("2026-12-05");
-            assertThat(pr.get("diasPrimerPeriodo").asInt()).isEqualTo(43);
+            assertThat(pr.get("primerVencimiento").asString()).isEqualTo("2026-11-05");
+            assertThat(pr.get("diasPrimerPeriodo").asInt()).isEqualTo(13);
             assertThat(pr.get("diasNominales").asInt()).isEqualTo(30);
             assertThat(pr.get("aplicado").asBoolean()).isTrue();
-            igualAlPeso(bd(pr.get("interesProrrateado")), interesDias(Periodicidad.MENSUAL, 43));
+            igualAlPeso(bd(pr.get("interesProrrateado")), interesDias(Periodicidad.MENSUAL, 13));
             // Sin prorrateo es el interés del periodo 1 sin fechas: saldo × tasa mensual.
             // R8-REDONDEO-PESO: con NEGOCIO el interés del plan absorbe el residuo (hasta medio peso) del redondeo de la cuota.
             igualAlPeso(bd(pr.get("interesSinProrrateo")), bd(sin.get("plan").get(0).get("interes")));
             assertThat(bd(pr.get("diferencia"))).isEqualByComparingTo(
                     bd(pr.get("interesProrrateado")).subtract(bd(pr.get("interesSinProrrateo"))));
-            // 43 días cuestan más que un mes.
-            assertThat(bd(pr.get("diferencia"))).isPositive();
+            // 13 días cuestan menos que un mes.
+            assertThat(bd(pr.get("diferencia"))).isNegative();
 
             JsonNode fila1 = con.get("plan").get(0);
             JsonNode fila1Sin = sin.get("plan").get(0);
             assertThat(bd(fila1.get("interes"))).isEqualByComparingTo(bd(pr.get("interesProrrateado")));
-            // Capital y servicios completos (D48).
-            assertThat(bd(fila1.get("capital"))).isEqualByComparingTo(bd(fila1Sin.get("capital")));
+            // Capital y servicios en proporción a los días (D79); lo no cobrado no causa interés (D84).
+            igualAlPeso(bd(fila1.get("capital")), Calc.multiplicar(bd(fila1Sin.get("capital")), fraccion));
             for (String s : new String[] {"fondoGarantias", "asistencia", "seguro"}) {
-                assertThat(bd(fila1.get(s))).isEqualByComparingTo(bd(fila1Sin.get(s)));
+                igualAlPeso(bd(fila1.get(s)), Calc.multiplicar(bd(fila1Sin.get(s)), fraccion));
             }
-            assertThat(bd(fila1.get("cuotaFinanciera")))
-                    .isEqualByComparingTo(bd(fila1.get("capital")).add(bd(fila1.get("interes"))));
+            igualAlPeso(bd(fila1.get("cuotaFinanciera")), bd(fila1.get("capital")).add(bd(fila1.get("interes"))));
             // El resumen muestra la cuota regular, no la prorrateada.
             assertThat(bd(con.get("resumen").get("cuotaFinanciera")))
                     .isEqualByComparingTo(bd(sin.get("resumen").get("cuotaFinanciera")));
             assertThat(bd(con.get("resumen").get("cuotaTotal")))
                     .isEqualByComparingTo(bd(sin.get("resumen").get("cuotaTotal")));
-            // Desde el periodo 2 el plan es el mismo.
-            assertThat(con.get("plan").get(5)).isEqualTo(sin.get("plan").get(5));
+            // Desde el periodo 2 el plan es el mismo (la última cuota recoge el capital no cobrado).
+            igualAlPeso(bd(con.get("plan").get(5).get("cuotaFinanciera")), bd(sin.get("plan").get(5).get("cuotaFinanciera")));
+        }
+
+        /** D84 (R13-PRIMERA-CUOTA-LARGA): con NEGOCIO una entrega a 43 días del primer vencimiento (mensual) se rechaza. */
+        @Test
+        void conNegocioUnPrimerVencimientoFueraDelPrimerPeriodoEsUnaValidacion() throws Exception {
+            mvc.perform(post("/api/v1/simulaciones").contentType(MediaType.APPLICATION_JSON)
+                    .content(credito("MENSUAL", 24, "NEGOCIO", MENSUAL_43_DIAS)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detalle.campo").value("primerVencimiento"))
+                    .andExpect(jsonPath("$.mensaje").value(containsString("dentro del primer periodo")));
         }
 
         @Test
@@ -158,12 +173,12 @@ class ProrrateoApiTest {
             String cuerpo = """
                     {"credito": %s, "instrucciones": [{"periodo": 3, "tipo": "SIN_PAGO"}]}
                     """.formatted(credito("SEMANAL", 104, "NEGOCIO",
-                    "\"fechaDesembolso\":\"2026-10-23\",\"primerVencimiento\":\"2026-11-03\""));
+                    "\"fechaDesembolso\":\"2026-10-29\",\"primerVencimiento\":\"2026-11-03\""));
             JsonNode r = postJson("/api/v1/escenarios/ejecutar", cuerpo);
             JsonNode pr = r.get("resumen").get("prorrateoPrimeraCuota");
-            assertThat(pr.get("diasPrimerPeriodo").asInt()).isEqualTo(11);
+            assertThat(pr.get("diasPrimerPeriodo").asInt()).isEqualTo(5);
             assertThat(pr.get("aplicado").asBoolean()).isTrue();
-            igualAlPeso(bd(pr.get("interesProrrateado")), interesDias(Periodicidad.SEMANAL, 11));
+            igualAlPeso(bd(pr.get("interesProrrateado")), interesDias(Periodicidad.SEMANAL, 5));
             assertThat(bd(r.get("movimientos").get(1).get("interesCorriente")))
                     .isEqualByComparingTo(bd(pr.get("interesProrrateado")));
             for (JsonNode a : r.get("asientos")) {
@@ -183,14 +198,14 @@ class ProrrateoApiTest {
     @Nested
     class Casos {
 
-        static final String FECHAS = "&fechaDesembolso=2026-10-23&primerVencimiento=2026-11-03";
+        static final String FECHAS = "&fechaDesembolso=2026-10-29&primerVencimiento=2026-11-03";
 
         @Test
         void elCasoConFechasDevuelveElCreditoConFechasYSeReejecutaIgual() throws Exception {
             JsonNode caso = getJson("/api/v1/casos/13?perfilReglas=NEGOCIO" + FECHAS);
-            assertThat(caso.get("credito").get("fechaDesembolso").asString()).isEqualTo("2026-10-23");
+            assertThat(caso.get("credito").get("fechaDesembolso").asString()).isEqualTo("2026-10-29");
             assertThat(caso.get("credito").get("primerVencimiento").asString()).isEqualTo("2026-11-03");
-            assertThat(caso.get("resumen").get("prorrateoPrimeraCuota").get("diasPrimerPeriodo").asInt()).isEqualTo(11);
+            assertThat(caso.get("resumen").get("prorrateoPrimeraCuota").get("diasPrimerPeriodo").asInt()).isEqualTo(5);
 
             ObjectNode peticion = JSON.createObjectNode();
             peticion.set("credito", caso.get("credito"));

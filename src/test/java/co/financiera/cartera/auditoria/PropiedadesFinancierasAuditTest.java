@@ -513,9 +513,10 @@ class PropiedadesFinancierasAuditTest {
             violacion("I15 cobranza por cociente sin la marca del periodo anterior", id + " cobranza="
                     + m.cobranzaCausada().toPlainString(), repro);
         }
-        boolean abierto = m.estado() != EstadoCredito.CANCELADO && m.estado() != EstadoCredito.CERRADO_POR_EVENTO;
-        if (prev.listoParaRecuperacion() && abierto && !m.listoParaRecuperacion()) {
-            violacion("I15b la marca se quitó con el crédito abierto", id, repro);
+        // R13-COBRANZA-TRAS-MARCA (D85): la marca por cociente no persiste (se quita cuando el saldo en mora baja de 2 cuotas),
+        // pero solo existe con el crédito en mora.
+        if (m.listoParaRecuperacion() && m.estado() != EstadoCredito.EN_MORA) {
+            violacion("I15b la marca por cociente sin el crédito en mora", id, repro);
         }
     }
 

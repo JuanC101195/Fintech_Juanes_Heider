@@ -69,11 +69,11 @@ class EjemplosApiTest {
         // P5-PRORRATEO: con fechas el interés del periodo 1 va por los días reales (43 días del 23-oct al 5-dic).
         guardar("simulacion-mensual-prorrateo.json", post("/api/v1/simulaciones").contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-12-05"}
+                        {"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-05"}
                         """));
         guardar("escenario-semanal-prorrateo.json", post("/api/v1/escenarios/ejecutar").contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"credito":{"linea":"CPPU","periodicidad":"SEMANAL","cuotas":104,"valorMoto":"5100000","pagoInicial":"0","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-03"},"perfilReglas":"NEGOCIO","instrucciones":[],"incluirAsientos":false}
+                        {"credito":{"linea":"CPPU","periodicidad":"SEMANAL","cuotas":104,"valorMoto":"5100000","pagoInicial":"0","fechaDesembolso":"2026-10-29","primerVencimiento":"2026-11-03"},"perfilReglas":"NEGOCIO","instrucciones":[],"incluirAsientos":false}
                         """));
     }
 }

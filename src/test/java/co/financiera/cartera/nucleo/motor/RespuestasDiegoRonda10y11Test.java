@@ -70,7 +70,7 @@ class RespuestasDiegoRonda10y11Test {
     void laMarcaDeRecuperacionSeDaLaPrimeraVezYNoSeQuitaAlPonerseAlDia() {
         assertThat(negocio().cuotasVencidasParaRecuperacion()).isEqualTo(2);
         List<Movimiento> m = motor.ejecutar(conOperacionDelExcel().entre(1, 2, new SinPago(true))
-                .desde(3, new PagoAlDia()).conReglas(negocio()));
+                .desde(3, new PagoAlDia()).conReglas(negocio().conMarcaPorCociente(false)));
         int primera = m.stream().filter(Movimiento::listoParaRecuperacion).mapToInt(Movimiento::periodo).min().orElseThrow();
         assertThat(primera).isLessThanOrEqualTo(3);
         // La marca dura hasta que el crédito cierra (el último periodo la apaga: D54).
@@ -79,7 +79,7 @@ class RespuestasDiegoRonda10y11Test {
                 .allMatch(Movimiento::listoParaRecuperacion);
         assertThat(m.stream().filter(x -> x.periodo() < primera)).noneMatch(Movimiento::listoParaRecuperacion);
         // Un cliente que siempre paga al día nunca queda marcado.
-        assertThat(motor.ejecutar(conOperacionDelExcel().conReglas(negocio()))).noneMatch(Movimiento::listoParaRecuperacion);
+        assertThat(motor.ejecutar(conOperacionDelExcel().conReglas(negocio().conMarcaPorCociente(false)))).noneMatch(Movimiento::listoParaRecuperacion);
     }
 
     /** R11-BASE-FINANCIACION-INICIAL = monto-financiado: la base del 0,3 % es el monto financiado a secas. */

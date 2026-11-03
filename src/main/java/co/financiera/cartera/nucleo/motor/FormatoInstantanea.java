@@ -93,6 +93,7 @@ public final class FormatoInstantanea {
         w.servicios("recaudadoDelMes", i.recaudadoDelMes());
         w.linea("usuraPorAplicar", i.usuraPorAplicar() == null ? "" : texto(i.usuraPorAplicar()));
         w.linea("marcadoParaRecuperacion", String.valueOf(i.marcadoParaRecuperacion()));
+        w.dinero("capitalSinInteres", i.capitalSinInteres());
         return w.toString();
     }
 
@@ -129,7 +130,7 @@ public final class FormatoInstantanea {
                 r.dinero("saldoPlan"), r.dinero("capitalVencido"), r.dinero("cxcInteres"), r.dinero("cxcMora"),
                 r.dinero("cxcCobranza"), r.servicios("cxcServicios"), r.entero("cuotasVigentes"), r.entero("cuotasVencidas"),
                 r.servicios("recaudadoDelMes"), usura.isEmpty() ? null : new BigDecimal(usura),
-                r.booleano("marcadoParaRecuperacion"));
+                r.booleano("marcadoParaRecuperacion"), r.dinero("capitalSinInteres"));
         r.verificarQueNoSobra();
         return i;
     }

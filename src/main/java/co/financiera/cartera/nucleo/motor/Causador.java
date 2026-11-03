@@ -62,13 +62,17 @@ final class Causador {
         boolean dentroDelPlazo = periodo <= s.cuotasVigentes;
         BigDecimal baseInteres = reglas.baseInteres() == ReglasNegocio.BaseInteres.SALDO_VIGENTE
                 ? noNegativo(restar(saldoInicial, s.capitalVencido)) : saldoInicial;
+        // R13-PRIMERA-CUOTA-INTERES (D84): el capital que la primera cuota no cobró no causa interés mientras el plan sigue.
+        BigDecimal sinInteres = reglas.capitalNoCobradoSinInteres() && periodo > 1 && dentroDelPlazo
+                ? min(s.capitalSinInteres, saldoInicial) : CERO;
+        baseInteres = noNegativo(restar(baseInteres, sinInteres));
         BigDecimal capitalContractual = CERO;
         // R12-PRIMERA-CUOTA-DETALLE (D79): con la primera cuota completa prorrateada, la última cuota del plan recoge el
         // capital que la primera no cobró (la cuota fija no cambia: «la última cuota queda con el saldo»). Solo si la
         // primera cuota fue más corta que el periodo: con más días no queda capital sin cobrar.
         boolean ultimaConSaldo = periodo == s.cuotasVigentes && reglas.prorrateaCuotaCompleta() && primeraCuotaCorta();
         if (dentroDelPlazo && !sinPagoSinMora && !esCero(s.saldoPlan)) {
-            capitalContractual = capitalContractual(saldoInicial, tasa, ultimaConSaldo);
+            capitalContractual = capitalContractual(saldoInicial, tasa, ultimaConSaldo, sinInteres);
         }
         // R10-CONTADOR-VENCIDAS (Diego 2026-10-31, D70): con SIEMPRE la dación o la retoma suspenden por completo los
         // servicios; el periodo del cierre no los causa (el crédito se cierra en él).
@@ -83,12 +87,16 @@ final class Causador {
         // periódica. Sin fechas en el escenario, o con el Excel, no cambia nada.
         boolean prorrateada = periodo == 1 && reglas.prorrateoPrimeraCuota() && s.escenario.diasPrimerPeriodo().isPresent();
         Cuota cuota = new Cuota(multiplicar(baseInteres, tasa), capitalContractual, sp);
+        BigDecimal capitalNoCobrado = CERO;
         if (prorrateada) {
             cuota = prorratear(cuota, baseInteres, ultimaConSaldo);
+            if (reglas.capitalNoCobradoSinInteres() && !ultimaConSaldo) {
+                capitalNoCobrado = noNegativo(restar(capitalContractual, cuota.capital()));
+            }
         }
         return new Causacion(cuota.interes(), cuota.capital(), cuota.servicios().causados(),
                 mora(periodo, cuota.capital(), dias), cobranza(saldoInicial, diasCobranza, cuotasVencidasPrevias),
-                cuota.servicios().alDia(), prorrateada || (ultimaConSaldo && cuota.capital().signum() > 0));
+                cuota.servicios().alDia(), prorrateada || (ultimaConSaldo && cuota.capital().signum() > 0), capitalNoCobrado);
     }
 
     /** Interés, capital contractual y servicios de un periodo, antes de la mora y la cobranza. */
@@ -186,10 +194,12 @@ final class Causador {
      * {@code ultimaConSaldo} (D79) es el saldo completo del plan: la última cuota recoge el capital que la primera cuota
      * prorrateada no cobró.
      */
-    private BigDecimal capitalContractual(BigDecimal saldoInicial, BigDecimal tasa, boolean ultimaConSaldo) {
+    private BigDecimal capitalContractual(BigDecimal saldoInicial, BigDecimal tasa, boolean ultimaConSaldo,
+            BigDecimal sinInteres) {
         // Auditoría 2026-10-23 (H3): nunca negativo, aunque el saldo del plan lo fuera por un error aguas arriba.
         BigDecimal capitalContractual = ultimaConSaldo ? s.saldoPlan
-                : noNegativo(min(s.saldoPlan, restar(s.cuota, multiplicar(s.saldoPlan, tasa))));
+                : noNegativo(min(s.saldoPlan, restar(s.cuota,
+                        multiplicar(noNegativo(restar(s.saldoPlan, sinInteres)), tasa))));
         // Auditoría 2026-10-23 (I8): el plan puede ir por encima del capital que de verdad queda vigente (un pago
         // mayor que la cuota baja el saldo pero no el plan). Sin este tope la cuota del plan vencía más capital
         // del que existe y el capital vencido superaba al saldo. Solo actúa si la diferencia supera el medio

@@ -83,7 +83,7 @@ class PerfilesReglasSnapshotTest {
             "baseMoraCobranza=TOTAL_PENDIENTE",
             "comparacionCobranza=MAYOR_O_IGUAL",
             "marcaPorCociente=true",
-            "alcanceProrrateoPrimeraCuota=CUOTA_COMPLETA");
+            "alcanceProrrateoPrimeraCuota=CUOTA_COMPLETA_SIN_INTERES");
 
     /** clave=valor en el orden de los componentes del record; BigDecimal con su escala (toPlainString). */
     private static List<String> valores(ReglasNegocio r) throws ReflectiveOperationException {

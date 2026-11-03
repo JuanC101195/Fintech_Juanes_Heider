@@ -220,16 +220,16 @@ class RespuestasDiegoRonda12Test {
         }
 
         @Test
-        void laMarcaPersisteAlBajarElCocientePeroLaCobranzaSoloMientrasSigaEnDos() {
-            // Sin pago en la 1, 2 y 3; en la 4 paga 600.000: el cociente baja de 2, pero el crédito sigue marcado.
+        void laMarcaSeDesactivaAlBajarElCocienteYLaCobranzaSoloMientrasSigaEnDos() {
+            // Sin pago en la 1, 2 y 3; en la 4 paga 600.000: el cociente baja de 2 y (R13-COBRANZA-TRAS-MARCA, D85) la marca se quita.
             List<Movimiento> m = motor.ejecutar(conOperacionDelExcel().entre(1, 3, new SinPago(true))
                     .en(4, new PagoValor(bd(600_000), 0)).conReglas(negocio()));
             assertThat(fila(m, 2).listoParaRecuperacion()).isTrue();
             assertThat(fila(m, 4).estado()).isEqualTo(EstadoCredito.EN_MORA);
             for (int k = 4; k <= 8; k++) {
-                assertThat(fila(m, k).listoParaRecuperacion()).as("periodo %d", k).isTrue();
+                assertThat(fila(m, k).listoParaRecuperacion()).as("periodo %d", k).isFalse();
             }
-            // COB-4: la cobranza solo mientras haya mora de 2 cuotas o más (supuesto, R13-COBRANZA-TRAS-MARCA).
+            // COB-4: la cobranza solo mientras haya mora de 2 cuotas o más (R13-COBRANZA-TRAS-MARCA, D85).
             assertThat(fila(m, 5).cobranzaCausada()).isZero();
             assertThat(fila(m, 6).cobranzaCausada()).isZero();
         }
@@ -276,7 +276,7 @@ class RespuestasDiegoRonda12Test {
 
         @Test
         void capitalYServiciosVanEnProporcionALosDiasYElInteresPorLosDiasReales() {
-            assertThat(negocio().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA);
+            assertThat(negocio().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
             assertThat(ReglasNegocio.EXCEL.alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.SOLO_INTERES);
             List<Movimiento> completa = correr(negocio());
             List<Movimiento> soloInteres = correr(negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES));
@@ -320,10 +320,12 @@ class RespuestasDiegoRonda12Test {
 
         @Test
         void conMasDiasQueElPeriodoCapitalYServiciosVanCompletos() {
-            // Supuesto provisional (R13-PRIMERA-CUOTA-LARGA): 10 días de 7, solo el interés cuenta los días de más.
+            // Con CUOTA_COMPLETA (D79, sin la ronda 13): 10 días de 7, solo el interés cuenta los días de más. NEGOCIO ya no lo
+            // permite (R13-PRIMERA-CUOTA-LARGA, D84): ver RespuestasDiegoRonda13Test.
+            ReglasNegocio d79 = negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA);
             CalendarioPagos diez = CalendarioPagos.semanal(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 10, 13));
-            Movimiento uno = fila(motor.ejecutar(conOperacionDelExcel().conReglas(negocio()).conCalendario(diez)), 1);
-            Movimiento sinFechas = fila(motor.ejecutar(conOperacionDelExcel().conReglas(negocio())), 1);
+            Movimiento uno = fila(motor.ejecutar(conOperacionDelExcel().conReglas(d79).conCalendario(diez)), 1);
+            Movimiento sinFechas = fila(motor.ejecutar(conOperacionDelExcel().conReglas(d79)), 1);
             assertThat(uno.capitalContractual()).isEqualByComparingTo(sinFechas.capitalContractual());
             assertThat(uno.serviciosCausados()).isEqualTo(sinFechas.serviciosCausados());
             assertThat(uno.interesCorriente()).isGreaterThan(sinFechas.interesCorriente());

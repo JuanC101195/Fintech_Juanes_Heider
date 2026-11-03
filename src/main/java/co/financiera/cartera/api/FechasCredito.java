@@ -9,6 +9,7 @@ import co.financiera.cartera.nucleo.CalendarioPagos;
 import co.financiera.cartera.nucleo.Periodicidad;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.Movimiento;
+import co.financiera.cartera.nucleo.motor.ReglasNegocio;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -33,7 +34,8 @@ record FechasCredito(LocalDate desembolso, LocalDate primerVencimiento, Calendar
      * P5-PRORRATEO: valida las fechas opcionales del crédito contra la periodicidad y arma su {@link CalendarioPagos}.
      * Sin ninguna de las dos devuelve {@code null} (el comportamiento de siempre, sin fechas). Van juntas: con una sola
      * es un 400. El primer vencimiento cae martes en semanal (D28), el 5 o el 20 en quincenal (D27) y el 5 en mensual
-     * (D35), y es posterior al desembolso. No hay tope a los días del primer periodo: Diego no lo ha fijado.
+     * (D35), y es posterior al desembolso. El tope a los días del primer periodo depende de las reglas
+     * ({@link #validarContra}): con NEGOCIO el primer vencimiento cae dentro del primer periodo (D84).
      */
     static FechasCredito de(String fechaDesembolso, String primerVencimiento, Periodicidad per) {
         boolean sinDesembolso = fechaDesembolso == null || fechaDesembolso.isBlank();
@@ -53,6 +55,20 @@ record FechasCredito(LocalDate desembolso, LocalDate primerVencimiento, Calendar
                     + "desembolso (" + desembolso + ")", PRIMER_VENCIMIENTO);
         }
         return new FechasCredito(desembolso, vencimiento, calendario(per, desembolso, vencimiento));
+    }
+
+    /**
+     * R13-PRIMERA-CUOTA-LARGA (Diego 2026-11-02, D84): con las reglas de NEGOCIO el primer vencimiento siempre cae dentro del
+     * primer periodo; una entrega a más días que el periodo (7, 15 o 30) no se permite. Con el Excel no hay tope.
+     */
+    FechasCredito validarContra(ReglasNegocio reglas, Periodicidad per) {
+        int nominales = per.diasNominales();
+        if (reglas.capitalNoCobradoSinInteres() && calendario.diasDelPeriodo(1) > nominales) {
+            throw ApiException.datoInvalido("El primer vencimiento (" + primerVencimiento + ") debe caer dentro del primer "
+                    + "periodo: hay " + calendario.diasDelPeriodo(1) + " días desde el desembolso (" + desembolso
+                    + ") y el periodo es de " + nominales, PRIMER_VENCIMIENTO);
+        }
+        return this;
     }
 
     private static CalendarioPagos calendario(Periodicidad per, LocalDate desembolso, LocalDate vencimiento) {

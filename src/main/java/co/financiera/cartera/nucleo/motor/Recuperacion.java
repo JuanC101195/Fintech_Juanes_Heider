@@ -90,9 +90,15 @@ final class Recuperacion {
      * cerrado por evento), porque ya no hay nada que recuperar. R12-MARCA-POR-COCIENTE (D77): {@code llegaAlUmbral} lo
      * decide el motor por cuotas vencidas (PPER-9) o por el cociente de la cobranza.
      */
-    boolean listoParaRecuperacion(EstadoCredito estado, boolean llegaAlUmbral) {
-        if (estado == EstadoCredito.EN_MORA && llegaAlUmbral) {
-            marcadoParaRecuperacion = true;
+    boolean listoParaRecuperacion(EstadoCredito estado, boolean llegaAlUmbral, boolean persiste) {
+        if (persiste) {
+            if (estado == EstadoCredito.EN_MORA && llegaAlUmbral) {
+                marcadoParaRecuperacion = true;
+            }
+        } else {
+            // R13-COBRANZA-TRAS-MARCA (Diego 2026-11-02, D85): con la marca por cociente la marca se activa solo con 2 o más
+            // cuotas de mora y SE DESACTIVA cuando el saldo en mora baja de ahí.
+            marcadoParaRecuperacion = estado == EstadoCredito.EN_MORA && llegaAlUmbral;
         }
         boolean termino = estado == EstadoCredito.CANCELADO || estado == EstadoCredito.CERRADO_POR_EVENTO;
         return marcadoParaRecuperacion && !termino;

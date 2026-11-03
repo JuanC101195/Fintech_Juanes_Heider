@@ -224,7 +224,7 @@ class ErroresApiTest {
                 .content(conFechas("QUINCENAL", "\"2026-10-23\"", "\"2026-11-05\""))).andReturn().getResponse().getStatus())
                 .isEqualTo(200);
         assertThat(mvc.perform(post("/api/v1/simulaciones").contentType(MediaType.APPLICATION_JSON)
-                .content(conFechas("QUINCENAL", "\"2026-10-23\"", "\"2026-11-20\""))).andReturn().getResponse().getStatus())
+                .content(conFechas("QUINCENAL", "\"2026-11-10\"", "\"2026-11-20\""))).andReturn().getResponse().getStatus())
                 .isEqualTo(200);
     }
 

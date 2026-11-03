@@ -43,7 +43,7 @@ class ApiNoCambiaTest {
                 {"linea":"CPPU","periodicidad":"SEMANAL","cuotas":104,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO"}""");
         p.put("POST /simulaciones · mensual NEGOCIO con fechas", """
                 /simulaciones
-                {"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-12-05"}""");
+                {"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-05"}""");
         p.put("POST /simulaciones · quincenal EXCEL 48 cuotas", """
                 /simulaciones
                 {"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"valorMoto":"5100000","pagoInicial":"500000","perfilReglas":"EXCEL"}""");
@@ -55,7 +55,7 @@ class ApiNoCambiaTest {
                 {"credito":{"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"valorMoto":"5100000","pagoInicial":"0","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-05"},"perfilReglas":"NEGOCIO","incluirAsientos":true,"instrucciones":[{"periodo":6,"tipo":"PAGO_PARCIAL","fraccion":"0.4"},{"periodo":7,"tipo":"PAGO_AL_DIA"},{"periodo":16,"tipo":"CAMBIO_TASA","nuevaTasaEA":"0.60","modalidad":"MISMA_CUOTA"}]}""");
         p.put("POST /escenarios/ejecutar · mensual NEGOCIO con fechas y prepago", """
                 /escenarios/ejecutar
-                {"credito":{"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-12-05"},"perfilReglas":"NEGOCIO","incluirAsientos":true,"instrucciones":[{"periodo":8,"tipo":"ABONO_EXTRA","valor":"1000000","modalidad":"MENOR_CUOTA"},{"periodo":10,"tipo":"PREPAGO_TOTAL","diasDesdeUltimaCuota":3}]}""");
+                {"credito":{"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,"valorMoto":"5100000","pagoInicial":"0","fechaDesembolso":"2026-10-23","primerVencimiento":"2026-11-05"},"perfilReglas":"NEGOCIO","incluirAsientos":true,"instrucciones":[{"periodo":8,"tipo":"ABONO_EXTRA","valor":"1000000","modalidad":"MENOR_CUOTA"},{"periodo":10,"tipo":"PREPAGO_TOTAL","diasDesdeUltimaCuota":3}]}""");
         p.put("POST /escenarios/ejecutar · semanal EXCEL con dación", """
                 /escenarios/ejecutar
                 {"credito":{"linea":"CPPU","periodicidad":"SEMANAL","cuotas":104,"valorMoto":"5100000","pagoInicial":"0"},"perfilReglas":"EXCEL","incluirAsientos":true,"instrucciones":[{"periodo":31,"tipo":"SIN_PAGO","causaMoraYServicios":false},{"periodo":32,"tipo":"SIN_PAGO","causaMoraYServicios":false},{"periodo":33,"tipo":"CIERRE_POR_RECUPERACION","tipoRecuperacion":"DACION_EN_PAGO","valorMoto":"3000000"}]}""");

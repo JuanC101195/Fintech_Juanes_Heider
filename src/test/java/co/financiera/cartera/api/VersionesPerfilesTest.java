@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 class VersionesPerfilesTest {
 
     private static final String HUELLA_EXCEL = "2b9f665bc1ce29fb58290570cd88a3ff5d2696b663113a01f8e80431cb5b0ec2";
-    private static final String ID_NEGOCIO = "negocio-2026-11-01";
-    private static final String HUELLA_NEGOCIO = "c8dfab8d78cf5b9f6aaf6d0e4c4100aade7605fbf74ef8e28207633bc94878c4";
+    private static final String ID_NEGOCIO = "negocio-2026-11-02";
+    private static final String HUELLA_NEGOCIO = "0ef82719d6a61d2587228837b681a5585b4431dfeedbfd5242328cf7e5a477ad";
 
     private final PerfilesReglas perfiles = new PerfilesReglas("config/reglas-negocio.properties");
 
@@ -35,7 +35,7 @@ class VersionesPerfilesTest {
         assertThat(negocio.id())
                 .as("¿Cambió config/reglas-negocio.properties? Es una versión nueva: suba NEGOCIO_VIGENTE_DESDE")
                 .isEqualTo(ID_NEGOCIO);
-        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 11, 1));
+        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 11, 2));
         assertThat(negocio.reglas()).isSameAs(perfiles.reglas(Perfil.NEGOCIO));
         assertThat(negocio.huella())
                 .as("El contenido de " + ID_NEGOCIO + " cambió sin cambiar el id: suba NEGOCIO_VIGENTE_DESDE y "
@@ -52,13 +52,14 @@ class VersionesPerfilesTest {
         assertThat(repo.porVersion(ID_NEGOCIO)).contains(perfiles.version(Perfil.NEGOCIO));
         assertThat(repo.vigenteEn(LocalDate.of(2026, 10, 1))).isEmpty();
         assertThat(repo.vigenteEn(LocalDate.of(2026, 10, 20))).contains(perfiles.version(Perfil.EXCEL));
-        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 1))).contains(perfiles.version(Perfil.NEGOCIO));
+        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 1))).contains(perfiles.version(Perfil.EXCEL));
+        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 2))).contains(perfiles.version(Perfil.NEGOCIO));
     }
 
     @Test
     void laFechaDeNegocioSeConfiguraYDebeSerPosteriorAlExcel() {
-        PerfilesReglas otra = new PerfilesReglas("config/reglas-negocio.properties", "2026-11-02");
-        assertThat(otra.version(Perfil.NEGOCIO).id()).isEqualTo("negocio-2026-11-02");
+        PerfilesReglas otra = new PerfilesReglas("config/reglas-negocio.properties", "2026-11-03");
+        assertThat(otra.version(Perfil.NEGOCIO).id()).isEqualTo("negocio-2026-11-03");
         assertThat(otra.version(Perfil.NEGOCIO).huella()).isEqualTo(HUELLA_NEGOCIO);
         assertThatThrownBy(() -> new PerfilesReglas("config/reglas-negocio.properties", "2026-10-11"))
                 .isInstanceOf(IllegalArgumentException.class);
