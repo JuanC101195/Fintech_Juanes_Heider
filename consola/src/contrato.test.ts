@@ -199,7 +199,7 @@ describe('prorrateo de la primera cuota (P5-PRORRATEO) contra los tipos', () => 
     const s = leer<Simulacion>('docs', 'api-ejemplos', 'simulacion-mensual-prorrateo.json')
     const p = s.resumen.prorrateoPrimeraCuota!
     validar(p, PRORRATEO, 'prorrateoPrimeraCuota')
-    expect(p).toMatchObject({ fechaDesembolso: '2026-10-23', primerVencimiento: '2026-12-05', diasPrimerPeriodo: 43, diasNominales: 30, aplicado: true })
+    expect(p).toMatchObject({ fechaDesembolso: '2026-10-23', primerVencimiento: '2026-11-05', diasPrimerPeriodo: 13, diasNominales: 30, aplicado: true })
     expect(s.plan[0].interes).toBe(p.interesProrrateado)
     for (const f of s.plan) validar(f, FILA_PLAN, `fila ${f.periodo}`)
     // El resumen muestra la cuota regular (periodo 2), no la prorrateada.
@@ -210,7 +210,7 @@ describe('prorrateo de la primera cuota (P5-PRORRATEO) contra los tipos', () => 
     const e = leer<Ejecucion>('docs', 'api-ejemplos', 'escenario-semanal-prorrateo.json')
     const p = e.resumen.prorrateoPrimeraCuota!
     validar(p, PRORRATEO, 'prorrateoPrimeraCuota')
-    expect(p.diasPrimerPeriodo).toBe(11)
+    expect(p.diasPrimerPeriodo).toBe(5)
     expect(e.movimientos[1].interesCorriente).toBe(p.interesProrrateado)
     for (const m of e.movimientos.slice(0, 5)) validar(m, formaMovimiento(m), `movimiento ${m.periodo}`)
   })

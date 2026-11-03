@@ -187,7 +187,7 @@ public final class MotorCartera {
             return new Instantanea(periodoActual, terminado, null, escenario.operacion(), p, escenario.cobranzaActiva(),
                     escenario.calendario().orElse(null), s.tasas, s.cuota, s.saldo, s.saldoPlan, s.capitalVencido,
                     s.cxcInteres, s.cxcMora, s.cxcCobranza, s.cxcServicios, s.cuotasVigentes, cuotasVencidas,
-                    recaudadoDelMes, usuraPorAplicar, recuperacion.marcadoParaRecuperacion());
+                    recaudadoDelMes, usuraPorAplicar, recuperacion.marcadoParaRecuperacion(), s.capitalSinInteres);
         }
 
         private Movimiento desembolso() {
@@ -221,6 +221,9 @@ public final class MotorCartera {
                     new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, Causador.alDia(pago, dias)),
                     cuotasParaUmbrales, diasParaCobranza(pago, dias, atrasado), ordenes.cierre != null);
 
+            if (causado.capitalNoCobrado().signum() > 0) {
+                s.capitalSinInteres = causado.capitalNoCobrado();   // R13-PRIMERA-CUOTA-INTERES (D84)
+            }
             // La fila reporta la cuota que se cobró este periodo: un abono a menor cuota (caso 7) cambia
             // la cuota solo desde el periodo siguiente (Caso7 F46 = MIN(B24, D + E); F47 = PMT(...)). Con el
             // prorrateo de la primera cuota (P5-PRORRATEO) es su capital más el interés de los días reales; con la cuota
@@ -274,7 +277,8 @@ public final class MotorCartera {
             boolean llegaAlUmbral = escenario.reglas().marcaRecuperacionPorCociente()
                     ? escenario.reglas().llegaAlUmbralDeCobranza(causador.saldoEnMora(), causador.valorCuotaParaCobranza())
                     : escenario.reglas().llegaAlUmbralDeRecuperacion(cuotasVencidas);
-            boolean listoParaRecuperacion = recuperacion.listoParaRecuperacion(estado, llegaAlUmbral);
+            boolean listoParaRecuperacion = recuperacion.listoParaRecuperacion(estado, llegaAlUmbral,
+                    !escenario.reglas().marcaRecuperacionPorCociente());
             return new Movimiento(periodo, Calendario.mes(periodo, p), evento, saldoInicial, tasa, cuotaDelPeriodo,
                     causado.interes(), causado.mora(), causado.capitalContractual(), causado.cobranza(), serviciosDelPeriodo,
                     recibido, reparto.cobranza(), reparto.mora(), reparto.interes(), reparto.servicios().total(),

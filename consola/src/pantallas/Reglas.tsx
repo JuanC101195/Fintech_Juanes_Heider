@@ -36,6 +36,7 @@ const VALORES: Record<string, string> = {
   MAYOR_O_IGUAL: 'Desde el umbral (mayor o igual)',
   SOLO_INTERES: 'Solo el interés, por los días reales; capital y servicios completos',
   CUOTA_COMPLETA: 'La cuota completa, proporcional a los días: el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden',
+  CUOTA_COMPLETA_SIN_INTERES: 'La cuota completa, proporcional a los días: el capital no cobrado no causa interés y lo suma la última cuota; los servicios no cobrados se pierden; el primer vencimiento cae dentro del primer periodo',
   true: 'Sí',
   false: 'No',
 }

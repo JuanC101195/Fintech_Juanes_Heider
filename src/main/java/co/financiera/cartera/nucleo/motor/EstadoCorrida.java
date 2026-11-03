@@ -33,6 +33,11 @@ final class EstadoCorrida {
     BigDecimal cxcCobranza = CERO;
     /** Saldo del plan vigente si el cliente pagara siempre a tiempo: de él sale el capital contractual. */
     BigDecimal saldoPlan;
+    /**
+     * R13-PRIMERA-CUOTA-INTERES (D84): capital que la primera cuota prorrateada no cobró y que no causa interés hasta que lo
+     * recoge la última cuota del plan. Cero si no aplica.
+     */
+    BigDecimal capitalSinInteres = CERO;
     /** Lo que el abono extra o el prepago de la semana pagó de pendientes (A4). */
     DeudaExtinguida pendientesPagadosExtra = DeudaExtinguida.NINGUNA;
     BigDecimal interesPrepago = CERO;
@@ -74,6 +79,7 @@ final class EstadoCorrida {
         this.cuota = i.cuota();
         this.saldo = i.saldo();
         this.saldoPlan = i.saldoPlan();
+        this.capitalSinInteres = i.capitalSinInteres();
         this.cuotasVigentes = i.cuotasVigentes();
         this.capitalVencido = i.capitalVencido();
         this.cxcInteres = i.cxcInteres();

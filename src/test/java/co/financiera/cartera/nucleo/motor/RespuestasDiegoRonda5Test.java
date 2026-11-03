@@ -259,7 +259,7 @@ class RespuestasDiegoRonda5Test {
         @Test
         void laMarcaPersisteAunqueElClienteSePongaAlDia() {
             Escenario e = new Escenario(Operacion.ejemploExcel(), SEMANAL).entre(30, 31, new SinPago(true))
-                    .en(32, new PagoAlDia()).conReglas(negocio());
+                    .en(32, new PagoAlDia()).conReglas(negocio().conMarcaPorCociente(false));
             List<Movimiento> m = motor.ejecutar(e);
             assertThat(fila(m, 30).listoParaRecuperacion()).isFalse();
             assertThat(fila(m, 31).listoParaRecuperacion()).isTrue();
@@ -276,7 +276,7 @@ class RespuestasDiegoRonda5Test {
         @Test
         void cuandoElCreditoTerminaYaNoHayNadaQueRecuperar() {
             Escenario e = new Escenario(Operacion.ejemploExcel(), SEMANAL).entre(30, 31, new SinPago(true))
-                    .en(32, new PagoAlDia()).en(40, new PrepagoTotal(0)).conReglas(negocio());
+                    .en(32, new PagoAlDia()).en(40, new PrepagoTotal(0)).conReglas(negocio().conMarcaPorCociente(false));
             List<Movimiento> m = motor.ejecutar(e);
             assertThat(fila(m, 39).listoParaRecuperacion()).isTrue();
             assertThat(fila(m, 40).estado()).isEqualTo(EstadoCredito.CANCELADO);

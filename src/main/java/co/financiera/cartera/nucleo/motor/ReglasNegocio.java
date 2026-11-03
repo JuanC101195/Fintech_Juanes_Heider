@@ -329,7 +329,14 @@ public record ReglasNegocio(
          * saldo, causa interés corriente y lo recoge la última cuota del plan (la cuota fija no cambia); los servicios no
          * cobrados se pierden.
          */
-        CUOTA_COMPLETA
+        CUOTA_COMPLETA,
+        /**
+         * R13-PRIMERA-CUOTA-INTERES y R13-PRIMERA-CUOTA-LARGA (Diego 2026-11-02, D84): como {@link #CUOTA_COMPLETA}, pero el
+         * capital que la primera cuota no cobra NO causa interés (el plan sigue como si la primera cuota hubiera sido
+         * completa) y la última cuota solo suma ese capital. Además la entrega no puede ser más de un periodo antes del
+         * primer vencimiento: el primer vencimiento siempre cae dentro del primer periodo.
+         */
+        CUOTA_COMPLETA_SIN_INTERES
     }
 
     public enum OrdenPrelacion {
@@ -1009,7 +1016,13 @@ public record ReglasNegocio(
 
     /** R12-PRIMERA-CUOTA-DETALLE (D79): si la primera cuota prorrateada prorratea también capital y servicios. */
     public boolean prorrateaCuotaCompleta() {
-        return prorrateoPrimeraCuota && alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA;
+        return prorrateoPrimeraCuota && (alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA
+                || alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+    }
+
+    /** R13-PRIMERA-CUOTA-INTERES (D84): si el capital que la primera cuota no cobra queda sin causar interés. */
+    public boolean capitalNoCobradoSinInteres() {
+        return prorrateoPrimeraCuota && alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES;
     }
 
     /** PPER-9: si con {@code cuotasVencidas} el crédito llega al umbral de recuperación. */

@@ -131,7 +131,7 @@ Lo que agrega la ronda 12 de Diego (2026-11-01; ADR 0007):
 |---|---|---|---|
 | `serviciosDespuesDelPlazo` | D76 (R12-SERVICIOS-DESPUES-PLAZO): después de la última cuota pactada los servicios siguen mientras haya saldo de capital (el periodo de una dación o una retoma no los causa) | `true` | `false` |
 | `marcaPorCociente` | D77 (R12-MARCA-POR-COCIENTE): `listoParaRecuperacion` se mide con el mismo cociente de la cobranza al cerrar cada periodo (ignora `cuotasVencidasParaRecuperacion`); la marca persiste aunque el cociente baje. Sin `umbralCocienteCobranza` no aplica | `true` | `false` |
-| `alcanceProrrateoPrimeraCuota` | D79 (R10-PRIMERA-CUOTA, R12-PRIMERA-CUOTA-DETALLE): con `prorrateoPrimeraCuota` y fechas, `SOLO_INTERES` (P5, D48) o `CUOTA_COMPLETA` (capital y servicios × días reales / días nominales, como máximo la cuota; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden) | `CUOTA_COMPLETA` | `SOLO_INTERES` |
+| `alcanceProrrateoPrimeraCuota` | D79 (R10-PRIMERA-CUOTA, R12-PRIMERA-CUOTA-DETALLE): con `prorrateoPrimeraCuota` y fechas, `SOLO_INTERES` (P5, D48), `CUOTA_COMPLETA` (capital y servicios × días reales / días nominales, como máximo la cuota; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden) o `CUOTA_COMPLETA_SIN_INTERES` (D84, ronda 13: además el capital no cobrado no causa interés y el API rechaza un primer vencimiento a más días que el periodo) | `CUOTA_COMPLETA_SIN_INTERES` | `SOLO_INTERES` |
 
 ### POST /api/v1/simulaciones
 

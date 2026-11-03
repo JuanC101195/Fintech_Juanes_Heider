@@ -71,6 +71,7 @@ public class ServicioCartera {
         FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
         Escenario escenario = new Escenario(o, p).conReglas(perfiles.reglas(perfil)).conCobranzaActiva(ValidadorCredito.cobranzaActiva(c));
         if (fechas != null) {
+            fechas.validarContra(perfiles.reglas(perfil), p.periodicidad());
             escenario.conCalendario(fechas.calendario());
         }
         List<Movimiento> movs = motor.ejecutar(escenario);
@@ -115,6 +116,7 @@ public class ServicioCartera {
                 .conCobranzaActiva(ValidadorCredito.cobranzaActiva(c));
         FechasCredito fechas = FechasCredito.de(c, p.periodicidad());
         if (fechas != null) {
+            fechas.validarContra(perfiles.reglas(perfil), p.periodicidad());
             e.conCalendario(fechas.calendario());
         }
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
@@ -144,6 +146,7 @@ public class ServicioCartera {
         Escenario e = caso.escenario().apply(p, reglas).conReglas(reglas);
         FechasCredito fechas = FechasCredito.de(fechaDesembolso, primerVencimiento, p.periodicidad());
         if (fechas != null) {
+            fechas.validarContra(reglas, p.periodicidad());
             e.conCalendario(fechas.calendario());
         }
         EjecucionResponse r = correr(e, perfil, true, fechas);

@@ -359,10 +359,10 @@ class RespuestasDiegoDocumentoTest {
 
         @Test
         void unaSolaCuotaAtrasadaNoLoMarcaYPonerseAlDiaNoLoDesmarca() {
-            assertThat(motor.ejecutar(EscenariosExcel.caso8(P).conReglas(negocio())))
+            assertThat(motor.ejecutar(EscenariosExcel.caso8(P).conReglas(negocio().conMarcaPorCociente(false))))
                     .noneMatch(Movimiento::listoParaRecuperacion);
             Escenario e = new Escenario(Operacion.ejemploExcel(), P).entre(30, 31, new SinPago(true))
-                    .en(32, new PagoAlDia()).conReglas(negocio());
+                    .en(32, new PagoAlDia()).conReglas(negocio().conMarcaPorCociente(false));
             List<Movimiento> m = motor.ejecutar(e);
             assertThat(fila(m, 30).listoParaRecuperacion()).isFalse();
             assertThat(fila(m, 31).listoParaRecuperacion()).isTrue();

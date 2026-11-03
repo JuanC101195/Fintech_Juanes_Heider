@@ -151,7 +151,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("serviciosDespuesDelPlazo").asString()).isEqualTo("false");
         assertThat(negocio.get("marcaPorCociente").asString()).isEqualTo("true");
         assertThat(excel.get("marcaPorCociente").asString()).isEqualTo("false");
-        assertThat(negocio.get("alcanceProrrateoPrimeraCuota").asString()).isEqualTo("CUOTA_COMPLETA");
+        assertThat(negocio.get("alcanceProrrateoPrimeraCuota").asString()).isEqualTo("CUOTA_COMPLETA_SIN_INTERES");
         assertThat(excel.get("alcanceProrrateoPrimeraCuota").asString()).isEqualTo("SOLO_INTERES");
     }
 
