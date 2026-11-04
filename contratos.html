@@ -175,7 +175,9 @@
     @media (max-width: 520px) { .tarjetas-mes { grid-template-columns: minmax(0, 1fr); } }
     .t-mes { background: var(--fondo); border-radius: 12px; padding: 14px 14px 14px 18px; min-width: 0; box-shadow: inset 5px 0 0 var(--cual, var(--borde)); }
     .t-mes.cap { --cual: var(--c-capital); } .t-mes.int { --cual: var(--c-interes); } .t-mes.otr { --cual: var(--c-otros); }
-    .t-mes.srv { --cual: var(--s4); } .t-mes.tot { --cual: var(--texto); } .t-mes.real { --cual: var(--s2); }
+    .t-mes.srv { --cual: var(--s4); } .t-mes.tot { --cual: var(--texto); } .t-mes.real { --cual: var(--s2); } .t-mes.carta { --cual: var(--s3, var(--suave)); }
+    .desglose { margin: 8px 0 0; font-size: 13px; } .desglose summary { cursor: pointer; color: var(--suave); }
+    .desglose ul { list-style: none; margin: 6px 0 0; padding: 0; } .desglose li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px solid var(--borde); } .desglose li > span { min-width: 0; } .desglose li strong { white-space: nowrap; }
     .t-rot { margin: 0; font-size: 14px; font-weight: 700; color: var(--suave); }
     .t-valor { margin: 4px 0 2px; font-size: 25px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
         .t-pct { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: var(--texto); overflow-wrap: anywhere; }
@@ -1357,11 +1359,19 @@ function bloqueProyeccion(k, meses, iHoy) {
     el('h3', {}, rotuloLectura[k]), cifra, reparto, kpis, grafica, leyendaConceptos(true))
 }
 
+// Pagos por carta de un mes cerrado; null si no aplica o si la respuesta (función vieja) no la trae.
+function cartaDe(m) {
+  const c = m && m.carta
+  if (!c || typeof c !== 'object' || c.valor == null) return null
+  return { pagos: n0(c.pagos), valor: n0(c.valor), porMotivo: c.porMotivo && typeof c.porMotivo === 'object' ? c.porMotivo : {} }
+}
+const nombreMotivo = (k) => `Carta ${String(k).replace(/^CARTA\s+/i, '').toLowerCase()}`
+
 // ---- A) tabla mensual del año ----
 function pintarTabla() {
   const key = LECTURAS[flujo.lecTabla]
   const porMesMap = new Map(flujo.meses.map((m) => [m.mes, m]))
-  const acumulador = () => ({ cap: 0, int: 0, mc: 0, sv: 0, tot: 0, real: 0, conReal: 0, n: 0 })
+  const acumulador = () => ({ cap: 0, int: 0, mc: 0, sv: 0, tot: 0, real: 0, conReal: 0, carta: 0, cartaPagos: 0, conCarta: 0, n: 0 })
   const todo = acumulador(), cerrados = acumulador()
   const conPct = (v, t) => el('td', {}, cop(v), el('span', { class: 'pc' }, pctDe(v, t)))
   const filas = []
@@ -1371,13 +1381,15 @@ function pintarTabla() {
     const f = cifrasMes(m, key)
     const nom = mayus(MESES_ES[i])
     if (!m || !f) {
-      filas.push(el('tr', { class: 'sin-datos' }, el('th', { scope: 'row', class: 'izq' }, nom), el('td', { colspan: 9, class: 'izq' }, 'Sin datos de este mes')))
+      filas.push(el('tr', { class: 'sin-datos' }, el('th', { scope: 'row', class: 'izq' }, nom), el('td', { colspan: 10, class: 'izq' }, 'Sin datos de este mes')))
       continue
     }
     const real = m.real && m.real.pagos != null ? n0(m.real.pagos) : null
+    const carta = cartaDe(m)
     for (const acc of m.estado === 'cerrado' ? [todo, cerrados] : [todo]) {
       acc.cap += f.cap; acc.int += f.int; acc.mc += f.mc; acc.sv += f.sv; acc.tot += f.tot; acc.n += 1
       if (real !== null) { acc.real += real; acc.conReal += 1 }
+      if (carta) { acc.carta += carta.valor; acc.cartaPagos += carta.pagos; acc.conCarta += 1 }
     }
     const clase = m.estado === 'en_curso' ? 'curso' : m.estado === 'proyectado' ? 'proy' : ''
     const boton = el('button', { type: 'button', class: 'mes-btn', 'aria-pressed': String(ym === flujo.mes), 'aria-label': `Ver el detalle de ${nombreMes(ym)}` }, nom)
@@ -1389,6 +1401,7 @@ function pintarTabla() {
       el('td', {}, cop(f.mc)), el('td', {}, cop(f.sv)),
       el('td', { class: 'fuerte' }, cop(f.tot)),
       el('td', {}, real === null ? '—' : cop(real), m.estado === 'en_curso' && real !== null ? el('span', { class: 'pc' }, 'hasta hoy') : null),
+      el('td', {}, carta ? cop(carta.valor) : '—', carta ? el('span', { class: 'pc' }, `${agrupar(carta.pagos)} ${carta.pagos === 1 ? 'pago' : 'pagos'}`) : null),
       el('td', { class: 'izq' }, el('span', { class: `est est-${clase || 'cerrado'}` }, ETIQ_ESTADO[m.estado] || texto(m.estado))))
     tr.addEventListener('click', () => { seleccionarMes(ym); verTarjetas() })
     filas.push(tr)
@@ -1399,21 +1412,22 @@ function pintarTabla() {
     conPct(acc.cap, acc.tot), conPct(acc.int, acc.tot),
     el('td', {}, cop(acc.mc)), el('td', {}, cop(acc.sv)), el('td', { class: 'fuerte' }, cop(acc.tot)),
     el('td', {}, acc.conReal ? cop(acc.real) : '—', acc.conReal ? el('span', { class: 'pc' }, 'meses con dato') : null),
+    el('td', {}, acc.conCarta ? cop(acc.carta) : '—', acc.conCarta ? el('span', { class: 'pc' }, `${agrupar(acc.cartaPagos)} ${acc.cartaPagos === 1 ? 'pago' : 'pagos'}`) : null),
     el('td', {}))
   const hayNoCerrados = todo.n > cerrados.n
   const pie = el('tfoot', {},
     cerrados.n ? filaTotal('Solo meses cerrados', `${cerrados.n} ${cerrados.n === 1 ? 'mes' : 'meses'}`, cerrados, 'sub-cerrados') : null,
     filaTotal(`Total de ${flujo.anio}`, hayNoCerrados ? 'incluye meses en curso o proyectados' : `${todo.n} meses`, todo, 'total-anio'))
-  const cab = ['Mes', 'Motos activas al último día del mes', 'Con cuota simulada ese mes', 'Capital', 'Intereses', 'Mora y cobranza', 'Servicios', 'Total del motor', 'Recaudo real del sistema actual', 'Estado']
+  const cab = ['Mes', 'Motos activas al último día del mes', 'Con cuota simulada ese mes', 'Capital', 'Intereses', 'Mora y cobranza', 'Servicios', 'Total del motor', 'Recaudo real del sistema actual', 'Pagos por carta (liquidaciones)', 'Estado']
   const tabla = el('table', { class: 'anual' }, el('caption', { class: 'solo-lectores' }, `Recaudo del motor por mes de ${flujo.anio}, ${rotuloLectura[flujo.lecTabla].toLowerCase()}`),
-    el('thead', {}, el('tr', {}, cab.map((n, i) => el('th', { scope: 'col', class: i === 0 || i === 9 ? 'izq' : '' }, n)))), el('tbody', {}, filas), pie)
+    el('thead', {}, el('tr', {}, cab.map((n, i) => el('th', { scope: 'col', class: i === 0 || i === 10 ? 'izq' : '' }, n)))), el('tbody', {}, filas), pie)
   $('flujo-tabla').replaceChildren(
     el('div', { class: 'tabla-scroll anual-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla mensual de ${flujo.anio}, ${rotuloLectura[flujo.lecTabla].toLowerCase()}` }, tabla),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de estados' },
       el('li', {}, el('span', { class: 'muestra' }), 'Cerrado: el mes ya terminó'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-curso)' }), 'En curso: aún no termina'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-proy)' }), 'Proyectado: todavía no llega')),
-    el('p', { class: 'ayuda' }, 'Toque un mes para ver su detalle más abajo. El total del año suma todo lo que aparece, también los meses que aún no cierran; para mirar solo lo ya ocurrido use «Solo meses cerrados». Del mes en curso el recaudo real llega hasta hoy, y los proyectados no tienen recaudo real.'))
+    el('p', { class: 'ayuda' }, 'Toque un mes para ver su detalle más abajo. El total del año suma todo lo que aparece, también los meses que aún no cierran; para mirar solo lo ya ocurrido use «Solo meses cerrados». Del mes en curso el recaudo real llega hasta hoy, y los proyectados no tienen recaudo real. Los pagos por carta son liquidaciones de cierre de contrato: no son cuotas, no están en el recaudo real ni en el motor y solo se conocen en los meses cerrados.'))
 }
 
 function marcarFila() {
@@ -1456,6 +1470,15 @@ function pintarTarjetas() {
     el('p', { class: 't-rot' }, rot), el('p', { class: 't-valor' }, valor), pctTxt ? el('p', { class: 't-pct' }, pctTxt) : null, el('p', { class: 't-ayuda' }, ayuda))
   const delTotal = (v) => `${pctDe(v, f.tot)} del total del motor`
   const dif = real === null ? null : f.tot - real
+  const carta = cartaDe(m)
+  const motivos = carta ? Object.entries(carta.porMotivo).map(([k, v]) => ({ nom: nombreMotivo(k), pagos: n0(v && v.pagos), valor: n0(v && v.valor) })).sort((a, b) => b.valor - a.valor) : []
+  const tarjetaCarta = el('div', { class: 't-mes carta' },
+    el('p', { class: 't-rot' }, 'Pagos por carta (liquidaciones)'),
+    el('p', { class: 't-valor' }, carta ? cop(carta.valor) : cerrado ? 'Sin dato' : 'No aplica'),
+    carta ? el('p', { class: 't-pct' }, `${agrupar(carta.pagos)} ${carta.pagos === 1 ? 'pago' : 'pagos'}`) : null,
+    el('p', { class: 't-ayuda' }, carta ? 'Cierres de contrato con carta; no son cuotas y no entran al motor ni al recaudo real.' : cerrado ? 'Esta respuesta no trae los pagos por carta.' : 'Solo se conocen en los meses cerrados.'),
+    motivos.length ? el('details', { class: 'desglose' }, el('summary', {}, 'Ver por motivo'),
+      el('ul', {}, motivos.map((x) => el('li', {}, el('span', {}, x.nom, el('span', { class: 'pc' }, `${agrupar(x.pagos)} ${x.pagos === 1 ? 'pago' : 'pagos'}`)), el('strong', {}, cop(x.valor)))))) : null)
   zona.replaceChildren(
     el('p', { class: 'ayuda', style: 'margin:0 0 10px' }, el('span', { class: `est est-${m.estado === 'en_curso' ? 'curso' : m.estado === 'proyectado' ? 'proy' : 'cerrado'}` }, ETIQ_ESTADO[m.estado] || texto(m.estado)),
       ' Lectura: ', el('strong', {}, rotuloLectura[flujo.lecTabla]), cerrado ? '' : ' · este mes todavía no cierra: se usan las motos activas de hoy con sus cuotas pagadas a tiempo.'),
@@ -1472,7 +1495,9 @@ function pintarTarjetas() {
       tj('tot', 'Total del motor', cop(f.tot), '100 % de lo que el motor recauda', 'Suma de las cuatro partes anteriores.'),
       tj('real', 'Recaudo real (sistema actual)', real === null ? 'Sin dato' : cop(real),
         real === null ? null : `Motor frente al real: ${signoDe(dif)}${cop(Math.abs(dif))}${real > 0 ? ` (${signoDe(dif)}${pctDif(dif / real)})` : ''}`,
-        real === null ? 'No hay pagos registrados para este mes.' : m.estado === 'en_curso' ? 'Lo que los clientes pagaron hasta hoy; no separa capital de interés.' : 'Lo que los clientes pagaron; el sistema actual no separa capital de interés.')))
+        real === null ? 'No hay pagos registrados para este mes.' : m.estado === 'en_curso' ? 'Lo que los clientes pagaron hasta hoy; no separa capital de interés.' : 'Lo que los clientes pagaron; el sistema actual no separa capital de interés.'),
+      tarjetaCarta),
+    el('p', { class: 'nota-honesta' }, 'El recaudo real no incluye los pagos por carta (se muestran aparte). El motor solo simula las motos semanales con cuota ese mes; por eso «con cuota simulada» es menor que las motos activas.'))
 }
 
 // ---- C) proyección con deslizador ----
@@ -1612,6 +1637,20 @@ async function verFlujo() {
   }
 }
 
+// Pagos por carta inventados (escala parecida a la del recaudo, sin cifras reales).
+function crearCartaDemo(azar, base) {
+  const motivos = ['CARTA ADMINISTRACION', 'CARTA REGRESO DIARIO', 'CARTA REALQUILER', 'CARTA CASTIGO', 'CARTA CORRECCION', 'CARTA PERDIDA']
+  const porMotivo = {}
+  let pagos = 0, valor = 0
+  motivos.forEach((k, j) => {
+    const n = 1 + Math.round(azar() * (10 - j))
+    const v = Math.round(n * base * (0.0035 + azar() * 0.002) / 1000) * 1000
+    porMotivo[k] = { pagos: n, valor: v }
+    pagos += n; valor += v
+  })
+  return { pagos, valor, porMotivo }
+}
+
 // Demostración: 32 meses inventados (cerrados, el en curso y proyectados que van bajando al terminar los planes).
 function crearDemoFlujo() {
   const corte = '2026-11-04'
@@ -1636,7 +1675,8 @@ function crearDemoFlujo() {
     }
     const sin = corrida(false), con = corrida(true)
     const real = estado === 'proyectado' ? null : { pagos: Math.round(sin.total * (estado === 'en_curso' ? 0.13 : 0.86 + azar() * 0.13)) }
-    meses.push({ mes, estado, motosActivas, real, corridas: { fija_sin_justificaciones: sin, fija_con_justificaciones: con } })
+    const carta = estado === 'cerrado' ? crearCartaDemo(azar, base) : null
+    meses.push({ mes, estado, motosActivas, real, carta, corridas: { fija_sin_justificaciones: sin, fija_con_justificaciones: con } })
   }
   return { corte, contratos: 1181, meses }
 }
