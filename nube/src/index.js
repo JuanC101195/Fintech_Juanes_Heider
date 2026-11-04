@@ -53,6 +53,7 @@ app.http('contrato', {
       clave: solicitud.headers.get('x-clave') || undefined,
       ip,
       numero: solicitud.query.get('numero') ?? undefined,
+      activos: solicitud.query.get('activos') ?? undefined,
     })
     return {
       status: r.status,

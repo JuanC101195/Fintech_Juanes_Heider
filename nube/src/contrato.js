@@ -166,12 +166,67 @@ async function buscar(numero, consultar) {
   })
 }
 
+// Contratos activos (los de la tabla motos_app al momento de la corrida) con las dos corridas de tasa fija.
+const CORRIDAS_ACTIVOS = ['fija_con_justificaciones', 'fija_sin_justificaciones']
+
+async function listarActivos(consultar) {
+  const filas = await consultar(
+    'SELECT c.id, c.contrato, c.fecha_inicio, c.cuotas, c.cuota_real_miles, c.inversion, c.inversion_imputada, c.pagos_reales, ' +
+      'c.dias_justificados, c.multas_reales_miles, ' +
+      '(SELECT COALESCE(SUM(p.valor_miles), 0) * 1000 FROM pago_real p WHERE p.id = c.id) AS real_pagado, ' +
+      'r.corrida, r.sim_pagado, r.sim_saldo_final, r.sim_pendientes, r.sim_mora, r.sim_cobranza, r.sim_interes, r.sim_servicios, ' +
+      'r.sim_cuotas_vencidas_final, r.sim_cuotas_vencidas_max, r.sim_marca_recuperacion, r.sim_periodo_marca, r.sim_estado_final, ' +
+      'r.sim_periodos, r.periodo_corte ' +
+      "FROM contrato c JOIN resultado r ON r.id = c.id WHERE c.estado_real = 'VIGENTE' AND r.corrida = ANY($1::text[]) " +
+      'ORDER BY c.fecha_inicio, c.id',
+    [CORRIDAS_ACTIVOS],
+  )
+  const porId = new Map()
+  for (const f of filas) {
+    let c = porId.get(f.id)
+    if (!c) {
+      c = {
+        id: f.id,
+        contrato: f.contrato,
+        fechaInicio: fecha(f.fecha_inicio),
+        cuotas: num(f.cuotas),
+        cuotaRealMiles: num(f.cuota_real_miles),
+        inversion: num(f.inversion),
+        inversionImputada: bool(f.inversion_imputada),
+        pagosReales: num(f.pagos_reales),
+        diasJustificados: num(f.dias_justificados),
+        realPagado: num(f.real_pagado),
+        realMultas: (num(f.multas_reales_miles) ?? 0) * 1000,
+        corridas: {},
+      }
+      porId.set(f.id, c)
+    }
+    c.corridas[f.corrida] = {
+      simPagado: num(f.sim_pagado),
+      simSaldoFinal: num(f.sim_saldo_final),
+      simPendientes: num(f.sim_pendientes),
+      simMora: num(f.sim_mora),
+      simCobranza: num(f.sim_cobranza),
+      simInteres: num(f.sim_interes),
+      simServicios: num(f.sim_servicios),
+      simCuotasVencidasFinal: num(f.sim_cuotas_vencidas_final),
+      simCuotasVencidasMax: num(f.sim_cuotas_vencidas_max),
+      simMarcaRecuperacion: bool(f.sim_marca_recuperacion),
+      simPeriodoMarca: num(f.sim_periodo_marca),
+      simEstadoFinal: f.sim_estado_final ?? null,
+      simPeriodos: num(f.sim_periodos),
+      periodoCorte: num(f.periodo_corte),
+    }
+  }
+  return [...porId.values()]
+}
+
 /**
- * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero }.
+ * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos }.
  * Devuelve { status, headers, cuerpo } (cuerpo undefined = sin cuerpo).
  */
 function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {} }) {
-  return async function manejar({ metodo, origen, clave, ip, numero }) {
+  return async function manejar({ metodo, origen, clave, ip, numero, activos }) {
     const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
     if (ORIGENES.includes(origen)) {
       headers['Access-Control-Allow-Origin'] = origen
@@ -183,6 +238,15 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     if (metodo === 'OPTIONS') return { status: 204, headers }
     if (!limitador(ip || 'desconocida')) return { status: 429, headers, cuerpo: { error: 'demasiadas_consultas' } }
     if (!claveValida(clave, claveEsperada)) return { status: 401, headers, cuerpo: { error: 'clave' } }
+    if (activos === '1') {
+      try {
+        const contratos = await listarActivos(consultar)
+        return { status: 200, headers, cuerpo: { activos: contratos.length, contratos } }
+      } catch (e) {
+        registrar(`Listado de activos falló: ${e && e.code ? e.code : 'error'}`)
+        return { status: 500, headers, cuerpo: { error: 'interno' } }
+      }
+    }
     if (typeof numero !== 'string' || !/^[0-9]{1,10}$/.test(numero)) {
       return { status: 400, headers, cuerpo: { error: 'numero_invalido' } }
     }

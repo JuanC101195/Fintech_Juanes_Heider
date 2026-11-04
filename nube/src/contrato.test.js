@@ -242,3 +242,29 @@ test('devuelve la lógica de cada periodo y, si la base aún no tiene esa column
     delete process.env.PRUEBA_SIN_LOGICA
   }
 })
+
+test('activos=1 lista los contratos vigentes con sus corridas de tasa fija y exige la clave', async () => {
+  const llamadas = []
+  const consultar = async (sql, params) => {
+    llamadas.push({ sql, params })
+    return [
+      { id: 'S|7|2026-01-01', contrato: '7', fecha_inicio: '2026-01-01', cuotas: '52', cuota_real_miles: '90', inversion: '4000000', inversion_imputada: false,
+        pagos_reales: 5, dias_justificados: 0, multas_reales_miles: '0', real_pagado: '450000', corrida: 'fija_con_justificaciones', sim_pagado: '500000',
+        sim_saldo_final: '3000000', sim_pendientes: '10', sim_marca_recuperacion: false, sim_estado_final: 'ACTIVO', sim_periodos: 5, periodo_corte: 5 },
+      { id: 'S|7|2026-01-01', contrato: '7', fecha_inicio: '2026-01-01', corrida: 'fija_sin_justificaciones', sim_pagado: '480000', sim_saldo_final: '3100000' },
+    ]
+  }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE })
+  const sinClave = await m({ ...base, clave: 'mala', activos: '1', numero: undefined })
+  assert.strictEqual(sinClave.status, 401)
+  const r = await m({ ...base, activos: '1', numero: undefined })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual(r.cuerpo.activos, 1)
+  const c = r.cuerpo.contratos[0]
+  assert.strictEqual(c.contrato, '7')
+  assert.strictEqual(c.realPagado, 450000)
+  assert.deepStrictEqual(Object.keys(c.corridas).sort(), ['fija_con_justificaciones', 'fija_sin_justificaciones'])
+  assert.strictEqual(c.corridas.fija_con_justificaciones.simPagado, 500000)
+  assert.match(llamadas[0].sql, /estado_real = 'VIGENTE'/)
+  assert.deepStrictEqual(llamadas[0].params, [['fija_con_justificaciones', 'fija_sin_justificaciones']])
+})
