@@ -202,6 +202,32 @@ console.log('Consulta con función simulada')
   await contexto.close()
 }
 
+// ---- 1b) Contratos activos con tasa fija (demo) ----
+for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280, 900]]) {
+  console.log(`Activos ${nombre}`)
+  const contexto = await contextoSinRed({ width: ancho, height: alto })
+  const page = await contexto.newPage()
+  const errores = []
+  page.on('pageerror', (e) => errores.push(String(e)))
+  await page.goto(`${base}?demo=1`)
+  await page.locator('#ver-activos').click()
+  await page.locator('#act-resultado tbody tr').first().waitFor()
+  verificar((await page.locator('#act-resultado tbody tr').count()) === 3, 'activos: 3 contratos de ejemplo')
+  await page.selectOption('#act-filtro', 'mora')
+  verificar((await page.locator('#act-resultado tbody tr').count()) === 1, 'activos: el filtro de mora deja 1')
+  await page.selectOption('#act-filtro', 'todos')
+  await page.fill('#act-buscar', '9003')
+  verificar((await page.locator('#act-resultado tbody tr').count()) === 1, 'activos: la búsqueda por contrato deja 1')
+  await page.fill('#act-buscar', '')
+  await page.locator('#act-resultado tbody tr').first().getByRole('button', { name: 'Ver' }).click()
+  await page.locator('#resultado table').first().waitFor()
+  verificar(true, 'activos: «Ver» abre el detalle del contrato')
+  const p = await problemas(page)
+  verificar(p.length === 0, `activos: sin desbordes de página ${JSON.stringify(p)}`)
+  verificar(errores.length === 0, `activos: 0 errores JS (${errores.length})`)
+  await contexto.close()
+}
+
 await navegador.close()
 console.log(fallas ? `\n${fallas} FALLAS` : '\nTodo en orden')
 console.log(`Capturas en ${salida}`)
