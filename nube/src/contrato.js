@@ -245,12 +245,75 @@ async function listarActivos(consultar) {
   return [...porId.values()]
 }
 
+// Recaudo mensual de los contratos activos con tasa fija. Cada cuota se atribuye al mes en que vence.
+//  - Meses CERRADOS (anteriores al mes del corte): la flota es la que estaba activa el último día de ese mes (foto de motos_app_hist,
+//    tabla activas_fin_mes), con lo simulado de cada contrato (tabla periodo), aunque hoy ya no esté activo.
+//  - Mes en curso y siguientes: las motos activas de hoy (tabla proyeccion); lo posterior al corte supone cuotas pagadas a tiempo.
+const SUMAS = 'SUM(pago_capital) AS capital, SUM(pago_interes) AS interes, SUM(pago_mora) AS mora, SUM(pago_cobranza) AS cobranza, ' +
+  'SUM(pago_servicios) AS servicios, SUM(pago_capital + pago_interes + pago_mora + pago_cobranza + pago_servicios) AS total'
+
+async function flujoActivos(consultar) {
+  const corteFila = await consultar('SELECT (SELECT MAX(corte) FROM corte_activos) AS corte', [])
+  const corte = fecha(corteFila[0]?.corte)
+  const mesCorte = corte ? corte.slice(0, 7) : '9999-99'
+  const mesDe = "to_char(date_trunc('month', p.fecha_vencimiento), 'YYYY-MM')"
+  const [cerrados, hoy, motos, realCerrado, realCorte] = await Promise.all([
+    consultar(
+      `SELECT ${mesDe} AS mes, p.corrida, ${SUMAS}, COUNT(DISTINCT p.id) AS contratos FROM periodo p ` +
+        `JOIN contrato c ON c.id = p.id JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = ${mesDe} ` +
+        `WHERE p.corrida = ANY($1::text[]) AND p.fecha_vencimiento IS NOT NULL AND ${mesDe} < $2 GROUP BY 1, 2 ORDER BY 1, 2`,
+      [CORRIDAS_ACTIVOS, mesCorte],
+    ),
+    consultar(
+      `SELECT ${mesDe} AS mes, p.corrida, ${SUMAS}, COUNT(DISTINCT p.id) AS contratos FROM proyeccion p ` +
+        `WHERE p.corrida = ANY($1::text[]) AND ${mesDe} >= $2 GROUP BY 1, 2 ORDER BY 1, 2`,
+      [CORRIDAS_ACTIVOS, mesCorte],
+    ),
+    consultar('SELECT mes, COUNT(*) AS motos FROM activas_fin_mes GROUP BY mes', []),
+    consultar(
+      "SELECT to_char(date_trunc('month', r.fecha), 'YYYY-MM') AS mes, SUM(r.valor_miles) * 1000 AS pagos FROM pago_real r " +
+        "JOIN contrato c ON c.id = r.id JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = to_char(date_trunc('month', r.fecha), 'YYYY-MM') GROUP BY 1",
+      [],
+    ),
+    consultar(
+      "SELECT SUM(r.valor_miles) * 1000 AS pagos FROM pago_real r JOIN contrato c ON c.id = r.id " +
+        "WHERE c.estado_real = 'VIGENTE' AND to_char(date_trunc('month', r.fecha), 'YYYY-MM') = $1",
+      [mesCorte],
+    ),
+  ])
+  const motosPorMes = new Map(motos.map((r) => [r.mes, num(r.motos)]))
+  const realPorMes = new Map(realCerrado.map((r) => [r.mes, num(r.pagos)]))
+  const porMes = new Map()
+  const agregar = (f, estado) => {
+    let m = porMes.get(f.mes)
+    if (!m) {
+      m = {
+        mes: f.mes,
+        estado,
+        // Motos que estaban activas el último día del mes (solo meses cerrados) y cuántas de ellas tienen simulación.
+        motosActivas: estado === 'cerrado' ? (motosPorMes.get(f.mes) ?? null) : null,
+        real: estado === 'proyectado' ? null : { pagos: (estado === 'cerrado' ? realPorMes.get(f.mes) : num(realCorte[0]?.pagos)) ?? 0 },
+        corridas: {},
+      }
+      porMes.set(f.mes, m)
+    }
+    m.corridas[f.corrida] = {
+      capital: num(f.capital), interes: num(f.interes), mora: num(f.mora), cobranza: num(f.cobranza),
+      servicios: num(f.servicios), total: num(f.total), contratos: num(f.contratos),
+    }
+  }
+  for (const f of cerrados) agregar(f, 'cerrado')
+  for (const f of hoy) agregar(f, f.mes === mesCorte ? 'en_curso' : 'proyectado')
+  const contratosHoy = hoy.length ? Math.max(...hoy.map((f) => num(f.contratos) ?? 0)) : 0
+  return { corte, contratos: contratosHoy, meses: [...porMes.values()] }
+}
+
 /**
- * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos }.
+ * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos, flujo }.
  * Devuelve { status, headers, cuerpo } (cuerpo undefined = sin cuerpo).
  */
 function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {} }) {
-  return async function manejar({ metodo, origen, clave, ip, numero, activos }) {
+  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo }) {
     const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
     if (ORIGENES.includes(origen)) {
       headers['Access-Control-Allow-Origin'] = origen
@@ -262,6 +325,14 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     if (metodo === 'OPTIONS') return { status: 204, headers }
     if (!limitador(ip || 'desconocida')) return { status: 429, headers, cuerpo: { error: 'demasiadas_consultas' } }
     if (!claveValida(clave, claveEsperada)) return { status: 401, headers, cuerpo: { error: 'clave' } }
+    if (flujo === '1') {
+      try {
+        return { status: 200, headers, cuerpo: await flujoActivos(consultar) }
+      } catch (e) {
+        registrar(`Flujo de activos falló: ${e && e.code ? e.code : 'error'}`)
+        return { status: 500, headers, cuerpo: { error: 'interno' } }
+      }
+    }
     if (activos === '1') {
       try {
         const contratos = await listarActivos(consultar)

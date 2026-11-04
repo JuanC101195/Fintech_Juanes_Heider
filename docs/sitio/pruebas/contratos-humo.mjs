@@ -1,6 +1,8 @@
 // Prueba de humo de docs/sitio/contratos.html en Chromium:
 //  1) modo demostración (?demo=1) en celular (360 px) y escritorio: sin desbordes de página, 0 errores JS, la tabla se descarga a CSV;
-//  2) consulta con la función simulada (page.route): 200, clave incorrecta (401), contrato no encontrado (404), 429.
+//  2) consulta con la función simulada (page.route): 200, clave incorrecta (401), contrato no encontrado (404), 429;
+//  1b) «Contratos activos» (demo): filtros, resumen con las dos lecturas lado a lado y tabla sin preselección sesgada;
+//  1c) «Recaudo de la cartera activa» (demo): deslizador y atajos de la proyección, mes cerrado con capital/interés y flota del día.
 // Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON. Uso: node docs/sitio/pruebas/contratos-humo.mjs [carpeta-capturas]
 import { mkdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
@@ -104,7 +106,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const t2 = await totalMensual()
   verificar(t1 !== t2, `cambiar "Tasa aplicada" cambia la tabla mensual (${t1} -> ${t2})`)
   await page.getByLabel('Usura − 1 punto', { exact: true }).check()
-  await page.getByLabel('Con justificaciones', { exact: true }).check()
+  await page.locator('#resultado').getByLabel('Con justificaciones', { exact: true }).check()
   await page.locator('svg[role=img]').nth(1).waitFor()
   const filas2 = await amort.locator('tbody tr').count()
   verificar(((await page.locator('svg[role=img]').count()) === 2),'sigue habiendo dos gráficas tras cambiar de corrida')
@@ -214,20 +216,70 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.goto(`${base}?demo=1`)
   await page.getByRole('tab', { name: 'Contratos activos' }).click()
   await page.locator('#ver-activos').click()
-  await page.locator('#act-resultado tbody tr').first().waitFor()
-  verificar((await page.locator('#act-resultado tbody tr').count()) === 3, 'activos: 3 contratos de ejemplo')
+  await page.locator('#act-resultado table.activos tbody tr').first().waitFor()
+  verificar((await page.locator('#act-resultado table.activos tbody tr').count()) === 3, 'activos: 3 contratos de ejemplo')
+  // Sin sesgo: el resumen trae las dos lecturas lado a lado y la tabla arranca en «Sin justificaciones» con rótulo visible.
+  const lecturas = await page.locator('#act-resultado .lecturas .lectura h3').allInnerTexts()
+  verificar(lecturas.length === 2 && /^Sin justificaciones/i.test(lecturas[0]) && /^Con justificaciones/i.test(lecturas[1]), `activos: resumen con las dos lecturas lado a lado (${lecturas.join(' | ')})`)
+  verificar((await page.inputValue('#act-just')) === 'fija_sin_justificaciones' && (await page.getByLabel('Lectura de la tabla').isVisible()), 'activos: la tabla arranca en «Sin justificaciones» con el rótulo «Lectura de la tabla» visible')
+  verificar(/sin justificaciones/.test(await page.locator('table.activos caption').innerText()), 'activos: el título de la tabla dice la lectura elegida')
+  await page.selectOption('#act-just', 'fija_con_justificaciones')
+  verificar(/con justificaciones/.test(await page.locator('table.activos caption').innerText()) && (await page.locator('#act-resultado .lecturas .lectura').count()) === 2, 'activos: cambiar la lectura de la tabla no quita ninguna de las dos lecturas del resumen')
+  await page.selectOption('#act-just', 'fija_sin_justificaciones')
   await page.selectOption('#act-filtro', 'mora')
-  verificar((await page.locator('#act-resultado tbody tr').count()) === 1, 'activos: el filtro de mora deja 1')
+  verificar((await page.locator('#act-resultado table.activos tbody tr').count()) === 1, 'activos: el filtro de mora deja 1')
   await page.selectOption('#act-filtro', 'todos')
   await page.fill('#act-buscar', '9003')
-  verificar((await page.locator('#act-resultado tbody tr').count()) === 1, 'activos: la búsqueda por contrato deja 1')
+  verificar((await page.locator('#act-resultado table.activos tbody tr').count()) === 1, 'activos: la búsqueda por contrato deja 1')
   await page.fill('#act-buscar', '')
-  await page.locator('#act-resultado tbody tr').first().getByRole('button', { name: 'Ver' }).click()
+  await page.locator('#act-resultado table.activos tbody tr').first().getByRole('button', { name: 'Ver' }).click()
   await page.locator('#resultado table').first().waitFor()
   verificar(await page.locator('#act-resultado').isHidden() && (await page.getByRole('tab', { name: 'Un contrato' }).getAttribute('aria-selected')) === 'true', 'activos: «Ver» pasa a la pestaña «Un contrato» y abre el detalle')
   const p = await problemas(page)
   verificar(p.length === 0, `activos: sin desbordes de página ${JSON.stringify(p)}`)
   verificar(errores.length === 0, `activos: 0 errores JS (${errores.length})`)
+  await contexto.close()
+}
+
+// ---- 1c) Recaudo de la cartera activa (demo): proyección con deslizador y mes cerrado ----
+for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280, 900]]) {
+  console.log(`Recaudo ${nombre}`)
+  const contexto = await contextoSinRed({ width: ancho, height: alto })
+  const page = await contexto.newPage()
+  const errores = []
+  page.on('pageerror', (e) => errores.push(String(e)))
+  page.on('console', (m) => m.type() === 'error' && errores.push(m.text()))
+  await page.goto(`${base}?demo=1`)
+  await page.getByRole('tab', { name: 'Recaudo de la cartera activa' }).click()
+  verificar(await page.locator('#panel-flujo').isVisible() && (await page.locator('#flujo-lectura-ambas').isChecked()), 'recaudo: la pestaña se abre con la lectura «Ambas» marcada')
+  await page.locator('#ver-flujo').click()
+  await page.locator('#flujo-resultado svg[role=img]').first().waitFor()
+  const svgs = page.locator('#flujo-resultado svg[role=img]')
+  verificar((await svgs.count()) === 4 && (await svgs.evaluateAll((l) => l.every((s) => s.querySelector('title') && s.querySelector('desc')))), `recaudo: 4 gráficas accesibles con title y desc (2 proyecciones + 2 donas), hay ${await svgs.count()}`)
+  verificar((await page.locator('#flujo-resultado .lecturas .lectura').count()) === 4, 'recaudo: lectura «Ambas» muestra sin y con justificaciones en los dos análisis')
+  const cifra = () => page.locator('#flujo-resultado .lectura .cifra-grande').first().evaluate((e) => e.firstChild.textContent)
+  verificar(/31 de diciembre de 2026/.test(await page.locator('#flujo-fin-texto').innerText()), 'recaudo: el deslizador arranca en el 31 de diciembre de 2026')
+  verificar(await page.getByRole('button', { name: '31 dic 2026' }).getAttribute('aria-pressed') === 'true', 'recaudo: el atajo «31 dic 2026» aparece marcado')
+  const c1 = await cifra()
+  await page.getByRole('button', { name: 'Fin de todos los planes' }).click()
+  const c2 = await cifra()
+  verificar(c1 !== c2 && /diciembre de 2027/.test(await page.locator('#flujo-fin-texto').innerText()), `recaudo: el atajo «Fin de todos los planes» cambia el total (${c1} -> ${c2})`)
+  await page.locator('#flujo-fin').fill('19')
+  const c3 = await cifra()
+  verificar(c3 !== c2 && /31 de diciembre de 2026/.test(await page.locator('#flujo-fin-texto').innerText()), `recaudo: mover el deslizador actualiza el total y el texto (${c3})`)
+  verificar((await page.locator('#flujo-resultado .kpi.cap').count()) === 4 && (await page.locator('#flujo-resultado .kpi.int').count()) === 4, 'recaudo: KPIs de capital e interés en los cuatro bloques')
+  verificar((await page.inputValue('#flujo-mes')) === '2026-10', 'recaudo: el mes cerrado por defecto es octubre de 2026')
+  verificar(/Motos activas al 31 de octubre de 2026: 1\.5\d\d/.test(await page.locator('#flujo-resultado .flota').first().innerText()) && /Con cuota simulada ese mes: 1\.\d{3}/.test(await page.locator('#flujo-resultado .flota').first().innerText()), 'recaudo: muestra la flota activa al cierre del mes y cuántas tuvieron cuota')
+  verificar(/Recaudo real ese mes/.test(await page.locator('#flujo-resultado .kpi.real').first().innerText()), 'recaudo: comparación con el recaudo real del sistema actual')
+  await page.selectOption('#flujo-mes', '2026-09')
+  verificar(/septiembre de 2026/.test(await page.locator('#flujo-t-mes').innerText()), 'recaudo: cambiar el mes cerrado actualiza el análisis')
+  await page.locator('#flujo-lectura-sin').check()
+  await page.locator('#flujo-resultado svg[role=img]').first().waitFor()
+  verificar((await page.locator('#flujo-resultado .lecturas .lectura').count()) === 2 && (await page.locator('#flujo-resultado .lecturas.una').count()) === 2, 'recaudo: la lectura «Sin justificaciones» deja un bloque por análisis')
+  const p = await problemas(page)
+  verificar(p.length === 0, `recaudo: sin desbordes de página ${JSON.stringify(p)}`)
+  verificar(errores.length === 0, `recaudo: 0 errores JS (${errores.length}) ${errores.join(' | ')}`)
+  await page.screenshot({ path: path.join(salida, `contratos-recaudo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }
 
