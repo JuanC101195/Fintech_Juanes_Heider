@@ -284,6 +284,7 @@ test('flujo=1: meses cerrados con la flota activa de fin de mes, mes en curso y 
     if (/FROM activas_fin_mes GROUP BY mes/.test(sql)) return [{ mes: '2026-10', motos: '12' }]
     if (/JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = to_char/.test(sql)) return [{ mes: '2026-10', pagos: '480' }]
     if (/estado_real = 'VIGENTE'/.test(sql)) return [{ pagos: '90' }]
+    if (/FROM carta_fin_mes/.test(sql)) return [{ mes: '2026-10', motivo: 'CARTA ADMINISTRACION', pagos: '3', valor_miles: '400' }, { mes: '2026-10', motivo: 'CARTA REGRESO DIARIO', pagos: '5', valor_miles: '500' }]
     return []
   }
   const m = crearManejador({ consultar, claveEsperada: CLAVE })
@@ -296,5 +297,9 @@ test('flujo=1: meses cerrados con la flota activa de fin de mes, mes en curso y 
   assert.deepStrictEqual(r.cuerpo.meses[0].real, { pagos: 480 })
   assert.deepStrictEqual(r.cuerpo.meses[1].real, { pagos: 90 })
   assert.strictEqual(r.cuerpo.meses[2].real, null)
+  assert.strictEqual(r.cuerpo.meses[0].carta.valor, 900000)
+  assert.strictEqual(r.cuerpo.meses[0].carta.pagos, 8)
+  assert.strictEqual(r.cuerpo.meses[0].carta.porMotivo['CARTA ADMINISTRACION'].valor, 400000)
+  assert.strictEqual(r.cuerpo.meses[1].carta, null)
   assert.strictEqual(r.cuerpo.meses[0].corridas.fija_sin_justificaciones.interes, 300)
 })
