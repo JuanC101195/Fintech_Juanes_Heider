@@ -268,3 +268,27 @@ test('activos=1 lista los contratos vigentes con sus corridas de tasa fija y exi
   assert.match(llamadas[0].sql, /estado_real = 'VIGENTE'/)
   assert.deepStrictEqual(llamadas[0].params, [['fija_con_justificaciones', 'fija_sin_justificaciones']])
 })
+
+test('flujo=1 devuelve el recaudo mensual de los activos con estado por mes y lo real de los meses cerrados', async () => {
+  const consultar = async (sql) => {
+    if (/FROM proyeccion WHERE corrida/.test(sql)) {
+      return [
+        { mes: '2026-10', corrida: 'fija_sin_justificaciones', capital: '100', interes: '300', mora: '5', cobranza: '0', servicios: '50', total: '455', contratos: '10' },
+        { mes: '2026-11', corrida: 'fija_sin_justificaciones', capital: '120', interes: '280', mora: '0', cobranza: '0', servicios: '50', total: '450', contratos: '9' },
+        { mes: '2026-12', corrida: 'fija_sin_justificaciones', capital: '130', interes: '270', mora: '0', cobranza: '0', servicios: '50', total: '450', contratos: '9' },
+      ]
+    }
+    if (/FROM pago_real/.test(sql)) return [{ mes: '2026-10', pagos: '480' }, { mes: '2026-11', pagos: '90' }]
+    if (/FROM proyeccion WHERE NOT proyectado/.test(sql)) return [{ corte: '2026-11-04', contratos: '10' }]
+    return []
+  }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE })
+  assert.strictEqual((await m({ ...base, clave: 'mala', flujo: '1', numero: undefined })).status, 401)
+  const r = await m({ ...base, flujo: '1', numero: undefined })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual(r.cuerpo.corte, '2026-11-04')
+  assert.deepStrictEqual(r.cuerpo.meses.map((x) => [x.mes, x.estado]), [['2026-10', 'cerrado'], ['2026-11', 'en_curso'], ['2026-12', 'proyectado']])
+  assert.deepStrictEqual(r.cuerpo.meses[0].real, { pagos: 480 })
+  assert.strictEqual(r.cuerpo.meses[2].real, null)
+  assert.strictEqual(r.cuerpo.meses[0].corridas.fija_sin_justificaciones.interes, 300)
+})

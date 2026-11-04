@@ -245,12 +245,48 @@ async function listarActivos(consultar) {
   return [...porId.values()]
 }
 
+// Recaudo mensual de los contratos activos (tasa fija): lo simulado hasta el corte y lo proyectado después con las cuotas pagadas a tiempo.
+// Cada cuota se atribuye al mes en que vence.
+async function flujoActivos(consultar) {
+  const [meses, reales, corteFila] = await Promise.all([
+    consultar(
+      "SELECT to_char(date_trunc('month', fecha_vencimiento), 'YYYY-MM') AS mes, corrida, SUM(pago_capital) AS capital, SUM(pago_interes) AS interes, " +
+        'SUM(pago_mora) AS mora, SUM(pago_cobranza) AS cobranza, SUM(pago_servicios) AS servicios, SUM(pago_total) AS total, COUNT(DISTINCT id) AS contratos ' +
+        'FROM proyeccion WHERE corrida = ANY($1::text[]) GROUP BY 1, 2 ORDER BY 1, 2',
+      [CORRIDAS_ACTIVOS],
+    ),
+    consultar(
+      "SELECT to_char(date_trunc('month', p.fecha), 'YYYY-MM') AS mes, SUM(p.valor_miles) * 1000 AS pagos FROM pago_real p " +
+        "JOIN contrato c ON c.id = p.id WHERE c.estado_real = 'VIGENTE' GROUP BY 1",
+      [],
+    ),
+    consultar('SELECT MAX(fecha_vencimiento) AS corte, COUNT(DISTINCT id) AS contratos FROM proyeccion WHERE NOT proyectado', []),
+  ])
+  const corte = fecha(corteFila[0]?.corte)
+  const mesCorte = corte ? corte.slice(0, 7) : null
+  const realPorMes = new Map(reales.map((r) => [r.mes, num(r.pagos)]))
+  const porMes = new Map()
+  for (const f of meses) {
+    let m = porMes.get(f.mes)
+    if (!m) {
+      const estado = !mesCorte ? 'proyectado' : f.mes < mesCorte ? 'cerrado' : f.mes === mesCorte ? 'en_curso' : 'proyectado'
+      m = { mes: f.mes, estado, real: estado === 'proyectado' ? null : { pagos: realPorMes.get(f.mes) ?? 0 }, corridas: {} }
+      porMes.set(f.mes, m)
+    }
+    m.corridas[f.corrida] = {
+      capital: num(f.capital), interes: num(f.interes), mora: num(f.mora), cobranza: num(f.cobranza),
+      servicios: num(f.servicios), total: num(f.total), contratos: num(f.contratos),
+    }
+  }
+  return { corte, contratos: num(corteFila[0]?.contratos) ?? 0, meses: [...porMes.values()] }
+}
+
 /**
- * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos }.
+ * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos, flujo }.
  * Devuelve { status, headers, cuerpo } (cuerpo undefined = sin cuerpo).
  */
 function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {} }) {
-  return async function manejar({ metodo, origen, clave, ip, numero, activos }) {
+  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo }) {
     const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
     if (ORIGENES.includes(origen)) {
       headers['Access-Control-Allow-Origin'] = origen
@@ -262,6 +298,14 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     if (metodo === 'OPTIONS') return { status: 204, headers }
     if (!limitador(ip || 'desconocida')) return { status: 429, headers, cuerpo: { error: 'demasiadas_consultas' } }
     if (!claveValida(clave, claveEsperada)) return { status: 401, headers, cuerpo: { error: 'clave' } }
+    if (flujo === '1') {
+      try {
+        return { status: 200, headers, cuerpo: await flujoActivos(consultar) }
+      } catch (e) {
+        registrar(`Flujo de activos falló: ${e && e.code ? e.code : 'error'}`)
+        return { status: 500, headers, cuerpo: { error: 'interno' } }
+      }
+    }
     if (activos === '1') {
       try {
         const contratos = await listarActivos(consultar)

@@ -54,6 +54,7 @@ app.http('contrato', {
       ip,
       numero: solicitud.query.get('numero') ?? undefined,
       activos: solicitud.query.get('activos') ?? undefined,
+      flujo: solicitud.query.get('flujo') ?? undefined,
     })
     return {
       status: r.status,
