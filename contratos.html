@@ -31,7 +31,41 @@
     h3 { font-size: 16px; margin: 0 0 8px; }
     .aviso { background: var(--aviso-fondo); color: var(--aviso-texto); border-radius: 12px; padding: 12px 16px; margin: 0 0 20px; font-weight: 600; }
     .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
-    form.consulta { display: grid; gap: 12px 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: end; }
+    form.consulta { display: grid; gap: 12px 16px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; max-width: 560px; }
+    .campo-clave { max-width: 420px; margin-bottom: 4px; }
+    .pestanas { display: flex; gap: 4px; border-bottom: 1px solid var(--borde); margin: 16px 0 14px; overflow-x: auto; }
+    .pestanas [role=tab] { background: transparent; color: var(--suave); border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 8px 14px; margin-bottom: -1px; white-space: nowrap; }
+    .pestanas [role=tab]:hover { color: var(--texto); }
+    .pestanas [role=tab][aria-selected=true] { color: var(--primario); border-bottom-color: var(--primario); }
+    .cabecera-ep { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; justify-content: space-between; }
+    .cabecera-ep h2 { margin: 0; font-size: 22px; }
+    .descarga { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; max-width: 360px; }
+    .descarga .ayuda { font-size: 13px; margin: 0; }
+    .datos.compacta { gap: 4px 20px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 12px; }
+    .opciones { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 16px 0 0; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; }
+    .opciones fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+    .opciones legend { font-size: 12px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; padding: 0; margin-bottom: 6px; }
+    .opciones .pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
+    .opciones label { display: inline-flex; gap: 6px; align-items: center; margin: 0; padding: 5px 10px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); font-size: 14px; font-weight: 500; cursor: pointer; }
+    .opciones label:has(input:checked) { border-color: var(--primario); color: var(--primario); font-weight: 700; box-shadow: inset 0 0 0 1px var(--primario); }
+    .opciones label:has(input:disabled) { opacity: .45; cursor: not-allowed; }
+    .opciones label:has(input:focus-visible) { outline: 3px solid var(--primario); outline-offset: 2px; }
+    .opciones input { accent-color: var(--primario); margin: 0; }
+    .veredicto { margin: 16px 0; padding: 16px; border-radius: 12px; border: 1px solid var(--borde); border-left: 5px solid var(--primario); }
+    .veredicto-titulo { margin: 0; font-weight: 700; font-size: 17px; }
+    .veredicto-cifra { margin: 4px 0 14px; font-size: 28px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+    .veredicto-cifra small { display: block; font-size: 14px; font-weight: 600; color: var(--suave); margin-top: 2px; }
+    .kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 12px 0; }
+    .kpi { background: var(--fondo); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+    .kpi-rotulo { font-size: 12px; color: var(--suave); margin: 0; }
+    .kpi-valor { font-size: 18px; font-weight: 700; margin: 2px 0 0; overflow-wrap: anywhere; }
+    .kpi-sub { font-size: 13px; color: var(--suave); margin: 2px 0 0; overflow-wrap: anywhere; }
+    details.plegable { border: 1px solid var(--borde); border-radius: 12px; padding: 0 14px; margin: 12px 0; }
+    details.plegable > summary { padding: 12px 0; font-size: 15px; }
+    details.plegable[open] { padding-bottom: 14px; }
+    details.plegable[open] > summary { border-bottom: 1px solid var(--borde); margin-bottom: 10px; }
+    .columna h3 { font-size: 15px; margin-bottom: 10px; }
+    .subtitulo { color: var(--suave); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin: 12px 0 4px; }
     label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
     input[type=text], input[type=password], input[type=search] { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--borde); border-radius: 10px; background: var(--fondo); color: var(--texto); }
     button { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--primario); background: var(--primario); color: #fff; cursor: pointer; }
@@ -49,12 +83,10 @@
     .etiqueta { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
     .comparacion { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 16px 0; }
     .comparacion > div { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; }
-    .diferencia { font-size: 18px; font-weight: 700; margin: 8px 0 0; }
     .liquidacion { margin: 10px 0 0; padding: 10px 14px; border-left: 4px solid var(--aviso-borde, #c9a227); background: var(--aviso-fondo, #fff4d6); color: var(--aviso-texto, #5a4300); border-radius: 8px; font-size: 15px; line-height: 1.45; }
-    fieldset { border: 1px solid var(--borde); border-radius: 12px; margin: 12px 0; padding: 8px 14px; }
-    legend { font-weight: 600; font-size: 14px; padding: 0 6px; }
-    fieldset label { display: inline-flex; gap: 6px; align-items: center; margin-right: 18px; font-weight: 500; font-size: 16px; }
-    .barra { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 12px 0; }
+    .barra { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 12px 0; }
+    select { font: inherit; padding: 9px 12px; border: 1px solid var(--borde); border-radius: 10px; background: var(--fondo); color: var(--texto); max-width: 100%; }
+    .barra select, .barra input[type=search] { flex: 1 1 180px; width: auto; min-width: 0; }
     .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--suave); margin: 8px 0; padding: 0; list-style: none; }
     .leyenda span.muestra { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--borde); vertical-align: -2px; margin-right: 6px; }
     .tabla-scroll { overflow: auto; max-height: 70vh; border: 1px solid var(--borde); border-radius: 12px; }
@@ -74,9 +106,6 @@
     .g-rejilla { stroke: var(--borde); stroke-width: 1; opacity: .7; }
     .leyenda span.linea { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--texto); vertical-align: 4px; margin-right: 6px; }
     .leyenda span.punteada { border-top-style: dashed; }
-    .selectores { display: flex; flex-wrap: wrap; gap: 0 16px; }
-    .selectores fieldset { flex: 1 1 260px; min-width: 0; }
-    .selectores label:has(input:disabled) { opacity: .5; }
     .bloque-grafica { margin: 20px 0; min-width: 0; }
     td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 12px; line-height: 1.35; }
     tfoot th, tfoot td { font-weight: 700; background: var(--cabecera); border-top: 2px solid var(--borde); }
@@ -87,7 +116,12 @@
     ul.notas li { margin-bottom: 4px; }
     footer { margin-top: 32px; color: var(--suave); font-size: 14px; }
     .solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    @media (max-width: 520px) { h1 { font-size: 22px; } .tarjeta { padding: 14px; } main { padding: 20px 12px 40px; } }
+    @media (max-width: 520px) {
+      h1 { font-size: 22px; } .tarjeta { padding: 14px; } main { padding: 20px 12px 40px; }
+      form.consulta { grid-template-columns: 1fr; }
+      .veredicto { padding: 12px; } .veredicto-cifra { font-size: 24px; } .cabecera-ep h2 { font-size: 20px; }
+      details.plegable { padding: 0 10px; } details.plegable[open] { padding-bottom: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -97,60 +131,67 @@
     <p class="aviso" role="note">Datos internos de Motos del Caribe. No compartir.</p>
     <div id="demo" class="demo" role="note" hidden>Datos de ejemplo, no reales. Este contrato es inventado para mostrar cómo se ve la página.</div>
 
-    <form class="consulta tarjeta" id="formulario" novalidate>
-      <div>
+    <section class="tarjeta" aria-labelledby="t-consulta">
+      <h2 id="t-consulta" class="solo-lectores">Consulta</h2>
+      <div class="campo-clave">
         <label for="clave">Clave de consulta</label>
         <input type="password" id="clave" name="clave" autocomplete="off" spellcheck="false">
-        <p class="ayuda">Se guarda solo en esta pestaña y se borra al cerrarla.</p>
+        <p class="ayuda">Se guarda solo en esta pestaña del navegador y se borra al cerrarla.</p>
       </div>
-      <div>
-        <label for="numero">Número de contrato</label>
-        <input type="text" id="numero" name="numero" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="Ej.: 1001" aria-describedby="ayuda-numero">
-        <p class="ayuda" id="ayuda-numero">Solo dígitos. Se admiten ceros a la izquierda.</p>
+      <div class="pestanas" role="tablist" aria-label="Qué consultar">
+        <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
+        <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
       </div>
-      <div><button type="submit" id="consultar">Consultar</button></div>
-    </form>
-
-    <section class="tarjeta" id="activos" aria-labelledby="t-activos">
-      <h2 id="t-activos">Contratos activos con tasa fija</h2>
-      <p class="ayuda">Todas las motos que hoy están en la tabla de motos activas, corridas por el motor con la tasa fija de 88,44 % EA desde el desembolso, para ver cómo se comportan a la fecha.</p>
-      <div class="barra">
-        <button type="button" id="ver-activos">Ver contratos activos</button>
-        <label for="act-just" class="solo-lectores">Justificaciones</label>
-        <select id="act-just" disabled><option value="fija_con_justificaciones">Con justificaciones</option><option value="fija_sin_justificaciones">Sin justificaciones</option></select>
-        <label for="act-filtro" class="solo-lectores">Filtrar</label>
-        <select id="act-filtro" disabled><option value="todos">Todos</option><option value="mora">Con 2 o más cuotas vencidas</option><option value="marca">Marcados para recuperar</option><option value="aldia">Al día (menos de 1 cuota vencida)</option></select>
-        <label for="act-buscar" class="solo-lectores">Buscar contrato</label>
-        <input type="search" id="act-buscar" placeholder="Buscar contrato" inputmode="numeric" disabled>
+      <div id="panel-uno" role="tabpanel" aria-labelledby="tab-uno">
+        <form class="consulta" id="formulario" novalidate>
+          <div>
+            <label for="numero">Número de contrato</label>
+            <input type="text" id="numero" name="numero" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="Ej.: 1001" aria-describedby="ayuda-numero">
+            <p class="ayuda" id="ayuda-numero">Solo dígitos. Se admiten ceros a la izquierda.</p>
+          </div>
+          <div><button type="submit" id="consultar">Consultar</button></div>
+        </form>
       </div>
-      <div id="act-resultado"></div>
+      <div id="panel-activos" role="tabpanel" aria-labelledby="tab-activos" hidden>
+        <p class="ayuda" style="margin:0 0 10px">Todas las motos que hoy están activas, simuladas por el motor con la tasa fija de 88,44 % EA desde el desembolso. Sirve para ver cómo iría la cartera completa.</p>
+        <div class="barra">
+          <button type="button" id="ver-activos">Ver contratos activos</button>
+          <label for="act-just" class="solo-lectores">Justificaciones</label>
+          <select id="act-just" disabled><option value="fija_con_justificaciones">Con justificaciones</option><option value="fija_sin_justificaciones">Sin justificaciones</option></select>
+          <label for="act-filtro" class="solo-lectores">Filtrar</label>
+          <select id="act-filtro" disabled><option value="todos">Todos los contratos</option><option value="mora">Con 2 o más cuotas vencidas</option><option value="marca">Marcados para recuperar</option><option value="aldia">Al día (menos de 1 cuota vencida)</option></select>
+          <label for="act-buscar" class="solo-lectores">Buscar contrato</label>
+          <input type="search" id="act-buscar" placeholder="Buscar contrato" inputmode="numeric" disabled>
+        </div>
+      </div>
     </section>
 
     <p id="estado" role="status" aria-live="polite"></p>
+    <div id="act-resultado" hidden></div>
     <div id="resultado"></div>
 
-    <section class="tarjeta" aria-labelledby="t-tasa">
-      <h2 id="t-tasa">Las dos versiones de la tasa</h2>
+    <details class="tarjeta plegable" id="como-leer">
+      <summary>Cómo leer esta página</summary>
+      <p class="subtitulo">Qué es real y qué es simulado</p>
       <ul class="notas">
-        <li><strong>Usura − 1 punto:</strong> la simulación cobra la tasa de usura vigente menos un punto porcentual. <strong>Usura máxima:</strong> cobra la usura vigente sin ese margen.</li>
-        <li>Se puede alternar entre las dos y entre "sin" y "con" justificaciones: cada combinación es una corrida distinta del motor.</li>
-        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la simulación, la usura vigente y la tasa implícita del sistema actual.</li>
-        <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la simulación frente a lo que el cliente pagó; la tabla mensual da las mismas cifras.</li>
-      </ul>
-    </section>
-
-    <section class="tarjeta" aria-labelledby="t-explica">
-      <h2 id="t-explica">Qué es real y qué es simulado</h2>
-      <ul class="notas">
-        <li><strong>Real:</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo (columna "Pago real" y lista de pagos reales). Es lo que se compara con el sistema de la empresa.</li>
-        <li><strong>Simulado:</strong> todo lo demás de la tabla (interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación). Es lo que el motor de cartera habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
-        <li>Tasa: usura vigente menos 1 punto (o la usura máxima, si se elige esa versión), según la serie oficial de la Superfinanciera.</li>
-        <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
+        <li><strong>Real (sistema actual):</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo. Es lo que pasó en la empresa.</li>
+        <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
         <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
-        <li>"Sin justificaciones" cuenta todo atraso; "con justificaciones" no cuenta los periodos con atraso justificado.</li>
+        <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
       </ul>
-    </section>
+      <p class="subtitulo">Las opciones de comparación</p>
+      <ul class="notas">
+        <li><strong>Usura − 1 punto:</strong> la financiera cobra la tasa de usura vigente menos un punto porcentual (serie oficial de la Superfinanciera). <strong>Usura máxima:</strong> cobra la usura vigente sin ese margen. <strong>Tasa fija 88,44 %:</strong> la misma tasa durante todo el crédito.</li>
+        <li><strong>Sin justificaciones</strong> cuenta todo atraso; <strong>con justificaciones</strong> no cuenta los periodos con atraso justificado.</li>
+        <li>Cada combinación es una simulación distinta del motor; las gráficas y las tablas cambian con la opción elegida.</li>
+      </ul>
+      <p class="subtitulo">Las gráficas</p>
+      <ul class="notas">
+        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la usura vigente y la tasa implícita del sistema actual.</li>
+        <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la financiera frente a lo que el cliente pagó; el resumen mensual da las mismas cifras.</li>
+      </ul>
+    </details>
     <footer><a href="./">Volver al inicio</a></footer>
   </main>
 
@@ -289,49 +330,87 @@ function descargar(nombre, contenido) {
 }
 
 // ---------- episodio ----------
-function resumenComparativo(ep, c) {
+function kpi(rotulo, valor, sub) {
+  return el('div', { class: 'kpi' }, el('p', { class: 'kpi-rotulo' }, rotulo), el('p', { class: 'kpi-valor' }, valor), sub ? el('p', { class: 'kpi-sub' }, sub) : null)
+}
+function plegable(tituloBloque, abierto, clase, ...hijos) {
+  return el('details', { class: 'plegable' + (clase ? ' ' + clase : ''), open: abierto }, el('summary', {}, tituloBloque), ...hijos)
+}
+const signoDe = (v) => (v > 0 ? '+' : v < 0 ? '−' : '')
+const pctDif = (v) => (Math.abs(v) * 100).toFixed(1).replace('.', ',') + ' %'
+
+// Cifras compartidas por el veredicto y el desglose. Los dos totales son lo que el cliente paga (incluye recuperar la inversión).
+function cifrasDe(ep, c) {
   const r = c.resumen
-  if (!r) return el('p', { class: 'ayuda' }, 'Esta corrida no tiene resumen.')
   const sistema = (ep.realPagadoCuotas ?? 0) + (ep.realMultas ?? 0)
   const inversion = ep.inversion ?? 0
   const financiera = r.simTotalConDeuda ?? ((r.simPagado ?? 0) + (r.simSaldoFinal ?? 0))
-  const dif = financiera - sistema
   const bruto = (c.periodos || []).reduce((t, p) => t + (Number(p.pagoTotalCliente) || 0), 0)
-  const sobrante = bruto - (r.simPagado ?? 0)
-  const difPct = sistema > 0 ? dif / sistema : null
-  const signo = dif > 0 ? 'La financiera habría cobrado más' : dif < 0 ? 'La financiera habría cobrado menos' : 'Sin diferencia'
-  return el('div', {},
+  // Contratos activos: se espera recaudar el valor total de la negociación (motos_app.vlrtotal); lo abonado hoy es solo una parte.
+  const valorTotal = ep.valorTotalMiles != null ? ep.valorTotalMiles * 1000 : null
+  const proyMotor = r.simProyectadoTotal ?? null
+  return { r, sistema, inversion, financiera, dif: financiera - sistema, bruto, sobrante: bruto - (r.simPagado ?? 0), difPct: sistema > 0 ? (financiera - sistema) / sistema : null, valorTotal, proyMotor, proyectado: valorTotal != null && proyMotor != null }
+}
+
+// Lo primero que se ve: quién recauda más, por cuánto, y las cuatro cifras clave.
+function veredicto(ep, x) {
+  const { sistema, inversion, financiera, dif, difPct, valorTotal, proyMotor, proyectado } = x
+  const frase = dif > 0 ? 'Con el motor, la financiera habría recaudado más que el sistema actual' : dif < 0 ? 'Con el motor, la financiera habría recaudado menos que el sistema actual' : 'La financiera y el sistema actual recaudan lo mismo'
+  return el('section', { class: 'veredicto', 'aria-label': 'Resumen de la comparación' },
+    el('p', { class: 'veredicto-titulo' }, frase),
+    el('p', { class: 'veredicto-cifra' }, `${signoDe(dif)}${cop(Math.abs(dif))}`,
+      el('small', {}, (difPct === null ? '' : `${signoDe(dif)}${pctDif(difPct)} frente a lo que pagó el cliente`) + (proyectado ? ' · a hoy' : ''))),
+    el('div', { class: 'kpis' },
+      kpi('Sistema actual (lo que pasó)', cop(sistema), `Margen ${cop(sistema - inversion)}`),
+      kpi('Financiera con el motor (simulado)', cop(financiera), `Margen ${cop(financiera - inversion)}`),
+      kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Imputada (estimada); igual en los dos lados' : 'Igual en los dos lados'),
+      proyectado ? kpi('Al final del plan', `${signoDe(proyMotor - valorTotal)}${cop(Math.abs(proyMotor - valorTotal))}`, `Motor ${cop(proyMotor)} · sistema actual ${cop(valorTotal)}`) : null))
+}
+
+function desglose(ep, x) {
+  const { r, sistema, inversion, financiera, bruto, sobrante, valorTotal, proyMotor, proyectado } = x
+  return plegable('Ver el desglose de las cifras', false, 'desglose',
     el('div', { class: 'comparacion' },
-      el('div', {}, el('h3', {}, 'Sistema actual (real)'),
+      el('div', { class: 'columna' }, el('h3', {}, 'Sistema actual (real)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente en cuotas', cop(ep.realPagadoCuotas)),
           dato('Multas pagadas', cop(ep.realMultas)),
           dato('Total pagado', cop(sistema)),
-          dato('Inversión inicial', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
-          dato('Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
+          valorTotal != null ? dato('Valor total negociado (lo que se espera recaudar)', cop(valorTotal)) : null,
+          valorTotal != null ? dato('Saldo por recaudar', cop(ep.saldoRealMiles != null ? ep.saldoRealMiles * 1000 : null)) : null,
+          dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
+          valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
           dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas)))),
-      el('div', {}, el('h3', {}, 'Financiera (simulado)'),
+      el('div', { class: 'columna' }, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente (aplicado al crédito)', cop(r.simPagado)),
           sobrante > 1 ? dato('Pagado en los periodos (bruto)', cop(bruto)) : null,
           sobrante > 1 ? dato('Sobrante sin aplicar (último pago, excede el saldo)', cop(sobrante)) : null,
-          dato('Saldo pendiente', cop(r.simSaldoFinal)),
-          dato('Otros pendientes', cop(r.simPendientes)),
+          dato('Saldo de capital pendiente', cop(r.simSaldoFinal)),
+          dato('Otros cargos pendientes', cop(r.simPendientes)),
           dato('Total (pagado + saldo + pendientes)', cop(financiera)),
-          dato('Inversión inicial (monto financiado)', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
-          dato('Margen (total − inversión)', margenTexto(financiera - inversion, inversion)),
-          dato('Mora simulada', cop(r.simMora)),
-          dato('Cobranza simulada', cop(r.simCobranza)),
+          proyectado ? dato('Proyectado al final del plan (si lo que falta se paga a tiempo)', cop(proyMotor)) : null,
+          dato(proyectado ? 'Margen a hoy (total − inversión)' : 'Margen (total − inversión)', margenTexto(financiera - inversion, inversion)),
+          proyectado ? dato('Margen proyectado (proyectado − inversión)', margenTexto(proyMotor - inversion, inversion)) : null),
+        el('p', { class: 'subtitulo' }, 'De qué se compone lo cobrado'),
+        el('dl', { class: 'datos' },
           dato('Interés', cop(r.simInteres)),
-          dato('Servicios', cop(r.simServicios)),
+          dato('Mora', cop(r.simMora)),
+          dato('Cobranza', cop(r.simCobranza)),
+          dato('Servicios', cop(r.simServicios))),
+        el('p', { class: 'subtitulo' }, 'Estado del crédito'),
+        el('dl', { class: 'datos' },
           dato('Cuotas vencidas máximas', dec(r.simCuotasVencidasMax)),
           dato('Listo para recuperar', r.simMarcaRecuperacion ? `Sí, en el periodo ${r.simPeriodoMarca ?? '—'}` : 'No'),
           dato('Estado final simulado', texto(r.simEstadoFinal))))),
-    el('p', { class: 'diferencia' }, `${signo}: ${cop(Math.abs(dif))}`, difPct === null ? '' : ` (${dif < 0 ? '-' : dif > 0 ? '+' : ''}${(Math.abs(difPct) * 100).toFixed(1).replace('.', ',')} % frente al sistema actual)`),
-    el('p', { class: 'diferencia' }, `Frente a la inversión, el margen de la financiera sería ${cop(financiera - inversion)} y el del sistema actual ${cop(sistema - inversion)}`,
-      sistema - inversion > 0 ? ` (${(((financiera - inversion) / (sistema - inversion) - 1) * 100).toFixed(1).replace('.', ',')} %)` : ''),
     liquidacionFinal(ep, r),
-    el('p', { class: 'ayuda' }, 'Los dos totales son lo que el cliente paga y en ambos va incluida la recuperación de la inversión: no se resta en ninguno. La inversión es la misma en los dos lados (en la financiera es el monto financiado). El margen sí la resta en los dos. No es utilidad: los servicios (fondo, asistencia, seguro) son en buena parte pagos a terceros y no se descuentan otros costos.'))
+    el('p', { class: 'ayuda' }, 'Los dos totales son lo que el cliente paga y en ambos va incluida la recuperación de la inversión: no se resta en ninguno. El margen sí la resta en los dos. No es utilidad: los servicios (fondo, asistencia, seguro) son en buena parte pagos a terceros y no se descuentan otros costos.'))
+}
+
+function resumenComparativo(ep, c) {
+  if (!c.resumen) return el('p', { class: 'ayuda' }, 'Esta simulación no tiene resumen.')
+  const x = cifrasDe(ep, c)
+  return el('div', {}, veredicto(ep, x), desglose(ep, x))
 }
 
 // Lo que la simulación deja por cobrar al terminar el último periodo (capital + cargos pendientes). Ese valor ya está sumado al total de la financiera.
@@ -359,68 +438,76 @@ function tarjetaEpisodio(ep, i, total) {
   const claves = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones', 'fija_sin_justificaciones', 'fija_con_justificaciones']
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
-  tarjeta.append(el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
-  tarjeta.append(el('dl', { class: 'datos' },
+  const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
+  tarjeta.append(cabecera)
+  // Lo esencial del contrato a la vista; la ficha técnica va plegada.
+  tarjeta.append(el('dl', { class: 'datos compacta' },
     dato('Estado real', texto(ep.estadoReal)),
-    dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Contrato posterior (reasignación nº ${i + 1})`),
-    dato('Cohorte', texto(ep.cohorte)),
     dato('Inicio', fechaCorta(ep.fechaInicio)),
     dato('Fin', ep.fechaFin ? fechaCorta(ep.fechaFin) : 'Sin terminar'),
-    dato('Número de cuotas', dec(ep.cuotas, 0)),
-    dato('Cuota real', copMiles(ep.cuotaRealMiles)),
-    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'imputada') : null),
-    dato('Línea de usura aplicada', texto(ep.lineaUsura)),
-    dato('Tasa inicial de usura aplicada (EA)', pct(ep.tasaInicialEA)),
-    dato('Días justificados', dec(ep.diasJustificados, 0))))
+    dato('Cuotas', `${dec(ep.cuotas, 0)} de ${copMiles(ep.cuotaRealMiles)}`),
+    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'imputada') : null)))
+  tarjeta.append(plegable('Más datos del contrato', false, 'ficha',
+    el('dl', { class: 'datos' },
+      dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Contrato posterior (reasignación nº ${i + 1})`),
+      dato('Cohorte', texto(ep.cohorte)),
+      dato('Línea de usura aplicada', texto(ep.lineaUsura)),
+      dato('Tasa inicial de usura aplicada (EA)', pct(ep.tasaInicialEA)),
+      dato('Días justificados', dec(ep.diasJustificados, 0)))))
 
   if (!disponibles.length) {
-    tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene corridas del motor.'))
+    tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene simulaciones del motor.'))
     return tarjeta
   }
   const hayMax = Object.keys(corridas).some((k) => k.startsWith('max_'))
   const hayFija = Object.keys(corridas).some((k) => k.startsWith('fija_'))
   const zona = el('div')
-  // Corrida elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima, 'fija_' = tasa fija 88,44 %) + justificaciones.
+  // Simulación elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima, 'fija_' = tasa fija 88,44 %) + justificaciones.
   const nombre = (t, j) => `${t}${j}_justificaciones`
   const arranque = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
   const sel = { tasa: arranque.startsWith('max_') ? 'max_' : arranque.startsWith('fija_') ? 'fija_' : '', just: arranque.includes('con_') ? 'con' : 'sin' }
   const radios = []
   const grupoDe = (leyenda, campo, opciones) => {
-    const g = el('fieldset', {}, el('legend', {}, leyenda))
+    const pildoras = el('div', { class: 'pildoras' })
     for (const [valor, rotulo] of opciones) {
       const radio = el('input', { type: 'radio', name: `${pref}-${campo}`, value: valor, id: `${pref}-${campo}-${valor || 'normal'}`, checked: sel[campo] === valor })
       radio.addEventListener('change', () => { sel[campo] = valor; pintar() })
       radios.push([campo, valor, radio])
-      g.append(el('label', { for: radio.id }, radio, rotulo))
+      pildoras.append(el('label', { for: radio.id }, radio, rotulo))
     }
-    return g
+    return el('fieldset', {}, el('legend', {}, leyenda), pildoras)
   }
-  const grupos = el('div', { class: 'selectores' })
+  const opciones = el('div', { class: 'opciones', role: 'group', 'aria-label': 'Opciones de la simulación' })
   if (hayMax || hayFija) {
-    grupos.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [['max_', 'Usura máxima']] : []), ...(hayFija ? [['fija_', 'Tasa fija 88,44 %']] : [])]))
+    opciones.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [['max_', 'Usura máxima']] : []), ...(hayFija ? [['fija_', 'Tasa fija 88,44 %']] : [])]))
   }
-  grupos.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
+  opciones.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
   const pintar = () => {
-    // Una opción se deshabilita si, combinada con la otra elección, la corrida no existe para este episodio.
+    // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este episodio.
     for (const [campo, valor, radio] of radios) {
       const otra = campo === 'tasa' ? nombre(valor, sel.just) : nombre(sel.tasa, valor)
       radio.disabled = !corridas[otra]
     }
     const clave = nombre(sel.tasa, sel.just)
     const c = corridas[clave]
-    zona.replaceChildren(resumenComparativo(ep, c), ...graficasYMensual(ep, c, clave), tablaCompleta(ep, c, clave))
+    zona.replaceChildren(
+      resumenComparativo(ep, c),
+      plegable('Gráficas y resumen mensual', true, 'graficas', ...graficasYMensual(ep, c, clave)),
+      plegable('Tabla periodo a periodo (amortización simulada)', false, 'amortizacion', tablaCompleta(ep, c, clave)))
   }
-  tarjeta.append(barraExcel(ep, () => sel.just, nombre), grupos, zona)
+  cabecera.append(barraExcel(ep, () => sel.just, nombre))
+  tarjeta.append(opciones,
+    el('p', { class: 'ayuda', style: 'margin:6px 0 0' }, 'Las justificaciones son atrasos con excusa aceptada: «con justificaciones» no los cuenta como mora. Al cambiar una opción se actualiza todo lo de abajo.'),
+    zona)
   pintar()
 
   const lista = ep.pagosReales || []
   const cuerpo = el('tbody', {}, lista.map((p) => el('tr', {}, el('th', { scope: 'row', class: 'izq' }, fechaCorta(p.fecha)), el('td', {}, copMiles(p.valorMiles)), el('td', {}, copMiles(p.multaMiles)))))
-  const detalle = el('details', {}, el('summary', {}, `Pagos reales (${lista.length})`),
+  tarjeta.append(plegable(`Pagos reales registrados (${lista.length})`, false, 'pagos',
     lista.length
       ? el('div', { class: 'tabla-scroll tabla-chica' }, el('table', {}, el('caption', {}, `Pagos reales del contrato ${ep.id}`),
           el('thead', {}, el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Fecha'), el('th', { scope: 'col' }, 'Valor'), el('th', { scope: 'col' }, 'Multa'))), cuerpo))
-      : el('p', { class: 'ayuda' }, 'Sin pagos reales registrados.'))
-  tarjeta.append(detalle)
+      : el('p', { class: 'ayuda' }, 'Sin pagos reales registrados.')))
   return tarjeta
 }
 
@@ -499,7 +586,7 @@ async function descargarExcel(ep, just, nombre) {
 
 function barraExcel(ep, justActual, nombre) {
   const boton = el('button', { type: 'button' }, 'Descargar Excel (3 hojas)')
-  const estado = el('span', { class: 'ayuda', role: 'status' }, 'Motor con tasa histórica · sistema actual · motor con tasa fija 88,44 %. Sigue la opción de justificaciones elegida.')
+  const estado = el('span', { class: 'ayuda', role: 'status' }, 'Motor con tasa histórica, sistema actual y motor con tasa fija 88,44 %, según la opción de justificaciones elegida.')
   boton.addEventListener('click', async () => {
     boton.disabled = true
     estado.textContent = 'Preparando el Excel…'
@@ -512,7 +599,7 @@ function barraExcel(ep, justActual, nombre) {
       boton.disabled = false
     }
   })
-  return el('div', { class: 'barra' }, boton, estado)
+  return el('div', { class: 'descarga' }, boton, estado)
 }
 
 // ---------- gráficas (SVG en línea, sin librerías) ----------
@@ -736,11 +823,11 @@ function graficasYMensual(ep, c, clave) {
 function tablaCompleta(ep, c, clave) {
   const periodos = c.periodos || []
   const cont = el('div')
-  if (!periodos.length) { cont.append(el('p', { class: 'ayuda' }, 'No hay periodos para esta corrida.')); return cont }
+  if (!periodos.length) { cont.append(el('p', { class: 'ayuda' }, 'No hay periodos para esta simulación.')); return cont }
   const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
   boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
   cont.append(
-    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos`)),
+    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno.`)),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
@@ -874,12 +961,14 @@ const cvFinal = (c, k) => Number(c.corridas[k]?.simCuotasVencidasFinal ?? 0)
 const deudaSim = (r) => (r.simSaldoFinal ?? 0) + (r.simPendientes ?? 0)
 
 function resumenActivos(lista, k) {
-  const t = { n: lista.length, inversion: 0, real: 0, sim: 0, saldo: 0, pend: 0, mora: 0, marca: 0 }
+  const t = { n: lista.length, inversion: 0, real: 0, sim: 0, saldo: 0, pend: 0, mora: 0, marca: 0, vt: 0, proy: 0 }
   for (const c of lista) {
     const r = c.corridas[k]
     if (!r) continue
     t.inversion += c.inversion ?? 0
     t.real += c.realPagado ?? 0
+    t.vt += (c.valorTotalMiles ?? 0) * 1000
+    t.proy += r.simProyectadoTotal ?? 0
     t.sim += r.simPagado ?? 0
     t.saldo += r.simSaldoFinal ?? 0
     t.pend += r.simPendientes ?? 0
@@ -903,18 +992,21 @@ function filtrarActivos(k) {
 }
 
 // [id, rotulo, valor para ordenar, texto, alineado a la izquierda]
+// Ordenadas por importancia para el negocio: primero el riesgo (cuotas vencidas, marca), luego el dinero, al final lo descriptivo.
 const COLS_ACTIVOS = [
   ['contrato', 'Contrato', (c) => Number(c.contrato), (c) => c.contrato, true],
-  ['inicio', 'Inicio', (c) => c.fechaInicio, (c) => fechaCorta(c.fechaInicio), true],
-  ['periodos', 'Periodos', (c, k) => c.corridas[k].simPeriodos ?? 0, (c, k) => `${c.corridas[k].simPeriodos ?? '—'} / ${c.cuotas ?? '—'}`],
-  ['inversion', 'Inversión', (c) => c.inversion ?? 0, (c) => cop(c.inversion)],
+  ['cv', 'Cuotas vencidas', (c, k) => cvFinal(c, k), (c, k) => dec(cvFinal(c, k))],
+  ['marca', 'Para recuperar', (c, k) => (c.corridas[k].simMarcaRecuperacion ? 1 : 0), (c, k) => (c.corridas[k].simMarcaRecuperacion ? 'Sí' : 'No')],
+  ['deuda', 'Deuda hoy (motor)', (c, k) => deudaSim(c.corridas[k]), (c, k) => cop(deudaSim(c.corridas[k]))],
+  ['proy', 'Proyectado motor', (c, k) => c.corridas[k].simProyectadoTotal ?? 0, (c, k) => cop(c.corridas[k].simProyectadoTotal)],
+  ['vt', 'Valor total negociado', (c) => c.valorTotalMiles ?? 0, (c) => (c.valorTotalMiles != null ? cop(c.valorTotalMiles * 1000) : '—')],
   ['real', 'Pagado real', (c) => c.realPagado ?? 0, (c) => cop(c.realPagado)],
   ['sim', 'Pagado motor', (c, k) => c.corridas[k].simPagado ?? 0, (c, k) => cop(c.corridas[k].simPagado)],
+  ['inversion', 'Inversión', (c) => c.inversion ?? 0, (c) => cop(c.inversion)],
   ['saldo', 'Saldo capital', (c, k) => c.corridas[k].simSaldoFinal ?? 0, (c, k) => cop(c.corridas[k].simSaldoFinal)],
-  ['pend', 'Pendientes', (c, k) => c.corridas[k].simPendientes ?? 0, (c, k) => cop(c.corridas[k].simPendientes)],
-  ['deuda', 'Deuda total', (c, k) => deudaSim(c.corridas[k]), (c, k) => cop(deudaSim(c.corridas[k]))],
-  ['cv', 'Cuotas vencidas', (c, k) => cvFinal(c, k), (c, k) => dec(cvFinal(c, k))],
-  ['marca', 'Marca', (c, k) => (c.corridas[k].simMarcaRecuperacion ? 1 : 0), (c, k) => (c.corridas[k].simMarcaRecuperacion ? 'Sí' : 'No')],
+  ['pend', 'Otros pendientes', (c, k) => c.corridas[k].simPendientes ?? 0, (c, k) => cop(c.corridas[k].simPendientes)],
+  ['periodos', 'Periodos', (c, k) => c.corridas[k].simPeriodos ?? 0, (c, k) => `${c.corridas[k].simPeriodos ?? '—'} / ${c.cuotas ?? '—'}`],
+  ['inicio', 'Inicio', (c) => c.fechaInicio, (c) => fechaCorta(c.fechaInicio), true],
 ]
 
 function pintarActivos() {
@@ -927,34 +1019,47 @@ function pintarActivos() {
     return act.desc ? -d : d
   })
   const t = resumenActivos(lista, k)
-  const dl = el('dl', { class: 'datos' },
-    dato('Contratos', `${agrupar(t.n)} de ${agrupar(act.contratos.length)}`),
-    dato('Inversión', cop(t.inversion)),
-    dato('Pagado real', cop(t.real)),
-    dato('Pagado por el motor', cop(t.sim)),
-    dato('Saldo de capital', cop(t.saldo)),
-    dato('Pendientes (mora, cobranza, interés, servicios)', cop(t.pend)),
-    dato('Con 2 o más cuotas vencidas', agrupar(t.mora)),
-    dato('Marcados para recuperar', agrupar(t.marca)))
-  const cab = el('tr', {}, ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
+  const difMargen = (t.proy - t.inversion) - (t.vt - t.inversion)
+  // Lo más importante arriba: margen proyectado de cada lado y cuántos contratos están en riesgo.
+  const resumen = el('section', { class: 'veredicto', 'aria-label': 'Resumen de la cartera activa' },
+    el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(t.n)} de ${agrupar(act.contratos.length)} contratos · ${rotuloCorrida(k)}`),
+    el('p', { class: 'veredicto-cifra' }, `${signoDe(difMargen)}${cop(Math.abs(difMargen))}`, el('small', {}, 'diferencia del margen proyectado: motor frente al sistema actual')),
+    el('div', { class: 'kpis' },
+      kpi('Margen proyectado · sistema actual', cop(t.vt - t.inversion), `Valor negociado ${cop(t.vt)} − inversión`),
+      kpi('Margen proyectado · motor a tasa fija', cop(t.proy - t.inversion), `Proyectado ${cop(t.proy)} − inversión`),
+      kpi('Con 2 o más cuotas vencidas', agrupar(t.mora), 'contratos, según el motor'),
+      kpi('Marcados para recuperar', agrupar(t.marca), 'contratos, según el motor')),
+    plegable('Más totales de la cartera', false, 'totales',
+      el('dl', { class: 'datos' },
+        dato('Inversión', cop(t.inversion)),
+        dato('Pagado real', cop(t.real)),
+        dato('Valor total negociado (se espera recaudar)', cop(t.vt)),
+        dato('Pagado por el motor', cop(t.sim)),
+        dato('Proyectado por el motor al final del plan', cop(t.proy)),
+        dato('Saldo de capital', cop(t.saldo)),
+        dato('Otros pendientes (mora, cobranza, interés, servicios)', cop(t.pend)))))
+  const cab = el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Detalle'), ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
     const activo = act.orden === id
     const b = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ordenar por ${rot}` }, rot + (activo ? (act.desc ? ' ▼' : ' ▲') : ''))
     b.style.cssText = 'padding:2px 6px;font-size:12px;border:0;font-weight:700'
     b.addEventListener('click', () => { act.desc = act.orden === id ? !act.desc : false; act.orden = id; pintarActivos() })
     return el('th', { class: izq ? 'izq' : '', scope: 'col', 'aria-sort': activo ? (act.desc ? 'descending' : 'ascending') : 'none' }, b)
-  }), el('th', { scope: 'col' }, 'Detalle'))
+  }))
   const filas = lista.map((c) => {
-    const ver = el('button', { type: 'button', class: 'secundario' }, 'Ver')
+    const ver = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ver el contrato ${c.contrato}` }, 'Ver')
     ver.style.cssText = 'padding:2px 10px;font-size:13px'
-    ver.addEventListener('click', () => { $('numero').value = c.contrato; consultar() })
+    ver.addEventListener('click', () => { $('numero').value = c.contrato; irA('uno'); consultar() })
     const r = c.corridas[k]
     return el('tr', { class: r.simMarcaRecuperacion ? 'listo' : cvFinal(c, k) >= 2 ? 'sinpago' : '' },
-      ...COLS_ACTIVOS.map(([, , , txt, izq]) => el('td', { class: izq ? 'izq' : '' }, txt(c, k))), el('td', {}, ver))
+      el('td', { class: 'izq' }, ver), ...COLS_ACTIVOS.map(([, , , txt, izq]) => el('td', { class: izq ? 'izq' : '' }, txt(c, k))))
   })
   const tabla = el('table', {}, el('caption', {}, `Contratos activos — ${rotuloCorrida(k)}`), el('thead', {}, cab), el('tbody', {}, filas))
-  $('act-resultado').replaceChildren(dl,
-    el('p', { class: 'ayuda' }, 'Fondo rojo: 2 o más cuotas vencidas. Fondo verde: marcado para recuperar. Los valores del motor son la simulación a tasa fija desde el desembolso, no lo que cobró la empresa.'),
-    el('div', { class: 'tabla-scroll' }, tabla))
+  $('act-resultado').replaceChildren(el('section', { class: 'tarjeta', 'aria-label': 'Contratos activos' }, resumen,
+    el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
+      el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), '2 o más cuotas vencidas'),
+      el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-listo)' }), 'Marcado para recuperar')),
+    el('p', { class: 'ayuda' }, 'Los valores del motor son la simulación a tasa fija desde el desembolso, no lo que cobró la empresa. Toque un encabezado para ordenar y «Ver» para abrir el detalle del contrato.'),
+    el('div', { class: 'tabla-scroll' }, tabla)))
 }
 
 async function verActivos() {
@@ -986,12 +1091,34 @@ async function verActivos() {
 
 function crearDemoActivos() {
   const un = (n, ini, vencidas, marca, pagado) => ({
-    id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado,
+    id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado, valorTotalMiles: 14430, saldoRealMiles: 14430 - pagado / 1000,
     corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => ({ ...o, [k]: {
       simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * 180000, simCuotasVencidasFinal: vencidas,
-      simMarcaRecuperacion: marca, simPeriodos: 12 } }), {}),
+      simMarcaRecuperacion: marca, simPeriodos: 12, simProyectadoTotal: 12000000 } }), {}),
   })
   return [un(9001, '2026-07-21', 0, false, 1100000), un(9002, '2026-08-04', 2.4, true, 600000), un(9003, '2026-09-01', 1.1, false, 450000)]
+}
+
+// ---------- pestañas: "Un contrato" / "Contratos activos" ----------
+// Cada pestaña muestra su panel de consulta y su zona de resultados; la clave es común.
+const PESTANAS = { uno: ['tab-uno', 'panel-uno', 'resultado'], activos: ['tab-activos', 'panel-activos', 'act-resultado'] }
+function irA(cual) {
+  for (const [k, [tab, panel, salida]] of Object.entries(PESTANAS)) {
+    const activa = k === cual
+    $(tab).setAttribute('aria-selected', String(activa))
+    $(tab).tabIndex = activa ? 0 : -1
+    $(panel).hidden = !activa
+    $(salida).hidden = !activa
+  }
+}
+for (const [k, [tab]] of Object.entries(PESTANAS)) {
+  $(tab).addEventListener('click', () => irA(k))
+  $(tab).addEventListener('keydown', (ev) => {
+    if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return
+    const otra = k === 'uno' ? 'activos' : 'uno'
+    irA(otra)
+    $(PESTANAS[otra][0]).focus()
+  })
 }
 
 $('ver-activos').addEventListener('click', verActivos)
