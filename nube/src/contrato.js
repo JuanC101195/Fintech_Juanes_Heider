@@ -62,6 +62,7 @@ function resumen(r) {
     simMarcaRecuperacion: bool(r.sim_marca_recuperacion),
     simPeriodoMarca: num(r.sim_periodo_marca),
     simEstadoFinal: r.sim_estado_final ?? null,
+    simProyectadoTotal: num(r.sim_proyectado_total),
     realEaConMultas: num(r.real_ea_con_multas),
     realEA: num(r.real_ea_con_multas),
   }
@@ -115,21 +116,37 @@ async function consultarPeriodos(consultar, ids) {
   }
 }
 
+// Columnas nuevas (valor total y saldo de motos_app, proyeccion del motor): si la base aun no las tiene (42703) se consulta sin ellas.
+async function conRespaldo(consultar, armar, parametros) {
+  for (const extra of [true, false]) {
+    try {
+      return await consultar(armar(extra), parametros)
+    } catch (e) {
+      if (!e || e.code !== '42703' || !extra) throw e
+    }
+  }
+}
+
 async function buscar(numero, consultar) {
-  const contratos = await consultar(
-    'SELECT id, sede, contrato, cohorte, estado_real, fecha_inicio, fecha_fin, cuotas, cuota_real_miles, inversion, ' +
-      'inversion_imputada, linea_usura, tasa_inicial_ea, pagos_reales, multas_reales_miles, dias_justificados ' +
-      'FROM contrato WHERE contrato = ANY($1::text[]) ORDER BY fecha_inicio, id',
+  const contratos = await conRespaldo(
+    consultar,
+    (extra) =>
+      'SELECT id, sede, contrato, cohorte, estado_real, fecha_inicio, fecha_fin, cuotas, cuota_real_miles, inversion, ' +
+      'inversion_imputada, linea_usura, tasa_inicial_ea, pagos_reales, multas_reales_miles, dias_justificados' +
+      (extra ? ', valor_total_miles, saldo_real_miles' : '') +
+      ' FROM contrato WHERE contrato = ANY($1::text[]) ORDER BY fecha_inicio, id',
     [variantes(numero)],
   )
   if (!contratos.length) return []
   const ids = contratos.map((c) => c.id)
   const [pagos, resultados, periodos] = await Promise.all([
     consultar('SELECT id, fecha, valor_miles, multa_miles FROM pago_real WHERE id = ANY($1::text[]) ORDER BY id, fecha', [ids]),
-    consultar(
-      'SELECT corrida, id, sim_pagado, sim_saldo_final, sim_pendientes, sim_mora, sim_cobranza, sim_interes, sim_servicios, ' +
+    conRespaldo(
+      consultar,
+      (extra) =>
+        'SELECT corrida, id, sim_pagado, sim_saldo_final, sim_pendientes, sim_mora, sim_cobranza, sim_interes, sim_servicios, ' +
         'sim_cuotas_vencidas_final, sim_cuotas_vencidas_max, sim_marca_recuperacion, sim_periodo_marca, sim_estado_final, ' +
-        'sim_periodos, periodo_corte, real_ea_con_multas FROM resultado WHERE id = ANY($1::text[])',
+        'sim_periodos, periodo_corte, real_ea_con_multas' + (extra ? ', sim_proyectado_total' : '') + ' FROM resultado WHERE id = ANY($1::text[])',
       [ids],
     ),
     consultarPeriodos(consultar, ids),
@@ -158,6 +175,8 @@ async function buscar(numero, consultar) {
       lineaUsura: c.linea_usura ?? null,
       tasaInicialEA: num(c.tasa_inicial_ea),
       diasJustificados: num(c.dias_justificados),
+      valorTotalMiles: num(c.valor_total_miles),
+      saldoRealMiles: num(c.saldo_real_miles),
       realPagadoCuotas: susPagos.reduce((s, p) => s + (num(p.valor_miles) ?? 0) * 1000, 0),
       realMultas: (num(c.multas_reales_miles) ?? 0) * 1000,
       pagosReales: susPagos.map((p) => ({ fecha: fecha(p.fecha), valorMiles: num(p.valor_miles), multaMiles: num(p.multa_miles) })),
@@ -170,9 +189,11 @@ async function buscar(numero, consultar) {
 const CORRIDAS_ACTIVOS = ['fija_con_justificaciones', 'fija_sin_justificaciones']
 
 async function listarActivos(consultar) {
-  const filas = await consultar(
+  const filas = await conRespaldo(
+    consultar,
+    (extra) =>
     'SELECT c.id, c.contrato, c.fecha_inicio, c.cuotas, c.cuota_real_miles, c.inversion, c.inversion_imputada, c.pagos_reales, ' +
-      'c.dias_justificados, c.multas_reales_miles, ' +
+      'c.dias_justificados, c.multas_reales_miles, ' + (extra ? 'c.valor_total_miles, c.saldo_real_miles, r.sim_proyectado_total, ' : '') +
       '(SELECT COALESCE(SUM(p.valor_miles), 0) * 1000 FROM pago_real p WHERE p.id = c.id) AS real_pagado, ' +
       'r.corrida, r.sim_pagado, r.sim_saldo_final, r.sim_pendientes, r.sim_mora, r.sim_cobranza, r.sim_interes, r.sim_servicios, ' +
       'r.sim_cuotas_vencidas_final, r.sim_cuotas_vencidas_max, r.sim_marca_recuperacion, r.sim_periodo_marca, r.sim_estado_final, ' +
@@ -197,6 +218,8 @@ async function listarActivos(consultar) {
         diasJustificados: num(f.dias_justificados),
         realPagado: num(f.real_pagado),
         realMultas: (num(f.multas_reales_miles) ?? 0) * 1000,
+        valorTotalMiles: num(f.valor_total_miles),
+        saldoRealMiles: num(f.saldo_real_miles),
         corridas: {},
       }
       porId.set(f.id, c)
@@ -216,6 +239,7 @@ async function listarActivos(consultar) {
       simEstadoFinal: f.sim_estado_final ?? null,
       simPeriodos: num(f.sim_periodos),
       periodoCorte: num(f.periodo_corte),
+      simProyectadoTotal: num(f.sim_proyectado_total),
     }
   }
   return [...porId.values()]

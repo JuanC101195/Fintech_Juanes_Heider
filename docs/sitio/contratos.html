@@ -299,6 +299,10 @@ function resumenComparativo(ep, c) {
   const bruto = (c.periodos || []).reduce((t, p) => t + (Number(p.pagoTotalCliente) || 0), 0)
   const sobrante = bruto - (r.simPagado ?? 0)
   const difPct = sistema > 0 ? dif / sistema : null
+  // Contratos activos: se espera recaudar el valor total de la negociación (motos_app.vlrtotal); lo abonado hoy es solo una parte.
+  const valorTotal = ep.valorTotalMiles != null ? ep.valorTotalMiles * 1000 : null
+  const proyMotor = r.simProyectadoTotal ?? null
+  const proyectado = valorTotal != null && proyMotor != null
   const signo = dif > 0 ? 'La financiera habría cobrado más' : dif < 0 ? 'La financiera habría cobrado menos' : 'Sin diferencia'
   return el('div', {},
     el('div', { class: 'comparacion' },
@@ -307,8 +311,11 @@ function resumenComparativo(ep, c) {
           dato('Pagado por el cliente en cuotas', cop(ep.realPagadoCuotas)),
           dato('Multas pagadas', cop(ep.realMultas)),
           dato('Total pagado', cop(sistema)),
+          valorTotal != null ? dato('Valor total de la negociación (lo que se espera recaudar)', cop(valorTotal)) : null,
+          valorTotal != null ? dato('Saldo por recaudar', cop(ep.saldoRealMiles != null ? ep.saldoRealMiles * 1000 : null)) : null,
           dato('Inversión inicial', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
-          dato('Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
+          dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
+          valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
           dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas)))),
       el('div', {}, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
@@ -318,8 +325,10 @@ function resumenComparativo(ep, c) {
           dato('Saldo pendiente', cop(r.simSaldoFinal)),
           dato('Otros pendientes', cop(r.simPendientes)),
           dato('Total (pagado + saldo + pendientes)', cop(financiera)),
+          proyectado ? dato('Proyectado al final del plan (si lo que falta se paga a tiempo)', cop(proyMotor)) : null,
           dato('Inversión inicial (monto financiado)', cop(inversion) + (ep.inversionImputada ? ' (imputada)' : '')),
-          dato('Margen (total − inversión)', margenTexto(financiera - inversion, inversion)),
+          dato(proyectado ? 'Margen a hoy (total − inversión)' : 'Margen (total − inversión)', margenTexto(financiera - inversion, inversion)),
+          proyectado ? dato('Margen proyectado (proyectado − inversión)', margenTexto(proyMotor - inversion, inversion)) : null,
           dato('Mora simulada', cop(r.simMora)),
           dato('Cobranza simulada', cop(r.simCobranza)),
           dato('Interés', cop(r.simInteres)),
@@ -330,6 +339,7 @@ function resumenComparativo(ep, c) {
     el('p', { class: 'diferencia' }, `${signo}: ${cop(Math.abs(dif))}`, difPct === null ? '' : ` (${dif < 0 ? '-' : dif > 0 ? '+' : ''}${(Math.abs(difPct) * 100).toFixed(1).replace('.', ',')} % frente al sistema actual)`),
     el('p', { class: 'diferencia' }, `Frente a la inversión, el margen de la financiera sería ${cop(financiera - inversion)} y el del sistema actual ${cop(sistema - inversion)}`,
       sistema - inversion > 0 ? ` (${(((financiera - inversion) / (sistema - inversion) - 1) * 100).toFixed(1).replace('.', ',')} %)` : ''),
+    proyectado ? el('p', { class: 'diferencia' }, `Proyectado al final del plan: el sistema actual espera recaudar ${cop(valorTotal)} (margen ${cop(valorTotal - inversion)}) y la financiera ${cop(proyMotor)} (margen ${cop(proyMotor - inversion)}); diferencia ${cop(proyMotor - valorTotal)}.`) : null,
     liquidacionFinal(ep, r),
     el('p', { class: 'ayuda' }, 'Los dos totales son lo que el cliente paga y en ambos va incluida la recuperación de la inversión: no se resta en ninguno. La inversión es la misma en los dos lados (en la financiera es el monto financiado). El margen sí la resta en los dos. No es utilidad: los servicios (fondo, asistencia, seguro) son en buena parte pagos a terceros y no se descuentan otros costos.'))
 }
@@ -874,12 +884,14 @@ const cvFinal = (c, k) => Number(c.corridas[k]?.simCuotasVencidasFinal ?? 0)
 const deudaSim = (r) => (r.simSaldoFinal ?? 0) + (r.simPendientes ?? 0)
 
 function resumenActivos(lista, k) {
-  const t = { n: lista.length, inversion: 0, real: 0, sim: 0, saldo: 0, pend: 0, mora: 0, marca: 0 }
+  const t = { n: lista.length, inversion: 0, real: 0, sim: 0, saldo: 0, pend: 0, mora: 0, marca: 0, vt: 0, proy: 0 }
   for (const c of lista) {
     const r = c.corridas[k]
     if (!r) continue
     t.inversion += c.inversion ?? 0
     t.real += c.realPagado ?? 0
+    t.vt += (c.valorTotalMiles ?? 0) * 1000
+    t.proy += r.simProyectadoTotal ?? 0
     t.sim += r.simPagado ?? 0
     t.saldo += r.simSaldoFinal ?? 0
     t.pend += r.simPendientes ?? 0
@@ -909,6 +921,8 @@ const COLS_ACTIVOS = [
   ['periodos', 'Periodos', (c, k) => c.corridas[k].simPeriodos ?? 0, (c, k) => `${c.corridas[k].simPeriodos ?? '—'} / ${c.cuotas ?? '—'}`],
   ['inversion', 'Inversión', (c) => c.inversion ?? 0, (c) => cop(c.inversion)],
   ['real', 'Pagado real', (c) => c.realPagado ?? 0, (c) => cop(c.realPagado)],
+  ['vt', 'Valor total negociado', (c) => c.valorTotalMiles ?? 0, (c) => (c.valorTotalMiles != null ? cop(c.valorTotalMiles * 1000) : '—')],
+  ['proy', 'Proyectado motor', (c, k) => c.corridas[k].simProyectadoTotal ?? 0, (c, k) => cop(c.corridas[k].simProyectadoTotal)],
   ['sim', 'Pagado motor', (c, k) => c.corridas[k].simPagado ?? 0, (c, k) => cop(c.corridas[k].simPagado)],
   ['saldo', 'Saldo capital', (c, k) => c.corridas[k].simSaldoFinal ?? 0, (c, k) => cop(c.corridas[k].simSaldoFinal)],
   ['pend', 'Pendientes', (c, k) => c.corridas[k].simPendientes ?? 0, (c, k) => cop(c.corridas[k].simPendientes)],
@@ -931,7 +945,11 @@ function pintarActivos() {
     dato('Contratos', `${agrupar(t.n)} de ${agrupar(act.contratos.length)}`),
     dato('Inversión', cop(t.inversion)),
     dato('Pagado real', cop(t.real)),
+    dato('Valor total negociado (se espera recaudar)', cop(t.vt)),
+    dato('Margen proyectado, sistema actual', cop(t.vt - t.inversion)),
     dato('Pagado por el motor', cop(t.sim)),
+    dato('Proyectado por el motor al final del plan', cop(t.proy)),
+    dato('Margen proyectado, motor a tasa fija', cop(t.proy - t.inversion)),
     dato('Saldo de capital', cop(t.saldo)),
     dato('Pendientes (mora, cobranza, interés, servicios)', cop(t.pend)),
     dato('Con 2 o más cuotas vencidas', agrupar(t.mora)),
@@ -986,10 +1004,10 @@ async function verActivos() {
 
 function crearDemoActivos() {
   const un = (n, ini, vencidas, marca, pagado) => ({
-    id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado,
+    id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado, valorTotalMiles: 14430, saldoRealMiles: 14430 - pagado / 1000,
     corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => ({ ...o, [k]: {
       simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * 180000, simCuotasVencidasFinal: vencidas,
-      simMarcaRecuperacion: marca, simPeriodos: 12 } }), {}),
+      simMarcaRecuperacion: marca, simPeriodos: 12, simProyectadoTotal: 12000000 } }), {}),
   })
   return [un(9001, '2026-07-21', 0, false, 1100000), un(9002, '2026-08-04', 2.4, true, 600000), un(9003, '2026-09-01', 1.1, false, 450000)]
 }
