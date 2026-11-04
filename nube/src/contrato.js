@@ -257,7 +257,7 @@ async function flujoActivos(consultar) {
   const corte = fecha(corteFila[0]?.corte)
   const mesCorte = corte ? corte.slice(0, 7) : '9999-99'
   const mesDe = "to_char(date_trunc('month', p.fecha_vencimiento), 'YYYY-MM')"
-  const [cerrados, hoy, motos, realCerrado, realCorte] = await Promise.all([
+  const [cerrados, hoy, motos, realCerrado, realCorte, cartas] = await Promise.all([
     consultar(
       `SELECT ${mesDe} AS mes, p.corrida, ${SUMAS}, COUNT(DISTINCT p.id) AS contratos FROM periodo p ` +
         `JOIN contrato c ON c.id = p.id JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = ${mesDe} ` +
@@ -280,7 +280,18 @@ async function flujoActivos(consultar) {
         "WHERE c.estado_real = 'VIGENTE' AND to_char(date_trunc('month', r.fecha), 'YYYY-MM') = $1",
       [mesCorte],
     ),
+    // Pagos por carta (liquidaciones de cierre, np_his_abonos.CARTA = 'SI' salvo pronto pago) de las motos activas ese último día del mes.
+    // No son cuotas: ni el motor ni el recaudo real los incluyen.
+    consultar('SELECT mes, motivo, pagos, valor_miles FROM carta_fin_mes', []),
   ])
+  const cartaPorMes = new Map()
+  for (const c of cartas) {
+    const x = cartaPorMes.get(c.mes) ?? { pagos: 0, valor: 0, porMotivo: {} }
+    x.pagos += num(c.pagos) ?? 0
+    x.valor += (num(c.valor_miles) ?? 0) * 1000
+    x.porMotivo[c.motivo] = { pagos: num(c.pagos), valor: (num(c.valor_miles) ?? 0) * 1000 }
+    cartaPorMes.set(c.mes, x)
+  }
   const motosPorMes = new Map(motos.map((r) => [r.mes, num(r.motos)]))
   const realPorMes = new Map(realCerrado.map((r) => [r.mes, num(r.pagos)]))
   const porMes = new Map()
@@ -292,6 +303,7 @@ async function flujoActivos(consultar) {
         estado,
         // Motos que estaban activas el último día del mes (solo meses cerrados) y cuántas de ellas tienen simulación.
         motosActivas: estado === 'cerrado' ? (motosPorMes.get(f.mes) ?? null) : null,
+        carta: estado === 'cerrado' ? (cartaPorMes.get(f.mes) ?? { pagos: 0, valor: 0, porMotivo: {} }) : null,
         real: estado === 'proyectado' ? null : { pagos: (estado === 'cerrado' ? realPorMes.get(f.mes) : num(realCorte[0]?.pagos)) ?? 0 },
         corridas: {},
       }
