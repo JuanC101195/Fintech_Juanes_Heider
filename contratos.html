@@ -11,6 +11,8 @@
       --aviso-fondo: #fff4d6; --aviso-texto: #5a4300; --error-fondo: #fde8e6; --error-texto: #8a1c12;
       --fila-sinpago: #fde8e6; --fila-just: #e3eefc; --fila-listo: #fff0c2; --cabecera: #e9f1ef;
       --s1: #0f6b5c; --s2: #b45309; --s3: #6d28d9; --s4: #1d4ed8;
+      /* Conceptos del recaudo: capital (lo que vuelve), interés (lo que se gana) y otros cargos. */
+      --c-capital: #0f6b5c; --c-interes: #c2410c; --c-otros: #6d28d9; --c-real: #13201d;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -18,6 +20,7 @@
         --aviso-fondo: #3a2f0c; --aviso-texto: #f6dc8c; --error-fondo: #3d1a17; --error-texto: #ffc2bb;
         --fila-sinpago: #3d1f1c; --fila-just: #1b2c44; --fila-listo: #453a12; --cabecera: #1f2d29;
         --s1: #5fd0b8; --s2: #f0a24b; --s3: #b69cff; --s4: #7fb0ff;
+        --c-capital: #5fd0b8; --c-interes: #fb923c; --c-otros: #b69cff; --c-real: #e6efec;
       }
     }
     * { box-sizing: border-box; }
@@ -116,6 +119,46 @@
     ul.notas li { margin-bottom: 4px; }
     footer { margin-top: 32px; color: var(--suave); font-size: 14px; }
     .solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    /* Lecturas lado a lado (sin / con justificaciones) y la pestaña de recaudo */
+    .barra label.inline { margin: 0; font-size: 14px; }
+    .lecturas { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); margin: 12px 0 4px; }
+    .lecturas.una { grid-template-columns: minmax(0, 1fr); }
+    .lectura { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; background: var(--tarjeta); }
+    .lectura h3, .lectura-titulo { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--suave); margin: 0 0 6px; }
+    .cifra-grande { margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+    .cifra-grande small { display: block; font-size: 14px; font-weight: 600; color: var(--suave); margin-top: 4px; }
+    .reparto { display: flex; height: 14px; border-radius: 999px; overflow: hidden; margin: 14px 0 6px; background: var(--cabecera); }
+    .reparto span { display: block; height: 100%; min-width: 0; }
+    .bg-cap { background: var(--c-capital); } .bg-int { background: var(--c-interes); } .bg-otr { background: var(--c-otros); } .bg-real { background: var(--c-real); }
+    .f-cap { fill: var(--c-capital); } .f-int { fill: var(--c-interes); } .f-otr { fill: var(--c-otros); }
+    .t-cap { stroke: var(--c-capital); } .t-int { stroke: var(--c-interes); } .t-otr { stroke: var(--c-otros); }
+    .kpi.cap { box-shadow: inset 4px 0 0 var(--c-capital); } .kpi.int { box-shadow: inset 4px 0 0 var(--c-interes); } .kpi.otr { box-shadow: inset 4px 0 0 var(--c-otros); } .kpi.real { box-shadow: inset 4px 0 0 var(--c-real); }
+    .kpi.cap .kpi-valor { color: var(--c-capital); } .kpi.int .kpi-valor { color: var(--c-interes); } .kpi.otr .kpi-valor { color: var(--c-otros); }
+    .deslizador { margin: 14px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; }
+    .deslizador label { font-size: 14px; }
+    .deslizador output { display: block; font-weight: 800; font-size: 18px; margin: 2px 0 4px; }
+    input[type=range] { width: 100%; accent-color: var(--primario); margin: 4px 0 8px; cursor: pointer; }
+    .extremos { display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); margin: -4px 0 8px; }
+    .atajos { display: flex; flex-wrap: wrap; gap: 6px; }
+    .atajos button { padding: 5px 12px; font-size: 13px; background: var(--tarjeta); color: var(--primario); }
+    .atajos button[aria-pressed=true] { background: var(--primario); color: #fff; }
+    @media (prefers-color-scheme: dark) { .atajos button[aria-pressed=true] { color: #0e1513; } }
+    .atajos button:disabled { opacity: .45; cursor: not-allowed; }
+    .dona-bloque { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 12px 18px; align-items: center; margin-top: 8px; }
+    .dona { width: 190px; height: 190px; display: block; }
+    .g-centro { fill: var(--texto); font: 800 22px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-centro-sub { fill: var(--suave); font: 600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .nota-honesta { font-size: 13px; color: var(--suave); border-left: 3px solid var(--borde); padding-left: 10px; margin: 12px 0 0; }
+    @media (max-width: 520px) { .dona-bloque { grid-template-columns: 1fr; justify-items: center; } .cifra-grande { font-size: 28px; } }
+    @media (prefers-reduced-motion: no-preference) {
+      .lectura { animation: subir .4s ease-out both; }
+      .g-barra.animar { transform-box: fill-box; transform-origin: 50% 100%; animation: crecer .5s ease-out both; }
+      .dona .seg { animation: aparecer .6s ease-out both; }
+      .reparto span { transition: flex-basis .35s ease; }
+    }
+    @keyframes subir { from { opacity: 0; transform: translateY(8px); } }
+    @keyframes crecer { from { transform: scaleY(0); } }
+    @keyframes aparecer { from { opacity: 0; } }
     @media (max-width: 520px) {
       h1 { font-size: 22px; } .tarjeta { padding: 14px; } main { padding: 20px 12px 40px; }
       form.consulta { grid-template-columns: 1fr; }
@@ -141,6 +184,7 @@
       <div class="pestanas" role="tablist" aria-label="Qué consultar">
         <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
         <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
+        <button type="button" role="tab" id="tab-flujo" aria-selected="false" aria-controls="panel-flujo" tabindex="-1">Recaudo de la cartera activa</button>
       </div>
       <div id="panel-uno" role="tabpanel" aria-labelledby="tab-uno">
         <form class="consulta" id="formulario" novalidate>
@@ -156,18 +200,35 @@
         <p class="ayuda" style="margin:0 0 10px">Todas las motos que hoy están activas, simuladas por el motor con la tasa fija de 88,44 % EA desde el desembolso. Sirve para ver cómo iría la cartera completa.</p>
         <div class="barra">
           <button type="button" id="ver-activos">Ver contratos activos</button>
-          <label for="act-just" class="solo-lectores">Justificaciones</label>
-          <select id="act-just" disabled><option value="fija_con_justificaciones">Con justificaciones</option><option value="fija_sin_justificaciones">Sin justificaciones</option></select>
+          <label for="act-just" class="inline">Lectura de la tabla</label>
+          <select id="act-just" disabled><option value="fija_sin_justificaciones">Sin justificaciones</option><option value="fija_con_justificaciones">Con justificaciones</option></select>
           <label for="act-filtro" class="solo-lectores">Filtrar</label>
           <select id="act-filtro" disabled><option value="todos">Todos los contratos</option><option value="mora">Con 2 o más cuotas vencidas</option><option value="marca">Marcados para recuperar</option><option value="aldia">Al día (menos de 1 cuota vencida)</option></select>
           <label for="act-buscar" class="solo-lectores">Buscar contrato</label>
           <input type="search" id="act-buscar" placeholder="Buscar contrato" inputmode="numeric" disabled>
         </div>
       </div>
+      <div id="panel-flujo" role="tabpanel" aria-labelledby="tab-flujo" hidden>
+        <p class="ayuda" style="margin:0 0 10px">Cuánto recaudaría el motor, mes a mes, con las motos activas de hoy (tasa fija de 88,44 % EA desde el desembolso): la proyección hacia adelante y la lectura de un mes ya cerrado, separando capital de interés.</p>
+        <div class="barra">
+          <button type="button" id="ver-flujo">Ver recaudo</button>
+        </div>
+        <div class="opciones" role="group" aria-label="Lectura del motor">
+          <fieldset>
+            <legend>Lectura</legend>
+            <div class="pildoras">
+              <label for="flujo-lectura-ambas"><input type="radio" name="flujo-lectura" id="flujo-lectura-ambas" value="ambas" checked disabled>Ambas (comparar)</label>
+              <label for="flujo-lectura-sin"><input type="radio" name="flujo-lectura" id="flujo-lectura-sin" value="sin" disabled>Sin justificaciones</label>
+              <label for="flujo-lectura-con"><input type="radio" name="flujo-lectura" id="flujo-lectura-con" value="con" disabled>Con justificaciones</label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
     </section>
 
     <p id="estado" role="status" aria-live="polite"></p>
     <div id="act-resultado" hidden></div>
+    <div id="flujo-resultado" hidden></div>
     <div id="resultado"></div>
 
     <details class="tarjeta plegable" id="como-leer">
@@ -190,6 +251,12 @@
       <ul class="notas">
         <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la usura vigente y la tasa implícita del sistema actual.</li>
         <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la financiera frente a lo que el cliente pagó; el resumen mensual da las mismas cifras.</li>
+      </ul>
+      <p class="subtitulo">Contratos activos y recaudo</p>
+      <ul class="notas">
+        <li>En «Contratos activos» el resumen muestra siempre las dos lecturas (sin y con justificaciones) lado a lado; la tabla usa la que se elija en «Lectura de la tabla» y arranca en «Sin justificaciones» solo por tener un punto de partida, no porque sea la correcta.</li>
+        <li>En «Recaudo de la cartera activa» el motor reparte cada cuota en capital, interés y otros cargos (mora, cobranza, servicios). El monto de cada cuota se atribuye al mes en que vence. Cada mes cerrado usa la flota que estaba activa el último día de ese mes (aunque hoy ya no lo esté); el mes en curso y los siguientes usan las motos activas de hoy, con las cuotas pagadas a tiempo.</li>
+        <li>El «recaudo real» es lo que los clientes activos pagaron ese mes en el sistema actual, que no separa capital de interés: por eso va como una sola cifra de referencia.</li>
       </ul>
     </details>
     <footer><a href="./">Volver al inicio</a></footer>
@@ -642,6 +709,8 @@ function responsivo(dibujar) {
   }
   if (typeof ResizeObserver === 'function') new ResizeObserver(pintar).observe(cont)
   setTimeout(pintar, 0)
+  // Vuelve a dibujar con los datos nuevos aunque el ancho no haya cambiado (p. ej. al mover el deslizador).
+  cont.redibujar = () => { ultimo = 0; pintar() }
   return cont
 }
 const mensualDe = (ea) => (ea === null || ea === undefined ? null : Math.pow(1 + Number(ea), 1 / 12) - 1)
@@ -1018,26 +1087,36 @@ function pintarActivos() {
     const d = va < vb ? -1 : va > vb ? 1 : 0
     return act.desc ? -d : d
   })
-  const t = resumenActivos(lista, k)
-  const difMargen = (t.proy - t.inversion) - (t.vt - t.inversion)
-  // Lo más importante arriba: margen proyectado de cada lado y cuántos contratos están en riesgo.
+  // Lo más importante arriba, y sin sesgo: las dos lecturas del motor (sin / con justificaciones) lado a lado, cada una con su filtro.
+  const LECT_ACT = [['fija_sin_justificaciones', 'Sin justificaciones'], ['fija_con_justificaciones', 'Con justificaciones']]
+  const totales = LECT_ACT.map(([kk, rot]) => [kk, rot, resumenActivos(filtrarActivos(kk), kk)])
+  const columna = ([, rot, t]) => {
+    const difMargen = (t.proy - t.inversion) - (t.vt - t.inversion)
+    return el('div', { class: 'lectura' },
+      el('h3', {}, rot, ` · ${agrupar(t.n)} contratos`),
+      el('p', { class: 'veredicto-cifra', style: 'margin-bottom:8px' }, `${signoDe(difMargen)}${cop(Math.abs(difMargen))}`, el('small', {}, 'diferencia del margen proyectado: motor frente al sistema actual')),
+      el('div', { class: 'kpis' },
+        kpi('Margen proyectado · sistema actual', cop(t.vt - t.inversion), `Valor negociado ${cop(t.vt)} − inversión`),
+        kpi('Margen proyectado · motor a tasa fija', cop(t.proy - t.inversion), `Proyectado ${cop(t.proy)} − inversión`),
+        kpi('Con 2 o más cuotas vencidas', agrupar(t.mora), 'contratos, según el motor'),
+        kpi('Marcados para recuperar', agrupar(t.marca), 'contratos, según el motor')))
+  }
+  const filaTotal = (rot, f) => el('tr', {}, el('th', { scope: 'row', class: 'izq', style: 'position:static;background:inherit;font-size:inherit;font-weight:400;white-space:normal' }, rot), totales.map(([, , t]) => el('td', {}, cop(f(t)))))
   const resumen = el('section', { class: 'veredicto', 'aria-label': 'Resumen de la cartera activa' },
-    el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(t.n)} de ${agrupar(act.contratos.length)} contratos · ${rotuloCorrida(k)}`),
-    el('p', { class: 'veredicto-cifra' }, `${signoDe(difMargen)}${cop(Math.abs(difMargen))}`, el('small', {}, 'diferencia del margen proyectado: motor frente al sistema actual')),
-    el('div', { class: 'kpis' },
-      kpi('Margen proyectado · sistema actual', cop(t.vt - t.inversion), `Valor negociado ${cop(t.vt)} − inversión`),
-      kpi('Margen proyectado · motor a tasa fija', cop(t.proy - t.inversion), `Proyectado ${cop(t.proy)} − inversión`),
-      kpi('Con 2 o más cuotas vencidas', agrupar(t.mora), 'contratos, según el motor'),
-      kpi('Marcados para recuperar', agrupar(t.marca), 'contratos, según el motor')),
-    plegable('Más totales de la cartera', false, 'totales',
-      el('dl', { class: 'datos' },
-        dato('Inversión', cop(t.inversion)),
-        dato('Pagado real', cop(t.real)),
-        dato('Valor total negociado (se espera recaudar)', cop(t.vt)),
-        dato('Pagado por el motor', cop(t.sim)),
-        dato('Proyectado por el motor al final del plan', cop(t.proy)),
-        dato('Saldo de capital', cop(t.saldo)),
-        dato('Otros pendientes (mora, cobranza, interés, servicios)', cop(t.pend)))))
+    el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(act.contratos.length)} contratos · motor a tasa fija 88,44 %`),
+    el('p', { class: 'ayuda' }, 'Las dos lecturas del motor, lado a lado. «Sin justificaciones» cuenta todo atraso; «con justificaciones» no cuenta los periodos con atraso justificado. Ninguna de las dos es la predeterminada.'),
+    el('div', { class: 'lecturas' }, totales.map(columna)),
+    plegable('Más totales de la cartera (las dos lecturas)', false, 'totales',
+      el('div', { class: 'tabla-scroll tabla-chica' }, el('table', {}, el('caption', { class: 'solo-lectores' }, 'Totales de la cartera activa por lectura'),
+        el('thead', {}, el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Concepto'), totales.map(([, rot]) => el('th', { scope: 'col' }, rot)))),
+        el('tbody', {},
+          filaTotal('Inversión', (t) => t.inversion),
+          filaTotal('Pagado real', (t) => t.real),
+          filaTotal('Valor total negociado (se espera recaudar)', (t) => t.vt),
+          filaTotal('Pagado por el motor', (t) => t.sim),
+          filaTotal('Proyectado por el motor al final del plan', (t) => t.proy),
+          filaTotal('Saldo de capital', (t) => t.saldo),
+          filaTotal('Otros pendientes (mora, cobranza, interés, servicios)', (t) => t.pend))))))
   const cab = el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Detalle'), ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
     const activo = act.orden === id
     const b = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ordenar por ${rot}` }, rot + (activo ? (act.desc ? ' ▼' : ' ▲') : ''))
@@ -1053,7 +1132,7 @@ function pintarActivos() {
     return el('tr', { class: r.simMarcaRecuperacion ? 'listo' : cvFinal(c, k) >= 2 ? 'sinpago' : '' },
       el('td', { class: 'izq' }, ver), ...COLS_ACTIVOS.map(([, , , txt, izq]) => el('td', { class: izq ? 'izq' : '' }, txt(c, k))))
   })
-  const tabla = el('table', {}, el('caption', {}, `Contratos activos — ${rotuloCorrida(k)}`), el('thead', {}, cab), el('tbody', {}, filas))
+  const tabla = el('table', { class: 'activos' }, el('caption', {}, `Contratos activos — ${rotuloCorrida(k)}`), el('thead', {}, cab), el('tbody', {}, filas))
   $('act-resultado').replaceChildren(el('section', { class: 'tarjeta', 'aria-label': 'Contratos activos' }, resumen,
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), '2 o más cuotas vencidas'),
@@ -1092,16 +1171,322 @@ async function verActivos() {
 function crearDemoActivos() {
   const un = (n, ini, vencidas, marca, pagado) => ({
     id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado, valorTotalMiles: 14430, saldoRealMiles: 14430 - pagado / 1000,
-    corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => ({ ...o, [k]: {
-      simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * 180000, simCuotasVencidasFinal: vencidas,
-      simMarcaRecuperacion: marca, simPeriodos: 12, simProyectadoTotal: 12000000 } }), {}),
+    // Con justificaciones el atraso justificado no cuenta: menos cuotas vencidas y menos cargos pendientes.
+    corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => { const f = k.includes('con_') ? 0.7 : 1; return { ...o, [k]: {
+      simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * f * 180000, simCuotasVencidasFinal: vencidas * f,
+      simMarcaRecuperacion: marca && f === 1, simPeriodos: 12, simProyectadoTotal: 12000000 - (1 - f) * 150000 } } }, {}),
   })
   return [un(9001, '2026-07-21', 0, false, 1100000), un(9002, '2026-08-04', 2.4, true, 600000), un(9003, '2026-09-01', 1.1, false, 450000)]
 }
 
-// ---------- pestañas: "Un contrato" / "Contratos activos" ----------
+// ---------- recaudo de la cartera activa (flujo mensual del motor) ----------
+// Datos: GET {urlApi}?flujo=1 → { corte, contratos, meses: [{ mes, estado, motosActivas (solo cerrados: flota activa el último día del mes; null en los demás), real: { pagos } | null,
+//   corridas: { fija_sin_justificaciones: { capital, interes, mora, cobranza, servicios, total, contratos }, fija_con_justificaciones } }] }
+// Meses cerrados: se simula la flota que estaba activa ese día; mes en curso y proyectados: las motos activas de hoy con cuotas a tiempo.
+const MESES_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const nombreMes = (ym) => { const [a, m] = String(ym).split('-'); return `${MESES_ES[+m - 1] || ym} de ${a}` }
+const mesCorto = (ym) => { const [a, m] = String(ym).split('-'); return `${(MESES_ES[+m - 1] || '').slice(0, 3)} ${String(a).slice(2)}` }
+const ultimoDia = (ym) => { const [a, m] = String(ym).split('-'); return `${new Date(Date.UTC(+a, +m, 0)).getUTCDate()} de ${nombreMes(ym)}` }
+const LECTURAS = { sin: 'fija_sin_justificaciones', con: 'fija_con_justificaciones' }
+const rotuloLectura = { sin: 'Sin justificaciones', con: 'Con justificaciones' }
+const otrosDe = (c) => (Number(c?.mora) || 0) + (Number(c?.cobranza) || 0) + (Number(c?.servicios) || 0)
+const partesDe = (c) => ({ cap: Number(c?.capital) || 0, int: Number(c?.interes) || 0, otr: otrosDe(c) })
+const totalPartes = (p) => p.cap + p.int + p.otr
+const pctDe = (v, t) => (t > 0 ? pct1(v / t) : '—')
+function copCompacto(v) {
+  const a = Math.abs(Number(v) || 0)
+  if (a >= 1e9) return (v < 0 ? '-' : '') + agrupar(Math.round(a / 1e6)) + ' M'
+  return copCorto(Number(v) || 0)
+}
+const flujo = { datos: null, fin: null, cerrado: null, actualizar: [], primera: true }
+let contadorFlujo = 0
+
+function lecturasElegidas() {
+  const v = document.querySelector('input[name=flujo-lectura]:checked')?.value || 'ambas'
+  return v === 'ambas' ? ['sin', 'con'] : [v]
+}
+
+function kpiColor(clase, rotulo, valor, sub) {
+  const k = kpi(rotulo, valor, sub)
+  k.classList.add(clase)
+  return k
+}
+function barraReparto(p) {
+  const t = totalPartes(p)
+  const seg = (cls, v, rot) => el('span', { class: cls, style: `flex: 0 0 ${t > 0 ? (v / t) * 100 : 0}%`, title: `${rot}: ${pctDe(v, t)}` })
+  return el('div', { class: 'reparto', role: 'img', 'aria-label': `Reparto: capital ${pctDe(p.cap, t)}, interés ${pctDe(p.int, t)}, otros ${pctDe(p.otr, t)}` },
+    seg('bg-cap', p.cap, 'Capital'), seg('bg-int', p.int, 'Interés'), seg('bg-otr', p.otr, 'Otros'))
+}
+const leyendaConceptos = (conReal) => el('ul', { class: 'leyenda', 'aria-label': 'Leyenda' },
+  el('li', {}, el('span', { class: 'muestra bg-cap' }), 'Capital'), el('li', {}, el('span', { class: 'muestra bg-int' }), 'Interés'),
+  el('li', {}, el('span', { class: 'muestra bg-otr' }), 'Otros (mora, cobranza, servicios)'),
+  conReal ? el('li', {}, el('span', { class: 'linea' }), 'Acumulado del tramo elegido') : null)
+
+// Barras apiladas por mes (capital / interés / otros) desde el mes en curso, con el tramo elegido resaltado y la línea del acumulado.
+function graficaProyeccion(meses, iHoy, iFin, key, w, id, animar) {
+  const futuros = meses.slice(iHoy)
+  const serie = futuros.map((m) => partesDe(m.corridas?.[key]))
+  const tope = Math.max(1, ...serie.map(totalPartes))
+  let acum = 0
+  const acumulado = serie.map((p) => (acum += totalPartes(p)))
+  const topeAcum = Math.max(1, acumulado[acumulado.length - 1])
+  const nFin = Math.max(0, Math.min(serie.length - 1, iFin - iHoy))
+  const estrecho = w < 500
+  const alto = estrecho ? 270 : 320
+  // En pantallas angostas el rótulo del acumulado va junto al punto, no en un margen derecho.
+  const m = { i: 50, d: estrecho ? 14 : 64, s: 16, b: 34 }
+  const ancho = Math.max(60, w - m.i - m.d)
+  const altoUtil = alto - m.s - m.b
+  const paso = pasoBonito(tope, 4, [1e5, 2e5, 5e5, 1e6, 2e6, 5e6, 1e7, 2e7, 5e7, 1e8, 2e8, 5e8, 1e9, 2e9, 5e9, 1e10])
+  const ymax = Math.ceil(tope / paso) * paso
+  const banda = ancho / serie.length
+  const X = (i) => m.i + banda * (i + 0.5)
+  const Y = (v) => m.s + (1 - v / ymax) * altoUtil
+  const Y2 = (v) => m.s + (1 - v / topeAcum) * altoUtil
+  const descripcion = `Recaudo mensual del motor de ${mesCorto(futuros[0].mes)} a ${mesCorto(futuros[futuros.length - 1].mes)}, repartido en capital, interés y otros. Tramo elegido hasta ${mesCorto(futuros[nFin].mes)}: acumulado ${cop(acumulado[nFin])}.`
+  const svg = sv('svg', { role: 'img', 'aria-labelledby': `${id}-t ${id}-d`, viewBox: `0 0 ${w} ${alto}`, width: w, height: alto },
+    sv('title', { id: `${id}-t` }, 'Recaudo mensual proyectado y acumulado del tramo elegido'), sv('desc', { id: `${id}-d` }, descripcion))
+  svg.append(sv('rect', { x: m.i, y: m.s - 6, width: banda * (nFin + 1), height: altoUtil + 6, rx: 6, style: 'fill:var(--cabecera)' }))
+  for (let v = 0; v <= ymax + 1e-9; v += paso) {
+    svg.append(sv('line', { class: 'g-rejilla', x1: m.i, x2: m.i + ancho, y1: Y(v), y2: Y(v) }),
+      sv('text', { class: 'g-texto', x: m.i - 6, y: Y(v) + 4, 'text-anchor': 'end' }, copCompacto(v)))
+  }
+  // Rótulos del eje X: uno cada «cada» meses, más el mes elegido (en negrita); los vecinos del elegido se omiten para que no se monten.
+  const cada = Math.max(1, Math.ceil(serie.length / Math.max(1, Math.floor(ancho / 58))))
+  const visible = (i) => i === nFin || (i % cada === 0 && Math.abs(i - nFin) * banda >= 46)
+  const aB = Math.max(3, Math.min(banda * 0.64, 40))
+  serie.forEach((p, i) => {
+    let base = 0
+    for (const [v, cls, rot] of [[p.cap, 'f-cap', 'Capital'], [p.int, 'f-int', 'Interés'], [p.otr, 'f-otr', 'Otros']]) {
+      if (v > 0) {
+        svg.append(sv('rect', { class: `g-barra ${cls}${animar ? ' animar' : ''}`, x: X(i) - aB / 2, y: Y(base + v), width: aB, height: Math.max(0.5, Y(base) - Y(base + v)), opacity: i > nFin ? 0.28 : 1 },
+          sv('title', {}, `${nombreMes(futuros[i].mes)} · ${rot}: ${cop(v)}${i > nFin ? ' (fuera del tramo elegido)' : ''}`)))
+      }
+      base += v
+    }
+    if (visible(i)) svg.append(sv('text', { class: 'g-texto', x: X(i), y: alto - 12, 'text-anchor': 'middle', 'font-weight': i === nFin ? '700' : null }, mesCorto(futuros[i].mes)))
+  })
+  svg.append(sv('line', { class: 'g-eje', x1: m.i, x2: m.i + ancho, y1: Y(0), y2: Y(0) }))
+  const puntos = acumulado.slice(0, nFin + 1).map((v, i) => `${X(i).toFixed(1)} ${Y2(v).toFixed(1)}`)
+  svg.append(sv('path', { d: 'M' + puntos.join(' L'), fill: 'none', style: 'stroke:var(--texto)', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }))
+  svg.append(sv('circle', { cx: X(nFin), cy: Y2(acumulado[nFin]), r: 4.5, style: 'fill:var(--tarjeta);stroke:var(--texto)', 'stroke-width': 2.5 }))
+  const rotuloAcum = `${copCompacto(acumulado[nFin])} acum.`
+  if (estrecho) {
+    // Junto al punto, hacia el lado donde hay espacio y con un fondo para que se lea sobre las barras.
+    const haciaIzq = X(nFin) > m.i + ancho * 0.55
+    const tx = X(nFin) + (haciaIzq ? -9 : 9), ty = Y2(acumulado[nFin]) - 10
+    const anchoTexto = rotuloAcum.length * 6.6 + 8
+    svg.append(sv('rect', { x: haciaIzq ? tx - anchoTexto + 4 : tx - 4, y: ty - 11, width: anchoTexto, height: 16, rx: 4, style: 'fill:var(--tarjeta);opacity:.9' }),
+      sv('text', { class: 'g-valor', x: tx, y: ty + 1, 'text-anchor': haciaIzq ? 'end' : 'start', style: 'fill:var(--texto)' }, rotuloAcum))
+  } else {
+    svg.append(sv('text', { class: 'g-valor', x: m.i + ancho + 6, y: Y2(acumulado[nFin]) + 4, style: 'fill:var(--texto)' }, copCompacto(acumulado[nFin])))
+    svg.append(sv('text', { class: 'g-texto', x: m.i + ancho + 6, y: m.s + 4 }, 'acum.'))
+  }
+  return svg
+}
+
+// Dona de un mes: capital / interés / otros con el total en el centro.
+function dona(p, id, tituloDona) {
+  const t = totalPartes(p)
+  const R = 72, C = 2 * Math.PI * R
+  const descripcion = `${tituloDona}. Total ${cop(t)}: capital ${cop(p.cap)} (${pctDe(p.cap, t)}), interés ${cop(p.int)} (${pctDe(p.int, t)}), otros ${cop(p.otr)} (${pctDe(p.otr, t)}).`
+  const svg = sv('svg', { class: 'dona', role: 'img', viewBox: '0 0 200 200', 'aria-labelledby': `${id}-t ${id}-d` },
+    sv('title', { id: `${id}-t` }, tituloDona), sv('desc', { id: `${id}-d` }, descripcion),
+    sv('circle', { cx: 100, cy: 100, r: R, fill: 'none', style: 'stroke:var(--cabecera)', 'stroke-width': 26 }))
+  let off = 0
+  for (const [v, cls] of [[p.cap, 't-cap'], [p.int, 't-int'], [p.otr, 't-otr']]) {
+    if (!(v > 0) || !(t > 0)) continue
+    const l = (C * v) / t
+    svg.append(sv('circle', { class: `seg ${cls}`, cx: 100, cy: 100, r: R, fill: 'none', 'stroke-width': 26, 'stroke-dasharray': `${l.toFixed(2)} ${(C - l).toFixed(2)}`, 'stroke-dashoffset': (-off).toFixed(2), transform: 'rotate(-90 100 100)' }))
+    off += l
+  }
+  svg.append(sv('text', { class: 'g-centro', x: 100, y: 98, 'text-anchor': 'middle' }, copCompacto(t)),
+    sv('text', { class: 'g-centro-sub', x: 100, y: 118, 'text-anchor': 'middle' }, 'recaudo del motor'))
+  return svg
+}
+
+function bloqueProyeccion(k, meses, iHoy) {
+  const key = LECTURAS[k]
+  const id = `f${++contadorFlujo}`
+  const cifra = el('p', { class: 'cifra-grande' })
+  const sub = el('small')
+  cifra.append(document.createTextNode(''), sub)
+  const reparto = el('div')
+  const kpis = el('div', { class: 'kpis' })
+  let iFin = iHoy, animar = true
+  const grafica = responsivo((w) => graficaProyeccion(meses, iHoy, iFin, key, w, id, animar))
+  const actualizar = () => {
+    iFin = Math.max(iHoy, meses.findIndex((x) => x.mes === flujo.fin))
+    const t = { cap: 0, int: 0, otr: 0 }
+    for (let i = iHoy; i <= iFin; i++) { const p = partesDe(meses[i].corridas?.[key]); t.cap += p.cap; t.int += p.int; t.otr += p.otr }
+    const total = totalPartes(t)
+    cifra.firstChild.textContent = cop(total)
+    sub.textContent = `de ${mesCorto(meses[iHoy].mes)} a ${mesCorto(meses[iFin].mes)} · ${iFin - iHoy + 1} ${iFin === iHoy ? 'mes' : 'meses'}`
+    reparto.replaceChildren(barraReparto(t))
+    kpis.replaceChildren(
+      kpiColor('cap', 'Capital', cop(t.cap), `${pctDe(t.cap, total)} del total`),
+      kpiColor('int', 'Interés', cop(t.int), `${pctDe(t.int, total)} del total`),
+      kpiColor('otr', 'Otros (mora, cobranza, servicios)', cop(t.otr), `${pctDe(t.otr, total)} del total`))
+    grafica.redibujar()
+    animar = false
+  }
+  flujo.actualizar.push(actualizar)
+  actualizar()
+  return el('div', { class: 'lectura', 'aria-label': `Proyección ${rotuloLectura[k].toLowerCase()}` },
+    el('h3', {}, rotuloLectura[k]), cifra, reparto, kpis, grafica, leyendaConceptos(true))
+}
+
+function bloqueMesCerrado(k, mesDato) {
+  const key = LECTURAS[k]
+  const id = `f${++contadorFlujo}`
+  const p = partesDe(mesDato.corridas?.[key])
+  const total = totalPartes(p)
+  const real = mesDato.real && mesDato.real.pagos != null ? Number(mesDato.real.pagos) : null
+  const dif = real === null ? null : total - real
+  const contratos = mesDato.corridas?.[key]?.contratos
+  const motos = mesDato.motosActivas
+  return el('div', { class: 'lectura', 'aria-label': `${nombreMes(mesDato.mes)} ${rotuloLectura[k].toLowerCase()}` },
+    el('h3', {}, rotuloLectura[k]),
+    el('div', { class: 'dona-bloque' },
+      dona(p, id, `Reparto del recaudo del motor en ${nombreMes(mesDato.mes)}, ${rotuloLectura[k].toLowerCase()}`),
+      el('div', {},
+        el('p', { class: 'cifra-grande' }, cop(total), el('small', {}, `recaudo del motor en ${nombreMes(mesDato.mes)}`)),
+        el('p', { class: 'ayuda flota', style: 'margin:6px 0 0' },
+          el('strong', {}, `Motos activas al ${ultimoDia(mesDato.mes)}: ${motos != null ? agrupar(motos) : '—'}`), ' (la foto de ese día, no las de hoy)',
+          el('br'), `Con cuota simulada ese mes: ${contratos != null ? agrupar(contratos) : '—'}`),
+        el('div', { class: 'kpis' },
+          kpiColor('cap', 'Capital', pctDe(p.cap, total), cop(p.cap)),
+          kpiColor('int', 'Interés', pctDe(p.int, total), cop(p.int)),
+          kpiColor('otr', 'Otros (mora, cobranza, servicios)', pctDe(p.otr, total), cop(p.otr)),
+          kpiColor('real', 'Recaudo real ese mes (sistema actual)', real === null ? 'Sin dato' : cop(real), real === null ? 'No hay pagos registrados para ese mes' : `Motor − real: ${signoDe(dif)}${cop(Math.abs(dif)).replace(' ', ' ')}${real > 0 ? ` (${signoDe(dif)}${pctDif(dif / real)})` : ''}`)))),
+    leyendaConceptos(false))
+}
+
+function pintarFlujo() {
+  const d = flujo.datos || {}
+  const meses = (d.meses || []).filter((m) => m && m.mes).slice().sort((a, b) => (a.mes < b.mes ? -1 : 1))
+  const cont = $('flujo-resultado')
+  flujo.actualizar = []
+  if (!meses.length) { cont.replaceChildren(el('section', { class: 'tarjeta' }, el('p', { class: 'ayuda' }, 'No hay meses con cuotas para mostrar.'))); return }
+  const iHoy = Math.max(0, meses.findIndex((m) => m.estado !== 'cerrado'))
+  const ultimo = meses.length - 1
+  const anioCorte = String(d.corte || meses[iHoy].mes).slice(0, 4)
+  const idx = (ym) => meses.findIndex((m) => m.mes === ym)
+  // Fin por defecto: el 31 de diciembre del año de corte si está en el rango; si no, el fin de todos los planes.
+  if (flujo.fin === null || idx(flujo.fin) < iHoy) flujo.fin = idx(`${anioCorte}-12`) >= iHoy ? `${anioCorte}-12` : meses[ultimo].mes
+  const cerrados = meses.filter((m) => m.estado === 'cerrado')
+  if (flujo.cerrado === null || !cerrados.some((m) => m.mes === flujo.cerrado)) flujo.cerrado = cerrados.length ? cerrados[cerrados.length - 1].mes : null
+  const lect = lecturasElegidas()
+  const clasesLect = 'lecturas' + (lect.length === 1 ? ' una' : '')
+
+  // ---- a) proyección acumulada con deslizador de fin de mes ----
+  const salida = el('output', { for: 'flujo-fin', id: 'flujo-fin-texto' })
+  const rango = el('input', { type: 'range', id: 'flujo-fin', min: iHoy, max: ultimo, step: 1, value: idx(flujo.fin) })
+  const atajos = el('div', { class: 'atajos', role: 'group', 'aria-label': 'Atajos de fecha' })
+  const botonesAtajo = []
+  const refrescar = () => {
+    salida.textContent = `Hasta el ${ultimoDia(flujo.fin)}`
+    rango.value = idx(flujo.fin)
+    rango.setAttribute('aria-valuetext', ultimoDia(flujo.fin))
+    for (const [b, ym] of botonesAtajo) b.setAttribute('aria-pressed', String(ym === flujo.fin))
+    for (const f of flujo.actualizar) f()
+  }
+  const atajo = (rot, ym) => {
+    const b = el('button', { type: 'button', 'aria-pressed': 'false', disabled: idx(ym) < iHoy }, rot)
+    b.addEventListener('click', () => { flujo.fin = ym; refrescar() })
+    botonesAtajo.push([b, ym])
+    atajos.append(b)
+  }
+  atajo(`31 dic ${anioCorte}`, `${anioCorte}-12`)
+  atajo(`31 mar ${+anioCorte + 1}`, `${+anioCorte + 1}-03`)
+  atajo('Fin de todos los planes', meses[ultimo].mes)
+  rango.addEventListener('input', () => { flujo.fin = meses[+rango.value].mes; refrescar() })
+  const secA = el('section', { class: 'tarjeta', 'aria-labelledby': 'flujo-t-proy' },
+    el('h2', { id: 'flujo-t-proy' }, '¿Cuánto espero recaudar de aquí en adelante?'),
+    el('p', { class: 'ayuda' }, `Con el motor y las ${agrupar(d.contratos ?? '—')} motos activas, sumando las cuotas que vencen desde ${nombreMes(meses[iHoy].mes)} (el mes en curso, completo) hasta el mes que elija. Mueva la barra o use un atajo.`),
+    el('div', { class: 'deslizador' },
+      el('label', { for: 'flujo-fin' }, 'Recaudar hasta el fin de'), salida, rango,
+      el('div', { class: 'extremos', 'aria-hidden': 'true' }, el('span', {}, mesCorto(meses[iHoy].mes)), el('span', {}, mesCorto(meses[ultimo].mes))),
+      atajos),
+    el('div', { class: clasesLect }, lect.map((k) => bloqueProyeccion(k, meses, iHoy))),
+    el('p', { class: 'nota-honesta' }, 'El monto de cada cuota se atribuye al mes en que vence. De hoy en adelante se supone que todas las cuotas se pagan a tiempo: es lo máximo que el motor recaudaría, no una promesa.'))
+
+  // ---- b) un mes cerrado: capital frente a interés ----
+  const selMes = el('select', { id: 'flujo-mes', disabled: !cerrados.length }, cerrados.map((m) => el('option', { value: m.mes, selected: m.mes === flujo.cerrado }, nombreMes(m.mes))))
+  selMes.addEventListener('change', () => { flujo.cerrado = selMes.value; pintarFlujo() })
+  const mesDato = cerrados.find((m) => m.mes === flujo.cerrado)
+  const secB = el('section', { class: 'tarjeta', 'aria-labelledby': 'flujo-t-mes' },
+    el('h2', { id: 'flujo-t-mes' }, mesDato ? `En ${nombreMes(mesDato.mes)}, ¿cuánto fue capital y cuánto interés?` : 'Un mes cerrado: capital frente a interés'),
+    el('p', { class: 'ayuda' }, 'Solo ese mes, no el acumulado: de lo que el motor habría recaudado con las motos activas, qué parte amortiza capital y qué parte es interés. El sistema actual no separa los dos, así que su recaudo real va como una sola cifra de referencia.'),
+    el('div', { class: 'barra' }, el('label', { for: 'flujo-mes', class: 'inline' }, 'Mes cerrado'), selMes),
+    mesDato ? el('div', { class: clasesLect }, lect.map((k) => bloqueMesCerrado(k, mesDato))) : el('p', { class: 'ayuda' }, 'Todavía no hay un mes cerrado con datos.'),
+    el('p', { class: 'nota-honesta' }, 'Lectura honesta: cada mes cerrado usa la flota que estaba activa el último día de ese mes (aunque hoy algunas motos ya no lo estén), simulada por el motor a tasa fija; el recaudo del motor es lo que las cuotas que vencían ese mes habrían dejado según la simulación, y el real es lo que esas mismas motos efectivamente pagaron en el mes. El mes en curso y los siguientes usan las motos activas de hoy con cuotas pagadas a tiempo.'))
+  cont.replaceChildren(secA, secB)
+  refrescar()
+}
+
+async function cargarFlujo() {
+  if (MODO_DEMO) return crearDemoFlujo()
+  guardarClave($('clave').value)
+  const url = new URL(urlApi)
+  url.searchParams.set('flujo', '1')
+  const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
+  if (!r.ok) throw Object.assign(new Error(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'), { mostrado: true })
+  return r.json()
+}
+
+async function verFlujo() {
+  if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
+  const boton = $('ver-flujo')
+  boton.disabled = true
+  mostrarEstado('Calculando el recaudo de la cartera activa…')
+  try {
+    flujo.datos = await cargarFlujo()
+    flujo.fin = null
+    flujo.cerrado = null
+    for (const r of document.querySelectorAll('input[name=flujo-lectura]')) r.disabled = false
+    mostrarEstado('')
+    pintarFlujo()
+  } catch (e) {
+    mostrarEstado(e && e.mostrado ? e.message : 'No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
+  } finally {
+    boton.disabled = false
+  }
+}
+
+// Demostración: 32 meses inventados (cerrados, el en curso y proyectados que van bajando al terminar los planes).
+function crearDemoFlujo() {
+  const corte = '2026-11-04'
+  let semilla = 11
+  const azar = () => { semilla = (semilla * 9301 + 49297) % 233280; return semilla / 233280 }
+  const N = 32, iHoy = 18 // mayo de 2025 … diciembre de 2027; noviembre de 2026 es el mes en curso
+  const meses = []
+  for (let i = 0; i < N; i++) {
+    const mes = new Date(Date.UTC(2025, 4 + i, 1)).toISOString().slice(0, 7)
+    const estado = i < iHoy ? 'cerrado' : i === iHoy ? 'en_curso' : 'proyectado'
+    // Meses cerrados: la flota activa el último día de ese mes (foto histórica, entre 1.540 y 1.600 motos), de las que solo una parte tiene cuota que vence en el mes.
+    // Desde hoy: las 1.181 motos activas, cuyas cuotas van terminando.
+    const motosActivas = i < iHoy ? 1540 + Math.round(azar() * 60) : null
+    const contratos = i < iHoy ? Math.round(motosActivas * (0.68 + 0.06 * (i / iHoy)) + azar() * 20) : Math.round(1181 * Math.pow(0.8, i - iHoy))
+    const base = contratos * 790000 * (1 + (azar() - 0.5) * 0.06)
+    const pCapital = 0.44 + 0.2 * (i / (N - 1)) // al amortizar, cada vez más de la cuota es capital
+    const corrida = (just) => {
+      const capital = base * pCapital, servicios = base * 0.045, mora = base * (just ? 0.016 : 0.028), cobranza = base * (just ? 0.01 : 0.019)
+      const interes = base * (1 - pCapital) - servicios - 0.028 * base - 0.019 * base
+      const r = (v) => Math.round(v)
+      return { capital: r(capital), interes: r(interes), mora: r(mora), cobranza: r(cobranza), servicios: r(servicios), total: r(capital + interes + mora + cobranza + servicios), contratos }
+    }
+    const sin = corrida(false), con = corrida(true)
+    const real = estado === 'proyectado' ? null : { pagos: Math.round(sin.total * (estado === 'en_curso' ? 0.13 : 0.86 + azar() * 0.13)) }
+    meses.push({ mes, estado, motosActivas, real, corridas: { fija_sin_justificaciones: sin, fija_con_justificaciones: con } })
+  }
+  return { corte, contratos: 1181, meses }
+}
+
+// ---------- pestañas: "Un contrato" / "Contratos activos" / "Recaudo de la cartera activa" ----------
 // Cada pestaña muestra su panel de consulta y su zona de resultados; la clave es común.
-const PESTANAS = { uno: ['tab-uno', 'panel-uno', 'resultado'], activos: ['tab-activos', 'panel-activos', 'act-resultado'] }
+const PESTANAS = { uno: ['tab-uno', 'panel-uno', 'resultado'], activos: ['tab-activos', 'panel-activos', 'act-resultado'], flujo: ['tab-flujo', 'panel-flujo', 'flujo-resultado'] }
+const ORDEN_PESTANAS = Object.keys(PESTANAS)
 function irA(cual) {
   for (const [k, [tab, panel, salida]] of Object.entries(PESTANAS)) {
     const activa = k === cual
@@ -1115,7 +1500,8 @@ for (const [k, [tab]] of Object.entries(PESTANAS)) {
   $(tab).addEventListener('click', () => irA(k))
   $(tab).addEventListener('keydown', (ev) => {
     if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return
-    const otra = k === 'uno' ? 'activos' : 'uno'
+    const n = ORDEN_PESTANAS.length
+    const otra = ORDEN_PESTANAS[(ORDEN_PESTANAS.indexOf(k) + (ev.key === 'ArrowRight' ? 1 : n - 1)) % n]
     irA(otra)
     $(PESTANAS[otra][0]).focus()
   })
@@ -1124,6 +1510,8 @@ for (const [k, [tab]] of Object.entries(PESTANAS)) {
 $('ver-activos').addEventListener('click', verActivos)
 for (const id of ['act-just', 'act-filtro']) $(id).addEventListener('change', pintarActivos)
 $('act-buscar').addEventListener('input', pintarActivos)
+$('ver-flujo').addEventListener('click', verFlujo)
+for (const r of document.querySelectorAll('input[name=flujo-lectura]')) r.addEventListener('change', () => { if (flujo.datos) pintarFlujo() })
 
 $('formulario').addEventListener('submit', consultar)
 $('clave').value = leerClave()
