@@ -113,6 +113,8 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const p = await problemas(page)
   verificar(p.length === 0, `sin desbordes de página ${JSON.stringify(p)}`)
   verificar(errores.length === 0, `0 errores JS (${errores.length}) ${errores.join(' | ')}`)
+  // La tabla periodo a periodo va plegada: se abre para descargar el CSV.
+  await page.locator('details.amortizacion > summary').first().click()
   const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar CSV' }).first().click()])
   const bytes = readFileSync(await descarga.path())
   const conBom = bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
@@ -210,6 +212,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const errores = []
   page.on('pageerror', (e) => errores.push(String(e)))
   await page.goto(`${base}?demo=1`)
+  await page.getByRole('tab', { name: 'Contratos activos' }).click()
   await page.locator('#ver-activos').click()
   await page.locator('#act-resultado tbody tr').first().waitFor()
   verificar((await page.locator('#act-resultado tbody tr').count()) === 3, 'activos: 3 contratos de ejemplo')
@@ -221,7 +224,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.fill('#act-buscar', '')
   await page.locator('#act-resultado tbody tr').first().getByRole('button', { name: 'Ver' }).click()
   await page.locator('#resultado table').first().waitFor()
-  verificar(true, 'activos: «Ver» abre el detalle del contrato')
+  verificar(await page.locator('#act-resultado').isHidden() && (await page.getByRole('tab', { name: 'Un contrato' }).getAttribute('aria-selected')) === 'true', 'activos: «Ver» pasa a la pestaña «Un contrato» y abre el detalle')
   const p = await problemas(page)
   verificar(p.length === 0, `activos: sin desbordes de página ${JSON.stringify(p)}`)
   verificar(errores.length === 0, `activos: 0 errores JS (${errores.length})`)
