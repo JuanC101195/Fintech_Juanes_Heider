@@ -111,6 +111,21 @@
       <div><button type="submit" id="consultar">Consultar</button></div>
     </form>
 
+    <section class="tarjeta" id="activos" aria-labelledby="t-activos">
+      <h2 id="t-activos">Contratos activos con tasa fija</h2>
+      <p class="ayuda">Todas las motos que hoy están en la tabla de motos activas, corridas por el motor con la tasa fija de 88,44 % EA desde el desembolso, para ver cómo se comportan a la fecha.</p>
+      <div class="barra">
+        <button type="button" id="ver-activos">Ver contratos activos</button>
+        <label for="act-just" class="solo-lectores">Justificaciones</label>
+        <select id="act-just" disabled><option value="fija_con_justificaciones">Con justificaciones</option><option value="fija_sin_justificaciones">Sin justificaciones</option></select>
+        <label for="act-filtro" class="solo-lectores">Filtrar</label>
+        <select id="act-filtro" disabled><option value="todos">Todos</option><option value="mora">Con 2 o más cuotas vencidas</option><option value="marca">Marcados para recuperar</option><option value="aldia">Al día (menos de 1 cuota vencida)</option></select>
+        <label for="act-buscar" class="solo-lectores">Buscar contrato</label>
+        <input type="search" id="act-buscar" placeholder="Buscar contrato" inputmode="numeric" disabled>
+      </div>
+      <div id="act-resultado"></div>
+    </section>
+
     <p id="estado" role="status" aria-live="polite"></p>
     <div id="resultado"></div>
 
@@ -851,6 +866,137 @@ async function consultar(ev) {
     boton.disabled = false
   }
 }
+
+
+// ---------- contratos activos con tasa fija ----------
+const act = { contratos: [], orden: 'contrato', desc: false }
+const cvFinal = (c, k) => Number(c.corridas[k]?.simCuotasVencidasFinal ?? 0)
+const deudaSim = (r) => (r.simSaldoFinal ?? 0) + (r.simPendientes ?? 0)
+
+function resumenActivos(lista, k) {
+  const t = { n: lista.length, inversion: 0, real: 0, sim: 0, saldo: 0, pend: 0, mora: 0, marca: 0 }
+  for (const c of lista) {
+    const r = c.corridas[k]
+    if (!r) continue
+    t.inversion += c.inversion ?? 0
+    t.real += c.realPagado ?? 0
+    t.sim += r.simPagado ?? 0
+    t.saldo += r.simSaldoFinal ?? 0
+    t.pend += r.simPendientes ?? 0
+    if (cvFinal(c, k) >= 2) t.mora += 1
+    if (r.simMarcaRecuperacion) t.marca += 1
+  }
+  return t
+}
+
+function filtrarActivos(k) {
+  const filtro = $('act-filtro').value
+  const q = $('act-buscar').value.trim().replace(/^0+/, '')
+  return act.contratos.filter((c) => {
+    if (!c.corridas[k]) return false
+    if (q && !String(c.contrato).includes(q)) return false
+    if (filtro === 'mora') return cvFinal(c, k) >= 2
+    if (filtro === 'marca') return c.corridas[k].simMarcaRecuperacion === true
+    if (filtro === 'aldia') return cvFinal(c, k) < 1
+    return true
+  })
+}
+
+// [id, rotulo, valor para ordenar, texto, alineado a la izquierda]
+const COLS_ACTIVOS = [
+  ['contrato', 'Contrato', (c) => Number(c.contrato), (c) => c.contrato, true],
+  ['inicio', 'Inicio', (c) => c.fechaInicio, (c) => fechaCorta(c.fechaInicio), true],
+  ['periodos', 'Periodos', (c, k) => c.corridas[k].simPeriodos ?? 0, (c, k) => `${c.corridas[k].simPeriodos ?? '—'} / ${c.cuotas ?? '—'}`],
+  ['inversion', 'Inversión', (c) => c.inversion ?? 0, (c) => cop(c.inversion)],
+  ['real', 'Pagado real', (c) => c.realPagado ?? 0, (c) => cop(c.realPagado)],
+  ['sim', 'Pagado motor', (c, k) => c.corridas[k].simPagado ?? 0, (c, k) => cop(c.corridas[k].simPagado)],
+  ['saldo', 'Saldo capital', (c, k) => c.corridas[k].simSaldoFinal ?? 0, (c, k) => cop(c.corridas[k].simSaldoFinal)],
+  ['pend', 'Pendientes', (c, k) => c.corridas[k].simPendientes ?? 0, (c, k) => cop(c.corridas[k].simPendientes)],
+  ['deuda', 'Deuda total', (c, k) => deudaSim(c.corridas[k]), (c, k) => cop(deudaSim(c.corridas[k]))],
+  ['cv', 'Cuotas vencidas', (c, k) => cvFinal(c, k), (c, k) => dec(cvFinal(c, k))],
+  ['marca', 'Marca', (c, k) => (c.corridas[k].simMarcaRecuperacion ? 1 : 0), (c, k) => (c.corridas[k].simMarcaRecuperacion ? 'Sí' : 'No')],
+]
+
+function pintarActivos() {
+  const k = $('act-just').value
+  const lista = filtrarActivos(k)
+  const col = COLS_ACTIVOS.find((x) => x[0] === act.orden) || COLS_ACTIVOS[0]
+  lista.sort((a, b) => {
+    const va = col[2](a, k), vb = col[2](b, k)
+    const d = va < vb ? -1 : va > vb ? 1 : 0
+    return act.desc ? -d : d
+  })
+  const t = resumenActivos(lista, k)
+  const dl = el('dl', { class: 'datos' },
+    dato('Contratos', `${agrupar(t.n)} de ${agrupar(act.contratos.length)}`),
+    dato('Inversión', cop(t.inversion)),
+    dato('Pagado real', cop(t.real)),
+    dato('Pagado por el motor', cop(t.sim)),
+    dato('Saldo de capital', cop(t.saldo)),
+    dato('Pendientes (mora, cobranza, interés, servicios)', cop(t.pend)),
+    dato('Con 2 o más cuotas vencidas', agrupar(t.mora)),
+    dato('Marcados para recuperar', agrupar(t.marca)))
+  const cab = el('tr', {}, ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
+    const activo = act.orden === id
+    const b = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ordenar por ${rot}` }, rot + (activo ? (act.desc ? ' ▼' : ' ▲') : ''))
+    b.style.cssText = 'padding:2px 6px;font-size:12px;border:0;font-weight:700'
+    b.addEventListener('click', () => { act.desc = act.orden === id ? !act.desc : false; act.orden = id; pintarActivos() })
+    return el('th', { class: izq ? 'izq' : '', scope: 'col', 'aria-sort': activo ? (act.desc ? 'descending' : 'ascending') : 'none' }, b)
+  }), el('th', { scope: 'col' }, 'Detalle'))
+  const filas = lista.map((c) => {
+    const ver = el('button', { type: 'button', class: 'secundario' }, 'Ver')
+    ver.style.cssText = 'padding:2px 10px;font-size:13px'
+    ver.addEventListener('click', () => { $('numero').value = c.contrato; consultar() })
+    const r = c.corridas[k]
+    return el('tr', { class: r.simMarcaRecuperacion ? 'listo' : cvFinal(c, k) >= 2 ? 'sinpago' : '' },
+      ...COLS_ACTIVOS.map(([, , , txt, izq]) => el('td', { class: izq ? 'izq' : '' }, txt(c, k))), el('td', {}, ver))
+  })
+  const tabla = el('table', {}, el('caption', {}, `Contratos activos — ${rotuloCorrida(k)}`), el('thead', {}, cab), el('tbody', {}, filas))
+  $('act-resultado').replaceChildren(dl,
+    el('p', { class: 'ayuda' }, 'Fondo rojo: 2 o más cuotas vencidas. Fondo verde: marcado para recuperar. Los valores del motor son la simulación a tasa fija desde el desembolso, no lo que cobró la empresa.'),
+    el('div', { class: 'tabla-scroll' }, tabla))
+}
+
+async function verActivos() {
+  if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
+  const boton = $('ver-activos')
+  boton.disabled = true
+  mostrarEstado('Consultando los contratos activos…')
+  try {
+    let datos
+    if (MODO_DEMO) datos = { contratos: crearDemoActivos() }
+    else {
+      guardarClave($('clave').value)
+      const url = new URL(urlApi)
+      url.searchParams.set('activos', '1')
+      const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
+      if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+      datos = await r.json()
+    }
+    act.contratos = datos.contratos || []
+    for (const id of ['act-just', 'act-filtro', 'act-buscar']) $(id).disabled = false
+    mostrarEstado('')
+    pintarActivos()
+  } catch {
+    mostrarEstado('No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
+  } finally {
+    boton.disabled = false
+  }
+}
+
+function crearDemoActivos() {
+  const un = (n, ini, vencidas, marca, pagado) => ({
+    id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado,
+    corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => ({ ...o, [k]: {
+      simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * 180000, simCuotasVencidasFinal: vencidas,
+      simMarcaRecuperacion: marca, simPeriodos: 12 } }), {}),
+  })
+  return [un(9001, '2026-07-21', 0, false, 1100000), un(9002, '2026-08-04', 2.4, true, 600000), un(9003, '2026-09-01', 1.1, false, 450000)]
+}
+
+$('ver-activos').addEventListener('click', verActivos)
+for (const id of ['act-just', 'act-filtro']) $(id).addEventListener('change', pintarActivos)
+$('act-buscar').addEventListener('input', pintarActivos)
 
 $('formulario').addEventListener('submit', consultar)
 $('clave').value = leerClave()
