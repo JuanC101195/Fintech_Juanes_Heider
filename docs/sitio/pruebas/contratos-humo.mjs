@@ -23,7 +23,7 @@ function periodo(n, pago, extra = {}) {
     periodo: n, fechaVencimiento: `2025-02-${String(n).padStart(2, '0')}`, instruccion: 'x', valorReal: pago, diasAtraso: 0, justificado: false,
     estado: pago ? 'al_dia' : 'sin_pago', cuotasVencidas: 0, saldoInicial: 1000000 - n * 80000, interesCorriente: 10000, interesMora: 0,
     cobranza: 0, servicios: 5000, cuotaFinanciera: 100000, pagoCapital: pago ? 85000 : 0, pagoInteres: 10000, pagoMora: 0, pagoCobranza: 0,
-    pagoServicios: 5000, pagoTotalCliente: pago, capitalVencido: 0, saldoFinal: 1000000 - (n + 1) * 80000, listoRecuperacion: false, tasaEA: 0.25, usuraEA: 0.26, ...extra,
+    pagoServicios: 5000, pagoFondo: 3500, pagoSeguro: 500, pagoAsistencia: 1000, saldoEnMora: n * 1000, cxcMora: n * 100, pagoTotalCliente: pago, capitalVencido: 0, saldoFinal: 1000000 - (n + 1) * 80000, listoRecuperacion: false, tasaEA: 0.25, usuraEA: 0.26, ...extra,
   }
 }
 const DATOS = (() => {
@@ -132,10 +132,18 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     const X = window.XLSX
     const libro = X.read(datos, { type: 'base64' })
     const filas = (i) => X.utils.sheet_to_json(libro.Sheets[libro.SheetNames[i]], { header: 1 })
-    return { hojas: libro.SheetNames, cab1: filas(0)[0], cab2: filas(1)[0], filas1: filas(0).length, filas3: filas(2).length, tasa3: filas(2)[1][7] }
+    const f1 = filas(0), c1 = f1[0]
+    const col = (n) => c1.indexOf(n)
+    return { hojas: libro.SheetNames, cab1: c1, cab2: filas(1)[0], filas1: f1.length, filas3: filas(2).length, tasa3: filas(2)[1][7],
+      tres: [f1[1][col('Fondo de garantías')], f1[1][col('Seguro')], f1[1][col('Asistencia')]], mora: [f1[2][col('Saldo en mora')], f1[2][col('Mora acumulada por cobrar')]],
+      totalTres: [f1.at(-1)[col('Fondo de garantías')], f1.at(-1)[col('Seguro')], f1.at(-1)[col('Asistencia')]] }
   }, b64)
   verificar(x.hojas.length === 3 && /histórica/.test(x.hojas[0]) && /real/.test(x.hojas[1]) && /fija/.test(x.hojas[2]), `Excel (${excel.suggestedFilename()}): 3 hojas ${JSON.stringify(x.hojas)}`)
   verificar(x.cab1.at(-1) === 'Lógica aplicada' && !x.cab2.includes('Lógica aplicada'), 'la lógica va al final de las hojas del motor y no en la del sistema actual')
+  const iServ = x.cab1.indexOf('Servicios')
+  verificar(x.cab1.slice(iServ, iServ + 4).join('|') === 'Servicios|Fondo de garantías|Seguro|Asistencia' && x.cab1.includes('Saldo en mora') && x.cab1.includes('Mora acumulada por cobrar') && !x.cab2.includes('Saldo en mora'),
+    `Excel: columnas de servicios abiertas en fondo, seguro y asistencia, y saldo en mora (${x.cab1.join(' | ')})`)
+  verificar(x.tres.join() === '3500,500,1000' && x.totalTres[0] > 0 && x.totalTres[0] === 7 * x.totalTres[1] && x.totalTres[2] === 2 * x.totalTres[1] && x.mora.every((v) => typeof v === 'number'), `Excel: valores de las columnas nuevas ${JSON.stringify([x.tres, x.mora, x.totalTres])}`)
   verificar(x.filas1 > 2 && x.filas3 > 2 && x.tasa3 === 0.8844, `hojas del motor con datos y fila de totales (${x.filas1} y ${x.filas3} filas; tasa hoja 3 = ${x.tasa3})`)
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()

@@ -96,6 +96,11 @@ function periodo(p) {
     tasaEA: num(p.tasa_ea),
     usuraEA: num(p.usura_ea),
     logica: p.logica ?? null,
+    pagoFondo: num(p.pago_fondo),
+    pagoSeguro: num(p.pago_seguro),
+    pagoAsistencia: num(p.pago_asistencia),
+    saldoEnMora: num(p.saldo_en_mora),
+    cxcMora: num(p.cxc_mora),
   }
 }
 
@@ -105,9 +110,11 @@ const COLUMNAS_PERIODO =
   'tasa_ea, cuota_financiera, pago_capital, pago_interes, pago_mora, pago_cobranza, pago_servicios, capital_vencido'
 const PIE_PERIODO = ' FROM periodo WHERE id = ANY($1::text[]) ORDER BY id, corrida, periodo'
 
-// `usura_ea` y `logica` son columnas nuevas: si la base aún no las tiene (código 42703, columna inexistente) se consulta sin ellas.
+// `usura_ea`, `logica` y las del pago por servicio / saldo en mora son columnas nuevas: si la base aún no las tiene
+// (código 42703, columna inexistente) se consulta sin ellas.
 async function consultarPeriodos(consultar, ids) {
-  for (const extra of [', usura_ea, logica', ', usura_ea', '']) {
+  const nuevas = ', pago_fondo, pago_seguro, pago_asistencia, saldo_en_mora, cxc_mora'
+  for (const extra of [', usura_ea, logica' + nuevas, ', usura_ea, logica', ', usura_ea', '']) {
     try {
       return await consultar('SELECT ' + COLUMNAS_PERIODO + extra + PIE_PERIODO, [ids])
     } catch (e) {
