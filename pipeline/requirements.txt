@@ -1,0 +1,3 @@
+# Python 3.12 (el que ya tiene estas librerias en el equipo de Juan)
+pymysql>=1.1        # solo backtest.py (lectura de MySQL de las sedes)
+psycopg[binary]>=3.2 # cargar.py y los tests (PostgreSQL)
