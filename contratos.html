@@ -360,11 +360,22 @@ const COLUMNAS = [
   ['Mora', (p) => cop(p.interesMora), '', (p) => p.interesMora],
   ['Cobranza', (p) => cop(p.cobranza), '', (p) => p.cobranza],
   ['Servicios', (p) => cop(p.servicios), '', (p) => p.servicios],
+  ['Fondo de garantías', (p) => cop(p.pagoFondo), '', (p) => p.pagoFondo],
+  ['Seguro', (p) => cop(p.pagoSeguro), '', (p) => p.pagoSeguro],
+  ['Asistencia', (p) => cop(p.pagoAsistencia), '', (p) => p.pagoAsistencia],
   ['Capital pagado', (p) => cop(p.pagoCapital), '', (p) => p.pagoCapital],
   ['Pago total', (p) => cop(p.pagoTotalCliente), '', (p) => p.pagoTotalCliente],
   ['Saldo final', (p) => cop(p.saldoFinal), '', (p) => p.saldoFinal],
+  ['Saldo en mora', (p) => cop(p.saldoEnMora), '', (p) => p.saldoEnMora],
+  ['Mora acumulada por cobrar', (p) => cop(p.cxcMora), '', (p) => p.cxcMora],
   ['Lógica aplicada', (p) => (p.logica ? p.logica : '—'), 'izq logica', (p) => p.logica ?? ''],
 ]
+
+// Suma de una columna; null si ningún periodo trae el dato (respuestas viejas, sin los campos nuevos).
+function sumaDe(periodos, crudo) {
+  const v = periodos.map((p) => crudo(p)).filter((x) => x !== null && x !== undefined && x !== '')
+  return v.length ? v.reduce((t, x) => t + (Number(x) || 0), 0) : null
+}
 
 function claseFila(p) {
   if (p.listoRecuperacion) return 'listo'
@@ -388,10 +399,10 @@ function tablaAmortizacion(periodos, leyendaCaption) {
     cuerpo.append(tr)
   }
   const cab = el('tr', {}, COLUMNAS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
-  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Capital pagado', 'Pago total']
+  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
   const pie = el('tfoot', {}, el('tr', {}, COLUMNAS.map(([n, , alin, crudo], i) =>
     i === 0 ? el('th', { scope: 'row', class: 'izq' }, 'Total')
-      : SUMABLES.includes(n) ? el('td', {}, cop(periodos.reduce((t, p) => t + (Number(crudo(p)) || 0), 0)))
+      : SUMABLES.includes(n) ? el('td', {}, sumaDe(periodos, crudo) === null ? '—' : cop(sumaDe(periodos, crudo)))
         : el('td', { class: alin }))))
   const tabla = el('table', {}, el('caption', {}, leyendaCaption), el('thead', {}, cab), cuerpo, pie)
   // Las celdas de periodo son th de fila: se ven como celdas normales.
@@ -625,9 +636,10 @@ function cargarXLSX() {
 const FMT_COP = '"$ "#,##0;-"$ "#,##0;"$ "0'
 const FORMATO_COLUMNA = {
   'Pago real': FMT_COP, 'Saldo inicial': FMT_COP, 'Interés': FMT_COP, 'Mora': FMT_COP, 'Cobranza': FMT_COP, 'Servicios': FMT_COP,
+  'Fondo de garantías': FMT_COP, 'Seguro': FMT_COP, 'Asistencia': FMT_COP, 'Saldo en mora': FMT_COP, 'Mora acumulada por cobrar': FMT_COP,
   'Capital pagado': FMT_COP, 'Pago total': FMT_COP, 'Saldo final': FMT_COP, 'Tasa EA': '0.00%', 'Tasa mensual': '0.000%', 'Cuotas vencidas': '0.##',
 }
-const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Capital pagado', 'Pago total']
+const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
 
 function hojaMotor(XLSX, periodos) {
   if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta corrida no está disponible para este contrato.']])
@@ -636,8 +648,8 @@ function hojaMotor(XLSX, periodos) {
     const v = crudo(p)
     return n === 'Vence' ? fechaCorta(v) : v === null || v === undefined ? '' : v
   }))
-  const pie = COLUMNAS.map(([n], i) => (i === 0 ? 'Total' : SUMABLES.includes(n) ? periodos.reduce((t, p) => t + (Number(COLUMNAS[i][3](p)) || 0), 0) : ''))
-  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 16, 16, 16, 120])
+  const pie = COLUMNAS.map(([n], i) => (i === 0 ? 'Total' : SUMABLES.includes(n) ? (sumaDe(periodos, COLUMNAS[i][3]) ?? '') : ''))
+  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 18, 14, 14, 16, 16, 16, 16, 26, 120])
 }
 
 function hojaReal(XLSX, ep) {
@@ -928,7 +940,7 @@ function tablaCompleta(ep, c, clave) {
   const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
   boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
   cont.append(
-    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno.`)),
+    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), el numerador del cociente de la marca; «Mora acumulada por cobrar» es solo la mora.`)),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
@@ -978,6 +990,8 @@ function crearDemo() {
         diasAtraso: sinPago ? 0 : atrasoSem * 7, justificado: just, estado: listo ? 'listo_recuperacion' : sinPago ? (just ? 'justificado' : 'sin_pago') : vencidas > 0 ? 'en_mora' : 'al_dia',
         cuotasVencidas: vencidas, saldoInicial: saldo, interesCorriente: interes, interesMora: mora, cobranza, servicios: SERVICIOS,
         cuotaFinanciera: CUOTA, pagoCapital: pCap, pagoInteres: pInt, pagoMora: pMora, pagoCobranza: pCob, pagoServicios: pServ,
+        pagoFondo: Math.round(pServ * 0.7), pagoSeguro: Math.round(pServ * 0.1), pagoAsistencia: pServ - Math.round(pServ * 0.7) - Math.round(pServ * 0.1),
+        saldoEnMora: vencidas * CAPITAL + (mora - pMora) + (cobranza - pCob), cxcMora: mora - pMora,
         pagoTotalCliente: pago, capitalVencido: vencidas * CAPITAL, saldoFinal: saldo - pCap, listoRecuperacion: listo, tasaEA: tasa, usuraEA: usuraDe(n),
         logica: sinPago ? 'Sin pago en la semana: el motor causa interés, servicios y mora sobre la cuota y esta queda vencida.' : 'Pago a tiempo: amortización normal (demostración).',
       })
