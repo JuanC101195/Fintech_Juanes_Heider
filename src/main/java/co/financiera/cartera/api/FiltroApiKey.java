@@ -56,7 +56,19 @@ public class FiltroApiKey extends OncePerRequestFilter {
     private final List<Clave> claves;
 
     public FiltroApiKey(String configuracion) {
+        this(configuracion, false);
+    }
+
+    /**
+     * @param obligatoria si es {@code true} (perfil {@code prod}) y no hay ninguna clave configurada, falla al
+     *                    arrancar en vez de dejar el API abierto.
+     */
+    public FiltroApiKey(String configuracion, boolean obligatoria) {
         this.claves = interpretar(configuracion);
+        if (obligatoria && claves.isEmpty()) {
+            throw new IllegalStateException("Perfil prod: CARTERA_API_CLAVES (cartera.api.claves) es obligatoria y "
+                    + "está vacía. Defina al menos una clave con formato 'sha256hex:ROL' antes de activar el perfil prod");
+        }
         if (!claves.isEmpty()) {
             LOG.info("Autenticación por X-API-Key activa con {} clave(s)", claves.size());
         }
