@@ -380,6 +380,96 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await contexto.close()
 }
 
+// ---- 3) Dos sedes: el selector se aplica a las tres pestañas, viaja como ?sede= y se recuerda ----
+for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280, 900]]) {
+  console.log(`Sedes ${nombre}`)
+  const contexto = await navegador.newContext({ viewport: { width: ancho, height: alto } })
+  const visto = []
+  let demoActivos
+  let demoFlujo
+  await contexto.route(/fn-motor-cartera-respuestas\.azurewebsites\.net/, (r) => {
+    const req = r.request()
+    const url = new URL(req.url())
+    const cabeceras = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'x-clave' }
+    if (req.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: cabeceras })
+    const sede = url.searchParams.get('sede')
+    visto.push({ modo: ['sedes', 'activos', 'flujo', 'numero'].find((k) => url.searchParams.has(k)), sede })
+    const json = (cuerpo, status = 200) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(cuerpo), headers: cabeceras })
+    if (url.searchParams.has('sedes')) return json({ sedes: ['CARTAGENA', 'MONTERIA'], todas: ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS'], defecto: 'CARTAGENA' })
+    if (sede !== 'CARTAGENA' && sede !== 'MONTERIA') return json({ error: 'sede_invalida' }, 400)
+    if (url.searchParams.has('activos')) return json({ sede, contratos: sede === 'CARTAGENA' ? demoActivos : demoActivos.slice(0, 1) })
+    if (url.searchParams.has('flujo')) return json({ sede, ...demoFlujo })
+    // Mismo número en las dos sedes, contratos distintos.
+    return json({ sede, numero: '123', episodios: [{ ...DATOS.episodios[0], id: `${sede}-123-1` }] })
+  })
+  await contexto.route((url) => !url.protocol.startsWith('file') && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
+  const page = await contexto.newPage()
+  const errores = []
+  page.on('pageerror', (e) => errores.push(String(e)))
+  page.on('console', (m) => m.type() === 'error' && !/status of 400/.test(m.text()) && errores.push(m.text()))
+  await page.goto(base)
+  demoActivos = await page.evaluate(() => crearDemoActivos())
+  demoFlujo = await page.evaluate(() => crearDemoFlujo())
+  verificar((await page.getByLabel('Sede').inputValue()) === 'CARTAGENA', 'la sede por defecto es Cartagena')
+  await page.getByLabel('Clave de consulta').fill('buena')
+  await page.getByLabel('Clave de consulta').blur()
+  await page.waitForFunction(() => document.getElementById('sede').options.length === 2)
+  const opciones = await page.locator('#sede option').allInnerTexts()
+  verificar(opciones.join() === 'Cartagena,Montería', `solo se ofrecen las sedes que la API informa (${opciones.join()})`)
+  // Un contrato
+  await page.getByLabel('Número de contrato').fill('123')
+  await page.getByLabel('Número de contrato').press('Enter')
+  await page.getByRole('heading', { name: /Contrato CARTAGENA-123-1/ }).waitFor()
+  verificar(visto.at(-1).modo === 'numero' && visto.at(-1).sede === 'CARTAGENA', 'el contrato se pide con ?sede=CARTAGENA')
+  // Cambiar de sede limpia lo que había en pantalla y recuerda la elección
+  await page.getByLabel('Sede').selectOption('MONTERIA')
+  verificar((await page.getByRole('heading', { name: /Contrato CARTAGENA-123-1/ }).count()) === 0, 'al cambiar de sede se limpia el resultado de la otra')
+  verificar((await page.evaluate(() => localStorage.getItem('sede-consulta'))) === 'MONTERIA', 'la sede se recuerda en localStorage')
+  await page.getByLabel('Número de contrato').press('Enter')
+  await page.getByRole('heading', { name: /Contrato MONTERIA-123-1/ }).waitFor()
+  verificar(visto.at(-1).sede === 'MONTERIA', 'el mismo número en otra sede se pide con ?sede=MONTERIA y trae otro contrato')
+  // Activos
+  await page.getByRole('tab', { name: 'Contratos activos' }).click()
+  await page.locator('#ver-activos').click()
+  await page.locator('table.activos').waitFor()
+  verificar(visto.at(-1).modo === 'activos' && visto.at(-1).sede === 'MONTERIA' && (await page.locator('table.activos tbody tr').count()) === 1, 'activos: ?sede=MONTERIA y solo los de esa sede (1 fila)')
+  // Flujo
+  await page.getByRole('tab', { name: 'Recaudo de la cartera activa' }).click()
+  await page.locator('#ver-flujo').click()
+  await page.locator('#flujo-tabla table.anual').waitFor()
+  verificar(visto.at(-1).modo === 'flujo' && visto.at(-1).sede === 'MONTERIA', 'recaudo: ?sede=MONTERIA')
+  // Cambiar a Cartagena desde otra pestaña: activos se vuelve a pedir y trae las 3 filas
+  await page.getByLabel('Sede').selectOption('CARTAGENA')
+  verificar((await page.locator('table.activos').count()) === 0, 'cambiar de sede limpia también activos y recaudo')
+  await page.getByRole('tab', { name: 'Contratos activos' }).click()
+  await page.locator('#ver-activos').click()
+  await page.locator('table.activos').waitFor()
+  verificar((await page.locator('table.activos tbody tr').count()) === 3, 'activos de Cartagena: 3 filas')
+  const p = await problemas(page)
+  verificar(p.length === 0, `sin desbordes de página ${JSON.stringify(p)}`)
+  await page.screenshot({ path: path.join(salida, `contratos-sedes-${nombre}.png`), fullPage: true })
+  // Recargar: se acuerda de la última sede elegida
+  await page.getByLabel('Sede').selectOption('MONTERIA')
+  await page.reload()
+  verificar((await page.getByLabel('Sede').inputValue()) === 'MONTERIA', 'tras recargar, la sede recordada sigue seleccionada')
+  verificar(errores.length === 0, `0 errores JS (${errores.length}) ${errores.join(' | ')}`)
+  await contexto.close()
+}
+
+// Sin datos de sedes (la API informa una lista vacía): se muestran todas con aviso.
+{
+  console.log('Sedes sin datos')
+  const contexto = await navegador.newContext({ viewport: { width: 360, height: 800 } })
+  await contexto.route(/fn-motor-cartera-respuestas\.azurewebsites\.net/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sedes: [] }), headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'x-clave' } }))
+  const page = await contexto.newPage()
+  await page.goto(base)
+  await page.getByLabel('Clave de consulta').fill('buena')
+  await page.getByLabel('Clave de consulta').blur()
+  await page.getByText(/sin datos/).waitFor()
+  verificar((await page.locator('#sede option').count()) === 4, 'sedes vacías: se muestran las 4 con aviso «sin datos»')
+  await contexto.close()
+}
+
 await navegador.close()
 console.log(fallas ? `\n${fallas} FALLAS` : '\nTodo en orden')
 console.log(`Capturas en ${salida}`)

@@ -376,3 +376,14 @@ Ejecuta varios escenarios en una sola petición. El cuerpo es una **lista** de `
 Rendimiento medido (`LoteApiTest.medirUnLoteDe500`, con el lote de 500 créditos semanales de 104 cuotas y 3 instrucciones cada uno, con asientos, vía MockMvc en el PC de desarrollo y tras calentar la JVM): **6727 ms por 500 créditos, 13,45 ms/crédito** (incluye serializar la petición y la respuesta completa). Es una medida de referencia de una sola corrida, no un compromiso de latencia.
 
 `LoteApiTest` corre los 13 casos del Excel por lote y compara cada línea, campo a campo, con la respuesta de `/escenarios/ejecutar`.
+
+## Sede en `/api/contrato` (P7)
+
+El número de contrato se repite entre sedes: la llave es `(sede, contrato)`. Sedes permitidas (constante `SEDES` en `nube/src/contrato.js`): `CARTAGENA`, `MONTERIA`, `SINCELEJO`, `BICIMOTOS`.
+
+- `?sede=` es opcional en los tres modos (`numero`, `activos=1`, `flujo=1`); no distingue mayúsculas. Un valor no permitido (incluida la cadena vacía) responde `400 {"error":"sede_invalida"}`.
+- Con `sede`, todas las consultas filtran por ella y los cruces entre tablas la incluyen (`activas_fin_mes`, `periodo`, `pago_real`, `resultado`, `proyeccion`, `carta_fin_mes`, `corte_activos`). La respuesta añade `"sede"` y la caché la lleva en su llave.
+- Sin `sede` la consulta y la respuesta son idénticas a las de antes (sin filtro y sin el campo `sede`). La página siempre envía `?sede=`; quien consuma la API directamente y quiera una sola sede debe enviarla, porque tras la migración `db/003_sede.sql` sin ella se mezclarían sedes.
+- `?sedes=1` devuelve `{ "sedes": [...con datos], "todas": [...], "defecto": "CARTAGENA" }` (`SELECT DISTINCT sede FROM contrato`); la página lo usa para ofrecer solo las sedes con datos.
+- Compatibilidad antes de la migración 003: si la columna `sede` no existe (error `42703`), la consulta se repite sin filtro y se asume CARTAGENA; para cualquier otra sede la respuesta es vacía (`404` en `numero`, lista vacía en `activos`, flujo vacío en `flujo`). `?sedes=1` devuelve solo `CARTAGENA`.
+- Pendiente: la paginación del lado servidor (`pagina`/`tamano`) existe en la API pero la pestaña «Contratos activos» sigue trayendo la lista completa, porque ordena, filtra, busca y resume sobre todos los contratos en el navegador; paginar allí exige mover esas operaciones al servidor.
