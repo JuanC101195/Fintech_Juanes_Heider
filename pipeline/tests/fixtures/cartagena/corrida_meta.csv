@@ -1,0 +1,2 @@
+run_id,sede,fecha_corte,version_motor,git_sha,inicio,fin,estado
+run-test-1,CARTAGENA,2026-11-03,0.0.1-SNAPSHOT,abc123456789,2026-11-06T10:00:00+00:00,2026-11-06T10:05:00+00:00,terminada

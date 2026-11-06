@@ -1,0 +1,3 @@
+sede,run_id,id,contrato,placa,cohorte,estado_real,fecha_inicio,fecha_fin,cuotas,cuota_real_miles,inversion,inversion_imputada,linea_usura,tasa_inicial_ea,pagos_reales,multas_reales_miles,dias_justificados,valor_total_miles,saldo_real_miles
+MONTERIA,run-test-1,MONTERIA|1428|2024-01-02,1428,CCC333,PRIMERO,VIGENTE,2024-01-02,,52,250,9000000,False,MICROCREDITO,0.2,2,0,0,13000,12000
+MONTERIA,run-test-1,MONTERIA|1600|2024-01-02,1600,DDD444,PRIMERO,NORMAL,2024-01-02,2024-12-31,52,250,9000000,False,MICROCREDITO,0.2,2,0,0,,
