@@ -131,3 +131,40 @@ az webapp stop -g rg-motor-cartera -n motor-cartera-api-jc     # detener
 az webapp delete -g rg-motor-cartera -n motor-cartera-api-jc   # borrar
 az appservice plan delete -g rg-motor-cartera -n plan-motor-cartera-f1
 ```
+
+## Base de datos del backtesting
+
+PostgreSQL Flexible Server `pg-motor-cartera-jc` (grupo `rg-motor-cartera`), base `backtesting`. El esquema versionado está en `db/001_esquema.sql` (tablas y vistas) y `db/002_indices.sql` (índices); ambos son idempotentes. Las credenciales no van en el repo: se leen de variables de entorno (`PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`).
+
+Aplicar el esquema en una base nueva:
+
+```bash
+psql "host=$PGHOST port=$PGPORT user=$PGUSER dbname=backtesting sslmode=require" -f db/001_esquema.sql -f db/002_indices.sql
+```
+
+Backup:
+
+```bash
+pg_dump "host=$PGHOST port=$PGPORT user=$PGUSER dbname=backtesting sslmode=require" -Fc -f backtesting_$(date +%F).dump
+```
+
+Restauración (en una base nueva):
+
+```bash
+createdb -h $PGHOST -U $PGUSER backtesting_restaurada
+pg_restore -h $PGHOST -U $PGUSER -d backtesting_restaurada --no-owner backtesting_2026-11-06.dump
+```
+
+Encender y apagar el servidor (apagado no cobra cómputo, pero Azure lo reenciende solo a los 7 días):
+
+```bash
+az postgres flexible-server start -g rg-motor-cartera -n pg-motor-cartera-jc
+az postgres flexible-server stop  -g rg-motor-cartera -n pg-motor-cartera-jc
+```
+
+Firewall por IP: el servidor solo acepta IPs con regla. Para abrir la IP actual y cerrarla al terminar:
+
+```bash
+az postgres flexible-server firewall-rule create -g rg-motor-cartera -n pg-motor-cartera-jc --rule-name mi-ip --start-ip-address <IP> --end-ip-address <IP>
+az postgres flexible-server firewall-rule delete -g rg-motor-cartera -n pg-motor-cartera-jc --rule-name mi-ip --yes
+```
