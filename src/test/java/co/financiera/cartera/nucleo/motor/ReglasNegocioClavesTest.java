@@ -25,6 +25,10 @@ class ReglasNegocioClavesTest {
         if (tipo == Integer.class) {
             return Integer.valueOf(5).equals(actual) ? 6 : 5;
         }
+        if (tipo == int.class) {
+            // El único int es baseDiasAnio (D89), que solo acepta 365 o 360.
+            return Integer.valueOf(365).equals(actual) ? 360 : 365;
+        }
         if (tipo.isEnum()) {
             for (Object constante : tipo.getEnumConstants()) {
                 if (constante != actual) {
@@ -114,6 +118,7 @@ class ReglasNegocioClavesTest {
                 "prorrateoPrimeraCuota", "diasMora", "cobranzaPorPeriodo", "cuotasVencidasParaSuspenderServicios",
                 "redondeoCuotaAlPeso", "sobranteComoCuentaPorPagar", "umbralesCuentanCuotaEnCurso",
                 "seguroTodoRiesgoPorcentajeMensual", "causacionServicios", "umbralCocienteCobranza", "baseMoraCobranza",
-                "comparacionCobranza", "marcaPorCociente", "alcanceProrrateoPrimeraCuota");
+                "comparacionCobranza", "marcaPorCociente", "alcanceProrrateoPrimeraCuota", "cobranzaPorCuotaAtrasada",
+                "baseDiasAnio");
     }
 }

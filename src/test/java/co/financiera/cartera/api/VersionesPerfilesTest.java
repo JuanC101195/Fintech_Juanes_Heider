@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
  */
 class VersionesPerfilesTest {
 
-    private static final String HUELLA_EXCEL = "2b9f665bc1ce29fb58290570cd88a3ff5d2696b663113a01f8e80431cb5b0ec2";
-    private static final String ID_NEGOCIO = "negocio-2026-11-02";
-    private static final String HUELLA_NEGOCIO = "0ef82719d6a61d2587228837b681a5585b4431dfeedbfd5242328cf7e5a477ad";
+    private static final String HUELLA_EXCEL = "dc2dc0bcd8376aa292515c4bd0813651c5fd54ee4db8ae732e449cc02b0efd3a";
+    private static final String ID_NEGOCIO = "negocio-2026-11-06";
+    private static final String HUELLA_NEGOCIO = "fe0d5308f4319f087fc87fb732dbe347c474c6d9fd72263df82f4b528fe3d6c0";
 
     private final PerfilesReglas perfiles = new PerfilesReglas("config/reglas-negocio.properties");
 
@@ -35,7 +35,7 @@ class VersionesPerfilesTest {
         assertThat(negocio.id())
                 .as("¿Cambió config/reglas-negocio.properties? Es una versión nueva: suba NEGOCIO_VIGENTE_DESDE")
                 .isEqualTo(ID_NEGOCIO);
-        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 11, 2));
+        assertThat(negocio.vigenteDesde()).isEqualTo(LocalDate.of(2026, 11, 6));
         assertThat(negocio.reglas()).isSameAs(perfiles.reglas(Perfil.NEGOCIO));
         assertThat(negocio.huella())
                 .as("El contenido de " + ID_NEGOCIO + " cambió sin cambiar el id: suba NEGOCIO_VIGENTE_DESDE y "
@@ -52,14 +52,14 @@ class VersionesPerfilesTest {
         assertThat(repo.porVersion(ID_NEGOCIO)).contains(perfiles.version(Perfil.NEGOCIO));
         assertThat(repo.vigenteEn(LocalDate.of(2026, 10, 1))).isEmpty();
         assertThat(repo.vigenteEn(LocalDate.of(2026, 10, 20))).contains(perfiles.version(Perfil.EXCEL));
-        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 1))).contains(perfiles.version(Perfil.EXCEL));
-        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 2))).contains(perfiles.version(Perfil.NEGOCIO));
+        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 5))).contains(perfiles.version(Perfil.EXCEL));
+        assertThat(repo.vigenteEn(LocalDate.of(2026, 11, 6))).contains(perfiles.version(Perfil.NEGOCIO));
     }
 
     @Test
     void laFechaDeNegocioSeConfiguraYDebeSerPosteriorAlExcel() {
-        PerfilesReglas otra = new PerfilesReglas("config/reglas-negocio.properties", "2026-11-03");
-        assertThat(otra.version(Perfil.NEGOCIO).id()).isEqualTo("negocio-2026-11-03");
+        PerfilesReglas otra = new PerfilesReglas("config/reglas-negocio.properties", "2026-11-07");
+        assertThat(otra.version(Perfil.NEGOCIO).id()).isEqualTo("negocio-2026-11-07");
         assertThat(otra.version(Perfil.NEGOCIO).huella()).isEqualTo(HUELLA_NEGOCIO);
         assertThatThrownBy(() -> new PerfilesReglas("config/reglas-negocio.properties", "2026-10-11"))
                 .isInstanceOf(IllegalArgumentException.class);

@@ -239,6 +239,10 @@ public final class MotorCartera {
 
             // 3. Pago y prelación.
             BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
+            // D88 (temporal, ADR 0009): el cargo por cuota atrasada depende de si el pago del periodo cubre su cuota a
+            // tiempo (con la cuota total ya calculada); si se causa, va primero en la prelación.
+            causado = causador.conCobranzaPorCuotaAtrasada(causado,
+                    new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, false), pago, cuotaTotal);
             BigDecimal recibido = prelacion.recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
             Reparto reparto = prelacion.repartir(recibido, saldoInicial, causado);
             prelacion.actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
@@ -372,7 +376,8 @@ public final class MotorCartera {
          * el número de cuotas hasta saldo cero, NPER = −ln(1 − r·S/C) / ln(1 + r); la última se ajusta.
          */
         private void cambiarTasa(int periodo, BigDecimal nuevaTasaEA, ModalidadCambioTasa modalidad) {
-            s.tasas = Tasas.desdeEA(nuevaTasaEA, p.periodosPorAnio(), p.mesesPorAnio());
+            // D89: la tasa nueva se convierte con la misma base de días del año del crédito (365 en el Excel, 360 en NEGOCIO).
+            s.tasas = Tasas.desdeEA(nuevaTasaEA, p.periodicidad(), escenario.reglas().baseDiasAnio());
             s.saldoPlan = restar(s.saldo, s.capitalVencido);
             if (periodo > s.cuotasVigentes) {
                 // Auditoría 2026-10-23 (H6): después de la última cuota pactada no quedan cuotas por recalcular

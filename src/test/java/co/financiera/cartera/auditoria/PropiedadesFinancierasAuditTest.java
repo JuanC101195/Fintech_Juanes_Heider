@@ -143,7 +143,10 @@ class PropiedadesFinancierasAuditTest {
                 .conComparacionCobranza(ReglasNegocio.ComparacionCobranza.values()[r.nextInt(ReglasNegocio.ComparacionCobranza.values().length)])
                 // Ronda 12 (Diego 2026-11-01): marca por cociente y primera cuota completa prorrateada.
                 .conMarcaPorCociente(r.nextBoolean())
-                .conAlcanceProrrateoPrimeraCuota(ReglasNegocio.AlcanceProrrateo.values()[r.nextInt(ReglasNegocio.AlcanceProrrateo.values().length)]);
+                .conAlcanceProrrateoPrimeraCuota(ReglasNegocio.AlcanceProrrateo.values()[r.nextInt(ReglasNegocio.AlcanceProrrateo.values().length)])
+                // Instrucciones del 2026-11-05 (D88 temporal y D89): cobranza por cuota atrasada y base de días del año.
+                .conCobranzaPorCuotaAtrasada(r.nextBoolean() ? BigDecimal.ZERO : bd(1_000 + r.nextInt(50_000)))
+                .conBaseDiasAnio(r.nextBoolean() ? 365 : 360);
         return x;
     }
 
@@ -308,7 +311,23 @@ class PropiedadesFinancierasAuditTest {
             boolean enCurso = rn.umbralesCuentanCuotaEnCurso() && !rn.cobranzaPorCociente();
             int cuentanComoMaximo = enCurso && puedeAtrasar ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
             int cuentanComoMinimo = enCurso && seguroAtrasa ? prev.cuotasVencidas() + 1 : prev.cuotasVencidas();
-            if (rn.cobranzaPorCociente()) {
+            if (rn.cobranzaPorCuotaAtrasadaActiva()) {
+                // I16 (D88, temporal): el cargo por cuota atrasada reemplaza a la cobranza anterior; una cuota pagada a tiempo
+                // (sin instrucción, PagoContractual sin días o PagoAlDia) nunca lo causa, y un periodo sin pago dentro del
+                // plazo pactado, con cobranza activa, saldo y mora en la semana sin pago, siempre lo causa.
+                boolean aTiempo = !cierreSinPago && (pagoDelPeriodo == null || pagoDelPeriodo instanceof Instruccion.PagoAlDia
+                        || pagoDelPeriodo instanceof Instruccion.PagoContractual pc && pc.diasAtraso() == 0);
+                if (aTiempo && m.cobranzaCausada().signum() > 0) {
+                    violacion("I16 cargo temporal en una cuota pagada a tiempo", id, repro);
+                }
+                boolean sinPagoConMora = pagoDelPeriodo instanceof Instruccion.SinPago sp
+                        && (sp.causaMoraYServicios() || rn.moraAntesDeRecuperacion());
+                if (sinPagoConMora && e.cobranzaActiva() && !Calc.esCero(m.saldoInicial())
+                        && m.periodo() <= e.parametros().numeroCuotas() && planOriginal(e, m.periodo())
+                        && m.cobranzaCausada().signum() == 0) {
+                    violacion("I16 cuota sin pago sin el cargo temporal", id, repro);
+                }
+            } else if (rn.cobranzaPorCociente()) {
                 cobranzaPorCociente(m, prev, e, monto, id, repro);
             } else {
                 // I8 (R7-COBRANZA-ACTIVA, Diego 2026-10-27): con umbral de cobranza, nunca se causa cobranza si el cliente
@@ -349,7 +368,9 @@ class PropiedadesFinancierasAuditTest {
                 }
             }
             // I14 (R8-COBRANZA-PAGO-TARDIO): con cobro fijo, la cobranza del periodo es 0 o exactamente el valor fijo.
-            BigDecimal fija = e.reglas().cobranzaPorPeriodo();
+            // D88: con la cobranza temporal por cuota atrasada el cobro fijo es ese valor (reemplaza al de R8).
+            BigDecimal fija = e.reglas().cobranzaPorCuotaAtrasadaActiva() ? e.reglas().cobranzaPorCuotaAtrasada()
+                    : e.reglas().cobranzaPorPeriodo();
             if (fija != null && m.cobranzaCausada().signum() != 0 && m.cobranzaCausada().compareTo(fija) != 0) {
                 violacion("I14 cobranza distinta del cobro fijo por periodo", id + " cobranza=" + m.cobranzaCausada().toPlainString()
                         + " fija=" + fija.toPlainString(), repro);
@@ -504,12 +525,31 @@ class PropiedadesFinancierasAuditTest {
      * un periodo ya marcado (salvo si este periodo cambió la tasa y con ella la cuota del denominador). Y la marca nunca se
      * quita mientras el crédito siga abierto (D67).
      */
+    /**
+     * Si hasta el periodo el plan sigue siendo el pactado: sin cambios de tasa, usura, abonos ni prepagos, que pueden
+     * acortar el plazo vigente y dejar el periodo fuera de él (I16 entonces no aplica).
+     */
+    private static boolean planOriginal(Escenario e, int hasta) {
+        for (int k = 1; k <= hasta; k++) {
+            for (Instruccion i : e.instruccionesDe(k)) {
+                if (i instanceof CambioTasa || i instanceof UsuraVigente || i instanceof Instruccion.AbonoExtra
+                        || i instanceof Instruccion.PrepagoTotal) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void marcaPorCociente(Movimiento m, Movimiento prev, ReglasNegocio rn, String id, String repro) {
         if (!rn.marcaRecuperacionPorCociente()) {
             return;
         }
+        // D88: la cobranza temporal por cuota atrasada no depende del cociente; la marca sí (I15b sigue).
+        boolean cobranzaPorCociente = !rn.cobranzaPorCuotaAtrasadaActiva();
         boolean mismaTasa = m.tasaPeriodica().compareTo(prev.tasaPeriodica()) == 0;
-        if (m.cobranzaCausada().signum() > 0 && prev.periodo() >= 1 && mismaTasa && !prev.listoParaRecuperacion()) {
+        if (cobranzaPorCociente && m.cobranzaCausada().signum() > 0 && prev.periodo() >= 1 && mismaTasa
+                && !prev.listoParaRecuperacion()) {
             violacion("I15 cobranza por cociente sin la marca del periodo anterior", id + " cobranza="
                     + m.cobranzaCausada().toPlainString(), repro);
         }

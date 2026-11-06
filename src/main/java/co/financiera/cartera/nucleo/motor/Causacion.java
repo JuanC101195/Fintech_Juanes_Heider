@@ -28,4 +28,10 @@ record Causacion(BigDecimal interes, BigDecimal capitalContractual, Servicios se
         return new Causacion(nuevo, capitalContractual, servicios, mora, cobranza, serviciosAlDia, cuotaPorComponentes,
                 capitalNoCobrado);
     }
+
+    /** La misma causación con otra cobranza (D88: el cargo por cuota atrasada se decide después de causar lo demás). */
+    Causacion conCobranza(BigDecimal nueva) {
+        return new Causacion(interes, capitalContractual, servicios, mora, nueva, serviciosAlDia, cuotaPorComponentes,
+                capitalNoCobrado);
+    }
 }

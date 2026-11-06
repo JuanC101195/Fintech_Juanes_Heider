@@ -59,6 +59,14 @@ const POR_CLAVE: Record<string, (valor: string) => string | undefined> = {
   plazoLimiteMeses: (v) => `${v} meses`,
   margenUsura: (v) => `${v} ${v === '1' ? 'punto' : 'puntos'} por debajo de la usura`,
   topeCobranzaPorPago: (v) => (NUMERO.test(v) ? `Hasta ${cop(v)} por pago` : undefined),
+  // D88 (temporal): con valor reemplaza la cobranza anterior; 0 = apagada.
+  cobranzaPorCuotaAtrasada: (v) => {
+    if (!NUMERO.test(v)) return undefined
+    if (Number(v) === 0) return 'No aplica'
+    return `${cop(v)} por cada cuota que se paga tarde, parcial o no se paga (temporal; reemplaza la cobranza anterior)`
+  },
+  // D89: 365 = el Excel; 360 = la tasa de la semana pesa 7/360 del año.
+  baseDiasAnio: (v) => (v === '360' ? 'Año de 360 días: periodo de 7, 15 o 30 días sobre 360' : `Año de ${v} días`),
 }
 
 /** Valor de una regla para mostrar. Lo que no esté traducido se muestra en minúsculas y sin guiones bajos. */

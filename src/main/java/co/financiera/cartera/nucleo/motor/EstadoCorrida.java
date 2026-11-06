@@ -59,7 +59,7 @@ final class EstadoCorrida {
         BigDecimal monto = escenario.operacion().montoFinanciado();
         // R9-SEGURO-TODO-RIESGO: el seguro todo riesgo (0 en el Excel) se suma a los servicios por cuota.
         this.serviciosPorCuota = Servicios.porCuota(monto, p, escenario.reglas().porcentajeTodoRiesgo());
-        this.tasas = Tasas.de(p);
+        this.tasas = Tasas.de(p, escenario.reglas().baseDiasAnio());   // D89: base 365 (Excel) o 360
         this.cuota = Amortizacion.cuotaFija(tasas.periodica(), cuotasPactadas, monto);
         this.saldo = monto;
         this.saldoPlan = monto;

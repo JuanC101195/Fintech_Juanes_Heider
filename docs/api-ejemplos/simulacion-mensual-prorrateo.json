@@ -9,8 +9,8 @@
     "cuotaFinanciera" : "444006.212",
     "serviciosPorCuota" : "294226.788",
     "cuotaTotal" : "738233",
-    "totalPagado" : "17366812",
-    "totalIntereses" : "4567697.6012",
+    "totalPagado" : "17368692",
+    "totalIntereses" : "4569577.6012",
     "totalServicios" : "6894714.3988",
     "periodicidad" : "MENSUAL",
     "porConfirmar" : [ ],
@@ -21,21 +21,21 @@
       "diasNominales" : 30,
       "aplicado" : true,
       "interesSinProrrateo" : "317872.58202876262136",
-      "interesProrrateado" : "133820.8384529378808001914359283952",
-      "diferencia" : "-184051.7435758247405598085640716048"
+      "interesProrrateado" : "135700.8384529378808001914359283952",
+      "diferencia" : "-182171.7435758247405598085640716048"
     }
   },
   "plan" : [ {
     "periodo" : 1,
     "mes" : 1,
     "saldoInicial" : "5904400",
-    "interes" : "133820.8384529378808001914359283952",
+    "interes" : "135700.8384529378808001914359283952",
     "capital" : "54657.88674706211919980856407160484",
-    "cuotaFinanciera" : "188478.7252",
+    "cuotaFinanciera" : "190358.7252",
     "fondoGarantias" : "91341.06799999999999999999999999999",
     "asistencia" : "20626.66666666666666666666666666667",
     "seguro" : "6396.433333333333333333333333333333",
-    "cuotaTotal" : "315977",
+    "cuotaTotal" : "317857",
     "saldo" : "5849742.113252937880800191435928395",
     "seguroTodoRiesgo" : "7675.719999999999999999999999999999",
     "ivaSeguroTodoRiesgo" : "1458.3868"

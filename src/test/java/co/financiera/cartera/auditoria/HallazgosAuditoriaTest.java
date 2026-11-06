@@ -225,10 +225,14 @@ class HallazgosAuditoriaTest {
 
     // ---------------------------------------------------------------- H2, H7 y H8 (respuestas de la ronda 8, 2026-10-28)
 
-    /** El perfil NEGOCIO de config/reglas-negocio.properties. */
+    /**
+     * El perfil NEGOCIO de config/reglas-negocio.properties con base 365 y sin la cobranza temporal (D88 y D89): los
+     * hallazgos se documentaron con la cuota de base 365 (163.440,4465). Sin redondeo, un pago en pesos enteros que no
+     * alcanza la cuota por centavos causaría además el cargo temporal de 25.000 (no es una cuota pagada completa).
+     */
     private static ReglasNegocio negocio() {
         try {
-            return PropiedadesFinancierasAuditTest.negocio();
+            return PropiedadesFinancierasAuditTest.negocio().conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

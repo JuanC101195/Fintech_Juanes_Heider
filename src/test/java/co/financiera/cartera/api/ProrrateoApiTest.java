@@ -71,9 +71,13 @@ class ProrrateoApiTest {
         return new BigDecimal(n.asString());
     }
 
-    /** Interés de {@code dias} días reales sobre el monto: monto × ((1 + tasa diaria)^días − 1). */
+    /** Base de días del año de NEGOCIO (D89: 360), el único perfil que prorratea la primera cuota. */
+    static final int BASE_NEGOCIO = new PerfilesReglas("config/reglas-negocio.properties")
+            .reglas(PerfilesReglas.Perfil.NEGOCIO).baseDiasAnio();
+
+    /** Interés de {@code dias} días reales sobre el monto: monto × ((1 + tasa diaria)^días − 1), con la diaria de NEGOCIO. */
     static BigDecimal interesDias(Periodicidad per, int dias) {
-        BigDecimal diaria = Tasas.de(ParametrosProducto.de(LineaCredito.CPPU, per, 24)).diaria();
+        BigDecimal diaria = Tasas.de(ParametrosProducto.de(LineaCredito.CPPU, per, 24), BASE_NEGOCIO).diaria();
         return Calc.multiplicar(MONTO, Calc.restar(Calc.potencia(Calc.sumar(Calc.UNO, diaria), dias), Calc.UNO));
     }
 

@@ -57,9 +57,10 @@ class RespuestasDocumentoApiTest {
         JsonNode porDefecto = ejecutar(tardio.formatted("")).get("movimientos").get(5);
         JsonNode activa = ejecutar(tardio.formatted(",\"cobranzaActiva\":true")).get("movimientos").get(5);
         JsonNode inactiva = ejecutar(tardio.formatted(",\"cobranzaActiva\":false")).get("movimientos").get(5);
-        // R8-COBRANZA-PAGO-TARDIO: con NEGOCIO la cobranza es el cobro fijo del periodo (40.000), no 4 días × 3.000.
-        assertThat(dinero(porDefecto.get("cobranzaCausada"))).isEqualByComparingTo("40000");
-        assertThat(dinero(activa.get("cobranzaCausada"))).isEqualByComparingTo("40000");
+        // R8-COBRANZA-PAGO-TARDIO: con NEGOCIO la cobranza es un cobro fijo, no 4 días × 3.000. Desde D88 (temporal) es el
+        // cargo de 25.000 de la cuota 5 pagada tarde (antes, los 40.000 por periodo con cociente >= 2).
+        assertThat(dinero(porDefecto.get("cobranzaCausada"))).isEqualByComparingTo("25000");
+        assertThat(dinero(activa.get("cobranzaCausada"))).isEqualByComparingTo("25000");
         assertThat(dinero(inactiva.get("cobranzaCausada"))).isZero();
         assertThat(dinero(inactiva.get("interesMora"))).isEqualByComparingTo(dinero(porDefecto.get("interesMora")));
     }
@@ -104,7 +105,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(32);
+        assertThat(r.get("claves")).hasSize(34);
         // Ronda 8 (Diego 2026-10-28).
         assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
         assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();
