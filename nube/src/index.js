@@ -55,6 +55,9 @@ app.http('contrato', {
       numero: solicitud.query.get('numero') ?? undefined,
       activos: solicitud.query.get('activos') ?? undefined,
       flujo: solicitud.query.get('flujo') ?? undefined,
+      pagina: solicitud.query.get('pagina') ?? undefined,
+      tamano: solicitud.query.get('tamano') ?? undefined,
+      ifNoneMatch: solicitud.headers.get('if-none-match') ?? undefined,
     })
     return {
       status: r.status,

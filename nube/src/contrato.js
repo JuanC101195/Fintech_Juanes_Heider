@@ -201,11 +201,13 @@ async function listarActivos(consultar) {
     (extra) =>
     'SELECT c.id, c.contrato, c.fecha_inicio, c.cuotas, c.cuota_real_miles, c.inversion, c.inversion_imputada, c.pagos_reales, ' +
       'c.dias_justificados, c.multas_reales_miles, ' + (extra ? 'c.valor_total_miles, c.saldo_real_miles, r.sim_proyectado_total, ' : '') +
-      '(SELECT COALESCE(SUM(p.valor_miles), 0) * 1000 FROM pago_real p WHERE p.id = c.id) AS real_pagado, ' +
+      'COALESCE(p.real_pagado, 0) AS real_pagado, ' +
       'r.corrida, r.sim_pagado, r.sim_saldo_final, r.sim_pendientes, r.sim_mora, r.sim_cobranza, r.sim_interes, r.sim_servicios, ' +
       'r.sim_cuotas_vencidas_final, r.sim_cuotas_vencidas_max, r.sim_marca_recuperacion, r.sim_periodo_marca, r.sim_estado_final, ' +
       'r.sim_periodos, r.periodo_corte ' +
-      "FROM contrato c JOIN resultado r ON r.id = c.id WHERE c.estado_real = 'VIGENTE' AND r.corrida = ANY($1::text[]) " +
+      'FROM contrato c JOIN resultado r ON r.id = c.id ' +
+      'LEFT JOIN (SELECT id, SUM(valor_miles) * 1000 AS real_pagado FROM pago_real GROUP BY id) p ON p.id = c.id ' +
+      "WHERE c.estado_real = 'VIGENTE' AND r.corrida = ANY($1::text[]) " +
       'ORDER BY c.fecha_inicio, c.id',
     [CORRIDAS_ACTIVOS],
   )
@@ -331,8 +333,43 @@ async function flujoActivos(consultar) {
  * Atiende una petición ya normalizada: { metodo, origen, clave, ip, numero, activos, flujo }.
  * Devuelve { status, headers, cuerpo } (cuerpo undefined = sin cuerpo).
  */
-function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {} }) {
-  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo }) {
+const TTL_DEFECTO_SEG = 600
+const TAMANO_DEFECTO = 200
+const TAMANO_MAX = 1000
+
+function ttlDesdeEntorno() {
+  const v = process.env.CACHE_TTL_SEGUNDOS
+  if (v === undefined || v === '') return TTL_DEFECTO_SEG * 1000
+  const n = Number(v)
+  return Number.isFinite(n) && n >= 0 ? n * 1000 : TTL_DEFECTO_SEG * 1000
+}
+
+const entero = (v) => (typeof v === 'string' && /^[0-9]{1,9}$/.test(v) ? Number(v) : null)
+
+// Cache en memoria (una instancia) de los modos pesados. Guarda la promesa para que dos peticiones simultáneas compartan una consulta.
+function crearCache(ttlMs, ahora) {
+  const entradas = new Map()
+  return async (clave, calcular) => {
+    if (ttlMs <= 0) return calcular()
+    const e = entradas.get(clave)
+    if (e && ahora() - e.t < ttlMs) return e.promesa
+    const promesa = calcular()
+    entradas.set(clave, { t: ahora(), promesa })
+    promesa.catch(() => { if (entradas.get(clave)?.promesa === promesa) entradas.delete(clave) })
+    return promesa
+  }
+}
+
+function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {}, ttlMs = ttlDesdeEntorno(), ahora = Date.now }) {
+  const conCache = crearCache(ttlMs, ahora)
+  // Respuesta de un modo cacheable: Cache-Control privado + ETag, y 304 si el cliente ya tiene esa versión.
+  const cacheable = (headers, cuerpo, ifNoneMatch) => {
+    const etag = '"' + crypto.createHash('sha256').update(JSON.stringify(cuerpo)).digest('hex').slice(0, 32) + '"'
+    const h = { ...headers, 'Cache-Control': 'private, max-age=300', ETag: etag }
+    const coincide = typeof ifNoneMatch === 'string' && ifNoneMatch.split(',').some((x) => x.trim().replace(/^W\//, '') === etag)
+    return coincide ? { status: 304, headers: h } : { status: 200, headers: h, cuerpo }
+  }
+  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo, pagina, tamano, ifNoneMatch }) {
     const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
     if (ORIGENES.includes(origen)) {
       headers['Access-Control-Allow-Origin'] = origen
@@ -346,7 +383,7 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     if (!claveValida(clave, claveEsperada)) return { status: 401, headers, cuerpo: { error: 'clave' } }
     if (flujo === '1') {
       try {
-        return { status: 200, headers, cuerpo: await flujoActivos(consultar) }
+        return cacheable(headers, await conCache('flujo', () => flujoActivos(consultar)), ifNoneMatch)
       } catch (e) {
         registrar(`Flujo de activos falló: ${e && e.code ? e.code : 'error'}`)
         return { status: 500, headers, cuerpo: { error: 'interno' } }
@@ -354,8 +391,18 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     }
     if (activos === '1') {
       try {
-        const contratos = await listarActivos(consultar)
-        return { status: 200, headers, cuerpo: { activos: contratos.length, contratos } }
+        const contratos = await conCache('activos', () => listarActivos(consultar))
+        // Sin `pagina` ni `tamano` se devuelve todo (formato histórico); con alguno de los dos, paginado con metadatos.
+        if (pagina === undefined && tamano === undefined) return cacheable(headers, { activos: contratos.length, contratos }, ifNoneMatch)
+        const pag = pagina === undefined ? 1 : entero(pagina)
+        const tam = tamano === undefined ? TAMANO_DEFECTO : entero(tamano)
+        if (!pag || !tam || pag < 1 || tam < 1 || tam > TAMANO_MAX) return { status: 400, headers, cuerpo: { error: 'paginacion_invalida' } }
+        const total = contratos.length
+        const cuerpo = {
+          activos: total, total, pagina: pag, tamano: tam, paginas: Math.ceil(total / tam),
+          contratos: contratos.slice((pag - 1) * tam, pag * tam),
+        }
+        return cacheable(headers, cuerpo, ifNoneMatch)
       } catch (e) {
         registrar(`Listado de activos falló: ${e && e.code ? e.code : 'error'}`)
         return { status: 500, headers, cuerpo: { error: 'interno' } }

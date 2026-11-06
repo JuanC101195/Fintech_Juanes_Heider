@@ -353,3 +353,13 @@ Respuestas reales del API (no se editan a mano). `EjemplosApiTest` las compara e
 
 - `EscenariosExcel` ahora tiene los 13 casos: se agregaron `caso2`, `caso4`, `caso5`, `caso7` (antes solo estaban en las pruebas) y `caso13` / `caso13ConPendientes` (movido de `Caso13AbonoConPendientesTest`, que ahora lo referencia).
 - `RecaudoConVencidos` no acreditaba la cobranza pendiente que paga una cuota a tiempo después de un pago tardío (semana 42 del ejemplo del contrato sin `SIN_PAGO`): el asiento se descuadraba en 4.000 y el `Contabilizador` lanzaba excepción. Ahora acredita `CXC_GASTOS_COBRANZA` por `pagoCobranza` (prueba en `RecaudoConVencidosTest`).
+
+## Función de consulta de contratos (nube/): caché y paginación de `activos` y `flujo`
+
+Aplica solo a `GET /api/contrato?activos=1` y `GET /api/contrato?flujo=1`; la ruta `?numero=` no cambia (sigue con `Cache-Control: no-store`, sin `ETag`).
+
+- **Caché en memoria** de cada modo con TTL configurable en la variable de entorno `CACHE_TTL_SEGUNDOS` (defecto 600 = 10 min; `0` la desactiva). Es por instancia de la función; una consulta fallida no se guarda.
+- **Cabeceras**: `Cache-Control: private, max-age=300` y `ETag` (hash del cuerpo). Si llega `If-None-Match` con ese `ETag` responde `304` sin cuerpo; antes se valida la clave y el límite de consultas, así que un 304 nunca se entrega sin clave.
+- **Paginación de `activos=1`** con `?pagina=` (desde 1) y `?tamano=` (defecto 200, máximo 1000). Con alguno de los dos la respuesta añade `total`, `pagina`, `tamano` y `paginas` (`activos` sigue siendo el total); valores fuera de rango dan `400 {"error":"paginacion_invalida"}`.
+- **Por defecto NO se pagina**: sin `pagina` ni `tamano` se devuelve `{ activos, contratos }` completo, porque `docs/sitio/contratos.html` pide `?activos=1` y espera todos los contratos en una sola respuesta. La página adoptará la paginación en otro paquete.
+- **Rendimiento**: el recaudo real por contrato (`SUM(pago_real)`) se calcula con un `LEFT JOIN` a una subconsulta agregada por `id`, no con una subconsulta correlacionada por fila.
