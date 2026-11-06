@@ -4,7 +4,7 @@
 //  1b) «Contratos activos» (demo): filtros, resumen con las dos lecturas lado a lado y tabla sin preselección sesgada;
 //  1c) «Recaudo de la cartera activa» (demo): tabla mensual del año (12 filas, subtotal y total, clic en fila, filtro de año), tarjetas del mes y proyección con deslizador.
 // Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON. Uso: node docs/sitio/pruebas/contratos-humo.mjs [carpeta-capturas]
-import { mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
@@ -12,7 +12,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const aqui = path.dirname(fileURLToPath(import.meta.url))
 const pagina = path.resolve(aqui, '..', 'contratos.html')
-const { chromium } = createRequire(process.env.PLAYWRIGHT_PACKAGE_JSON ?? 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json')('@playwright/test')
+// package.json desde el que se resuelve @playwright/test: PLAYWRIGHT_PACKAGE_JSON, o el front de Prestaya si existe (PC de Juan Esteban),
+// o el package.json de la carpeta actual (donde se instaló @playwright/test).
+const localPrestaya = 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json'
+const paquetePlaywright = process.env.PLAYWRIGHT_PACKAGE_JSON ?? (existsSync(localPrestaya) ? localPrestaya : path.resolve('package.json'))
+const { chromium } = createRequire(paquetePlaywright)('@playwright/test')
 const salida = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), 'contratos-humo'))
 mkdirSync(salida, { recursive: true })
 const base = pathToFileURL(pagina).href

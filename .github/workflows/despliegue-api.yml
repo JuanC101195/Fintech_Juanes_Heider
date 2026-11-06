@@ -1,0 +1,41 @@
+name: Desplegar API
+
+# Solo manual (workflow_dispatch). Compila el jar y lo publica en motor-cartera-api-jc (App Service).
+# Secreto de GitHub necesario: AZURE_WEBAPP_PUBLISH_PROFILE (docs/calidad-y-ci.md).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: despliegue-api
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    name: Compilar y desplegar el API
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Empaquetar el jar
+        run: |
+          chmod +x mvnw
+          ./mvnw -B --no-transfer-progress -DskipTests package
+
+      - name: Desplegar en App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: motor-cartera-api-jc
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: target/motor-cartera-0.0.1-SNAPSHOT.jar
