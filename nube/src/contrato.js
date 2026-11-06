@@ -108,55 +108,92 @@ const COLUMNAS_PERIODO =
   'corrida, id, periodo, fecha_vencimiento, instruccion, valor_real, dias_atraso, justificado, estado, cuotas_vencidas, ' +
   'saldo_inicial, interes_corriente, interes_mora, cobranza, servicios, pago_total_cliente, saldo_final, listo_recuperacion, ' +
   'tasa_ea, cuota_financiera, pago_capital, pago_interes, pago_mora, pago_cobranza, pago_servicios, capital_vencido'
-const PIE_PERIODO = ' FROM periodo WHERE id = ANY($1::text[]) ORDER BY id, corrida, periodo'
+// Sedes del backtesting. El número de contrato se repite entre sedes: la llave es (sede, contrato).
+const SEDES = ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS']
+const SEDE_DEFECTO = 'CARTAGENA'
+
+// Normaliza el parámetro ?sede=: undefined = no se envió; null = inválida; si no, la sede en mayúsculas.
+function normalizarSede(v) {
+  if (v === undefined) return undefined
+  if (typeof v !== 'string') return null
+  const s = v.trim().toUpperCase()
+  return SEDES.includes(s) ? s : null
+}
+
+// Intentos de una consulta, del más completo al más antiguo: con filtro de sede (si se pidió) y con las columnas nuevas.
+// 42703 (columna inexistente) pasa al siguiente intento; sin la columna `sede` se consulta sin filtro y se asume CARTAGENA.
+function intentos(sede, conExtra) {
+  const lista = []
+  for (const conSede of sede ? [true, false] : [false]) for (const extra of conExtra ? [true, false] : [true]) lista.push({ conSede, extra })
+  return lista
+}
+
+// `estado.conSede` queda en true si el filtro de sede se pudo aplicar.
+async function conRespaldo(consultar, armar, parametros, { sede, estado = {}, conExtra = true } = {}) {
+  const lista = intentos(sede, conExtra)
+  for (let i = 0; i < lista.length; i++) {
+    const { conSede, extra } = lista[i]
+    try {
+      const filas = await consultar(armar(extra, conSede), conSede ? [...parametros, sede] : parametros)
+      estado.conSede = conSede
+      return filas
+    } catch (e) {
+      if (!e || e.code !== '42703' || i === lista.length - 1) throw e
+    }
+  }
+}
 
 // `usura_ea`, `logica` y las del pago por servicio / saldo en mora son columnas nuevas: si la base aún no las tiene
 // (código 42703, columna inexistente) se consulta sin ellas.
-async function consultarPeriodos(consultar, ids) {
+async function consultarPeriodos(consultar, ids, sede) {
   const nuevas = ', pago_fondo, pago_seguro, pago_asistencia, saldo_en_mora, cxc_mora'
-  for (const extra of [', usura_ea, logica' + nuevas, ', usura_ea, logica', ', usura_ea', '']) {
+  const lista = []
+  for (const conSede of sede ? [true, false] : [false])
+    for (const extra of [', usura_ea, logica' + nuevas, ', usura_ea, logica', ', usura_ea', '']) lista.push({ conSede, extra })
+  for (let i = 0; i < lista.length; i++) {
+    const { conSede, extra } = lista[i]
     try {
-      return await consultar('SELECT ' + COLUMNAS_PERIODO + extra + PIE_PERIODO, [ids])
+      const pie = ' FROM periodo WHERE id = ANY($1::text[])' + (conSede ? ' AND sede = $2' : '') + ' ORDER BY id, corrida, periodo'
+      return await consultar('SELECT ' + COLUMNAS_PERIODO + extra + pie, conSede ? [ids, sede] : [ids])
     } catch (e) {
-      if (!e || e.code !== '42703' || extra === '') throw e
+      if (!e || e.code !== '42703' || i === lista.length - 1) throw e
     }
   }
 }
 
-// Columnas nuevas (valor total y saldo de motos_app, proyeccion del motor): si la base aun no las tiene (42703) se consulta sin ellas.
-async function conRespaldo(consultar, armar, parametros) {
-  for (const extra of [true, false]) {
-    try {
-      return await consultar(armar(extra), parametros)
-    } catch (e) {
-      if (!e || e.code !== '42703' || !extra) throw e
-    }
-  }
-}
-
-async function buscar(numero, consultar) {
+async function buscar(numero, consultar, sede) {
+  const estado = {}
   const contratos = await conRespaldo(
     consultar,
-    (extra) =>
+    (extra, conSede) =>
       'SELECT id, sede, contrato, cohorte, estado_real, fecha_inicio, fecha_fin, cuotas, cuota_real_miles, inversion, ' +
       'inversion_imputada, linea_usura, tasa_inicial_ea, pagos_reales, multas_reales_miles, dias_justificados' +
       (extra ? ', valor_total_miles, saldo_real_miles' : '') +
-      ' FROM contrato WHERE contrato = ANY($1::text[]) ORDER BY fecha_inicio, id',
+      ' FROM contrato WHERE contrato = ANY($1::text[])' + (conSede ? ' AND sede = $2' : '') + ' ORDER BY fecha_inicio, id',
     [variantes(numero)],
+    { sede, estado },
   )
-  if (!contratos.length) return []
+  // Sin columna `sede` todo es CARTAGENA: para otra sede no hay datos.
+  if (!contratos.length || (sede && !estado.conSede && sede !== SEDE_DEFECTO)) return []
+  const ss = estado.conSede ? sede : undefined
   const ids = contratos.map((c) => c.id)
   const [pagos, resultados, periodos] = await Promise.all([
-    consultar('SELECT id, fecha, valor_miles, multa_miles FROM pago_real WHERE id = ANY($1::text[]) ORDER BY id, fecha', [ids]),
     conRespaldo(
       consultar,
-      (extra) =>
+      (_extra, conSede) => 'SELECT id, fecha, valor_miles, multa_miles FROM pago_real WHERE id = ANY($1::text[])' + (conSede ? ' AND sede = $2' : '') + ' ORDER BY id, fecha',
+      [ids],
+      { sede: ss, conExtra: false },
+    ),
+    conRespaldo(
+      consultar,
+      (extra, conSede) =>
         'SELECT corrida, id, sim_pagado, sim_saldo_final, sim_pendientes, sim_mora, sim_cobranza, sim_interes, sim_servicios, ' +
         'sim_cuotas_vencidas_final, sim_cuotas_vencidas_max, sim_marca_recuperacion, sim_periodo_marca, sim_estado_final, ' +
-        'sim_periodos, periodo_corte, real_ea_con_multas' + (extra ? ', sim_proyectado_total' : '') + ' FROM resultado WHERE id = ANY($1::text[])',
+        'sim_periodos, periodo_corte, real_ea_con_multas' + (extra ? ', sim_proyectado_total' : '') + ' FROM resultado WHERE id = ANY($1::text[])' + (conSede ? ' AND sede = $2' : ''),
       [ids],
+      { sede: ss },
     ),
-    consultarPeriodos(consultar, ids),
+    consultarPeriodos(consultar, ids, ss),
   ])
   return contratos.map((c) => {
     const susPagos = pagos.filter((p) => p.id === c.id)
@@ -195,22 +232,25 @@ async function buscar(numero, consultar) {
 // Contratos activos (los de la tabla motos_app al momento de la corrida) con las dos corridas de tasa fija.
 const CORRIDAS_ACTIVOS = ['fija_con_justificaciones', 'fija_sin_justificaciones']
 
-async function listarActivos(consultar) {
+async function listarActivos(consultar, sede) {
+  const estado = {}
   const filas = await conRespaldo(
     consultar,
-    (extra) =>
+    (extra, conSede) =>
     'SELECT c.id, c.contrato, c.fecha_inicio, c.cuotas, c.cuota_real_miles, c.inversion, c.inversion_imputada, c.pagos_reales, ' +
       'c.dias_justificados, c.multas_reales_miles, ' + (extra ? 'c.valor_total_miles, c.saldo_real_miles, r.sim_proyectado_total, ' : '') +
       'COALESCE(p.real_pagado, 0) AS real_pagado, ' +
       'r.corrida, r.sim_pagado, r.sim_saldo_final, r.sim_pendientes, r.sim_mora, r.sim_cobranza, r.sim_interes, r.sim_servicios, ' +
       'r.sim_cuotas_vencidas_final, r.sim_cuotas_vencidas_max, r.sim_marca_recuperacion, r.sim_periodo_marca, r.sim_estado_final, ' +
       'r.sim_periodos, r.periodo_corte ' +
-      'FROM contrato c JOIN resultado r ON r.id = c.id ' +
-      'LEFT JOIN (SELECT id, SUM(valor_miles) * 1000 AS real_pagado FROM pago_real GROUP BY id) p ON p.id = c.id ' +
-      "WHERE c.estado_real = 'VIGENTE' AND r.corrida = ANY($1::text[]) " +
+      'FROM contrato c JOIN resultado r ON r.id = c.id' + (conSede ? ' AND r.sede = c.sede' : '') + ' ' +
+      'LEFT JOIN (SELECT id, SUM(valor_miles) * 1000 AS real_pagado FROM pago_real' + (conSede ? ' WHERE sede = $2' : '') + ' GROUP BY id) p ON p.id = c.id ' +
+      "WHERE c.estado_real = 'VIGENTE' AND r.corrida = ANY($1::text[]) " + (conSede ? 'AND c.sede = $2 ' : '') +
       'ORDER BY c.fecha_inicio, c.id',
     [CORRIDAS_ACTIVOS],
+    { sede, estado },
   )
+  if (sede && !estado.conSede && sede !== SEDE_DEFECTO) return []
   const porId = new Map()
   for (const f of filas) {
     let c = porId.get(f.id)
@@ -261,37 +301,54 @@ async function listarActivos(consultar) {
 const SUMAS = 'SUM(pago_capital) AS capital, SUM(pago_interes) AS interes, SUM(pago_mora) AS mora, SUM(pago_cobranza) AS cobranza, ' +
   'SUM(pago_servicios) AS servicios, SUM(pago_capital + pago_interes + pago_mora + pago_cobranza + pago_servicios) AS total'
 
-async function flujoActivos(consultar) {
-  const corteFila = await consultar('SELECT (SELECT MAX(corte) FROM corte_activos) AS corte', [])
+const FLUJO_VACIO = { corte: null, contratos: 0, meses: [] }
+
+// Con sede, todas las tablas se filtran y se cruzan por (sede, contrato). Si la base aún no tiene la columna (42703),
+// CARTAGENA se consulta sin filtro y cualquier otra sede devuelve un flujo vacío.
+async function flujoActivos(consultar, sede) {
+  if (!sede) return flujoSede(consultar, undefined)
+  try {
+    return await flujoSede(consultar, sede)
+  } catch (e) {
+    if (!e || e.code !== '42703') throw e
+    return sede === SEDE_DEFECTO ? flujoSede(consultar, undefined) : FLUJO_VACIO
+  }
+}
+
+async function flujoSede(consultar, sede) {
+  // Fragmentos de SQL que solo existen cuando se filtra por sede; sin sede las consultas quedan como siempre.
+  const pS = sede ? [sede] : []
+  const corteFila = await consultar(
+    sede ? 'SELECT (SELECT MAX(corte) FROM corte_activos WHERE sede = $1) AS corte' : 'SELECT (SELECT MAX(corte) FROM corte_activos) AS corte', pS)
   const corte = fecha(corteFila[0]?.corte)
   const mesCorte = corte ? corte.slice(0, 7) : '9999-99'
   const mesDe = "to_char(date_trunc('month', p.fecha_vencimiento), 'YYYY-MM')"
   const [cerrados, hoy, motos, realCerrado, realCorte, cartas] = await Promise.all([
     consultar(
       `SELECT ${mesDe} AS mes, p.corrida, ${SUMAS}, COUNT(DISTINCT p.id) AS contratos FROM periodo p ` +
-        `JOIN contrato c ON c.id = p.id JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = ${mesDe} ` +
-        `WHERE p.corrida = ANY($1::text[]) AND p.fecha_vencimiento IS NOT NULL AND ${mesDe} < $2 GROUP BY 1, 2 ORDER BY 1, 2`,
-      [CORRIDAS_ACTIVOS, mesCorte],
+        `JOIN contrato c ON c.id = p.id${sede ? ' AND c.sede = p.sede' : ''} JOIN activas_fin_mes a ON a.contrato = c.contrato${sede ? ' AND a.sede = c.sede' : ''} AND a.mes = ${mesDe} ` +
+        `WHERE p.corrida = ANY($1::text[]) AND p.fecha_vencimiento IS NOT NULL AND ${mesDe} < $2${sede ? ' AND p.sede = $3' : ''} GROUP BY 1, 2 ORDER BY 1, 2`,
+      [CORRIDAS_ACTIVOS, mesCorte, ...pS],
     ),
     consultar(
       `SELECT ${mesDe} AS mes, p.corrida, ${SUMAS}, COUNT(DISTINCT p.id) AS contratos FROM proyeccion p ` +
-        `WHERE p.corrida = ANY($1::text[]) AND ${mesDe} >= $2 GROUP BY 1, 2 ORDER BY 1, 2`,
-      [CORRIDAS_ACTIVOS, mesCorte],
+        `WHERE p.corrida = ANY($1::text[]) AND ${mesDe} >= $2${sede ? ' AND p.sede = $3' : ''} GROUP BY 1, 2 ORDER BY 1, 2`,
+      [CORRIDAS_ACTIVOS, mesCorte, ...pS],
     ),
-    consultar('SELECT mes, COUNT(*) AS motos FROM activas_fin_mes GROUP BY mes', []),
+    consultar(sede ? 'SELECT mes, COUNT(*) AS motos FROM activas_fin_mes WHERE sede = $1 GROUP BY mes' : 'SELECT mes, COUNT(*) AS motos FROM activas_fin_mes GROUP BY mes', pS),
     consultar(
       "SELECT to_char(date_trunc('month', r.fecha), 'YYYY-MM') AS mes, SUM(r.valor_miles) * 1000 AS pagos FROM pago_real r " +
-        "JOIN contrato c ON c.id = r.id JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = to_char(date_trunc('month', r.fecha), 'YYYY-MM') GROUP BY 1",
-      [],
+        "JOIN contrato c ON c.id = r.id" + (sede ? ' AND c.sede = r.sede' : '') + " JOIN activas_fin_mes a ON a.contrato = c.contrato" + (sede ? ' AND a.sede = c.sede' : '') + " AND a.mes = to_char(date_trunc('month', r.fecha), 'YYYY-MM')" + (sede ? ' WHERE r.sede = $1' : '') + ' GROUP BY 1',
+      pS,
     ),
     consultar(
       "SELECT SUM(r.valor_miles) * 1000 AS pagos FROM pago_real r JOIN contrato c ON c.id = r.id " +
-        "WHERE c.estado_real = 'VIGENTE' AND to_char(date_trunc('month', r.fecha), 'YYYY-MM') = $1",
-      [mesCorte],
+        "WHERE c.estado_real = 'VIGENTE' AND to_char(date_trunc('month', r.fecha), 'YYYY-MM') = $1" + (sede ? ' AND c.sede = $2 AND r.sede = $2' : ''),
+      [mesCorte, ...pS],
     ),
     // Pagos por carta (liquidaciones de cierre, np_his_abonos.CARTA = 'SI' salvo pronto pago) de las motos activas ese último día del mes.
     // No son cuotas: ni el motor ni el recaudo real los incluyen.
-    consultar('SELECT mes, motivo, pagos, valor_miles FROM carta_fin_mes', []),
+    consultar('SELECT mes, motivo, pagos, valor_miles FROM carta_fin_mes' + (sede ? ' WHERE sede = $1' : ''), pS),
   ])
   const cartaPorMes = new Map()
   for (const c of cartas) {
@@ -360,6 +417,18 @@ function crearCache(ttlMs, ahora) {
   }
 }
 
+// Sedes con datos. Sin la columna `sede` (migración 003 pendiente) solo hay CARTAGENA.
+async function sedesDisponibles(consultar) {
+  try {
+    const filas = await consultar('SELECT DISTINCT sede FROM contrato', [])
+    const con = new Set(filas.map((f) => f.sede))
+    return { sedes: SEDES.filter((x) => con.has(x)), todas: SEDES, defecto: SEDE_DEFECTO }
+  } catch (e) {
+    if (!e || e.code !== '42703') throw e
+    return { sedes: [SEDE_DEFECTO], todas: SEDES, defecto: SEDE_DEFECTO }
+  }
+}
+
 function crearManejador({ consultar, claveEsperada, limitador = crearLimitador(), registrar = () => {}, ttlMs = ttlDesdeEntorno(), ahora = Date.now }) {
   const conCache = crearCache(ttlMs, ahora)
   // Respuesta de un modo cacheable: Cache-Control privado + ETag, y 304 si el cliente ya tiene esa versión.
@@ -369,7 +438,7 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     const coincide = typeof ifNoneMatch === 'string' && ifNoneMatch.split(',').some((x) => x.trim().replace(/^W\//, '') === etag)
     return coincide ? { status: 304, headers: h } : { status: 200, headers: h, cuerpo }
   }
-  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo, pagina, tamano, ifNoneMatch }) {
+  return async function manejar({ metodo, origen, clave, ip, numero, activos, flujo, sedes, sede: sedeCruda, pagina, tamano, ifNoneMatch }) {
     const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
     if (ORIGENES.includes(origen)) {
       headers['Access-Control-Allow-Origin'] = origen
@@ -381,9 +450,22 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     if (metodo === 'OPTIONS') return { status: 204, headers }
     if (!limitador(ip || 'desconocida')) return { status: 429, headers, cuerpo: { error: 'demasiadas_consultas' } }
     if (!claveValida(clave, claveEsperada)) return { status: 401, headers, cuerpo: { error: 'clave' } }
+    const sede = normalizarSede(sedeCruda)
+    if (sede === null) return { status: 400, headers, cuerpo: { error: 'sede_invalida' } }
+    // Sin ?sede= no se filtra (comportamiento histórico, respuesta idéntica); con ella, todo se filtra y la respuesta la incluye.
+    const conSede = (cuerpo) => (sede ? { sede, ...cuerpo } : cuerpo)
+    if (sedes === '1') {
+      try {
+        return cacheable(headers, await conCache('sedes', () => sedesDisponibles(consultar)), ifNoneMatch)
+      } catch (e) {
+        registrar(`Listado de sedes falló: ${e && e.code ? e.code : 'error'}`)
+        return { status: 500, headers, cuerpo: { error: 'interno' } }
+      }
+    }
     if (flujo === '1') {
       try {
-        return cacheable(headers, await conCache('flujo', () => flujoActivos(consultar)), ifNoneMatch)
+        const datos = await conCache(`flujo|${sede ?? ''}`, () => flujoActivos(consultar, sede))
+        return cacheable(headers, conSede(datos), ifNoneMatch)
       } catch (e) {
         registrar(`Flujo de activos falló: ${e && e.code ? e.code : 'error'}`)
         return { status: 500, headers, cuerpo: { error: 'interno' } }
@@ -391,17 +473,17 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
     }
     if (activos === '1') {
       try {
-        const contratos = await conCache('activos', () => listarActivos(consultar))
+        const contratos = await conCache(`activos|${sede ?? ''}`, () => listarActivos(consultar, sede))
         // Sin `pagina` ni `tamano` se devuelve todo (formato histórico); con alguno de los dos, paginado con metadatos.
-        if (pagina === undefined && tamano === undefined) return cacheable(headers, { activos: contratos.length, contratos }, ifNoneMatch)
+        if (pagina === undefined && tamano === undefined) return cacheable(headers, conSede({ activos: contratos.length, contratos }), ifNoneMatch)
         const pag = pagina === undefined ? 1 : entero(pagina)
         const tam = tamano === undefined ? TAMANO_DEFECTO : entero(tamano)
         if (!pag || !tam || pag < 1 || tam < 1 || tam > TAMANO_MAX) return { status: 400, headers, cuerpo: { error: 'paginacion_invalida' } }
         const total = contratos.length
-        const cuerpo = {
+        const cuerpo = conSede({
           activos: total, total, pagina: pag, tamano: tam, paginas: Math.ceil(total / tam),
           contratos: contratos.slice((pag - 1) * tam, pag * tam),
-        }
+        })
         return cacheable(headers, cuerpo, ifNoneMatch)
       } catch (e) {
         registrar(`Listado de activos falló: ${e && e.code ? e.code : 'error'}`)
@@ -412,9 +494,9 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
       return { status: 400, headers, cuerpo: { error: 'numero_invalido' } }
     }
     try {
-      const episodios = await buscar(numero, consultar)
+      const episodios = await buscar(numero, consultar, sede)
       if (!episodios.length) return { status: 404, headers, cuerpo: { error: 'no_encontrado' } }
-      return { status: 200, headers, cuerpo: { numero, episodios } }
+      return { status: 200, headers, cuerpo: conSede({ numero, episodios }) }
     } catch (e) {
       registrar(`Consulta de contrato falló: ${e && e.code ? e.code : 'error'}`)
       return { status: 500, headers, cuerpo: { error: 'interno' } }
@@ -422,4 +504,4 @@ function crearManejador({ consultar, claveEsperada, limitador = crearLimitador()
   }
 }
 
-module.exports = { crearManejador, crearLimitador, claveValida, variantes, ORIGENES }
+module.exports = { crearManejador, crearLimitador, claveValida, variantes, normalizarSede, ORIGENES, SEDES, SEDE_DEFECTO }
