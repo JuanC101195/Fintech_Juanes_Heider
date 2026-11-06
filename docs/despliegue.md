@@ -168,3 +168,20 @@ Firewall por IP: el servidor solo acepta IPs con regla. Para abrir la IP actual 
 az postgres flexible-server firewall-rule create -g rg-motor-cartera -n pg-motor-cartera-jc --rule-name mi-ip --start-ip-address <IP> --end-ip-address <IP>
 az postgres flexible-server firewall-rule delete -g rg-motor-cartera -n pg-motor-cartera-jc --rule-name mi-ip --yes
 ```
+
+## Perfil `prod`: autenticación obligatoria y observabilidad
+
+El perfil `prod` (`application-prod.properties`) añade, sin tocar el comportamiento por defecto:
+
+- **Autenticación obligatoria**: si `CARTERA_API_CLAVES` está vacía la app no arranca (`IllegalStateException` con mensaje claro). En el perfil por defecto sigue abierta si no hay claves.
+- **Actuator**: expone `health,info,metrics,applicationmodules` (este último es el endpoint de Spring Modulith). Solo `/actuator/health` queda exento de `X-API-Key`.
+- **Logs JSON** (formato ECS) en consola, útiles para el Log Stream de Azure.
+
+**Orden seguro de activación en Azure** (hoy el despliegue NO usa `prod`, así que nada cambia hasta hacerlo):
+
+1. Generar una clave y su hash: `printf '<clave>' | sha256sum`.
+2. Configurar primero la variable: `CARTERA_API_CLAVES=<sha256hex>:CONSUMIDOR` (se pueden añadir más, separadas por coma, p. ej. `...:LECTURA`). Con esto la API ya exige `X-API-Key`; avisar a los consumidores (consola web, n8n) antes de este paso.
+3. Solo después, activar `SPRING_PROFILES_ACTIVE=prod` y reiniciar. Si se activa el perfil sin la variable, el arranque falla a propósito.
+4. Verificar: `/actuator/health` responde 200 sin clave; `/api/v1/catalogo` responde 401 sin clave y 200 con ella.
+
+Reversa: quitar `SPRING_PROFILES_ACTIVE` (vuelve al comportamiento actual).

@@ -23,8 +23,9 @@ public class ConfiguracionFiltros {
     }
 
     @Bean
-    FilterRegistrationBean<FiltroApiKey> filtroApiKey(@Value("${cartera.api.claves:}") String configuracion) {
-        return registrar(new FiltroApiKey(configuracion), Ordered.HIGHEST_PRECEDENCE + 10);
+    FilterRegistrationBean<FiltroApiKey> filtroApiKey(@Value("${cartera.api.claves:}") String configuracion,
+            @Value("${cartera.api.claves-obligatorias:false}") boolean obligatorias) {
+        return registrar(new FiltroApiKey(configuracion, obligatorias), Ordered.HIGHEST_PRECEDENCE + 10);
     }
 
     @Bean
