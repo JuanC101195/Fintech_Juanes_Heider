@@ -11,7 +11,12 @@ import co.financiera.cartera.api.Dtos.EjecutarRequest;
 import co.financiera.cartera.api.Dtos.ReglasResponse;
 import co.financiera.cartera.api.Dtos.SimulacionResponse;
 import co.financiera.cartera.api.PerfilesReglas.Perfil;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,10 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class CarteraController {
 
-    private final ServicioCartera servicio;
+    static final String NDJSON = "application/x-ndjson";
 
-    public CarteraController(ServicioCartera servicio) {
+    private final ServicioCartera servicio;
+    private final ObjectMapper json;
+
+    public CarteraController(ServicioCartera servicio, ObjectMapper json) {
         this.servicio = servicio;
+        this.json = json;
     }
 
     @GetMapping("/catalogo")
@@ -49,6 +58,32 @@ public class CarteraController {
     @PostMapping("/escenarios/ejecutar")
     public EjecucionResponse ejecutar(@RequestBody EjecutarRequest request) {
         return servicio.ejecutar(request);
+    }
+
+    /**
+     * Hasta {@value ServicioCartera#LOTE_MAXIMO} escenarios en una petición; responde NDJSON (una línea por ítem, en
+     * orden): el mismo resultado de {@code /escenarios/ejecutar} o {@code {indice, codigo, mensaje, detalle}} si ese
+     * ítem falla. Un lote vacío o de más de 500 responde 400 antes de emitir nada.
+     */
+    @PostMapping("/escenarios/ejecutar-lote")
+    public void ejecutarLote(@RequestBody List<EjecutarRequest> lote, HttpServletResponse respuesta) throws IOException {
+        servicio.validarLote(lote);
+        respuesta.setStatus(HttpServletResponse.SC_OK);
+        respuesta.setContentType(NDJSON + ";charset=UTF-8");
+        OutputStream salida = respuesta.getOutputStream();
+        try {
+            servicio.ejecutarLote(lote, linea -> {
+                try {
+                    salida.write(json.writeValueAsBytes(linea));
+                    salida.write('\n');
+                    salida.flush();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+        } catch (UncheckedIOException e) {
+            throw e.getCause(); // el cliente cortó la conexión
+        }
     }
 
     @GetMapping("/casos")

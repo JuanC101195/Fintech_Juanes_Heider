@@ -55,6 +55,10 @@ public final class Dtos {
             Boolean incluirAsientos) {
     }
 
+    /** Línea de error del lote (NDJSON): índice del ítem en la lista recibida y el error con el formato del contrato. */
+    public record ErrorLote(int indice, String codigo, String mensaje, Map<String, Object> detalle) {
+    }
+
     public record ClasificarRequest(String valorRecibido, String valorAdeudado) {
     }
 
