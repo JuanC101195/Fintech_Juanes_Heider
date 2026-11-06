@@ -41,7 +41,8 @@ class RespuestasDiegoRonda5Test {
 
     private static ReglasNegocio negocio() {
         try {
-            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion());
+            return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion())
+                    .conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO);   // antes de D88 y D89 (ronda 15)
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

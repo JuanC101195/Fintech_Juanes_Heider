@@ -53,13 +53,23 @@ class ReglasNegocioConfiguradaTest {
     }
 
     /**
+     * NEGOCIO vigente sin las instrucciones del 2026-11-05 (D88 y D89, ADR 0009): base 365 y la cobranza anterior (sin el
+     * cargo temporal de 25.000 por cuota atrasada). Lo usan las pruebas de las rondas 5 a 13 para seguir documentando esas
+     * respuestas con sus cifras; {@code RespuestasDiegoRonda15Test} prueba las dos instrucciones.
+     */
+    static ReglasNegocio negocioAntesRonda15() {
+        return negocio().conBaseDiasAnio(co.financiera.cartera.nucleo.Tasas.BASE_365)
+                .conCobranzaPorCuotaAtrasada(java.math.BigDecimal.ZERO);
+    }
+
+    /**
      * NEGOCIO tal como quedó tras la ronda 9 (D60 a D64, ADR 0005), antes del rediseño de la ronda 10 (D70, D71, ADR
      * 0006): fondo y asistencia suspendidos desde la 2.ª cuota atrasada ({@code SUSPENDER_POR_UMBRAL} con umbral 2),
      * cobranza por cuotas vencidas que cuenta la cuota en curso (lectura A) y sin cociente de cobranza. Lo usan las
      * pruebas de las rondas 8 y 9 para seguir documentando esas respuestas.
      */
     static ReglasNegocio negocioRonda9() {
-        return negocio().copia()
+        return negocioAntesRonda15().copia()
                 .causacionServicios(ReglasNegocio.CausacionServicios.SUSPENDER_POR_UMBRAL)
                 .cuotasVencidasParaSuspenderServicios(2)
                 .cuotasVencidasParaCobranza(2)

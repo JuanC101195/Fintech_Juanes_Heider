@@ -90,7 +90,7 @@ describe('preguntas', () => {
     expect(TODAS.find((p) => p.id === 'R10-PERIODO-ATRASADO')!.respondida!.nota).toBeUndefined()
     expect(TODAS.find((p) => p.id === 'R11-SEGUROS-TRAS-SUSPENSION')!.respondida!.nota).toBeUndefined()
 
-    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R14-MARCA-SEMANAS', 'R14-SERVICIOS-CIERRE'])
+    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R14-MARCA-SEMANAS', 'R14-SERVICIOS-CIERRE', 'R15-BASE-360', 'R15-COBRANZA-CUOTA', 'R15-COBRANZA-FIN', 'R15-COBRANZA-REEMPLAZA'])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
 
@@ -186,6 +186,33 @@ describe('preguntas', () => {
       expect(p.previsualizacion, p.id).toBeUndefined()
       for (const o of p.opciones) expect(o.ajustes, `${p.id} ${o.codigo}`).toBeUndefined()
     }
+  })
+
+  it('la ronda 15 pregunta los supuestos de la cobranza temporal de 25.000 y de la base 360, y la ronda 14 sigue abierta con el ejemplo de la marca', () => {
+    const q = (id: string) => PREGUNTAS.find((p) => p.id === id)!
+    const cod = (id: string) => q(id).opciones.map((o) => o.codigo).filter((c) => c !== CODIGO_PENDIENTE)
+    const ronda15 = PREGUNTAS.filter((p) => p.id.startsWith('R15-'))
+    expect(ronda15.map((p) => p.id)).toEqual(['R15-COBRANZA-CUOTA', 'R15-COBRANZA-REEMPLAZA', 'R15-COBRANZA-FIN', 'R15-BASE-360'])
+    expect(cod('R15-COBRANZA-CUOTA')).toEqual(['por-cuota-una-vez', 'por-cuota-con-pendientes', 'por-periodo-en-mora', 'otro'])
+    expect(cod('R15-COBRANZA-REEMPLAZA')).toEqual(['reemplaza', 'se-suma', 'reemplaza-definitiva', 'otro'])
+    expect(cod('R15-COBRANZA-FIN')).toEqual(['hasta-nuevo-aviso-todos', 'hasta-nuevo-aviso-nuevos', 'fecha-fin', 'otro'])
+    expect(cod('R15-BASE-360')).toEqual(['dias-sobre-360', 'solo-cuota', 'nominal-360', 'otro'])
+    expect(q('R15-BASE-360').bloque).toBe('Cambio de tasa y usura')
+    expect(q('R15-BASE-360').contexto).toContain('100.406,27')
+    expect(q('R15-BASE-360').contexto).toContain('100.972,38')
+    expect(q('R15-BASE-360').contexto).toContain('103.651,56')
+    expect(q('R15-COBRANZA-CUOTA').contexto).toContain('25.000')
+    for (const p of ronda15) {
+      expect(p.contexto, p.id).toMatch(/Supuesto provisional del motor/)
+      expect(p.opciones.filter((o) => /lo que hace el motor/.test(o.texto)), p.id).toHaveLength(1)
+      expect(p.opciones.find((o) => o.codigo === 'otro')!.pideTexto, p.id).toBe(true)
+      expect(p.previsualizacion, p.id).toBeUndefined()
+      for (const o of p.opciones) expect(o.ajustes, `${p.id} ${o.codigo}`).toBeUndefined()
+    }
+    // El ejemplo detallado que pidió Diego para la marca, con las cifras del motor (RespuestasDiegoRonda15Test).
+    expect(q('R14-MARCA-SEMANAS').contexto).toContain('777.590,49')
+    expect(q('R14-MARCA-SEMANAS').contexto).toContain('147.880,29')
+    expect(q('R14-SERVICIOS-CIERRE').contexto).toContain('volver a verla')
   })
 
   it('la ronda 4 quedó respondida el 21 de octubre, salvo T5 que Diego contestó por documento el 22', () => {

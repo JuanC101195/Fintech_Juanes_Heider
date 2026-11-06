@@ -115,7 +115,13 @@ final class CatalogoServicio {
                     "R12-MARCA-POR-COCIENTE"),
             new ClaveDto("alcanceProrrateoPrimeraCuota",
                     "Qué se prorratea en la primera cuota por los días reales: solo el interés o la cuota completa (capital y servicios en proporción a los días; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden)",
-                    "P5-PRORRATEO / R10-PRIMERA-CUOTA / R12-PRIMERA-CUOTA-DETALLE"));
+                    "P5-PRORRATEO / R10-PRIMERA-CUOTA / R12-PRIMERA-CUOTA-DETALLE"),
+            new ClaveDto("cobranzaPorCuotaAtrasada",
+                    "TEMPORAL: cargo fijo de cobranza por cada cuota que vence sin quedar pagada a tiempo (atraso de 1 día o más, pago parcial o sin pago), una sola vez por cuota y primero en la prelación; con valor reemplaza la cobranza anterior (cociente, cobro por periodo y valor diario); 0 = apagado",
+                    "D88 / R15-COBRANZA-CUOTA"),
+            new ClaveDto("baseDiasAnio",
+                    "Base de días del año para convertir la EA: 365 (periódica (1 + EA)^(1/ppa) − 1, diaria con 365) o 360 (periódica (1 + EA)^(días del periodo/360) − 1 con 7, 15 o 30 días, diaria con 360); solo cambia la semanal",
+                    "D89 / R15-BASE-360"));
 
     private final PerfilesReglas perfiles;
 

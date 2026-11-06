@@ -49,7 +49,9 @@ class PerfilesReglasSnapshotTest {
             "baseMoraCobranza=TOTAL_PENDIENTE",
             "comparacionCobranza=MAYOR",
             "marcaPorCociente=false",
-            "alcanceProrrateoPrimeraCuota=SOLO_INTERES");
+            "alcanceProrrateoPrimeraCuota=SOLO_INTERES",
+            "cobranzaPorCuotaAtrasada=0",
+            "baseDiasAnio=365");
 
     private static final List<String> NEGOCIO = List.of(
             "prelacion=SERVICIOS_ANTES_DE_CAPITAL",
@@ -83,7 +85,10 @@ class PerfilesReglasSnapshotTest {
             "baseMoraCobranza=TOTAL_PENDIENTE",
             "comparacionCobranza=MAYOR_O_IGUAL",
             "marcaPorCociente=true",
-            "alcanceProrrateoPrimeraCuota=CUOTA_COMPLETA_SIN_INTERES");
+            "alcanceProrrateoPrimeraCuota=CUOTA_COMPLETA_SIN_INTERES",
+            // D88 (temporal) y D89, instrucciones de Diego del 2026-11-05 (ADR 0009).
+            "cobranzaPorCuotaAtrasada=25000",
+            "baseDiasAnio=360");
 
     /** clave=valor en el orden de los componentes del record; BigDecimal con su escala (toPlainString). */
     private static List<String> valores(ReglasNegocio r) throws ReflectiveOperationException {

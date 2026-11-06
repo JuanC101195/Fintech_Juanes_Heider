@@ -144,6 +144,19 @@ import java.math.BigDecimal;
  * @param alcanceProrrateoPrimeraCuota qué se prorratea en la primera cuota cuando rige {@link #prorrateoPrimeraCuota}
  *                                 ({@link AlcanceProrrateo}): solo el interés (P5-PRORRATEO, D48) o la cuota completa
  *                                 (R10-PRIMERA-CUOTA y R12-PRIMERA-CUOTA-DETALLE, Diego 2026-11-01, D79)
+ * @param cobranzaPorCuotaAtrasada TEMPORAL (Diego 2026-11-05, D88; ADR 0009): «si el cliente paga atrasado así sea 1 día, se
+ *                                 le cobra un cargo de cobranza de $25.000». Cargo fijo por CUOTA, una sola vez, causado en el
+ *                                 periodo en que esa cuota vence sin quedar completamente pagada a tiempo (pago con días de
+ *                                 atraso, parcial o ausente: lo recibido no cubre todo lo exigible a la fecha). Es cobranza
+ *                                 como la de siempre (primera en la prelación, mismo asiento, R4-COBRANZA-CONTABLE). Con un
+ *                                 valor mayor que 0 REEMPLAZA la cobranza anterior (cociente, cobro por periodo, días × valor
+ *                                 diario): para volver a ella basta poner 0. {@code 0} o {@code null} = apagada (el Excel).
+ *                                 La marca «listo para recuperación» no cambia.
+ * @param baseDiasAnio             base de días del año para convertir la EA (Diego 2026-11-05, D89; ADR 0009): {@code 365}
+ *                                 (el Excel) = periódica (1 + EA)^(1/ppa) − 1 y diaria (1 + EA)^(1/365) − 1; {@code 360} =
+ *                                 periódica (1 + EA)^(días/360) − 1 con los días nominales del periodo (7, 15, 30) y diaria
+ *                                 (1 + EA)^(1/360) − 1. Quincenal y mensual no cambian (15/360 = 1/24, 30/360 = 1/12); la
+ *                                 semanal pasa de ^(1/52) a ^(7/360) y siete días de la diaria dan exactamente la semanal.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -177,7 +190,9 @@ public record ReglasNegocio(
         BaseMoraCobranza baseMoraCobranza,
         ComparacionCobranza comparacionCobranza,
         boolean marcaPorCociente,
-        AlcanceProrrateo alcanceProrrateoPrimeraCuota) {
+        AlcanceProrrateo alcanceProrrateoPrimeraCuota,
+        BigDecimal cobranzaPorCuotaAtrasada,
+        int baseDiasAnio) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
@@ -227,6 +242,12 @@ public record ReglasNegocio(
         }
         validarRonda10(causacionServicios, umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
         java.util.Objects.requireNonNull(alcanceProrrateoPrimeraCuota, ALCANCE_PRORRATEO);
+        if (cobranzaPorCuotaAtrasada != null && cobranzaPorCuotaAtrasada.signum() < 0) {
+            throw new IllegalArgumentException("La cobranza por cuota atrasada no puede ser negativa: " + cobranzaPorCuotaAtrasada);
+        }
+        if (baseDiasAnio != co.financiera.cartera.nucleo.Tasas.BASE_365 && baseDiasAnio != co.financiera.cartera.nucleo.Tasas.BASE_360) {
+            throw new IllegalArgumentException("La base de días del año debe ser 365 o 360: " + baseDiasAnio);
+        }
     }
 
     /** Validación de las claves de la ronda 10 (D70, D71), aparte para no complicar la del constructor. */
@@ -283,6 +304,8 @@ public record ReglasNegocio(
             .comparacionCobranza(ComparacionCobranza.MAYOR)
             .marcaPorCociente(false)
             .alcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES)
+            .cobranzaPorCuotaAtrasada(BigDecimal.ZERO)
+            .baseDiasAnio(co.financiera.cartera.nucleo.Tasas.BASE_365)
             .construir();
 
     /** Cómo se causan el fondo de garantías, la asistencia y los seguros en los periodos dentro del plazo (D17, D60, D70). */
@@ -358,7 +381,10 @@ public record ReglasNegocio(
      * la quincenal (13 a 16 días reales) y la semanal (7) siguen con el periodo nominal hasta que lo diga.
      */
     public enum DiasMora {
-        /** Vencido × tasa periódica: el periodo dura 365/ppa días (30,42 en mensual), como el Excel. */
+        /**
+         * Vencido × tasa periódica: con base 365 el periodo dura 365/ppa días (30,42 en mensual), como el Excel; con base
+         * 360 (D89) dura los días nominales 7, 15 o 30.
+         */
         PERIODO_NOMINAL,
         /**
          * En un crédito mensual con fechas, vencido × ((1 + tasa diaria)^días − 1) con los días reales del mes
@@ -535,7 +561,9 @@ public record ReglasNegocio(
             enumerada(BASE_MORA_COBRANZA, BaseMoraCobranza.class, Constructor::baseMoraCobranza),
             enumerada(COMPARACION_COBRANZA, ComparacionCobranza.class, Constructor::comparacionCobranza),
             booleana("marcaPorCociente", Constructor::marcaPorCociente),
-            enumerada(ALCANCE_PRORRATEO, AlcanceProrrateo.class, Constructor::alcanceProrrateoPrimeraCuota));
+            enumerada(ALCANCE_PRORRATEO, AlcanceProrrateo.class, Constructor::alcanceProrrateoPrimeraCuota),
+            decimal("cobranzaPorCuotaAtrasada", Constructor::cobranzaPorCuotaAtrasada),
+            entera("baseDiasAnio", Constructor::baseDiasAnio));
 
     static {
         verificarTabla();
@@ -706,6 +734,24 @@ public record ReglasNegocio(
         return copia().alcanceProrrateoPrimeraCuota(valor).construir();
     }
 
+    /** D88 (temporal): cargo de cobranza por cuota atrasada; 0 = apagado y rige la cobranza anterior. */
+    public ReglasNegocio conCobranzaPorCuotaAtrasada(BigDecimal valor) {
+        return copia().cobranzaPorCuotaAtrasada(valor).construir();
+    }
+
+    /** D89: base de días del año (365 o 360) con que se convierte la EA a la tasa periódica y a la diaria. */
+    public ReglasNegocio conBaseDiasAnio(int valor) {
+        return copia().baseDiasAnio(valor).construir();
+    }
+
+    /**
+     * D88 (temporal, ADR 0009): si rige el cargo de cobranza por cuota atrasada. Mientras rige, reemplaza la cobranza
+     * anterior (cociente, cobro por periodo, días × valor diario).
+     */
+    public boolean cobranzaPorCuotaAtrasadaActiva() {
+        return cobranzaPorCuotaAtrasada != null && cobranzaPorCuotaAtrasada.signum() > 0;
+    }
+
     /** El % mensual del seguro riesgo total, con {@code null} como 0 (no existe). */
     public BigDecimal porcentajeTodoRiesgo() {
         return seguroTodoRiesgoPorcentajeMensual == null ? BigDecimal.ZERO : seguroTodoRiesgoPorcentajeMensual;
@@ -749,6 +795,8 @@ public record ReglasNegocio(
         private ComparacionCobranza comparacionCobranza;
         private boolean marcaPorCociente;
         private AlcanceProrrateo alcanceProrrateoPrimeraCuota;
+        private BigDecimal cobranzaPorCuotaAtrasada;
+        private int baseDiasAnio;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -788,6 +836,8 @@ public record ReglasNegocio(
             comparacionCobranza = r.comparacionCobranza;
             marcaPorCociente = r.marcaPorCociente;
             alcanceProrrateoPrimeraCuota = r.alcanceProrrateoPrimeraCuota;
+            cobranzaPorCuotaAtrasada = r.cobranzaPorCuotaAtrasada;
+            baseDiasAnio = r.baseDiasAnio;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -950,6 +1000,16 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor cobranzaPorCuotaAtrasada(BigDecimal valor) {
+            cobranzaPorCuotaAtrasada = valor;
+            return this;
+        }
+
+        public Constructor baseDiasAnio(int valor) {
+            baseDiasAnio = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
@@ -960,7 +1020,7 @@ public record ReglasNegocio(
                     cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar,
                     umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual, causacionServicios,
                     umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza, marcaPorCociente,
-                    alcanceProrrateoPrimeraCuota);
+                    alcanceProrrateoPrimeraCuota, cobranzaPorCuotaAtrasada, baseDiasAnio);
         }
     }
 

@@ -28,7 +28,7 @@ class RespuestasDiegoRonda13Test {
     private final MotorCartera motor = new MotorCartera();
 
     private static ReglasNegocio negocio() {
-        return ReglasNegocioConfiguradaTest.negocio();
+        return ReglasNegocioConfiguradaTest.negocioAntesRonda15();   // cifras de la ronda, antes de D88 y D89
     }
 
     private static Movimiento fila(List<Movimiento> m, int periodo) {

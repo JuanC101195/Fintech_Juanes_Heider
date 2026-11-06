@@ -1,6 +1,6 @@
 # Completitud de las reglas del motor
 
-Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-11-01** (rondas 4 a 12 respondidas: el 1 nov Diego respondió las 11 de la ronda 12 y las 2 que seguían abiertas de la ronda 10, D74 a D83; ronda 13 abierta con 5 preguntas).
+Fuente para medir el avance de la definición de reglas con Diego González (dueño de producto). Estado al **2026-11-06** (rondas 4 a 13 respondidas; el 5 nov Diego dejó abiertas las 2 de la ronda 14 y dio dos instrucciones nuevas, D88 temporal y D89, implementadas con supuestos que pregunta la ronda 15 con 4 preguntas).
 
 Cada regla o dato que el motor necesita está en una de dos tablas con uno de estos estados:
 
@@ -17,19 +17,19 @@ Fuentes usadas: `respuestas-diego-2026-10-20.md` (sección «Pendiente de Diego�
 
 | Bloque del cuestionario | Cerradas | Total | % |
 |---|---|---|---|
-| Pagos, mora y cobranza | 37 | 51 | 73 % |
+| Pagos, mora y cobranza | 37 | 54 | 69 % |
 | Servicios complementarios | 19 | 19 | 100 % |
 | Abonos y prepago | 16 | 16 | 100 % |
-| Cambio de tasa y usura | 14 | 14 | 100 % |
+| Cambio de tasa y usura | 14 | 15 | 93 % |
 | Dación y retoma | 18 | 20 | 90 % |
 | Contabilidad | 7 | 11 | 64 % |
 | Roles y parámetros | 5 | 5 | 100 % |
 | Ajustes al Excel | 3 | 3 | 100 % |
-| **Tabla A (preguntas del cuestionario)** | **119** | **139** | **86 %** |
+| **Tabla A (preguntas del cuestionario)** | **119** | **143** | **83 %** |
 | Tabla B (reglas fuera del cuestionario) | 11 | 18 | 61 % |
-| **Total de reglas inventariadas** | **130** | **157** | **83 %** |
+| **Total de reglas inventariadas** | **130** | **161** | **81 %** |
 
-Las 139 reglas de la tabla A (119 cerradas = 85,6 % → 86 %; con la tabla B, 130 de 157 = 82,8 % → 83 %; R11-CONTABILIDAD-SEGURO-IVA ya no cuenta: la reemplaza R12-IVA-FONDO-ASISTENCIAS) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) las 3 de la ronda 9 (ids `R9-*`, respondidas el 30 oct y decididas en D62 a D64; R9-SEGURO-TODO-RIESGO cuenta como decidida aunque deja cuatro detalles a la ronda 11), las 7 de la ronda 10 (ids `R10-*`, salidas del backtesting con el historial real de pagos) y las 4 de la ronda 11 (ids `R11-*`, seguimiento de la ronda 9); de ellas, 9 se respondieron el 31 oct (D65 a D73; R10-PRIMERA-CUOTA y R10-CONTADOR-VENCIDAS llevan salvedad y no cuentan como cerradas), y las 11 de la ronda 12 (ids `R12-*`, abiertas, detalles de esas respuestas; 9 salen del rediseño de servicios y cobranza, D70 a D72; respondidas el 1 nov, D74 a D81, 5 con salvedad) y las 5 de la ronda 13 (ids `R13-*`, abiertas, lo ambiguo de la ronda 12). El cuestionario publicado muestra el porcentaje de la tabla A.
+Las 143 reglas de la tabla A (119 cerradas = 83,2 % → 83 %; con la tabla B, 130 de 161 = 80,7 % → 81 %; R11-CONTABILIDAD-SEGURO-IVA ya no cuenta: la reemplaza R12-IVA-FONDO-ASISTENCIAS) son las 92 preguntas de las rondas 1 a 3 (de las que 10 se volvieron a preguntar y no se cuentan dos veces), las 16 de la ronda 4 (ids `R4-*`, de las que R4-CASO13 se vuelve a preguntar y no se cuenta dos veces), las 6 de la ronda 5 (ids `P5-*`, de las que P5-LIMITE-DESDE se reemplaza por R6-LIMITE-CORTO y no se cuenta dos veces) y las 4 de la ronda 6 (ids `R6-*`, de las que R6-COBRANZA-ACTIVA y R6-RECUP-VS-CASO11 se reemplazan por R7-COBRANZA-ACTIVA y R7-RECUP-VS-CASO11, las 2 de la ronda 7, y no se cuentan dos veces) las 4 de la ronda 8 (ids `R8-*`, respondidas el 28 oct y decididas en D58 a D61; R8-PAGO-INCOMPLETO-EN-FECHA cuenta como decidida aunque deja dos detalles a la ronda 9) las 3 de la ronda 9 (ids `R9-*`, respondidas el 30 oct y decididas en D62 a D64; R9-SEGURO-TODO-RIESGO cuenta como decidida aunque deja cuatro detalles a la ronda 11), las 7 de la ronda 10 (ids `R10-*`, salidas del backtesting con el historial real de pagos) y las 4 de la ronda 11 (ids `R11-*`, seguimiento de la ronda 9); de ellas, 9 se respondieron el 31 oct (D65 a D73; R10-PRIMERA-CUOTA y R10-CONTADOR-VENCIDAS llevan salvedad y no cuentan como cerradas), y las 11 de la ronda 12 (ids `R12-*`, abiertas, detalles de esas respuestas; 9 salen del rediseño de servicios y cobranza, D70 a D72; respondidas el 1 nov, D74 a D81, 5 con salvedad) las 5 de la ronda 13 (ids `R13-*`, lo ambiguo de la ronda 12), las 2 de la ronda 14 (ids `R14-*`, abiertas) y las 4 de la ronda 15 (ids `R15-*`, abiertas: los supuestos de D88 y D89). El cuestionario publicado muestra el porcentaje de la tabla A.
 
 Ronda 3 (20 oct 2026, 15:54): Diego contestó las 59 preguntas abiertas. 40 quedaron decididas, 9 esperan un documento suyo (COB-1 a COB-6: política de gastos de cobranza; PPER-8 y PPER-9: política de ejecución de la dación; CON-1: PUC en Excel) y no se vuelven a preguntar, y 10 se reemplazan por una pregunta concreta de la ronda 4 (PPER-1, USU-3, USU-8, CON-4, REC-6, ROL-1, A3, T5, R2, C5), más R4-QUIN, que confirma el valor de PPER para la quincena.
 
@@ -102,7 +102,10 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R13-PRIMERA-CUOTA-INTERES | ¿El capital que la primera cuota proporcional no cobra causa interés hasta la última cuota? | Decidida | Ronda 13 (2 nov 2026): no causa interés; la última cuota solo suma lo no cobrado (116.705,64 en el ejemplo) (D84). |
 | R13-PRIMERA-CUOTA-LARGA | Si la entrega es más de un periodo antes del primer vencimiento, ¿cómo se cobra la primera cuota? | Decidida | Ronda 13 (2 nov 2026): no se permite; el primer vencimiento siempre cae dentro del primer periodo (D84). |
 | R13-CONGELAR-CREDITO | ¿Qué significa «congelar» un crédito por una justificación (calendario, interés, servicios, mora, cobranza)? | Decidida | Ronda 13 (2 nov 2026): se corre el calendario; ese periodo no causa cuota, interés, servicios, mora ni cobranza y el plan termina un periodo después (D86). El backtesting lo aplica; en el motor es de la fábrica de créditos (fase 3). |
-| R14-MARCA-SEMANAS | «2 o más semanas de mora» para la marca, ¿es el mismo cociente de la cobranza o cuenta periodos atrasados? | Abierta | Pregunta R14-MARCA-SEMANAS (ronda 14), derivada de D85. Supuesto: el mismo cociente. |
+| R14-MARCA-SEMANAS | «2 o más semanas de mora» para la marca, ¿es el mismo cociente de la cobranza o cuenta periodos atrasados? | Abierta | Pregunta R14-MARCA-SEMANAS (ronda 14), derivada de D85. Supuesto: el mismo cociente. 5 nov 2026: Diego pidió un ejemplo detallado; sigue abierta con el ejemplo del motor (4 periodos atrasados por contador y sin marca). |
+| R15-COBRANZA-CUOTA | Cobranza temporal de 25.000 (D88): ¿una vez por cada cuota que vence sin quedar pagada a tiempo, medido contra la cuota del periodo? | Abierta | Pregunta R15-COBRANZA-CUOTA (ronda 15), derivada de D88 (temporal, ADR 0009). Supuesto: una vez por cuota, contra la cuota del periodo, nunca por día. |
+| R15-COBRANZA-REEMPLAZA | Cobranza temporal: ¿reemplaza a la cobranza de 40.000 con 2 cuotas de mora o se suma? | Abierta | Pregunta R15-COBRANZA-REEMPLAZA (ronda 15), derivada de D88. Supuesto: la reemplaza mientras rija; con `cobranzaPorCuotaAtrasada=0` vuelve la anterior. |
+| R15-COBRANZA-FIN | Cobranza temporal: ¿hasta cuándo rige y a qué créditos aplica? | Abierta | Pregunta R15-COBRANZA-FIN (ronda 15), derivada de D88. Supuesto: sin fecha de fin, hasta que se apague la clave (versión de reglas nueva). |
 
 ### Servicios complementarios
 
@@ -176,6 +179,7 @@ Hay 9 preguntas respondidas con salvedad que aún no cuentan como cerradas: PTOP
 | R4-USURA-PLAZO | Si nadie autoriza la usura, ¿a los cuántos días hábiles se aplica sola y vale para el lote de vigentes? | Decidida | Ronda 4 (21 oct 2026): Si nadie autoriza, la usura se aplica sola 1 día hábil después de su publicación, también al lote de vigentes. |
 | R4-AVISO-CLIENTE | ¿Se avisa al cliente cuando cambia la tasa o se valida con legal? | Decidida | Ronda 4 (21 oct 2026): No se avisa al cliente cuando cambia la tasa (decisión del dueño de producto; conviene validarla con legal). |
 | P5-USURA-DIA | Si nadie autoriza la usura, ¿se aplica sola a 1 día hábil de su publicación? | Decidida | Ronda 5 (22 oct 2026): Sí, 1 día hábil; es un requisito del proceso de usura, no del motor (D51). |
+| R15-BASE-360 | Base 360 (D89): ¿cómo se convierte la EA a la tasa del periodo y a la diaria, y a qué cálculos aplica? | Abierta | Pregunta R15-BASE-360 (ronda 15), derivada de D89 (ADR 0009). Supuesto: (1 + EA)^(días/360) − 1 con 7, 15 o 30 días y diaria con 360, también en la mora, el prorrateo y el prepago por días; solo cambia la semanal. |
 ### Dación y retoma
 
 | ID | Regla (pregunta) | Estado | Fuente / detalle |

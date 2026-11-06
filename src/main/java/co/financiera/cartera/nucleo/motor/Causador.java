@@ -246,6 +246,11 @@ final class Causador {
      * (con 2, la cobranza empieza en la tercera cuota vencida).
      */
     private BigDecimal cobranza(BigDecimal saldoInicial, int dias, int cuotasVencidasPrevias) {
+        if (s.reglas().cobranzaPorCuotaAtrasadaActiva()) {
+            // D88 (temporal, ADR 0009): el cargo por cuota atrasada reemplaza la cobranza anterior; se decide aparte, con lo
+            // recibido frente a lo exigible a la fecha ({@link #conCobranzaPorCuotaAtrasada}).
+            return CERO;
+        }
         if (s.reglas().cobranzaPorCociente()) {
             return cobranzaPorCociente(saldoInicial);
         }
@@ -262,6 +267,42 @@ final class Causador {
         BigDecimal cobranza = (dias > 0 && !esCero(saldoInicial)) ? multiplicar(Calc.bd(dias), s.p.cobranzaDiaria()) : CERO;
         BigDecimal tope = s.reglas().topeCobranzaPorPago();
         return tope == null ? cobranza : min(cobranza, tope);
+    }
+
+    /**
+     * D88 (TEMPORAL, Diego 2026-11-05; ADR 0009): «si el cliente paga atrasado así sea 1 día, se le cobra un cargo de
+     * cobranza de $25.000». Supuestos (ronda 15): el cargo es por CUOTA, una sola vez, y se causa en el periodo en que esa
+     * cuota vence sin quedar completamente pagada a tiempo. En el motor por periodos eso es: el pago del periodo trae días
+     * de atraso ({@code PagoContractual}, {@code PagoParcial} o {@code PagoValor} con días), no alcanza la cuota total del
+     * periodo (cuota financiera + servicios: {@code PagoParcial} de menos del 100 %, {@code PagoValor} menor) o no hay pago
+     * ({@code SinPago}). Se mide contra la cuota del periodo, no contra lo pendiente de antes (supuesto, R15-COBRANZA-CUOTA):
+     * un cliente que pagó tarde una vez y luego paga su cuota completa a tiempo no vuelve a causar el cargo aunque la
+     * prelación haya aplicado parte de ese pago a lo viejo (si no, el propio cargo de 25.000 causaría otro cada semana).
+     * Cada cuota vencida y no cubierta en su fecha lo causa una vez, nunca por día. El abono extra del mismo periodo no
+     * cuenta (va después de la cuota). Va primero en la prelación (es cobranza), con el asiento de siempre. No se causa
+     * fuera del plazo vigente (ya no vence ninguna cuota), sin saldo, con la cobranza inactiva del crédito ni en una semana
+     * sin pago que no causa mora (P-16 en {@code false}).
+     */
+    Causacion conCobranzaPorCuotaAtrasada(Causacion c, PeriodoACausar p, Instruccion pago, BigDecimal cuotaTotal) {
+        ReglasNegocio reglas = s.reglas();
+        if (!reglas.cobranzaPorCuotaAtrasadaActiva() || !s.escenario.cobranzaActiva() || p.sinPagoSinMora()
+                || esCero(p.saldoInicial()) || p.numero() > s.cuotasVigentes) {
+            return c;
+        }
+        return p.dias() > 0 || !cubreLaCuota(pago, cuotaTotal) ? c.conCobranza(reglas.cobranzaPorCuotaAtrasada()) : c;
+    }
+
+    /** Si el pago del periodo, por sí solo, alcanza la cuota total del periodo (D88). */
+    private boolean cubreLaCuota(Instruccion pago, BigDecimal cuotaTotal) {
+        BigDecimal minimo = restar(cuotaTotal, Calc.EPSILON_SALDO);
+        return switch (pago) {
+            case PagoContractual x -> true;
+            case PagoAlDia x -> true;
+            case Instruccion.PagoParcial x -> multiplicar(x.fraccion(), sumar(s.cuota, s.serviciosPorCuota.total()))
+                    .compareTo(minimo) >= 0;
+            case PagoValor x -> x.valor().compareTo(minimo) >= 0;
+            default -> false;
+        };
     }
 
     /**

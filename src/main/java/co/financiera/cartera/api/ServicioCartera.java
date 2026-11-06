@@ -96,7 +96,7 @@ public class ServicioCartera {
                 ? List.of(p.periodicidad().name() + ": " + p.periodosPorAnio() + " periodos/año por confirmar con Diego")
                 : List.of();
         ResumenSimulacion resumen = new ResumenSimulacion(ValidadorCredito.linea(c).name(), perfil.name(), texto(o.montoFinanciado()),
-                texto(p.tasaEA()), texto(Tasas.de(p).periodica()), p.numeroCuotas(), texto(regular.cuotaFinanciera()),
+                texto(p.tasaEA()), texto(Tasas.de(p, perfiles.reglas(perfil).baseDiasAnio()).periodica()), p.numeroCuotas(), texto(regular.cuotaFinanciera()),
                 texto(regular.serviciosCausados().total()),
                 texto(Calc.sumar(regular.cuotaFinanciera(), regular.serviciosCausados().total())), texto(totalPagado),
                 texto(totalIntereses), texto(totalServicios), p.periodicidad().name(), porConfirmar, prorrateo);

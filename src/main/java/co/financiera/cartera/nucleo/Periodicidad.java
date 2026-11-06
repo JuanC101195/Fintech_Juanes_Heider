@@ -8,8 +8,9 @@ import java.math.BigDecimal;
  * se abre uno nuevo.
  *
  * <p>La tasa del periodo es la conversión efectiva de la EA: (1 + EA)^(1/periodosPorAnio) − 1
- * (Diego, PPER). Los días nominales solo sirven para el calendario, tolerancias y textos: no entran
- * en la tasa.
+ * (Diego, PPER) con base 365, el Excel. Con base 360 (D89, {@code ReglasNegocio.baseDiasAnio}) es
+ * (1 + EA)^(díasNominales/360) − 1: ahí los días nominales sí entran en la tasa ({@link Tasas}).
+ * Fuera de eso solo sirven para el calendario, tolerancias y textos.
  *
  * <p>La diaria (Inputs A105, 365) se retiró del catálogo (Diego, PPER-4): no la usaba ninguna prueba
  * ni simulación, por eso se eliminó en lugar de marcarla obsoleta.
@@ -41,7 +42,7 @@ public enum Periodicidad {
         return periodosPorAnio;
     }
 
-    /** Días aproximados de un periodo (7, 15, 30): solo para calendario, tolerancias y textos. */
+    /** Días nominales de un periodo (7, 15, 30): calendario, tolerancias, textos y la tasa con base 360 (D89). */
     public int diasNominales() {
         return diasNominales;
     }

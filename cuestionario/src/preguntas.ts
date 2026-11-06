@@ -2329,7 +2329,7 @@ const RONDA_14: Pregunta[] = [
     bloque: CONTABILIDAD,
     titulo: 'Dación o retoma: ¿qué pasa con los servicios que se causaron y nunca se recaudaron?',
     contexto:
-      'En la ronda 12 se entendió que, en el cierre, los servicios no recaudados se le pagan igual al tercero con el fondo de garantías. En su comentario de la ronda 13 usted indicó que esa apreciación del enunciado se corrige y que se corregirá la política. Hoy el motor registra la cuenta con el tercero solo cuando hay recaudo efectivo: de los servicios pendientes, la parte que cubre el valor de la moto es recaudo y se gira al tercero; el resto se extingue contra las cuentas por cobrar de cada servicio y el motor no le paga nada al tercero por lo no recaudado. ¿Cuál es la política correcta?',
+      'Usted pidió volver a verla en esta sesión. En la ronda 12 se entendió que, en el cierre, los servicios no recaudados se le pagan igual al tercero con el fondo de garantías. En su comentario de la ronda 13 usted indicó que esa apreciación del enunciado se corrige y que se corregirá la política. Hoy el motor registra la cuenta con el tercero solo cuando hay recaudo efectivo: de los servicios pendientes, la parte que cubre el valor de la moto es recaudo y se gira al tercero; el resto se extingue contra las cuentas por cobrar de cada servicio y el motor no le paga nada al tercero por lo no recaudado. ¿Cuál es la política correcta?',
     excelHoy: 'El Excel extingue todos los servicios pendientes contra sus cuentas por cobrar y no le paga nada al tercero.',
     opciones: [
       { codigo: 'no-se-paga-lo-no-recaudado', texto: 'Al tercero solo se le paga lo que se recaudó; los servicios no recaudados se extinguen y no se le pagan (lo que hace el motor)' },
@@ -2344,12 +2344,74 @@ const RONDA_14: Pregunta[] = [
     bloque: PAGOS,
     titulo: '"2 o más semanas de mora": ¿es el mismo cociente de la cobranza o cuenta semanas atrasadas?',
     contexto:
-      'Usted indicó (ronda 13) que la marca "listo para recuperar" se activa solo con 2 o más semanas de mora y se desactiva cuando el crédito baja de ahí, sin generar la cobranza de 40.000. Hoy el motor lo mide con el mismo cociente de la cobranza (D74): saldo en mora (todo lo pendiente, con mora y cobranza) dividido en la cuota total del periodo, igual o mayor a 2, al cerrar cada periodo. Con esa medida un cliente puede tener 4 periodos atrasados por el contador de cuotas vencidas y aun así quedar sin marca si en la semana pagó casi todo lo pendiente. Si "semanas de mora" significa otra cosa (por ejemplo, contar periodos atrasados), el resultado cambia.',
+      'Usted indicó (ronda 13) que la marca "listo para recuperar" se activa solo con 2 o más semanas de mora y se desactiva cuando el crédito baja de ahí, y pidió un ejemplo detallado. Hoy el motor lo mide con el mismo cociente de la cobranza (D74): saldo en mora (todo lo pendiente, con mora y cobranza) dividido en la cuota total del periodo, igual o mayor a 2, al cerrar cada periodo. Con esa medida un cliente puede tener 4 periodos atrasados por el contador de cuotas vencidas y aun así quedar sin marca si en la semana pagó casi todo lo pendiente. Ejemplo calculado por el motor (operación del Excel, crédito semanal, cuota total 168.871 con la base 360 y la cobranza de 25.000 por cuota atrasada): el cliente no paga las semanas 1, 2, 3 y 4. Al cerrar la semana 4 debe 777.590,49 (4 cuotas de 168.871, 4 cargos de cobranza de 25.000 y 2.106,49 de mora), que son 4,60 cuotas: está marcado. En la semana 5 paga 800.000: se aplican primero los 100.000 de cobranza, la mora y los intereses, y queda debiendo 147.880,29, es decir 0,88 cuotas. El contador de cuotas vencidas sigue en 4 (solo vuelve a 0 cuando paga todo), pero con el cociente la marca se quita en la semana 5. Si "2 semanas de mora" se midiera contando periodos atrasados, el crédito seguiría marcado (4 periodos atrasados) hasta ponerse al día.',
     excelHoy: 'El Excel no marca créditos ni usa un cociente para la cobranza.',
     opciones: [
       { codigo: 'mismo-cociente', texto: 'El mismo cociente de la cobranza: saldo en mora ÷ cuota total ≥ 2 al cerrar el periodo (lo que hace el motor)' },
       { codigo: 'periodos-atrasados', texto: 'Contar periodos atrasados (semanas, quincenas o meses sin cubrir completos) y marcar desde 2; se quita cuando quedan menos de 2' },
       { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+]
+
+// Ronda 15 (6 nov 2026): los supuestos con que se implementaron las instrucciones de Diego del 5 nov (D88, temporal, y D89;
+// docs/respuestas-diego-2026-11-05-ronda14-y-nuevas.md, ADR 0009). R14-SERVICIOS-CIERRE y R14-MARCA-SEMANAS siguen abiertas
+// (Diego pidió volver a verlas). El motor ya aplica el supuesto indicado en cada una; la respuesta lo confirma o lo cambia.
+const RONDA_15: Pregunta[] = [
+  {
+    id: 'R15-COBRANZA-CUOTA',
+    bloque: PAGOS,
+    titulo: 'Cobranza temporal de 25.000: ¿se cobra una vez por cada cuota atrasada?',
+    contexto:
+      'Usted indicó: "si el cliente paga atrasado así sea 1 día, se le cobra un cargo de cobranza de $25.000 (se conserva su posición en la prelación)". Supuesto provisional del motor: el cargo es de 25.000 por CUOTA, una sola vez, y se causa en el periodo en que esa cuota vence sin quedar pagada a tiempo (pago con 1 día de atraso o más, pago parcial, pago menor que la cuota o sin pago); nunca por día. Se mide contra la cuota del periodo: si después el cliente paga su cuota completa a tiempo no se vuelve a cobrar, aunque siga debiendo algo de antes. Ejemplo con la operación del Excel (cuota total 168.871 semanal): paga la cuota 2 un día tarde: se cobran 25.000 una vez (y 50,09 de mora) y, como la prelación cobra primero el cargo, quedan unos 25.050 pendientes que se pagan con lo siguiente. Si no paga las semanas 1, 2 y 3, se cobran 75.000 (25.000 por cuota). Si el cargo se midiera contra todo lo pendiente, el cliente que pagó un día tarde y luego paga su cuota a tiempo volvería a pagar 25.000 cada semana mientras le quede algo pendiente.',
+    excelHoy: 'El Excel cobra 3.000 por día de atraso (caso 9).',
+    opciones: [
+      { codigo: 'por-cuota-una-vez', texto: 'Una vez por cada cuota que vence sin quedar pagada a tiempo, medido contra la cuota del periodo (lo que hace el motor)' },
+      { codigo: 'por-cuota-con-pendientes', texto: 'Una vez por cada cuota, pero también cuando la cuota se paga a tiempo y queda algo pendiente de antes' },
+      { codigo: 'por-periodo-en-mora', texto: 'Cada periodo que el crédito siga en mora, aunque esa cuota se pague' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R15-COBRANZA-REEMPLAZA',
+    bloque: PAGOS,
+    titulo: 'Cobranza temporal: ¿reemplaza a la cobranza de 40.000 con 2 cuotas de mora o se suma?',
+    contexto:
+      'Hasta ahora la cobranza de NEGOCIO era de 40.000 por periodo cuando el saldo en mora llega a 2 cuotas o más (D71, D74), con 3.000 diarios como valor de referencia. Supuesto provisional del motor: mientras rija la política temporal de 25.000 por cuota atrasada, REEMPLAZA a la anterior (no se cobran los 40.000) y, al quitarla, vuelve la anterior. Ejemplo con la operación del Excel: sin pago las semanas 1 a 6, con la política temporal se cobran 6 × 25.000 = 150.000; con la anterior se cobraban 40.000 en cada semana con 2 cuotas de mora o más. Si se sumaran, esas semanas cobrarían 65.000.',
+    excelHoy: 'El Excel no tiene la cobranza por cociente ni la de 25.000.',
+    opciones: [
+      { codigo: 'reemplaza', texto: 'La reemplaza mientras rija; al quitarla vuelve la de 40.000 (lo que hace el motor)' },
+      { codigo: 'se-suma', texto: 'Se suma: 25.000 por cuota atrasada y además 40.000 por periodo con 2 cuotas de mora o más' },
+      { codigo: 'reemplaza-definitiva', texto: 'La reemplaza para siempre: la de 40.000 deja de existir' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R15-COBRANZA-FIN',
+    bloque: PAGOS,
+    titulo: 'Cobranza temporal: ¿hasta cuándo rige y a qué créditos aplica?',
+    contexto:
+      'Usted indicó que el cambio de la política de cobranza es temporal. Supuesto provisional del motor: rige desde la versión de reglas del 6 de noviembre de 2026, sin fecha de fin, hasta que se apague (se cambia el parámetro y queda una versión nueva de reglas). Falta saber si tiene fecha de fin y si aplica a todos los créditos vivos desde ya o solo a los que se originen mientras rige (cada crédito guarda la versión de reglas con que se originó).',
+    excelHoy: 'El Excel no tiene vigencias de reglas.',
+    opciones: [
+      { codigo: 'hasta-nuevo-aviso-todos', texto: 'Sin fecha de fin, hasta nuevo aviso, para todos los créditos vivos (lo que hace el motor)' },
+      { codigo: 'hasta-nuevo-aviso-nuevos', texto: 'Sin fecha de fin, solo para los créditos que se originen mientras rige' },
+      { codigo: 'fecha-fin', texto: 'Tiene fecha de fin', detalle: 'Escriba la fecha y a qué créditos aplica.', pideTexto: true },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+  {
+    id: 'R15-BASE-360',
+    bloque: TASA,
+    titulo: 'Base 360: ¿cómo se convierte la tasa y a qué cálculos aplica?',
+    contexto:
+      'Usted indicó: "cambiaremos la base 365 a base 360 para el cálculo de las cuotas". Hoy la tasa del periodo es (1 + EA)^(1/52) − 1 en semanal, ^(1/24) en quincenal y ^(1/12) en mensual, y la tasa diaria usa 365 días. Supuesto provisional del motor: tasa del periodo = (1 + EA)^(días/360) − 1 con 7 días (semanal), 15 (quincenal) o 30 (mensual), y tasa diaria (1 + EA)^(1/360) − 1. Quincenal y mensual quedan iguales (15/360 = 1/24 y 30/360 = 1/12); solo cambia la semanal. Con la operación del Excel (5.904.400, EA 87,62 %, 104 semanas) la cuota semanal pasa de 100.406,27 a 100.972,38; con un crédito de 88 cuotas de 5.533.760 y EA 88,44 %, de 103.137,22 a 103.651,56. La tasa diaria de 360 también rige el prorrateo de la primera cuota, la mora por días y el interés del prepago por días; los servicios (valor mensual × 12 / periodos del año) no cambian.',
+    excelHoy: 'El Excel usa (1 + EA)^(1/52) − 1 y la tasa diaria con 365.',
+    opciones: [
+      { codigo: 'dias-sobre-360', texto: 'La tasa del periodo con días/360 y la diaria con 360, en la cuota, la mora, el prorrateo y el prepago (lo que hace el motor)' },
+      { codigo: 'solo-cuota', texto: 'Solo la cuota usa 360; la mora, el prorrateo y el prepago por días siguen con la diaria de 365' },
+      { codigo: 'nominal-360', texto: 'Tasa nominal: la tasa anual nominal se divide en 360 y se multiplica por los días del periodo', detalle: 'Indique de dónde sale la tasa nominal (por ejemplo, la nominal equivalente a la EA).' },
+      { codigo: 'otro', texto: 'Otra fórmula', detalle: 'Escriba la fórmula de la tasa del periodo y de la tasa diaria.', pideTexto: true },
     ],
   },
 ]
@@ -2444,7 +2506,7 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12, ...RONDA_13, ...RONDA_14].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12, ...RONDA_13, ...RONDA_14, ...RONDA_15].map((p) => {
   if (RESPONDIDAS_RONDA_13[p.id]) return { ...p, respondida: { fecha: '2 nov 2026', ...RESPONDIDAS_RONDA_13[p.id] } }
   if (RESPONDIDAS_RONDA_12[p.id]) return { ...p, respondida: { fecha: '1 nov 2026', ...RESPONDIDAS_RONDA_12[p.id] } }
   if (RESPONDIDAS_RONDA_10_11[p.id]) return { ...p, respondida: { fecha: '31 oct 2026', ...RESPONDIDAS_RONDA_10_11[p.id] } }

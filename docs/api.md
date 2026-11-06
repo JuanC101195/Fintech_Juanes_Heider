@@ -133,6 +133,13 @@ Lo que agrega la ronda 12 de Diego (2026-11-01; ADR 0007):
 | `marcaPorCociente` | D77 (R12-MARCA-POR-COCIENTE): `listoParaRecuperacion` se mide con el mismo cociente de la cobranza al cerrar cada periodo (ignora `cuotasVencidasParaRecuperacion`); la marca persiste aunque el cociente baje. Sin `umbralCocienteCobranza` no aplica | `true` | `false` |
 | `alcanceProrrateoPrimeraCuota` | D79 (R10-PRIMERA-CUOTA, R12-PRIMERA-CUOTA-DETALLE): con `prorrateoPrimeraCuota` y fechas, `SOLO_INTERES` (P5, D48), `CUOTA_COMPLETA` (capital y servicios × días reales / días nominales, como máximo la cuota; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden) o `CUOTA_COMPLETA_SIN_INTERES` (D84, ronda 13: además el capital no cobrado no causa interés y el API rechaza un primer vencimiento a más días que el periodo) | `CUOTA_COMPLETA_SIN_INTERES` | `SOLO_INTERES` |
 
+Lo que agregan las instrucciones de Diego del 2026-11-05 (ADR 0009; versión `negocio-2026-11-06`):
+
+| Clave | Qué hace | NEGOCIO | EXCEL |
+|---|---|---|---|
+| `cobranzaPorCuotaAtrasada` | D88 (**temporal**, supuestos en la ronda 15): cargo fijo de cobranza por cada cuota que vence sin quedar pagada a tiempo (pago con días de atraso, `PAGO_PARCIAL` de menos del 100 %, `PAGO_VALOR` menor que la cuota total del periodo o `SIN_PAGO`), una sola vez por cuota (nunca por día) y primero en la prelación, con el asiento de siempre (`cobranzaIngresoNoOperacional`). Con valor **reemplaza** la cobranza anterior (`umbralCocienteCobranza`, `cobranzaPorPeriodo`, `cobranzaDiaria` no causan cobranza); `0` la apaga y vuelve la anterior | `25000` | `0` |
+| `baseDiasAnio` | D89 (supuesto en la ronda 15): `365` = periódica (1 + EA)^(1/ppa) − 1 y diaria con 365 (el Excel); `360` = periódica (1 + EA)^(días/360) − 1 con 7, 15 o 30 días y diaria (1 + EA)^(1/360) − 1. Solo cambia la semanal (la cuota del ejemplo del Excel pasa de 100.406,27 a 100.972,38); `tasaPeriodica` del resumen de `simulaciones` sale con esta base | `360` | `365` |
+
 ### POST /api/v1/simulaciones
 
 Plan de pagos de un cliente que paga siempre a tiempo.

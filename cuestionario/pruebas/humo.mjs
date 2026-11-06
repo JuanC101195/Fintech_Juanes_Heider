@@ -60,6 +60,9 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
     // La ronda 14 (R14-*) aparece en su bloque (Contabilidad) y se puede responder escogiendo una opción.
     await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Contabilidad/ }).click()
     await page.getByRole('radio', { name: /Se le pagan al tercero con el fondo de garantías/i }).check()
+    // La ronda 15 (R15-BASE-360) aparece en su bloque (Cambio de tasa y usura) y se responde escogiendo una opción.
+    await page.getByRole('navigation', { name: 'Bloques de preguntas' }).getByRole('button', { name: /Cambio de tasa/ }).click()
+    await page.getByRole('radio', { name: /Solo la cuota usa 360/i }).check()
     // R14-MARCA-SEMANAS (Pagos, mora y cobranza) queda respondida solo con el comentario escrito arriba.
     await page.getByRole('button', { name: 'Enviar respuestas', exact: true }).click()
     await page.getByText(/¡Recibidas!/).waitFor({ timeout: 10000 })
@@ -67,7 +70,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 780], ['escritorio', 1280,
     const filas = JSON.parse(ultimo.filas).filter((f) => f[3]).map((f) => [f[0], f[3], f[5], f[9]].join(' | '))
     console.log(`Guardados en la nube: ${enviados.length} (último final=${ultimo.final}, ${ultimo.completas} de ${ultimo.total})`)
     console.log(filas.join('\n'))
-    if (filas.length !== 2 || ultimo.completas !== 2 || !ultimo.final) fallas++
+    if (filas.length !== 3 || ultimo.completas !== 3 || !ultimo.final) fallas++
   }
   await contexto.close()
 }
