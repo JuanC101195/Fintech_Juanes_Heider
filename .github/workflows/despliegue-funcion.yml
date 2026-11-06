@@ -1,0 +1,58 @@
+name: Desplegar función de respuestas
+
+# Solo manual (workflow_dispatch). Empaqueta nube/ con sus dependencias de producción (incluye pg) y lo sube a
+# fn-motor-cartera-respuestas. Secretos de GitHub necesarios: AZURE_CREDENTIALS y AZURE_RESOURCE_GROUP (docs/calidad-y-ci.md).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: despliegue-funcion
+  cancel-in-progress: false
+
+env:
+  FUNCION: fn-motor-cartera-respuestas
+
+jobs:
+  desplegar:
+    name: Empaquetar y desplegar la función
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Código
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Carpeta limpia: sin pruebas ni node_modules de desarrollo; el zip lleva node_modules de producción.
+      - name: Empaquetar nube/ (npm ci --omit=dev)
+        run: |
+          paquete="$RUNNER_TEMP/paquete-funcion"
+          rm -rf "$paquete" && mkdir -p "$paquete"
+          cp nube/host.json nube/package.json nube/package-lock.json "$paquete/"
+          mkdir "$paquete/src"
+          for f in nube/src/*.js; do
+            case "$f" in *.test.js) ;; *) cp "$f" "$paquete/src/" ;; esac
+          done
+          cd "$paquete"
+          npm ci --omit=dev --no-audit --no-fund
+          test -d node_modules/pg || { echo "Falta node_modules/pg en el paquete"; exit 1; }
+          zip -qr "$RUNNER_TEMP/funcion.zip" .
+          echo "RUTA_ZIP=$RUNNER_TEMP/funcion.zip" >> "$GITHUB_ENV"
+
+      - name: Iniciar sesión en Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Desplegar el zip
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "$FUNCION" \
+            --src "$RUTA_ZIP"

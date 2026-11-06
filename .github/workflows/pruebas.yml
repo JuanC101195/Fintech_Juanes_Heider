@@ -6,7 +6,7 @@ name: Pruebas
 #   cuestionario Vitest con cobertura
 #   consola      Vitest con cobertura + compilación (tsc + vite)
 #   herramientas unittest de los scripts de Python (sin red)
-#   humo         Playwright/Chromium: humo de la consola y del cuestionario, y e2e contra el API real
+#   humo         Playwright/Chromium: humo de la consola, del cuestionario y de contratos.html, y e2e contra el API real
 # La cobertura se sube como artefacto; no llega a Sonar mientras el análisis sea el automático (docs/calidad-y-ci.md).
 on:
   push:
@@ -132,9 +132,6 @@ jobs:
   humo:
     name: Humo y e2e en Chromium (Playwright)
     runs-on: ubuntu-latest
-    # Primera versión en CI: se muestra como aviso y no bloquea el PR hasta que pase estable al menos una vez.
-    # Quitar continue-on-error cuando esté verde.
-    continue-on-error: true
     timeout-minutes: 25
     steps:
       - name: Código
@@ -187,6 +184,10 @@ jobs:
         working-directory: cuestionario
         run: node pruebas/humo.mjs "$RUNNER_TEMP/capturas-cuestionario"
 
+      # Página de contratos del sitio (docs/sitio): modo demostración y función simulada; no usa red.
+      - name: Humo de contratos.html
+        run: node docs/sitio/pruebas/contratos-humo.mjs "$RUNNER_TEMP/capturas-contratos"
+
       # e2e: el API real (el jar, sin servicios externos) en localhost:8080; el CORS solo acepta http://localhost:5173,
       # que es donde e2e.mjs sirve dist/.
       - name: Levantar el API
@@ -213,5 +214,6 @@ jobs:
           path: |
             ${{ runner.temp }}/capturas-consola
             ${{ runner.temp }}/capturas-cuestionario
+            ${{ runner.temp }}/capturas-contratos
             ${{ runner.temp }}/capturas-e2e
           if-no-files-found: ignore
