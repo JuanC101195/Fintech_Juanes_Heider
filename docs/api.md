@@ -363,3 +363,16 @@ Aplica solo a `GET /api/contrato?activos=1` y `GET /api/contrato?flujo=1`; la ru
 - **Paginación de `activos=1`** con `?pagina=` (desde 1) y `?tamano=` (defecto 200, máximo 1000). Con alguno de los dos la respuesta añade `total`, `pagina`, `tamano` y `paginas` (`activos` sigue siendo el total); valores fuera de rango dan `400 {"error":"paginacion_invalida"}`.
 - **Por defecto NO se pagina**: sin `pagina` ni `tamano` se devuelve `{ activos, contratos }` completo, porque `docs/sitio/contratos.html` pide `?activos=1` y espera todos los contratos en una sola respuesta. La página adoptará la paginación en otro paquete.
 - **Rendimiento**: el recaudo real por contrato (`SUM(pago_real)`) se calcula con un `LEFT JOIN` a una subconsulta agregada por `id`, no con una subconsulta correlacionada por fila.
+
+## Escenarios por lote (`POST /api/v1/escenarios/ejecutar-lote`)
+
+Ejecuta varios escenarios en una sola petición. El cuerpo es una **lista** de `EjecutarRequest` (el mismo objeto de `/escenarios/ejecutar`), de 1 a **500** ítems. La respuesta es `application/x-ndjson`: una línea JSON por ítem, **en el mismo orden** de la lista, escrita y vaciada a medida que se calcula (el servidor no acumula el lote).
+
+- Línea de éxito: exactamente la respuesta de `/escenarios/ejecutar` para ese ítem (`resumen`, `movimientos`, `asientos`).
+- Línea de error: `{"indice": 2, "codigo": "VALIDACION", "mensaje": "...", "detalle": {...}}`, con el `indice` base 0 del ítem en la lista y los mismos códigos que el resto del API (`VALIDACION`, `ABONO_MAYOR_QUE_SALDO`, `ASIENTO_DESCUADRADO`, `ERROR_INTERNO`). Un ítem que falla no tumba el lote: las demás líneas salen normales y el estado HTTP es 200.
+- Errores de toda la petición (antes de emitir nada, JSON normal): lista vacía o cuerpo que no es una lista → 400 `VALIDACION`; más de 500 ítems → 400 `LOTE_DEMASIADO_GRANDE` con `detalle: {recibidos, maximo}` y el mensaje `El lote trae 501 escenarios; el máximo es 500`.
+- Tope de cuerpo: solo esta ruta admite hasta 8 MB (`FiltroTamanoCuerpo.MAXIMO_LOTE_POR_DEFECTO`); el resto del API conserva los 256 KB. Pasarse responde 413 `CUERPO_DEMASIADO_GRANDE`.
+
+Rendimiento medido (`LoteApiTest.medirUnLoteDe500`, con el lote de 500 créditos semanales de 104 cuotas y 3 instrucciones cada uno, con asientos, vía MockMvc en el PC de desarrollo y tras calentar la JVM): **6727 ms por 500 créditos, 13,45 ms/crédito** (incluye serializar la petición y la respuesta completa). Es una medida de referencia de una sola corrida, no un compromiso de latencia.
+
+`LoteApiTest` corre los 13 casos del Excel por lote y compara cada línea, campo a campo, con la respuesta de `/escenarios/ejecutar`.

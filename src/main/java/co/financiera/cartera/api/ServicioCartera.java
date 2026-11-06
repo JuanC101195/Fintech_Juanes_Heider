@@ -11,6 +11,7 @@ import co.financiera.cartera.api.Dtos.ClasificarRequest;
 import co.financiera.cartera.api.Dtos.CreditoRequest;
 import co.financiera.cartera.api.Dtos.EjecucionResponse;
 import co.financiera.cartera.api.Dtos.EjecutarRequest;
+import co.financiera.cartera.api.Dtos.ErrorLote;
 import co.financiera.cartera.api.Dtos.FilaPlan;
 import co.financiera.cartera.api.Dtos.InstruccionDto;
 import co.financiera.cartera.api.Dtos.ProrrateoDto;
@@ -26,6 +27,7 @@ import co.financiera.cartera.nucleo.LineaCredito;
 import co.financiera.cartera.nucleo.Operacion;
 import co.financiera.cartera.nucleo.ParametrosProducto;
 import co.financiera.cartera.nucleo.Tasas;
+import co.financiera.cartera.nucleo.motor.AbonoMayorQueElSaldoException;
 import co.financiera.cartera.nucleo.motor.Escenario;
 import co.financiera.cartera.nucleo.motor.Instruccion;
 import co.financiera.cartera.nucleo.motor.MotorCartera;
@@ -122,6 +124,59 @@ public class ServicioCartera {
         int ultimoPeriodo = Math.max(p.plazoLimitePeriodos(), p.numeroCuotas());
         ValidadorInstrucciones.cargar(e, r.instrucciones(), ultimoPeriodo);
         return correr(e, perfil, r.incluirAsientos() == null || r.incluirAsientos(), fechas);
+    }
+
+    /** Máximo de créditos por petición de {@code /escenarios/ejecutar-lote}. */
+    public static final int LOTE_MAXIMO = 500;
+    public static final String LOTE_DEMASIADO_GRANDE = "LOTE_DEMASIADO_GRANDE";
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(ServicioCartera.class);
+
+    /** Valida el tamaño del lote antes de empezar a responder (así el error sale como JSON con su estado HTTP). */
+    public void validarLote(List<EjecutarRequest> lote) {
+        if (lote == null || lote.isEmpty()) {
+            throw ApiException.datoInvalido("El lote debe traer al menos un escenario");
+        }
+        if (lote.size() > LOTE_MAXIMO) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, LOTE_DEMASIADO_GRANDE,
+                    "El lote trae " + lote.size() + " escenarios; el máximo es " + LOTE_MAXIMO,
+                    Map.of("recibidos", lote.size(), "maximo", LOTE_MAXIMO));
+        }
+    }
+
+    /**
+     * Ejecuta el lote en orden entregando una salida por ítem: el {@link EjecucionResponse} de ese ítem o un
+     * {@link ErrorLote} con su índice. Un ítem inválido no tumba el lote. No acumula resultados.
+     */
+    public void ejecutarLote(List<EjecutarRequest> lote, java.util.function.Consumer<Object> consumidor) {
+        for (int i = 0; i < lote.size(); i++) {
+            Object salida;
+            try {
+                salida = ejecutar(lote.get(i));
+            } catch (Exception e) {
+                salida = errorDeLote(i, e);
+            }
+            consumidor.accept(salida);
+        }
+    }
+
+    private static ErrorLote errorDeLote(int indice, Exception e) {
+        if (e instanceof ApiException a) {
+            return new ErrorLote(indice, a.codigo(), a.getMessage(), a.detalle());
+        }
+        if (e instanceof AbonoMayorQueElSaldoException a) {
+            return new ErrorLote(indice, ManejadorErrores.ABONO_MAYOR_QUE_SALDO, a.getMessage(),
+                    Map.of("periodo", a.periodo(), "abono", texto(a.abono()), "saldo", texto(a.saldo())));
+        }
+        if (e instanceof IllegalArgumentException) {
+            return new ErrorLote(indice, ApiException.VALIDACION, e.getMessage(), Map.of());
+        }
+        if (e instanceof Contabilizador.AsientoDescuadradoException) {
+            return new ErrorLote(indice, ManejadorErrores.ASIENTO_DESCUADRADO, e.getMessage(), Map.of());
+        }
+        String id = java.util.UUID.randomUUID().toString();
+        LOG.error("ERROR_INTERNO idCorrelacion={} indice={} tipo={}", id, indice, e.getClass().getName(), e);
+        return new ErrorLote(indice, ManejadorErrores.ERROR_INTERNO,
+                "Error interno del servidor. Cite el identificador al reportarlo.", Map.of("idCorrelacion", id));
     }
 
     public List<CasoResumenDto> casos() {

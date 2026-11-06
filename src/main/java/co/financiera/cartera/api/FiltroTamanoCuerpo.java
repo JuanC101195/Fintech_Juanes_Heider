@@ -23,10 +23,20 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
 
     static final String CODIGO = "CUERPO_DEMASIADO_GRANDE";
 
+    /** Única ruta con un tope propio: el lote de escenarios trae hasta 500 créditos. */
+    static final String RUTA_LOTE = "/api/v1/escenarios/ejecutar-lote";
+    static final int MAXIMO_LOTE_POR_DEFECTO = 8 * 1024 * 1024;
+
     private final int maximo;
+    private final int maximoLote;
 
     public FiltroTamanoCuerpo(int maximo) {
+        this(maximo, Math.max(maximo, MAXIMO_LOTE_POR_DEFECTO));
+    }
+
+    public FiltroTamanoCuerpo(int maximo, int maximoLote) {
         this.maximo = maximo;
+        this.maximoLote = maximoLote;
     }
 
     @Override
@@ -37,9 +47,10 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
+        int maximo = RUTA_LOTE.equals(request.getRequestURI()) ? maximoLote : this.maximo;
         long largo = request.getContentLengthLong();
         if (largo > maximo) {
-            rechazar(response);
+            rechazar(response, maximo);
             return;
         }
         if (largo >= 0) {
@@ -48,13 +59,13 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
         }
         byte[] cuerpo = request.getInputStream().readNBytes(maximo + 1);
         if (cuerpo.length > maximo) {
-            rechazar(response);
+            rechazar(response, maximo);
             return;
         }
         chain.doFilter(new CuerpoEnMemoria(request, cuerpo), response);
     }
 
-    private void rechazar(HttpServletResponse response) throws IOException {
+    private void rechazar(HttpServletResponse response, int maximo) throws IOException {
         RespuestaFiltro.error(response, HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, CODIGO,
                 "El cuerpo de la petición supera el máximo de " + (maximo / 1024) + " KB");
     }
