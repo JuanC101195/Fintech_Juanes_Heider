@@ -327,3 +327,106 @@ test('flujo=1: meses cerrados con la flota activa de fin de mes, mes en curso y 
   assert.strictEqual(r.cuerpo.meses[1].carta, null)
   assert.strictEqual(r.cuerpo.meses[0].corridas.fija_sin_justificaciones.interes, 300)
 })
+
+// ---- caché, ETag y paginación de activos / flujo ----
+const filasActivos = (n) =>
+  Array.from({ length: n }, (_, i) => ({
+    id: `S|${i}|2026-01-01`, contrato: String(i), fecha_inicio: '2026-01-01', cuotas: '52', real_pagado: '1000', corrida: 'fija_sin_justificaciones', sim_pagado: '1',
+  }))
+function contado(filas) {
+  const o = { n: 0 }
+  o.consultar = async () => {
+    o.n += 1
+    return filas
+  }
+  return o
+}
+
+test('activos=1: dos llamadas seguidas ejecutan una sola consulta y la caché expira tras el TTL', async () => {
+  let t = 1000
+  const c = contado(filasActivos(2))
+  const m = crearManejador({ consultar: c.consultar, claveEsperada: CLAVE, ttlMs: 600000, ahora: () => t })
+  const pet = { ...base, activos: '1', numero: undefined }
+  await m(pet)
+  await m(pet)
+  assert.strictEqual(c.n, 1)
+  t += 599999
+  await m(pet)
+  assert.strictEqual(c.n, 1)
+  t += 2
+  await m(pet)
+  assert.strictEqual(c.n, 2)
+})
+
+test('flujo=1: la caché evita repetir las consultas y TTL 0 la desactiva', async () => {
+  let n = 0
+  const consultar = async () => { n += 1; return [] }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 1000, ahora: () => 0 })
+  await m({ ...base, flujo: '1', numero: undefined })
+  const tras1 = n
+  await m({ ...base, flujo: '1', numero: undefined })
+  assert.strictEqual(n, tras1)
+  const m0 = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 0 })
+  await m0({ ...base, flujo: '1', numero: undefined })
+  await m0({ ...base, flujo: '1', numero: undefined })
+  assert.strictEqual(n, tras1 + 2 * tras1)
+})
+
+test('una consulta fallida no se queda en caché', async () => {
+  let n = 0
+  const consultar = async () => { n += 1; if (n === 1) throw new Error('x'); return filasActivos(1) }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 1000, ahora: () => 0 })
+  const pet = { ...base, activos: '1', numero: undefined }
+  assert.strictEqual((await m(pet)).status, 500)
+  assert.strictEqual((await m(pet)).status, 200)
+})
+
+test('activos y flujo llevan Cache-Control privado y ETag, y responden 304 si If-None-Match coincide (tras validar la clave)', async () => {
+  const m = crearManejador({ consultar: contado(filasActivos(1)).consultar, claveEsperada: CLAVE, ttlMs: 1000, ahora: () => 0 })
+  const pet = { ...base, activos: '1', numero: undefined }
+  const r = await m(pet)
+  assert.strictEqual(r.headers['Cache-Control'], 'private, max-age=300')
+  assert.match(r.headers.ETag, /^"[0-9a-f]{32}"$/)
+  const r304 = await m({ ...pet, ifNoneMatch: r.headers.ETag })
+  assert.strictEqual(r304.status, 304)
+  assert.strictEqual(r304.cuerpo, undefined)
+  assert.strictEqual((await m({ ...pet, ifNoneMatch: '"otro"' })).status, 200)
+  assert.strictEqual((await m({ ...pet, clave: 'mala', ifNoneMatch: r.headers.ETag })).status, 401)
+})
+
+test('la ruta ?numero= no cambia: no-store y sin ETag', async () => {
+  const { m } = manejador({ contratos: [filaContrato('A', '2024-01-01')] })
+  const r = await m({ ...base, ifNoneMatch: '*' })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual(r.headers['Cache-Control'], 'no-store')
+  assert.strictEqual(r.headers.ETag, undefined)
+})
+
+test('activos=1 sin pagina/tamano devuelve todo (formato histórico); con ellos pagina con metadatos', async () => {
+  const m = crearManejador({ consultar: contado(filasActivos(5)).consultar, claveEsperada: CLAVE, ttlMs: 1000, ahora: () => 0 })
+  const pet = { ...base, activos: '1', numero: undefined }
+  const todo = await m(pet)
+  assert.deepStrictEqual(Object.keys(todo.cuerpo), ['activos', 'contratos'])
+  assert.strictEqual(todo.cuerpo.contratos.length, 5)
+  const p2 = await m({ ...pet, pagina: '2', tamano: '2' })
+  assert.deepStrictEqual([p2.cuerpo.total, p2.cuerpo.pagina, p2.cuerpo.tamano, p2.cuerpo.paginas], [5, 2, 2, 3])
+  assert.deepStrictEqual(p2.cuerpo.contratos.map((c) => c.contrato), ['2', '3'])
+  assert.strictEqual((await m({ ...pet, pagina: '9', tamano: '2' })).cuerpo.contratos.length, 0)
+  assert.strictEqual((await m({ ...pet, pagina: '1' })).cuerpo.tamano, 200)
+  for (const mala of [{ pagina: '0' }, { pagina: 'x' }, { tamano: '1001' }, { tamano: '0' }, { tamano: '-1' }]) {
+    const r = await m({ ...pet, ...mala })
+    assert.deepStrictEqual([r.status, r.cuerpo.error], [400, 'paginacion_invalida'])
+  }
+})
+
+test('listarActivos usa un LEFT JOIN agregado en lugar de una subconsulta por fila, con SQL parametrizado', async () => {
+  const c = { sqls: [] }
+  const consultar = async (sql, params) => { c.sqls.push({ sql, params }); return [] }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 0 })
+  await m({ ...base, activos: '1', numero: undefined })
+  const { sql, params } = c.sqls[0]
+  assert.match(sql, /LEFT JOIN \(SELECT id, SUM\(valor_miles\) \* 1000 AS real_pagado FROM pago_real GROUP BY id\) p ON p\.id = c\.id/)
+  assert.doesNotMatch(sql, /\(SELECT COALESCE\(SUM/)
+  assert.match(sql, /ANY\(\$1::text\[\]\)/)
+  assert.deepStrictEqual(params, [['fija_con_justificaciones', 'fija_sin_justificaciones']])
+})
