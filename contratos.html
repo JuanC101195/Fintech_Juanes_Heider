@@ -36,6 +36,22 @@
     .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
     form.consulta { display: grid; gap: 12px 16px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; max-width: 560px; }
     .campo-clave { max-width: 420px; margin-bottom: 4px; }
+    .barra-carga { display: block; height: 6px; margin-top: 8px; max-width: 360px; background: var(--cabecera); border-radius: 999px; overflow: hidden; }
+    .barra-carga > span { display: block; height: 100%; width: 35%; background: var(--primario); border-radius: 999px; animation: va-y-viene 1.4s ease-in-out infinite alternate; }
+    @keyframes va-y-viene { from { transform: translateX(0); } to { transform: translateX(185%); } }
+    @media (prefers-reduced-motion: reduce) { .barra-carga > span { animation: none; width: 100%; } }
+    .vacio { padding: 12px 0; }
+    .pestanas .t-corto { display: none; }
+    @media (max-width: 520px) {
+      .pestanas { overflow-x: visible; }
+      .pestanas [role=tab] { flex: 1 1 0; padding: 8px 4px; font-size: 15px; }
+      .pestanas .t-corto { display: inline; } .pestanas .t-largo { display: none; }
+    }
+    .bg-mora { background: var(--s2); } .bg-cob { background: var(--s4); }
+    .reglas { margin: 12px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; max-width: 720px; }
+    .reglas h3 { margin: 0 0 6px; font-size: 15px; }
+    .reglas ul { margin: 0; padding-left: 20px; font-size: 14px; }
+    .reglas li { margin-bottom: 3px; }
     .pestanas { display: flex; gap: 4px; border-bottom: 1px solid var(--borde); margin: 16px 0 14px; overflow-x: auto; }
     .pestanas [role=tab] { background: transparent; color: var(--suave); border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 8px 14px; margin-bottom: -1px; white-space: nowrap; }
     .pestanas [role=tab]:hover { color: var(--texto); }
@@ -47,7 +63,7 @@
     .datos.compacta { gap: 4px 20px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 12px; }
     .opciones { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 16px 0 0; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; }
     .opciones fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
-    .opciones legend { font-size: 12px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; padding: 0; margin-bottom: 6px; }
+    .opciones legend { font-size: 13px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; padding: 0; margin-bottom: 6px; }
     .opciones .pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
     .opciones label { display: inline-flex; gap: 6px; align-items: center; margin: 0; padding: 5px 10px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); font-size: 14px; font-weight: 500; cursor: pointer; }
     .opciones label:has(input:checked) { border-color: var(--primario); color: var(--primario); font-weight: 700; box-shadow: inset 0 0 0 1px var(--primario); }
@@ -60,7 +76,7 @@
     .veredicto-cifra small { display: block; font-size: 14px; font-weight: 600; color: var(--suave); margin-top: 2px; }
     .kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 12px 0; }
     .kpi { background: var(--fondo); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-    .kpi-rotulo { font-size: 12px; color: var(--suave); margin: 0; }
+    .kpi-rotulo { font-size: 13px; color: var(--suave); margin: 0; }
     .kpi-valor { font-size: 18px; font-weight: 700; margin: 2px 0 0; overflow-wrap: anywhere; }
     .kpi-sub { font-size: 13px; color: var(--suave); margin: 2px 0 0; overflow-wrap: anywhere; }
     details.plegable { border: 1px solid var(--borde); border-radius: 12px; padding: 0 14px; margin: 12px 0; }
@@ -83,7 +99,7 @@
     .datos div { min-width: 0; }
     .datos dt { color: var(--suave); font-size: 13px; }
     .datos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
-    .etiqueta { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
+    .etiqueta { display: inline-block; font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
     .comparacion { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 16px 0; }
     .comparacion > div { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; }
     .liquidacion { margin: 10px 0 0; padding: 10px 14px; border-left: 4px solid var(--aviso-borde, #c9a227); background: var(--aviso-fondo, #fff4d6); color: var(--aviso-texto, #5a4300); border-radius: 8px; font-size: 15px; line-height: 1.45; }
@@ -103,14 +119,14 @@
     tr.listo td, tr.listo th { background: var(--fila-listo); font-weight: 600; }
     .grafica { width: 100%; min-width: 0; }
     .grafica svg { display: block; max-width: 100%; height: auto; }
-    .g-texto { fill: var(--suave); font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    .g-valor { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-texto { fill: var(--suave); font: 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-valor { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     .g-eje { stroke: var(--borde); stroke-width: 1; }
     .g-rejilla { stroke: var(--borde); stroke-width: 1; opacity: .7; }
     .leyenda span.linea { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--texto); vertical-align: 4px; margin-right: 6px; }
     .leyenda span.punteada { border-top-style: dashed; }
     .bloque-grafica { margin: 20px 0; min-width: 0; }
-    td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 12px; line-height: 1.35; }
+    td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 13px; line-height: 1.35; }
     tfoot th, tfoot td { font-weight: 700; background: var(--cabecera); border-top: 2px solid var(--borde); }
     .tabla-chica { max-width: 520px; }
     details { margin: 12px 0; }
@@ -138,7 +154,7 @@
     .deslizador label { font-size: 14px; }
     .deslizador output { display: block; font-weight: 800; font-size: 18px; margin: 2px 0 4px; }
     input[type=range] { width: 100%; accent-color: var(--primario); margin: 4px 0 8px; cursor: pointer; }
-    .extremos { display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); margin: -4px 0 8px; }
+    .extremos { display: flex; justify-content: space-between; font-size: 13px; color: var(--suave); margin: -4px 0 8px; }
     .atajos { display: flex; flex-wrap: wrap; gap: 6px; }
     .atajos button { padding: 5px 12px; font-size: 13px; background: var(--tarjeta); color: var(--primario); }
     .atajos button[aria-pressed=true] { background: var(--primario); color: #fff; }
@@ -165,8 +181,8 @@
     table.anual tfoot tr.sub-cerrados th, table.anual tfoot tr.sub-cerrados td { border-top-width: 3px; }
     table.anual td.fuerte { font-weight: 700; }
     .mes-btn { background: transparent; color: var(--primario); border: 0; padding: 4px 2px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-    .pc { display: block; font-size: 12px; font-weight: 400; color: var(--suave); white-space: nowrap; font-style: normal; }
-    .est { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--borde); background: var(--cabecera); font-style: normal; }
+    .pc { display: block; font-size: 13px; font-weight: 400; color: var(--suave); white-space: nowrap; font-style: normal; }
+    .est { display: inline-block; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--borde); background: var(--cabecera); font-style: normal; }
     .est-curso { background: var(--aviso-fondo); color: var(--aviso-texto); border-color: transparent; }
     .est-proy { background: transparent; border: 1px dashed var(--suave); color: var(--suave); }
     .flota { margin: 0 0 12px; font-size: 16px; }
@@ -218,10 +234,14 @@
         <select id="sede" name="sede" aria-describedby="ayuda-sede"></select>
         <p class="ayuda" id="ayuda-sede">El número de contrato se repite entre sedes: la consulta siempre es de una sola sede.</p>
       </div>
+      <section class="reglas" id="reglas-motor" aria-labelledby="t-reglas">
+        <h3 id="t-reglas">Reglas que usa el motor hoy</h3>
+        <ul id="reglas-lista"></ul>
+      </section>
       <div class="pestanas" role="tablist" aria-label="Qué consultar">
-        <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
-        <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
-        <button type="button" role="tab" id="tab-flujo" aria-selected="false" aria-controls="panel-flujo" tabindex="-1">Recaudo de la cartera activa</button>
+        <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno" aria-label="Un contrato"><span class="t-corto">Contrato</span><span class="t-largo">Un contrato</span></button>
+        <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1" aria-label="Contratos activos"><span class="t-corto">Activos</span><span class="t-largo">Contratos activos</span></button>
+        <button type="button" role="tab" id="tab-flujo" aria-selected="false" aria-controls="panel-flujo" tabindex="-1" aria-label="Recaudo de la cartera activa"><span class="t-corto">Recaudo</span><span class="t-largo">Recaudo de la cartera activa</span></button>
       </div>
       <div id="panel-uno" role="tabpanel" aria-labelledby="tab-uno">
         <form class="consulta" id="formulario" novalidate>
@@ -265,8 +285,8 @@
         <li><strong>Real (sistema actual):</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo. Es lo que pasó en la empresa.</li>
         <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
-        <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
-        <li>Gasto de cobranza: $25.000 por cada cuota que se paga atrasada, aunque sea un día (política vigente en el perfil NEGOCIO); es una política temporal.</li>
+        <li>Cuando el contrato no es el primero de esa moto, la inversión es estimada (no un dato registrado).</li>
+        <li data-regla="cobranza"></li>
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
       <ul class="notas">
@@ -276,7 +296,7 @@
       </ul>
       <p class="subtitulo">Las gráficas</p>
       <ul class="notas">
-        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la usura vigente y la tasa implícita del sistema actual.</li>
+        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la tasa máxima legal (usura) vigente y la tasa anual que de hecho pagó el cliente, estimada con todo lo que pagó.</li>
         <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la financiera frente a lo que el cliente pagó; el resumen mensual da las mismas cifras.</li>
       </ul>
       <p class="subtitulo">Contratos activos y recaudo</p>
@@ -304,9 +324,20 @@ const CONFIG = {
   prefijoMax: 'max_',
   sedes: { CARTAGENA: 'Cartagena', MONTERIA: 'Montería', SINCELEJO: 'Sincelejo', BICIMOTOS: 'Bicimotos' },
   sedeDefecto: 'CARTAGENA',
-  cobranzaPorCuota: 25000, // política vigente (perfil NEGOCIO): cobranza por cada cuota atrasada
+  cobranzaPorCuota: 25000, // política temporal: cobranza por cada cuota pagada tarde
+  diasAnio: 360,
 }
 const TASA_FIJA_TXT = (CONFIG.tasaFija * 100).toFixed(2).replace('.', ',') + ' %'
+// Única fuente de las reglas que se muestran (bloque bajo la sede, «Cómo leer esta página» y nota de multas).
+const PLATA = (n) => '$' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+CONFIG.reglas = [
+  { id: 'tasa', texto: 'Tasa fija anual desde el desembolso', valor: TASA_FIJA_TXT },
+  { id: 'cobranza', texto: 'Cobranza por cada cuota pagada tarde, aunque sea un día (política temporal)', valor: PLATA(CONFIG.cobranzaPorCuota) },
+  { id: 'anio', texto: 'El interés se calcula con un año de', valor: `${CONFIG.diasAnio} días` },
+  { id: 'multas', texto: 'Las multas del sistema actual', valor: 'no siguen una regla fija' },
+]
+const REGLA = (id) => CONFIG.reglas.find((r) => r.id === id)
+const NOTA_MULTAS = `Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de ${REGLA('cobranza').valor} por cada cuota atrasada (política temporal).`
 for (const n of document.querySelectorAll('[data-tasa-fija]')) n.textContent = TASA_FIJA_TXT
 const CORRIDA_FIJA = { sin: CONFIG.prefijoFija + 'sin_justificaciones', con: CONFIG.prefijoFija + 'con_justificaciones' }
 document.getElementById('act-just').replaceChildren(new Option('Sin justificaciones', CORRIDA_FIJA.sin), new Option('Con justificaciones', CORRIDA_FIJA.con))
@@ -331,6 +362,8 @@ function el(tag, props, ...hijos) {
   for (const h of hijos.flat()) if (h !== null && h !== undefined && h !== false) e.append(h instanceof Node ? h : document.createTextNode(String(h)))
   return e
 }
+$('reglas-lista').replaceChildren(...CONFIG.reglas.map((r) => el('li', {}, r.texto + ': ', el('strong', {}, r.valor))))
+document.querySelector('[data-regla=cobranza]').textContent = `Gasto de cobranza: ${REGLA('cobranza').valor} por cada cuota que se paga atrasada, aunque sea un día; es una política temporal.`
 const agrupar = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 function cop(v) {
   if (v === null || v === undefined || Number.isNaN(Number(v))) return '—'
@@ -411,22 +444,45 @@ function claseFila(p) {
 }
 const rotuloFila = { listo: 'Listo para recuperar', justificado: 'Justificado', sinpago: 'Sin pago' }
 
-function tablaAmortizacion(periodos, leyendaCaption) {
+// Texto humano del estado de un periodo (solo en pantalla; el CSV y el Excel siguen con el valor técnico).
+function estadoHumano(p) {
+  const marca = p.listoRecuperacion ? 'Listo para recuperar · ' : ''
+  const sinPago = !(Number(p.valorReal) > 0) || /sin_?pago/i.test(p.estado || '')
+  if (sinPago) {
+    const cv = Number(p.cuotasVencidas) || 0
+    return marca + (p.justificado ? 'No pagó esta semana (atraso justificado)' : `No pagó esta semana → ${dec(cv)} ${cv === 1 ? 'cuota vencida' : 'cuotas vencidas'}`)
+  }
+  const dias = Number(p.diasAtraso) || 0
+  const f = fechaPagoDe(p)
+  const dm = f ? fechaCorta(f).slice(0, 5) : ''
+  if (dias > 0) return marca + `Pagó${dm ? ' el ' + dm : ''}, ${dec(dias, 0)} ${dias === 1 ? 'día tarde' : 'días tarde'}${Number(p.cobranza) > 0 ? ' → cobranza ' + cop(p.cobranza) : ''}`
+  return marca + (p.justificado ? 'Al día (atraso justificado)' : 'Al día')
+}
+const MORA_COB = ['Mora y cobranza', (p) => cop((Number(p.interesMora) || 0) + (Number(p.cobranza) || 0)), '', (p) => (Number(p.interesMora) || 0) + (Number(p.cobranza) || 0)]
+// Vista corta (8 columnas) o completa (todas). El CSV y el Excel usan siempre COLUMNAS completas.
+function columnasVista(corta) {
+  if (!corta) return COLUMNAS
+  const por = Object.fromEntries(COLUMNAS.map((c) => [c[0], c]))
+  return ['Periodo', 'Vence', 'Fecha de pago', 'Pago real', 'Estado', 'Capital pagado', 'Interés'].map((n) => por[n]).concat([MORA_COB])
+}
+
+function tablaAmortizacion(periodos, leyendaCaption, corta = false) {
+  const COLS = columnasVista(corta)
   const cuerpo = el('tbody')
   for (const p of periodos) {
     const cl = claseFila(p)
     const tr = el('tr', { class: cl })
-    COLUMNAS.forEach(([n, f, alin], i) => {
+    COLS.forEach(([n, f, alin], i) => {
       if (n === 'Estado') {
-        const marca = cl ? el('strong', {}, rotuloFila[cl] + ' · ') : null
-        tr.append(el('td', { class: 'izq' }, marca, texto(p.estado)))
+        const marca = cl === 'justificado' ? el('strong', {}, rotuloFila[cl] + ' · ') : null
+        tr.append(el('td', { class: 'izq' }, marca, estadoHumano(p)))
       } else tr.append(el(i === 0 ? 'th' : 'td', { class: alin, scope: i === 0 ? 'row' : null }, f(p)))
     })
     cuerpo.append(tr)
   }
-  const cab = el('tr', {}, COLUMNAS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
-  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
-  const pie = el('tfoot', {}, el('tr', {}, COLUMNAS.map(([n, , alin, crudo], i) =>
+  const cab = el('tr', {}, COLS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
+  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Mora y cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
+  const pie = el('tfoot', {}, el('tr', {}, COLS.map(([n, , alin, crudo], i) =>
     i === 0 ? el('th', { scope: 'row', class: 'izq' }, 'Total')
       : SUMABLES.includes(n) ? el('td', {}, sumaDe(periodos, crudo) === null ? '—' : cop(sumaDe(periodos, crudo)))
         : el('td', { class: alin }))))
@@ -457,7 +513,7 @@ function descargar(nombre, contenido) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-// ---------- episodio ----------
+// ---------- cliente (episodio) ----------
 function kpi(rotulo, valor, sub) {
   return el('div', { class: 'kpi' }, el('p', { class: 'kpi-rotulo' }, rotulo), el('p', { class: 'kpi-valor' }, valor), sub ? el('p', { class: 'kpi-sub' }, sub) : null)
 }
@@ -481,13 +537,39 @@ function cifrasDe(ep, c) {
   const valorTotal = ep.valorTotalMiles != null ? ep.valorTotalMiles * 1000 : null
   const proyMotor = r.simProyectadoTotal ?? null
   const dif = recaudoMotor - sistema
-  return { r, sistema, inversion, recaudoMotor, deuda, conDeuda, dif, bruto, sobrante: bruto - recaudoMotor, difPct: sistema > 0 ? dif / sistema : null, valorTotal, proyMotor, proyectado: valorTotal != null && proyMotor != null }
+  // Lo pagado, repartido como lo aplicaría el motor (capital, interés, mora, cobranza, servicios).
+  const sumaP = (f) => (c.periodos || []).reduce((t, p) => t + (Number(f(p)) || 0), 0)
+  const reparto = { cap: sumaP((p) => p.pagoCapital), int: sumaP((p) => p.pagoInteres), mora: sumaP((p) => p.pagoMora), cob: sumaP((p) => p.pagoCobranza),
+    srv: sumaP((p) => p.pagoServicios ?? (Number(p.pagoFondo) || 0) + (Number(p.pagoSeguro) || 0) + (Number(p.pagoAsistencia) || 0)) }
+  return { reparto, terminado: !!ep.fechaFin, r, sistema, inversion, recaudoMotor, deuda, conDeuda, dif, bruto, sobrante: bruto - recaudoMotor, difPct: sistema > 0 ? dif / sistema : null, valorTotal, proyMotor, proyectado: valorTotal != null && proyMotor != null }
 }
 
 // Lo primero que se ve: si con el motor se habría recaudado más, igual o menos (en efectivo), por cuánto, y las cifras clave.
+// Barra de reparto con los cinco conceptos y su leyenda.
+function repartoDetallado(rp) {
+  const partes = [['Capital', rp.cap, 'bg-cap'], ['Interés', rp.int, 'bg-int'], ['Mora', rp.mora, 'bg-mora'], ['Cobranza', rp.cob, 'bg-cob'], ['Servicios', rp.srv, 'bg-otr']]
+  const t = partes.reduce((a, [, v]) => a + v, 0)
+  return el('div', {},
+    el('div', { class: 'reparto', role: 'img', 'aria-label': 'Reparto de lo pagado: ' + partes.map(([n, v]) => `${n.toLowerCase()} ${pctDe(v, t)}`).join(', ') },
+      partes.map(([n, v, cls]) => el('span', { class: cls, style: `flex: 0 0 ${t > 0 ? (v / t) * 100 : 0}%`, title: `${n}: ${pctDe(v, t)}` }))),
+    el('ul', { class: 'leyenda', 'aria-label': 'Leyenda del reparto' }, partes.map(([n, v, cls]) => el('li', {}, el('span', { class: 'muestra ' + cls }), `${n} ${cop(v)} (${pctDe(v, t)})`))))
+}
+
 function veredicto(ep, x) {
   const { sistema, inversion, recaudoMotor, deuda, dif, difPct, valorTotal, proyMotor, proyectado } = x
   const igual = Math.abs(dif) < 1
+  if (igual && x.terminado && !proyectado) {
+    // Contrato terminado: la igualdad es por construcción (al motor se le dan los mismos pagos reales), así que lo informativo es cómo se reparte.
+    const rp = x.reparto
+    const aInteres = rp.int + rp.mora + rp.cob
+    return el('section', { class: 'veredicto', 'aria-label': 'Resumen de la comparación' },
+      el('p', { class: 'veredicto-titulo' }, `El cliente pagó lo mismo en los dos lados: ${cop(recaudoMotor)}. Lo que cambia es cómo se reparte ese dinero`),
+      repartoDetallado(rp),
+      el('p', {}, `Con las reglas del motor, de esos ${cop(recaudoMotor)}, ${cop(rp.cap)} habrían ido a capital y ${cop(aInteres)} a interés, mora y cobranza${rp.srv >= 1 ? ` (más ${cop(rp.srv)} de servicios)` : ''}; al final quedarían ${cop(deuda)} por cobrar.`),
+      el('div', { class: 'kpis' }, kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Estimada; igual en los dos lados' : 'Igual en los dos lados')),
+      deuda >= 1 ? el('p', { class: 'liquidacion', role: 'note' }, el('strong', {}, 'Deuda que el motor aún figura por cobrar (no es dinero recaudado): '), cop(deuda),
+        '. Es capital y cargos que el motor sigue mostrando pendientes; el cliente no los pagó, por eso no suma a lo recaudado ni al margen.') : null)
+  }
   const frase = igual ? 'Con el motor, lo recaudado habría sido igual que en el sistema actual' : dif > 0 ? 'Con el motor, lo recaudado habría sido mayor que en el sistema actual' : 'Con el motor, lo recaudado habría sido menor que en el sistema actual'
   const sub = igual ? 'recaudado en dinero, en los dos lados' : (difPct === null ? '' : `${signoDe(dif)}${pctDif(difPct)} frente a lo que pagó el cliente`) + (proyectado ? ' · a hoy' : '')
   return el('section', { class: 'veredicto', 'aria-label': 'Resumen de la comparación' },
@@ -496,7 +578,7 @@ function veredicto(ep, x) {
     el('div', { class: 'kpis' },
       kpi('Sistema actual · recaudado', cop(sistema), `Margen ${cop(sistema - inversion)}`),
       kpi('Motor (simulado) · recaudado', cop(recaudoMotor), `Margen ${cop(recaudoMotor - inversion)}`),
-      kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Imputada (estimada); igual en los dos lados' : 'Igual en los dos lados'),
+      kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Estimada; igual en los dos lados' : 'Igual en los dos lados'),
       proyectado ? kpi('Al final del plan', `${signoDe(proyMotor - valorTotal)}${cop(Math.abs(proyMotor - valorTotal))}`, `Motor ${cop(proyMotor)} · sistema actual ${cop(valorTotal)}`) : null),
     deuda >= 1 ? el('p', { class: 'liquidacion', role: 'note' }, el('strong', {}, 'Deuda que el motor aún figura por cobrar (no es dinero recaudado): '), cop(deuda),
       '. Es capital y cargos que el motor sigue mostrando pendientes; el cliente no los pagó, por eso no suma a lo recaudado ni al margen.') : null)
@@ -515,8 +597,8 @@ function desglose(ep, x) {
           valorTotal != null ? dato('Saldo por recaudar', cop(ep.saldoRealMiles != null ? ep.saldoRealMiles * 1000 : null)) : null,
           dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
           valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
-          dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas))),
-        el('p', { class: 'ayuda', id: 'nota-multas' }, `Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $${agrupar(CONFIG.cobranzaPorCuota)} por cada cuota atrasada (política vigente en perfil NEGOCIO).`)),
+          dato('Tasa anual que de hecho pagó el cliente (incluye multas)', pct(r.realEA ?? r.realEaConMultas))),
+        el('p', { class: 'ayuda', id: 'nota-multas' }, NOTA_MULTAS)),
       el('div', { class: 'columna' }, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente (aplicado al crédito)', cop(r.simPagado)),
@@ -575,7 +657,7 @@ function tarjetaEpisodio(ep, i, total) {
   const claves = ['sin_justificaciones', 'con_justificaciones', CONFIG.prefijoMax + 'sin_justificaciones', CONFIG.prefijoMax + 'con_justificaciones', CORRIDA_FIJA.sin, CORRIDA_FIJA.con]
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
-  const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
+  const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · cliente ${i + 1} de ${total} de esta moto` : ''))
   tarjeta.append(cabecera)
   // Lo esencial del contrato a la vista; la ficha técnica va plegada.
   tarjeta.append(el('dl', { class: 'datos compacta' },
@@ -583,17 +665,17 @@ function tarjetaEpisodio(ep, i, total) {
     dato('Inicio', fechaCorta(ep.fechaInicio)),
     dato('Fin', ep.fechaFin ? fechaCorta(ep.fechaFin) : 'Sin terminar'),
     dato('Cuotas', `${dec(ep.cuotas, 0)} de ${copMiles(ep.cuotaRealMiles)}`),
-    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'imputada') : null)))
+    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'estimada') : null)))
   tarjeta.append(plegable('Más datos del contrato', false, 'ficha',
     el('dl', { class: 'datos' },
-      dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Contrato posterior (reasignación nº ${i + 1})`),
-      dato('Cohorte', texto(ep.cohorte)),
-      dato('Línea de usura aplicada', texto(ep.lineaUsura)),
-      dato('Tasa inicial de usura aplicada (EA)', pct(ep.tasaInicialEA)),
+      dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Cliente ${i + 1} de esta moto (la moto se reasignó)`),
+      dato('Grupo de inicio (periodo en que arrancó)', texto(ep.cohorte)),
+      dato('Tipo de crédito que fija la tasa máxima legal', texto(ep.lineaUsura)),
+      dato('Tasa máxima legal (usura) al inicio, anual', pct(ep.tasaInicialEA)),
       dato('Días justificados', dec(ep.diasJustificados, 0)))))
 
   if (!disponibles.length) {
-    tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene simulaciones del motor.'))
+    tarjeta.append(el('p', { class: 'ayuda' }, 'Este cliente no tiene simulaciones del motor.'))
     return tarjeta
   }
   const hayMax = Object.keys(corridas).some((k) => k.startsWith(CONFIG.prefijoMax))
@@ -619,8 +701,16 @@ function tarjetaEpisodio(ep, i, total) {
     opciones.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [[CONFIG.prefijoMax, 'Usura máxima']] : []), ...(hayFija ? [[CONFIG.prefijoFija, `Tasa fija ${TASA_FIJA_TXT}`]] : [])]))
   }
   opciones.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
+  // Lo que la persona abrió o eligió se conserva al cambiar de opción.
+  const vistaTabla = { corta: true }
+  let abiertoGraf = false
+  const graficasPlegable = (ep2, c2, k2) => {
+    const d = plegable('Gráficas y resumen mensual', abiertoGraf, 'graficas', ...graficasYMensual(ep2, c2, k2))
+    d.addEventListener('toggle', () => { abiertoGraf = d.open })
+    return d
+  }
   const pintar = () => {
-    // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este episodio.
+    // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este cliente.
     for (const [campo, valor, radio] of radios) {
       const otra = campo === 'tasa' ? nombre(valor, sel.just) : nombre(sel.tasa, valor)
       radio.disabled = !corridas[otra]
@@ -629,8 +719,8 @@ function tarjetaEpisodio(ep, i, total) {
     const c = corridas[clave]
     zona.replaceChildren(
       resumenComparativo(ep, c),
-      plegable('Gráficas y resumen mensual', true, 'graficas', ...graficasYMensual(ep, c, clave)),
-      plegable('Tabla periodo a periodo (amortización simulada)', false, 'amortizacion', tablaCompleta(ep, c, clave)))
+      plegable('Tabla de cuotas, periodo a periodo', true, 'amortizacion', tablaCompleta(ep, c, clave, vistaTabla)),
+      graficasPlegable(ep, c, clave))
   }
   cabecera.append(barraExcel(ep, () => sel.just, nombre))
   tarjeta.append(opciones,
@@ -669,7 +759,7 @@ const FORMATO_COLUMNA = {
 const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
 
 function hojaMotor(XLSX, periodos) {
-  if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta corrida no está disponible para este contrato.']])
+  if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta simulación no está disponible para este contrato.']])
   const cab = COLUMNAS.map(([n]) => n)
   const filas = periodos.map((p) => COLUMNAS.map(([n, , , crudo]) => {
     const v = crudo(p)
@@ -800,14 +890,14 @@ function graficaTasa(periodos, realEA, nombreCorrida, id) {
   const todos = [...aplicada, ...usura]
   const envoltura = el('div')
   envoltura.append(el('h3', {}, 'Tasa efectiva anual por fecha'))
-  if (!todos.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay tasas por fecha para esta corrida.')); return envoltura }
+  if (!todos.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay tasas por fecha para esta simulación.')); return envoltura }
   const xs = todos.map((q) => q[0])
   const x0 = Math.min(...xs)
   const x1 = Math.max(...xs)
   const vals = todos.map((q) => q[1]).concat(hayReal ? [Number(realEA)] : [])
   const rango = (s) => `entre ${pct1(Math.min(...s.map((q) => q[1])))} y ${pct1(Math.max(...s.map((q) => q[1])))}`
   const descripcion = `${nombreCorrida}. ` + (aplicada.length ? `Tasa aplicada por el motor ${rango(aplicada)}` : 'Sin tasa aplicada') +
-    (usura.length ? `; usura vigente ${rango(usura)}` : '') + (hayReal ? `; tasa implícita del sistema actual ${pct1(Number(realEA))}` : '') + '.'
+    (usura.length ? `; usura vigente ${rango(usura)}` : '') + (hayReal ? `; tasa anual estimada que pagó el cliente ${pct1(Number(realEA))}` : '') + '.'
   const grafica = responsivo((w) => {
     const alto = w < 500 ? 260 : 300
     const m = { i: 48, d: 58, s: 14, b: 30 }
@@ -858,9 +948,9 @@ function graficaTasa(periodos, realEA, nombreCorrida, id) {
   const leyenda = el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de la gráfica de tasa' },
     el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s1);border-top-width:4px' }), 'Tasa aplicada por el motor'),
     usura.length ? el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s2)' }), 'Usura vigente') : null,
-    hayReal ? el('li', {}, el('span', { class: 'linea punteada', style: 'border-top-color:var(--s3)' }), 'Tasa real implícita del sistema actual') : null)
+    hayReal ? el('li', {}, el('span', { class: 'linea punteada', style: 'border-top-color:var(--s3)' }), 'Tasa anual que de hecho pagó el cliente (estimada)') : null)
   envoltura.append(grafica, leyenda)
-  if (hayReal) envoltura.append(el('p', { class: 'ayuda' }, 'La tasa del sistema actual es implícita: calculada con todo lo que pagó el cliente (cuotas y multas) frente a la inversión; el sistema actual no separa interés.'))
+  if (hayReal) envoltura.append(el('p', { class: 'ayuda' }, 'Esta tasa es una estimación: se calcula con todo lo que pagó el cliente (cuotas y multas) frente a la inversión, porque el sistema actual no separa el interés.'))
   return envoltura
 }
 
@@ -960,20 +1050,25 @@ function graficasYMensual(ep, c, clave) {
   ]
 }
 
-function tablaCompleta(ep, c, clave) {
+function tablaCompleta(ep, c, clave, vistaTabla = { corta: true }) {
   const periodos = c.periodos || []
   const cont = el('div')
   if (!periodos.length) { cont.append(el('p', { class: 'ayuda' }, 'No hay periodos para esta simulación.')); return cont }
   const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
   boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
+  const zonaTabla = el('div')
+  const vista = el('button', { type: 'button', class: 'secundario', 'aria-pressed': String(!vistaTabla.corta) }, vistaTabla.corta ? 'Ver todas las columnas' : 'Ver menos columnas')
+  const pintarTabla = () => zonaTabla.replaceChildren(el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de cuotas, ${rotuloCorrida(clave)}` },
+    tablaAmortizacion(periodos, `Cuotas simuladas del contrato ${ep.id} · ${rotuloCorrida(clave)}`, vistaTabla.corta)))
+  vista.addEventListener('click', () => { vistaTabla.corta = !vistaTabla.corta; vista.textContent = vistaTabla.corta ? 'Ver todas las columnas' : 'Ver menos columnas'; vista.setAttribute('aria-pressed', String(!vistaTabla.corta)); pintarTabla() })
+  pintarTabla()
   cont.append(
-    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), el numerador del cociente de la marca; «Mora acumulada por cobrar» es solo la mora.`)),
+    el('div', { class: 'barra' }, boton, vista, el('span', { class: 'ayuda' }, `${periodos.length} periodos. El CSV y el Excel traen todas las columnas. En la vista completa, la columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), es la cifra que se compara con la cuota para decidir si la moto queda lista para recuperar; «Mora acumulada por cobrar» es solo la mora.`)),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-listo)' }), 'Listo para recuperar')),
-    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de amortización, ${rotuloCorrida(clave)}` },
-      tablaAmortizacion(periodos, `Amortización simulada del contrato ${ep.id} · ${rotuloCorrida(clave)}`)))
+    zonaTabla)
   return cont
 }
 
@@ -982,7 +1077,7 @@ function mostrar(datos) {
   const cont = $('resultado')
   const eps = datos.episodios || []
   const fragmentos = [el('h2', { class: 'solo-lectores' }, `Resultado del contrato ${datos.numero}`)]
-  if (eps.length > 1) fragmentos.push(el('p', {}, `El contrato ${datos.numero} tiene ${eps.length} episodios (la moto se reasignó entre clientes). Se muestran en orden de fecha de inicio.`))
+  if (eps.length > 1) fragmentos.push(el('p', {}, `El contrato ${datos.numero} tiene ${eps.length} clientes sucesivos (la moto se reasignó de un cliente a otro). Se muestran en orden de fecha de inicio.`))
   eps.forEach((ep, i) => fragmentos.push(tarjetaEpisodio(ep, i, eps.length)))
   cont.replaceChildren(...fragmentos)
 }
@@ -1055,11 +1150,31 @@ function crearDemo() {
 }
 
 // ---------- consulta ----------
+const MENSAJE_500 = 'Hubo un problema en el servidor; intente de nuevo en un minuto.'
+const MENSAJE_DEMORA = 'El servidor está despertando; la primera consulta suele tardar hasta 15 segundos.'
 const MENSAJES = {
   401: 'La clave es incorrecta o falta. Revísela e inténtelo de nuevo.',
   404: 'No se encontró ese número de contrato.',
   429: 'Demasiadas consultas seguidas. Espere un minuto e inténtelo otra vez.',
   400: 'El número de contrato no es válido: use solo dígitos (máximo 10).',
+}
+async function mensajeHttp(r, esContrato) {
+  if (r.status === 400) {
+    let cuerpo = ''
+    try { cuerpo = await r.text() } catch { /* sin cuerpo */ }
+    if (/sede_invalida/i.test(cuerpo)) return 'La sede elegida no es válida. Elija otra sede de la lista e inténtelo de nuevo.'
+    return esContrato ? MENSAJES[400] : 'La consulta no es válida. Revise los datos e inténtelo de nuevo.'
+  }
+  if (r.status >= 500) return MENSAJE_500
+  return MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'
+}
+// Carga progresiva: «Consultando…» y, pasados 3 s, aviso de que el servidor está despertando con barra indeterminada. Devuelve la función que la termina.
+function iniciarCarga(texto) {
+  mostrarEstado(texto)
+  const t = setTimeout(() => {
+    $('estado').replaceChildren(MENSAJE_DEMORA, el('span', { class: 'barra-carga', role: 'progressbar', 'aria-label': 'Consultando al servidor' }, el('span')))
+  }, 3000)
+  return () => clearTimeout(t)
 }
 function mostrarEstado(msg, esError) {
   const e = $('estado')
@@ -1096,13 +1211,19 @@ async function cargarSedes() {
     pintarSedes(Array.isArray(d.sedes) ? d.sedes : [])
   } catch { /* se queda la lista completa */ }
 }
+// Antes de consultar, las pestañas Activos y Recaudo dicen qué hacer en vez de quedar en blanco.
+function estadosVacios() {
+  $('act-resultado').replaceChildren(el('p', { class: 'ayuda vacio' }, 'Aún no ha consultado. Pulse «Ver contratos activos».'))
+  $('flujo-resultado').replaceChildren(el('p', { class: 'ayuda vacio' }, 'Aún no ha consultado. Pulse «Ver recaudo».'))
+}
 function cambiarSede() {
   guardarSede(sedeActual())
   // Los resultados en pantalla son de otra sede: se limpian para no mezclar.
   act.contratos = []
   for (const id of ['act-just', 'act-filtro', 'act-buscar']) $(id).disabled = true
-  for (const id of ['resultado', 'act-resultado', 'flujo-resultado']) $(id).replaceChildren()
-  mostrarEstado('')
+  $('resultado').replaceChildren()
+  estadosVacios()
+  mostrarEstado(`Cambió a ${CONFIG.sedes[sedeActual()]}: vuelva a consultar.`)
   if (MODO_DEMO) mostrar(crearDemo())
 }
 
@@ -1120,20 +1241,23 @@ async function consultar(ev) {
   const boton = $('consultar')
   boton.disabled = true
   $('resultado').replaceChildren()
-  mostrarEstado('Consultando…')
+  const finCarga = iniciarCarga('Consultando…')
   try {
     const url = new URL(urlApi)
     url.searchParams.set('numero', numero)
     agregarSede(url)
     const r = await fetch(url, { headers: { 'x-clave': clave }, cache: 'no-store' })
-    if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+    finCarga()
+    if (!r.ok) { mostrarEstado(await mensajeHttp(r, true), true); return }
     let datos
     try { datos = await r.json() } catch { mostrarEstado('La respuesta del servicio no se pudo leer.', true); return }
     mostrarEstado('')
     mostrar(datos)
   } catch {
+    finCarga()
     mostrarEstado('No hay conexión con el servicio. Revise su internet e inténtelo de nuevo (la primera consulta puede tardar unos segundos).', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1235,7 +1359,7 @@ function pintarActivos() {
   const cab = el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Detalle'), ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
     const activo = act.orden === id
     const b = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ordenar por ${rot}` }, rot + (activo ? (act.desc ? ' ▼' : ' ▲') : ''))
-    b.style.cssText = 'padding:2px 6px;font-size:12px;border:0;font-weight:700'
+    b.style.cssText = 'padding:2px 6px;font-size:13px;border:0;font-weight:700'
     b.addEventListener('click', () => { act.desc = act.orden === id ? !act.desc : false; act.orden = id; pintarActivos() })
     return el('th', { class: izq ? 'izq' : '', scope: 'col', 'aria-sort': activo ? (act.desc ? 'descending' : 'ascending') : 'none' }, b)
   }))
@@ -1260,7 +1384,7 @@ async function verActivos() {
   if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
   const boton = $('ver-activos')
   boton.disabled = true
-  mostrarEstado('Consultando los contratos activos…')
+  const finCarga = iniciarCarga('Consultando los contratos activos…')
   try {
     let datos
     if (MODO_DEMO) datos = { contratos: crearDemoActivos() }
@@ -1270,7 +1394,7 @@ async function verActivos() {
       url.searchParams.set('activos', '1')
       agregarSede(url)
       const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
-      if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+      if (!r.ok) { finCarga(); mostrarEstado(await mensajeHttp(r, false), true); return }
       datos = await r.json()
     }
     act.contratos = datos.contratos || []
@@ -1278,8 +1402,10 @@ async function verActivos() {
     mostrarEstado('')
     pintarActivos()
   } catch {
+    finCarga()
     mostrarEstado('No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1449,7 +1575,8 @@ function cartaDe(m) {
   if (!c || typeof c !== 'object' || c.valor == null) return null
   return { pagos: n0(c.pagos), valor: n0(c.valor), porMotivo: c.porMotivo && typeof c.porMotivo === 'object' ? c.porMotivo : {} }
 }
-const nombreMotivo = (k) => `Carta ${String(k).replace(/^CARTA\s+/i, '').toLowerCase()}`
+const MOTIVOS_TILDE = { ADMINISTRACION: 'Administración', REALQUILER: 'Realquiler', CORRECCION: 'Corrección', PERDIDA: 'Pérdida' }
+const nombreMotivo = (k) => { const m = String(k).replace(/^CARTA\s+/i, '').trim().toUpperCase(); return `Carta ${(MOTIVOS_TILDE[m] || m.charAt(0) + m.slice(1).toLowerCase())}` }
 
 // ---- A) tabla mensual del año ----
 function pintarTabla() {
@@ -1702,7 +1829,7 @@ async function cargarFlujo() {
   url.searchParams.set('flujo', '1')
   agregarSede(url)
   const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
-  if (!r.ok) throw Object.assign(new Error(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'), { mostrado: true })
+  if (!r.ok) throw Object.assign(new Error(await mensajeHttp(r, false)), { mostrado: true })
   return r.json()
 }
 
@@ -1710,7 +1837,7 @@ async function verFlujo() {
   if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
   const boton = $('ver-flujo')
   boton.disabled = true
-  mostrarEstado('Calculando el recaudo de la cartera activa…')
+  const finCarga = iniciarCarga('Calculando el recaudo de la cartera activa…')
   try {
     flujo.datos = await cargarFlujo()
     flujo.fin = null
@@ -1719,8 +1846,10 @@ async function verFlujo() {
     mostrarEstado('')
     pintarFlujo()
   } catch (e) {
+    finCarga()
     mostrarEstado(e && e.mostrado ? e.message : 'No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1799,6 +1928,7 @@ $('act-buscar').addEventListener('input', pintarActivos)
 $('ver-flujo').addEventListener('click', verFlujo)
 
 $('formulario').addEventListener('submit', consultar)
+estadosVacios()
 pintarSedes(null)
 $('sede').value = leerSede()
 $('sede').addEventListener('change', cambiarSede)
