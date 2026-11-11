@@ -4,14 +4,17 @@
 //  1b) «Contratos activos» (demo): filtros, resumen con las dos lecturas lado a lado y tabla sin preselección sesgada;
 //  1c) «Recaudo de la cartera activa» (demo): tabla mensual del año (12 filas, subtotal y total, clic en fila, filtro de año), tarjetas del mes y proyección con deslizador.
 // Usa el Playwright del front de Prestaya o, en CI, el que indique PLAYWRIGHT_PACKAGE_JSON. Uso: node docs/sitio/pruebas/contratos-humo.mjs [carpeta-capturas]
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
+import http from 'node:http'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 const aqui = path.dirname(fileURLToPath(import.meta.url))
-const pagina = path.resolve(aqui, '..', 'contratos.html')
+const sitio = path.resolve(aqui, '..')
+// Texto esperado de la nota de multas (único lugar donde se escribe).
+const NOTA_MULTAS = 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política vigente en perfil NEGOCIO).'
 // package.json desde el que se resuelve @playwright/test: PLAYWRIGHT_PACKAGE_JSON, o el front de Prestaya si existe (PC de Juan Esteban),
 // o el package.json de la carpeta actual (donde se instaló @playwright/test).
 const localPrestaya = 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json'
@@ -19,7 +22,28 @@ const paquetePlaywright = process.env.PLAYWRIGHT_PACKAGE_JSON ?? (existsSync(loc
 const { chromium } = createRequire(paquetePlaywright)('@playwright/test')
 const salida = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), 'contratos-humo'))
 mkdirSync(salida, { recursive: true })
-const base = pathToFileURL(pagina).href
+
+// Servidor http mínimo (solo 127.0.0.1, puerto libre) que sirve docs/sitio desde disco: los módulos <script type="module"> no cargan por file://.
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' }
+const servidor = http.createServer((req, res) => {
+  const ruta = path.resolve(sitio, '.' + path.sep + decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/+/, ''))
+  if (ruta !== sitio && !ruta.startsWith(sitio + path.sep)) { res.writeHead(403).end(); return }
+  const archivo = existsSync(ruta) && statSync(ruta).isDirectory() ? path.join(ruta, 'index.html') : ruta
+  if (!existsSync(archivo)) { res.writeHead(404).end(); return }
+  res.writeHead(200, { 'Content-Type': TIPOS[path.extname(archivo)] ?? 'application/octet-stream' }).end(readFileSync(archivo))
+})
+await new Promise((ok) => servidor.listen(0, '127.0.0.1', ok))
+const origen = `http://127.0.0.1:${servidor.address().port}`
+const base = `${origen}/contratos.html`
+const esLocal = (url) => url.origin === origen
+
+// Posición de una columna (en thead) a partir del texto de su encabezado, sin números fijos.
+async function columna(tabla, titulo) {
+  const ths = await tabla.locator('thead th').allInnerTexts()
+  const i = ths.findIndex((t) => t.split('\n')[0].trim() === titulo)
+  if (i < 0) throw new Error(`No hay columna «${titulo}» (${ths.join(' | ')})`)
+  return i
+}
 
 // Datos inventados para simular la función (no son de ningún contrato real).
 function periodo(n, pago, extra = {}) {
@@ -75,7 +99,7 @@ const navegador = await chromium.launch()
 // Se bloquea toda la red: la página debe funcionar sola.
 async function contextoSinRed(viewport) {
   const contexto = await navegador.newContext({ viewport, acceptDownloads: true })
-  await contexto.route((url) => !url.protocol.startsWith('file'), (r) => r.abort())
+  await contexto.route((url) => !esLocal(url), (r) => r.abort())
   return contexto
 }
 
@@ -162,7 +186,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar(fSin[iV + 1] === '—', `pantalla: sin pago muestra «—» (${fSin.slice(0, 5).join(' | ')})`)
   await page.locator('details.desglose > summary').first().click()
   const nota = await page.locator('#nota-multas').first().innerText()
-  verificar(nota === 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política vigente en perfil NEGOCIO).', `nota de multas visible (${nota})`)
+  verificar(nota === NOTA_MULTAS, `nota de multas visible (${nota})`)
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }
@@ -184,7 +208,7 @@ console.log('Consulta con función simulada')
     if (url.searchParams.get('numero') === '8') return json(429, { error: 'demasiadas_consultas' })
     return json(200, DATOS)
   })
-  await contexto.route((url) => !url.protocol.startsWith('file') && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
+  await contexto.route((url) => !esLocal(url) && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
   const page = await contexto.newPage()
   const errores = []
   page.on('pageerror', (e) => errores.push(String(e)))
@@ -291,18 +315,22 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar(estados.slice(0, 10).every((e) => e === 'Cerrado') && estados[10] === 'En curso' && estados[11] === 'Proyectado', `recaudo: estados Cerrado / En curso / Proyectado (${estados.join(', ')})`)
   verificar((await page.locator('#flujo-tabla tbody tr.curso').count()) === 1 && (await page.locator('#flujo-tabla tbody tr.proy').count()) === 1, 'recaudo: el mes en curso y el proyectado se distinguen visualmente')
   const aNum = (t) => Number(t.split('\n')[0].replace(/[^\d-]/g, ''))
-  const colTotal = await filasMes.evaluateAll((l) => l.map((t) => t.cells[7].innerText.split('\n')[0]))
+  // Columnas por encabezado; en tbody/tfoot la primera celda es el rótulo (th), así que el índice de td es el de la columna menos 1.
+  const tablaFlujo = page.locator('#flujo-tabla')
+  const iTotal = await columna(tablaFlujo, 'Total del motor'), iCarta = await columna(tablaFlujo, 'Pagos por carta (liquidaciones)')
+  const iCapital = await columna(tablaFlujo, 'Capital'), iIntereses = await columna(tablaFlujo, 'Intereses')
+  const colTotal = await filasMes.evaluateAll((l, i) => l.map((t) => t.cells[i].innerText.split('\n')[0]), iTotal)
   const sumaCol = colTotal.map(aNum).reduce((a, b) => a + b, 0)
-  const totalAnio = aNum(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(6).innerText())
+  const totalAnio = aNum(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(iTotal - 1).innerText())
   verificar(totalAnio === sumaCol && sumaCol > 0, `recaudo: la fila de total del año suma los 12 meses (${totalAnio})`)
   const cerr = colTotal.slice(0, 10).map(aNum).reduce((a, b) => a + b, 0)
-  verificar(aNum(await page.locator('#flujo-tabla tfoot tr.sub-cerrados td').nth(6).innerText()) === cerr && /Solo meses cerrados/.test(await page.locator('#flujo-tabla tfoot tr.sub-cerrados th').innerText()), 'recaudo: subtotal «Solo meses cerrados» suma solo los 10 meses cerrados')
-  verificar(/%/.test(await filasMes.first().locator('td').nth(2).innerText()) && /%/.test(await filasMes.first().locator('td').nth(3).innerText()), 'recaudo: capital e intereses muestran su % del total del motor')
+  verificar(aNum(await page.locator('#flujo-tabla tfoot tr.sub-cerrados td').nth(iTotal - 1).innerText()) === cerr && /Solo meses cerrados/.test(await page.locator('#flujo-tabla tfoot tr.sub-cerrados th').innerText()), 'recaudo: subtotal «Solo meses cerrados» suma solo los 10 meses cerrados')
+  verificar(/%/.test(await filasMes.first().locator('td').nth(iCapital - 1).innerText()) && /%/.test(await filasMes.first().locator('td').nth(iIntereses - 1).innerText()), 'recaudo: capital e intereses muestran su % del total del motor')
   // columna de pagos por carta: valor + «N pagos»; en curso y proyectado «—»; los totales suman solo cerrados
-  const colCarta = await filasMes.evaluateAll((l) => l.map((t) => t.cells[9].innerText))
+  const colCarta = await filasMes.evaluateAll((l, i) => l.map((t) => t.cells[i].innerText), iCarta)
   verificar(colCarta.slice(0, 10).every((t) => /\d/.test(t.split('\n')[0]) && /\d+ pagos?/.test(t)) && colCarta[10].trim() === '—' && colCarta[11].trim() === '—', `recaudo: columna de pagos por carta con «N pagos» en cerrados y «—» en el resto (${colCarta[0].replace(/\n/g, ' ')})`)
   const sumaCarta = colCarta.slice(0, 10).map(aNum).reduce((a, b) => a + b, 0)
-  verificar(sumaCarta > 0 && aNum(await page.locator('#flujo-tabla tfoot tr.sub-cerrados td').nth(8).innerText()) === sumaCarta && aNum(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(8).innerText()) === sumaCarta, `recaudo: «Solo meses cerrados» y «Total del año» suman la columna de carta (${sumaCarta})`)
+  verificar(sumaCarta > 0 && aNum(await page.locator('#flujo-tabla tfoot tr.sub-cerrados td').nth(iCarta - 1).innerText()) === sumaCarta && aNum(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(iCarta - 1).innerText()) === sumaCarta, `recaudo: «Solo meses cerrados» y «Total del año» suman la columna de carta (${sumaCarta})`)
   // B) filtro por mes y tarjetas
   verificar((await page.inputValue('#flujo-mes')) === '2026-10' && /octubre de 2026/.test(await page.locator('#flujo-t-mes').innerText()), 'recaudo: el mes por defecto es octubre de 2026 (último cerrado)')
   const tarjetas = await page.locator('#flujo-tarjetas .t-mes .t-rot').allInnerTexts()
@@ -382,12 +410,13 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const errores = []
   page.on('pageerror', (e) => errores.push(String(e)))
   await page.goto(`${base}?demo=1`)
-  await page.evaluate(() => { const o = crearDemoFlujo; crearDemoFlujo = () => { const d = o(); d.meses.forEach((m) => delete m.carta); return d } })
+  await page.evaluate(() => { const o = window.__demo.crearDemoFlujo; window.__demo.crearDemoFlujo = () => { const d = o(); d.meses.forEach((m) => delete m.carta); return d } })
   await page.getByRole('tab', { name: 'Recaudo de la cartera activa' }).click()
   await page.locator('#ver-flujo').click()
   await page.locator('#flujo-tabla table.anual').waitFor()
-  const col = await page.locator('#flujo-tabla tbody tr[data-mes]').evaluateAll((l) => l.map((t) => t.cells[9].innerText.trim()))
-  verificar(col.every((t) => t === '—') && /—/.test(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(8).innerText()), 'sin carta: la columna y los totales muestran «—»')
+  const iCartaSin = await columna(page.locator('#flujo-tabla'), 'Pagos por carta (liquidaciones)')
+  const col = await page.locator('#flujo-tabla tbody tr[data-mes]').evaluateAll((l, i) => l.map((t) => t.cells[i].innerText.trim()), iCartaSin)
+  verificar(col.every((t) => t === '—') && /—/.test(await page.locator('#flujo-tabla tfoot tr.total-anio td').nth(iCartaSin - 1).innerText()), 'sin carta: la columna y los totales muestran «—»')
   verificar(/Sin dato/.test(await page.locator('#flujo-tarjetas .t-mes.carta').innerText()), 'sin carta: la tarjeta dice «Sin dato»')
   const p = await problemas(page)
   verificar(p.length === 0 && errores.length === 0, `sin carta: sin desbordes ni errores JS ${JSON.stringify(p)} ${errores.join(' | ')}`)
@@ -416,14 +445,14 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     // Mismo número en las dos sedes, contratos distintos.
     return json({ sede, numero: '123', episodios: [{ ...DATOS.episodios[0], id: `${sede}-123-1` }] })
   })
-  await contexto.route((url) => !url.protocol.startsWith('file') && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
+  await contexto.route((url) => !esLocal(url) && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
   const page = await contexto.newPage()
   const errores = []
   page.on('pageerror', (e) => errores.push(String(e)))
   page.on('console', (m) => m.type() === 'error' && !/status of 400/.test(m.text()) && errores.push(m.text()))
   await page.goto(base)
-  demoActivos = await page.evaluate(() => crearDemoActivos())
-  demoFlujo = await page.evaluate(() => crearDemoFlujo())
+  demoActivos = await page.evaluate(() => window.__demo.crearDemoActivos())
+  demoFlujo = await page.evaluate(() => window.__demo.crearDemoFlujo())
   verificar((await page.getByLabel('Sede').inputValue()) === 'CARTAGENA', 'la sede por defecto es Cartagena')
   await page.getByLabel('Clave de consulta').fill('buena')
   await page.getByLabel('Clave de consulta').blur()
@@ -485,6 +514,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
 }
 
 await navegador.close()
+servidor.close()
 console.log(fallas ? `\n${fallas} FALLAS` : '\nTodo en orden')
 console.log(`Capturas en ${salida}`)
 process.exit(fallas ? 1 : 0)
