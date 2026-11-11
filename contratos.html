@@ -1692,8 +1692,11 @@ function pintarFlujo() {
   pintarTarjetas()
 }
 
+// Gancho para las pruebas: permite sustituir las funciones de demostración sin depender de globales.
+window.__demo = { crearDemoFlujo, crearDemoActivos }
+
 async function cargarFlujo() {
-  if (MODO_DEMO) return crearDemoFlujo()
+  if (MODO_DEMO) return window.__demo.crearDemoFlujo()
   guardarClave($('clave').value)
   const url = new URL(urlApi)
   url.searchParams.set('flujo', '1')
