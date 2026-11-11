@@ -1,0 +1,9 @@
+sede,run_id,corrida,id,periodo,fecha_vencimiento,instruccion,valor_real,dias_atraso,justificado,estado,cuotas_vencidas,saldo_inicial,interes_corriente,interes_mora,cobranza,servicios,pago_total_cliente,saldo_final,listo_recuperacion,tasa_ea,cuota_financiera,pago_capital,pago_interes,pago_mora,pago_cobranza,pago_servicios,capital_vencido,cv_efectivo,usura_ea,logica,pago_fondo,pago_seguro,pago_asistencia,saldo_en_mora,cxc_mora
+CARTAGENA,run-test-1,sin_justificaciones,CARTAGENA|1428|2024-01-02,1,2024-01-09,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,sin_justificaciones,CARTAGENA|1428|2024-01-02,2,2024-01-16,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,fija_sin_justificaciones,CARTAGENA|1428|2024-01-02,1,2024-01-09,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,fija_sin_justificaciones,CARTAGENA|1428|2024-01-02,2,2024-01-16,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,sin_justificaciones,CARTAGENA|1500|2024-01-02,1,2024-01-09,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,sin_justificaciones,CARTAGENA|1500|2024-01-02,2,2024-01-16,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,fija_sin_justificaciones,CARTAGENA|1500|2024-01-02,1,2024-01-09,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,
+CARTAGENA,run-test-1,fija_sin_justificaciones,CARTAGENA|1500|2024-01-02,2,2024-01-16,PAGO_VALOR,250000,0,False,ACTIVO,0,9000000,,,,,,8900000,False,,,,,,,,,,,Pago a tiempo.,,,,,

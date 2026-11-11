@@ -1,0 +1,5 @@
+sede,run_id,corrida,id,periodo,fecha_vencimiento,proyectado,pago_capital,pago_interes,pago_mora,pago_cobranza,pago_servicios,pago_total,saldo_final
+MONTERIA,run-test-1,sin_justificaciones,MONTERIA|1428|2024-01-02,3,2024-01-23,True,,,,,,250000,8000000
+MONTERIA,run-test-1,sin_justificaciones,MONTERIA|1428|2024-01-02,4,2024-01-30,True,,,,,,250000,8000000
+MONTERIA,run-test-1,fija_sin_justificaciones,MONTERIA|1428|2024-01-02,3,2024-01-23,True,,,,,,250000,8000000
+MONTERIA,run-test-1,fija_sin_justificaciones,MONTERIA|1428|2024-01-02,4,2024-01-30,True,,,,,,250000,8000000

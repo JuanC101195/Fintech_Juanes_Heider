@@ -1,0 +1,5 @@
+sede,run_id,corrida,id,sim_pagado,sim_saldo_final,sim_pendientes,sim_mora,sim_cobranza,sim_interes,sim_servicios,sim_cuotas_vencidas_final,sim_cuotas_vencidas_max,sim_marca_recuperacion,sim_periodo_marca,sim_estado_final,sim_periodos,periodo_corte,real_ea_con_multas,cv_efectivo_max,marca_efectivo,periodo_marca_efectivo,sim_proyectado_total
+MONTERIA,run-test-1,sin_justificaciones,MONTERIA|1428|2024-01-02,500000,8000000,0,0,0,100000,20000,0,0,False,,ACTIVO,2,2,,0,False,,12000000
+MONTERIA,run-test-1,fija_sin_justificaciones,MONTERIA|1428|2024-01-02,500000,8000000,0,0,0,100000,20000,0,0,False,,ACTIVO,2,2,,0,False,,12000000
+MONTERIA,run-test-1,sin_justificaciones,MONTERIA|1600|2024-01-02,500000,8000000,0,0,0,100000,20000,0,0,False,,CANCELADO,2,2,,0,False,,12000000
+MONTERIA,run-test-1,fija_sin_justificaciones,MONTERIA|1600|2024-01-02,500000,8000000,0,0,0,100000,20000,0,0,False,,CANCELADO,2,2,,0,False,,12000000
