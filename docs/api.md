@@ -387,3 +387,17 @@ El número de contrato se repite entre sedes: la llave es `(sede, contrato)`. Se
 - `?sedes=1` devuelve `{ "sedes": [...con datos], "todas": [...], "defecto": "CARTAGENA" }` (`SELECT DISTINCT sede FROM contrato`); la página lo usa para ofrecer solo las sedes con datos.
 - Compatibilidad antes de la migración 003: si la columna `sede` no existe (error `42703`), la consulta se repite sin filtro y se asume CARTAGENA; para cualquier otra sede la respuesta es vacía (`404` en `numero`, lista vacía en `activos`, flujo vacío en `flujo`). `?sedes=1` devuelve solo `CARTAGENA`.
 - Pendiente: la paginación del lado servidor (`pagina`/`tamano`) existe en la API pero la pestaña «Contratos activos» sigue trayendo la lista completa, porque ordena, filtra, busca y resume sobre todos los contratos en el navegador; paginar allí exige mover esas operaciones al servidor.
+
+## Corrida vigente (`run_id`) en `/api/contrato` (P10)
+
+Complementa la sección anterior (P7) y alinea `nube/src/contrato.js` con el contrato de columnas de `docs/backtesting.md`: la llave de un dato es **(sede, run_id, id)**, nunca el número de contrato solo.
+
+- **Resolución del `run_id`**: por petición se consulta `SELECT run_id FROM vw_corrida_vigente WHERE sede = $1` (la última corrida `terminada` de la sede; una corrida `fallida` o `en_curso` no cuenta). El resultado se cachea junto con el resto de los modos (`CACHE_TTL_SEGUNDOS`; `0` la desactiva) y las llaves de caché de `activos` y `flujo` incluyen sede y `run_id`, así que una corrida nueva se toma en cuanto expira el contexto.
+- **Filtros**: con corrida vigente, TODA consulta (`contrato`, `pago_real`, `resultado`, `periodo`, `proyeccion`, `activas_fin_mes`, `carta_fin_mes`, `corte_activos`) lleva `sede = $n AND run_id = $m`, y los cruces unen por las tres columnas (`c.id = p.id AND c.sede = p.sede AND c.run_id = p.run_id`; `activas_fin_mes` por `sede`, `run_id` y `contrato`). El `id` interno se repite entre sedes y corridas.
+- **Sin `?sede=`** la API asume **`CARTAGENA`** (antes devolvía todo sin filtro). Cambio de comportamiento deliberado: tras la migración 003 sin sede se mezclarían sedes.
+- **Campos aditivos** en `numero`, `activos=1` y `flujo=1`: `sede` (siempre) y `runId` (cuando hay corrida vigente), al inicio del objeto. El resto del formato no cambia. `sedes=1` no cambia (una `sede` nula en bases viejas cuenta como `CARTAGENA`).
+- **Compatibilidad**:
+  - *Base sin migrar* (`vw_corrida_vigente` o la columna `sede` no existen: `42P01` / `42703`): sin filtro, se asume `CARTAGENA` (respuesta con `sede: "CARTAGENA"` y sin `runId`); cualquier otra sede responde vacío (`404` en `numero`, lista vacía en `activos`, flujo vacío en `flujo`).
+  - *Base migrada sin fila en la vista para la sede* (sin corrida terminada): se filtra solo por `sede` y la respuesta no trae `runId`.
+  - Cualquier otro error al resolver la corrida responde `500 {"error":"interno"}`.
+- **Pruebas**: `cd nube && npm test` (consultas simuladas) y `npm run test:pg` (`nube/pruebas-pg/prueba-pg.test.js`, contra un PostgreSQL 16 real en un contenedor Docker local `pg-p10`, puerto 55433, que aplica `db/001`, `002` y `003`, carga el contrato `1428` en dos sedes y dos corridas por sede, y compara además la base sin migrar con el `contrato.js` anterior).
