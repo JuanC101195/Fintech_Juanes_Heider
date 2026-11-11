@@ -1,6 +1,12 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { crearManejador, crearLimitador, variantes } = require('./contrato')
+const { crearManejador: crearManejadorReal, crearLimitador, variantes } = require('./contrato')
+
+// Los tests históricos simulan una base SIN migrar (sin vw_corrida_vigente: 42P01), que es el comportamiento de antes de P6/P10.
+// Los tests de sede / run_id (al final) usan crearManejadorReal con su propia vista.
+const sinVista = () => Object.assign(new Error('relation "vw_corrida_vigente" does not exist'), { code: '42P01' })
+const crearManejador = (op) =>
+  crearManejadorReal({ ...op, consultar: async (sql, params) => (/vw_corrida_vigente/.test(sql) ? Promise.reject(sinVista()) : op.consultar(sql, params)) })
 
 const CLAVE = 'clave-de-prueba'
 const base = { metodo: 'GET', origen: 'https://juanc101195.github.io', clave: CLAVE, ip: '1.1.1.1', numero: '1001' }
@@ -305,7 +311,7 @@ test('flujo=1: meses cerrados con la flota activa de fin de mes, mes en curso y 
         { mes: '2026-12', corrida: 'fija_sin_justificaciones', capital: '130', interes: '270', mora: '0', cobranza: '0', servicios: '50', total: '450', contratos: '9' },
       ]
     }
-    if (/FROM activas_fin_mes GROUP BY mes/.test(sql)) return [{ mes: '2026-10', motos: '12' }]
+    if (/FROM activas_fin_mes WHERE true GROUP BY mes/.test(sql)) return [{ mes: '2026-10', motos: '12' }]
     if (/JOIN activas_fin_mes a ON a.contrato = c.contrato AND a.mes = to_char/.test(sql)) return [{ mes: '2026-10', pagos: '480' }]
     if (/estado_real = 'VIGENTE'/.test(sql)) return [{ pagos: '90' }]
     if (/FROM carta_fin_mes/.test(sql)) return [{ mes: '2026-10', motivo: 'CARTA ADMINISTRACION', pagos: '3', valor_miles: '400' }, { mes: '2026-10', motivo: 'CARTA REGRESO DIARIO', pagos: '5', valor_miles: '500' }]
@@ -406,7 +412,7 @@ test('activos=1 sin pagina/tamano devuelve todo (formato histórico); con ellos 
   const m = crearManejador({ consultar: contado(filasActivos(5)).consultar, claveEsperada: CLAVE, ttlMs: 1000, ahora: () => 0 })
   const pet = { ...base, activos: '1', numero: undefined }
   const todo = await m(pet)
-  assert.deepStrictEqual(Object.keys(todo.cuerpo), ['activos', 'contratos'])
+  assert.deepStrictEqual(Object.keys(todo.cuerpo), ['sede', 'activos', 'contratos'])
   assert.strictEqual(todo.cuerpo.contratos.length, 5)
   const p2 = await m({ ...pet, pagina: '2', tamano: '2' })
   assert.deepStrictEqual([p2.cuerpo.total, p2.cuerpo.pagina, p2.cuerpo.tamano, p2.cuerpo.paginas], [5, 2, 2, 3])
@@ -431,8 +437,19 @@ test('listarActivos usa un LEFT JOIN agregado en lugar de una subconsulta por fi
   assert.deepStrictEqual(params, [['fija_con_justificaciones', 'fija_sin_justificaciones']])
 })
 
-// ---- sede: la llave es (sede, contrato) ----
+// ---- sede y run_id: la llave es (sede, run_id, id); el número de contrato se repite entre sedes ----
 const sinColumna = () => Object.assign(new Error('column "sede" does not exist'), { code: '42703' })
+
+// Base migrada simulada: la vista devuelve `vigentes[sede]`; el resto de consultas se registra en `sqls`.
+function migrada(vigentes, extra = () => []) {
+  const sqls = []
+  const consultar = async (sql, params) => {
+    if (/vw_corrida_vigente/.test(sql)) return vigentes[params[0]] ? [{ run_id: vigentes[params[0]] }] : []
+    sqls.push({ sql, params })
+    return extra(sql, params)
+  }
+  return { sqls, consultar }
+}
 
 test('sede inválida responde 400 en los tres modos y en sedes=1, sin tocar la base', async () => {
   const { m, f } = manejador()
@@ -446,89 +463,122 @@ test('sede inválida responde 400 en los tres modos y en sedes=1, sin tocar la b
   assert.strictEqual(f.llamadas.length, 0)
 })
 
-test('?sede= (en minúsculas también) filtra contrato, pago_real, resultado y periodo por sede y la respuesta la incluye', async () => {
-  const { m, f } = manejador({ contratos: [filaContrato('A', '2024-01-01')] })
+test('numero con sede y run_id vigente: resuelve el run_id de la sede y filtra las 4 consultas por (sede, run_id)', async () => {
+  const b = migrada({ MONTERIA: 'r2' }, (sql) => (/FROM contrato/.test(sql) ? [filaContrato('A', '2024-01-01')] : []))
+  const m = crearManejadorReal({ consultar: b.consultar, claveEsperada: CLAVE, ttlMs: 0 })
   const r = await m({ ...base, sede: 'monteria' })
   assert.strictEqual(r.status, 200)
   assert.strictEqual(r.cuerpo.sede, 'MONTERIA')
-  assert.strictEqual(f.llamadas.length, 4)
-  for (const l of f.llamadas) {
-    assert.match(l.sql, /sede = \$2/)
-    assert.strictEqual(l.params[l.params.length - 1], 'MONTERIA')
+  assert.strictEqual(r.cuerpo.runId, 'r2')
+  assert.strictEqual(b.sqls.length, 4)
+  for (const l of b.sqls) {
+    assert.match(l.sql, /sede = \$2 AND run_id = \$3/)
+    assert.deepStrictEqual(l.params.slice(-2), ['MONTERIA', 'r2'])
   }
-  assert.deepStrictEqual(f.llamadas[0].params, [['1001'], 'MONTERIA'])
-  const sin = await m(base)
-  assert.strictEqual('sede' in sin.cuerpo, false)
+  assert.deepStrictEqual(b.sqls[0].params, [['1001'], 'MONTERIA', 'r2'])
 })
 
-test('activos=1 con sede: filtra c.sede, cruza resultado y pagos por sede; la llave de caché incluye la sede', async () => {
-  const sqls = []
-  let n = 0
-  const consultar = async (sql, params) => { n += 1; sqls.push({ sql, params }); return [] }
-  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 60000, ahora: () => 0 })
+test('sin ?sede= se asume CARTAGENA: filtra por ella y su run_id, y la respuesta trae sede', async () => {
+  const b = migrada({ CARTAGENA: 'legado', MONTERIA: 'r2' }, (sql) => (/FROM contrato/.test(sql) ? [filaContrato('A', '2024-01-01')] : []))
+  const m = crearManejadorReal({ consultar: b.consultar, claveEsperada: CLAVE, ttlMs: 0 })
+  const r = await m(base)
+  assert.strictEqual(r.cuerpo.sede, 'CARTAGENA')
+  assert.strictEqual(r.cuerpo.runId, 'legado')
+  assert.deepStrictEqual(b.sqls[0].params, [['1001'], 'CARTAGENA', 'legado'])
+})
+
+test('vista vacía para la sede (migrada, sin corrida terminada): filtra solo por sede y no inventa runId', async () => {
+  const b = migrada({}, (sql) => (/FROM contrato/.test(sql) ? [filaContrato('A', '2024-01-01')] : []))
+  const m = crearManejadorReal({ consultar: b.consultar, claveEsperada: CLAVE, ttlMs: 0 })
+  const r = await m({ ...base, sede: 'SINCELEJO' })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual('runId' in r.cuerpo, false)
+  for (const l of b.sqls) {
+    assert.match(l.sql, /sede = \$2/)
+    assert.doesNotMatch(l.sql, /run_id/)
+  }
+})
+
+test('activos=1: filtra c, r y pagos por (sede, run_id), cruza resultado por las tres columnas y la caché lleva sede y run_id', async () => {
+  const b = migrada({ SINCELEJO: 'r1', BICIMOTOS: 'r9', CARTAGENA: 'legado' })
+  let vigentes = 0
+  const consultar = async (sql, params) => { if (/vw_corrida_vigente/.test(sql)) vigentes += 1; return b.consultar(sql, params) }
+  const m = crearManejadorReal({ consultar, claveEsperada: CLAVE, ttlMs: 60000, ahora: () => 0 })
   const act = { ...base, activos: '1', numero: undefined }
   const a = await m({ ...act, sede: 'SINCELEJO' })
   assert.strictEqual(a.cuerpo.sede, 'SINCELEJO')
-  assert.match(sqls[0].sql, /r\.sede = c\.sede/)
-  assert.match(sqls[0].sql, /c\.sede = \$2/)
-  assert.match(sqls[0].sql, /FROM pago_real WHERE sede = \$2 GROUP BY id/)
-  assert.deepStrictEqual(sqls[0].params, [['fija_con_justificaciones', 'fija_sin_justificaciones'], 'SINCELEJO'])
+  assert.strictEqual(a.cuerpo.runId, 'r1')
+  const q = b.sqls[0]
+  assert.match(q.sql, /JOIN resultado r ON r\.id = c\.id AND r\.sede = c\.sede AND r\.run_id = c\.run_id/)
+  assert.match(q.sql, /FROM pago_real WHERE sede = \$2 AND run_id = \$3 GROUP BY id/)
+  assert.match(q.sql, /c\.sede = \$2 AND c\.run_id = \$3/)
+  assert.deepStrictEqual(q.params, [['fija_con_justificaciones', 'fija_sin_justificaciones'], 'SINCELEJO', 'r1'])
   await m({ ...act, sede: 'SINCELEJO' })
-  assert.strictEqual(n, 1, 'misma sede: caché')
+  assert.strictEqual(b.sqls.length, 1, 'misma sede y run: caché')
   await m({ ...act, sede: 'BICIMOTOS' })
-  assert.strictEqual(n, 2, 'otra sede: otra consulta')
-  await m(act)
-  assert.strictEqual(n, 3, 'sin sede: llave distinta')
+  assert.strictEqual(b.sqls.length, 2, 'otra sede: otra consulta')
+  const sin = await m(act)
+  assert.strictEqual(b.sqls.length, 3, 'sin sede = CARTAGENA: llave distinta')
+  assert.strictEqual(sin.cuerpo.sede, 'CARTAGENA')
+  assert.strictEqual(vigentes, 3, 'el run vigente también se cachea')
 })
 
-test('flujo=1 con sede: todas las consultas filtran y los cruces incluyen sede', async () => {
-  const sqls = []
-  const consultar = async (sql, params) => {
-    sqls.push({ sql, params })
-    if (/FROM corte_activos/.test(sql)) return [{ corte: '2026-11-03' }]
-    return []
-  }
-  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 0 })
+test('flujo=1: todas las consultas filtran por sede y run_id y los cruces usan (sede, run_id) y activas_fin_mes por contrato', async () => {
+  const b = migrada({ MONTERIA: 'r2' }, (sql) => (/FROM corte_activos/.test(sql) ? [{ corte: '2026-11-03' }] : []))
+  const m = crearManejadorReal({ consultar: b.consultar, claveEsperada: CLAVE, ttlMs: 0 })
   const r = await m({ ...base, flujo: '1', numero: undefined, sede: 'MONTERIA' })
   assert.strictEqual(r.status, 200)
   assert.strictEqual(r.cuerpo.sede, 'MONTERIA')
-  assert.strictEqual(sqls.length, 7)
-  for (const q of sqls) assert.ok(q.params.includes('MONTERIA'), q.sql)
-  const cerrados = sqls.find((q) => /FROM periodo p/.test(q.sql)).sql
-  assert.match(cerrados, /c\.sede = p\.sede/)
-  assert.match(cerrados, /a\.sede = c\.sede/)
-  assert.match(cerrados, /p\.sede = \$3/)
-  assert.match(sqls.find((q) => /FROM proyeccion p/.test(q.sql)).sql, /p\.sede = \$3/)
-  assert.match(sqls.find((q) => /FROM carta_fin_mes/.test(q.sql)).sql, /WHERE sede = \$1/)
+  assert.strictEqual(r.cuerpo.runId, 'r2')
+  assert.strictEqual(b.sqls.length, 7)
+  for (const q of b.sqls) assert.deepStrictEqual(q.params.slice(-2), ['MONTERIA', 'r2'], q.sql)
+  const cerrados = b.sqls.find((q) => /FROM periodo p/.test(q.sql)).sql
+  assert.match(cerrados, /c\.sede = p\.sede AND c\.run_id = p\.run_id/)
+  assert.match(cerrados, /a\.sede = c\.sede AND a\.run_id = c\.run_id/)
+  assert.match(cerrados, /p\.sede = \$3 AND p\.run_id = \$4/)
+  assert.match(b.sqls.find((q) => /FROM proyeccion p/.test(q.sql)).sql, /p\.sede = \$3 AND p\.run_id = \$4/)
+  assert.match(b.sqls.find((q) => /FROM carta_fin_mes/.test(q.sql)).sql, /sede = \$1 AND run_id = \$2/)
+  assert.match(b.sqls.find((q) => /FROM corte_activos/.test(q.sql)).sql, /sede = \$1 AND run_id = \$2/)
+  assert.match(b.sqls.find((q) => /FROM activas_fin_mes/.test(q.sql) && !/periodo|pago_real/.test(q.sql)).sql, /sede = \$1 AND run_id = \$2/)
 })
 
-test('fallback 42703: sin columna sede, CARTAGENA se consulta sin filtro; otra sede no devuelve datos', async () => {
-  const consultar = (llamadas) => async (sql, params) => {
-    llamadas.push({ sql, params })
-    if (/sede = \$|\.sede/.test(sql)) throw sinColumna()
-    if (/FROM contrato/.test(sql)) return [filaContrato('A', '2024-01-01')]
-    if (/FROM corte_activos/.test(sql)) return [{ corte: '2026-11-03' }]
-    if (/FROM contrato c JOIN resultado/.test(sql)) return [{ id: 'A', contrato: '1', fecha_inicio: '2026-01-01', corrida: 'fija_sin_justificaciones' }]
-    return []
+test('base sin migrar (vista inexistente 42P01 o columna 42703): sin filtro, CARTAGENA con datos y otra sede sin datos', async () => {
+  for (const error of [sinVista, sinColumna]) {
+    const consultar = async (sql) => {
+      if (/vw_corrida_vigente/.test(sql)) throw error()
+      if (/sede = \$|\.sede/.test(sql)) throw sinColumna()
+      if (/FROM contrato c JOIN resultado/.test(sql)) return [{ id: 'A', contrato: '1', fecha_inicio: '2026-01-01', corrida: 'fija_sin_justificaciones' }]
+      if (/FROM contrato/.test(sql)) return [filaContrato('A', '2024-01-01')]
+      if (/FROM corte_activos/.test(sql)) return [{ corte: '2026-11-03' }]
+      return []
+    }
+    for (const [modo, vacio] of [[{}, (r) => r.status === 404], [{ activos: '1', numero: undefined }, (r) => r.cuerpo.activos === 0], [{ flujo: '1', numero: undefined }, (r) => r.cuerpo.meses.length === 0]]) {
+      const m = crearManejadorReal({ consultar, claveEsperada: CLAVE, ttlMs: 0 })
+      for (const pedida of [{ sede: 'CARTAGENA' }, {}]) {
+        const cart = await m({ ...base, ...modo, ...pedida })
+        assert.strictEqual(cart.status, 200, JSON.stringify(modo))
+        assert.strictEqual(cart.cuerpo.sede, 'CARTAGENA')
+        assert.strictEqual('runId' in cart.cuerpo, false)
+        assert.ok(!vacio(cart) || modo.flujo, JSON.stringify(modo))
+      }
+      assert.ok(vacio(await m({ ...base, ...modo, sede: 'MONTERIA' })), `otra sede vacía ${JSON.stringify(modo)}`)
+    }
   }
-  for (const [modo, vacio] of [[{}, (r) => r.status === 404], [{ activos: '1', numero: undefined }, (r) => r.cuerpo.activos === 0], [{ flujo: '1', numero: undefined }, (r) => r.cuerpo.meses.length === 0]]) {
-    const ll = []
-    const m = crearManejador({ consultar: consultar(ll), claveEsperada: CLAVE, ttlMs: 0 })
-    const cart = await m({ ...base, ...modo, sede: 'CARTAGENA' })
-    assert.strictEqual(cart.status, 200, JSON.stringify(modo))
-    assert.strictEqual(cart.cuerpo.sede, 'CARTAGENA')
-    assert.ok(!vacio(cart) || modo.flujo, JSON.stringify(modo))
-    assert.ok(ll.some((l) => !/sede = \$|\.sede/.test(l.sql)), 'reintenta sin filtro')
-    const mon = await m({ ...base, ...modo, sede: 'MONTERIA' })
-    assert.ok(vacio(mon), `otra sede vacía ${JSON.stringify(modo)}`)
+})
+
+test('si la consulta del run vigente falla por otra causa, responde 500 sin filtrar el error', async () => {
+  const m = crearManejadorReal({ consultar: async () => { throw new Error('boom') }, claveEsperada: CLAVE, ttlMs: 0 })
+  for (const modo of [{}, { activos: '1', numero: undefined }, { flujo: '1', numero: undefined }]) {
+    const r = await m({ ...base, ...modo })
+    assert.deepStrictEqual([r.status, r.cuerpo], [500, { error: 'interno' }])
   }
 })
 
 test('sedes=1 lista las sedes con datos y, sin columna sede, solo CARTAGENA', async () => {
-  const m1 = crearManejador({ consultar: async () => [{ sede: 'MONTERIA' }, { sede: 'CARTAGENA' }], claveEsperada: CLAVE, ttlMs: 0 })
+  const m1 = crearManejadorReal({ consultar: async () => [{ sede: 'MONTERIA' }, { sede: 'CARTAGENA' }], claveEsperada: CLAVE, ttlMs: 0 })
   const r = await m1({ ...base, sedes: '1', numero: undefined })
   assert.deepStrictEqual(r.cuerpo.sedes, ['CARTAGENA', 'MONTERIA'])
   assert.deepStrictEqual(r.cuerpo.todas, ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS'])
-  const m2 = crearManejador({ consultar: async () => { throw sinColumna() }, claveEsperada: CLAVE, ttlMs: 0 })
+  const m2 = crearManejadorReal({ consultar: async () => { throw sinColumna() }, claveEsperada: CLAVE, ttlMs: 0 })
   assert.deepStrictEqual((await m2({ ...base, sedes: '1', numero: undefined })).cuerpo.sedes, ['CARTAGENA'])
 })
