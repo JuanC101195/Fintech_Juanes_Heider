@@ -213,6 +213,11 @@
         <input type="password" id="clave" name="clave" autocomplete="off" spellcheck="false">
         <p class="ayuda">Se guarda solo en esta pestaña del navegador y se borra al cerrarla.</p>
       </div>
+      <div class="campo-clave">
+        <label for="sede">Sede</label>
+        <select id="sede" name="sede" aria-describedby="ayuda-sede"></select>
+        <p class="ayuda" id="ayuda-sede">El número de contrato se repite entre sedes: la consulta siempre es de una sola sede.</p>
+      </div>
       <div class="pestanas" role="tablist" aria-label="Qué consultar">
         <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
         <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
@@ -229,11 +234,11 @@
         </form>
       </div>
       <div id="panel-activos" role="tabpanel" aria-labelledby="tab-activos" hidden>
-        <p class="ayuda" style="margin:0 0 10px">Todas las motos que hoy están activas, simuladas por el motor con la tasa fija de 88,44 % EA desde el desembolso. Sirve para ver cómo iría la cartera completa.</p>
+        <p class="ayuda" style="margin:0 0 10px">Todas las motos que hoy están activas, simuladas por el motor con la tasa fija de <span data-tasa-fija></span> EA desde el desembolso. Sirve para ver cómo iría la cartera completa.</p>
         <div class="barra">
           <button type="button" id="ver-activos">Ver contratos activos</button>
           <label for="act-just" class="inline">Lectura de la tabla</label>
-          <select id="act-just" disabled><option value="fija_sin_justificaciones">Sin justificaciones</option><option value="fija_con_justificaciones">Con justificaciones</option></select>
+          <select id="act-just" disabled></select>
           <label for="act-filtro" class="solo-lectores">Filtrar</label>
           <select id="act-filtro" disabled><option value="todos">Todos los contratos</option><option value="mora">Con 2 o más cuotas vencidas</option><option value="marca">Marcados para recuperar</option><option value="aldia">Al día (menos de 1 cuota vencida)</option></select>
           <label for="act-buscar" class="solo-lectores">Buscar contrato</label>
@@ -241,7 +246,7 @@
         </div>
       </div>
       <div id="panel-flujo" role="tabpanel" aria-labelledby="tab-flujo" hidden>
-        <p class="ayuda" style="margin:0 0 10px">Cuánto habría recaudado el motor cada mes (tasa fija de 88,44 % EA desde el desembolso), separando capital, intereses, mora y cobranza, y servicios, frente a lo que se recaudó en el sistema actual. Abajo, la proyección hacia adelante.</p>
+        <p class="ayuda" style="margin:0 0 10px">Cuánto habría recaudado el motor cada mes (tasa fija de <span data-tasa-fija></span> EA desde el desembolso), separando capital, intereses, mora y cobranza, y servicios, frente a lo que se recaudó en el sistema actual. Abajo, la proyección hacia adelante.</p>
         <div class="barra">
           <button type="button" id="ver-flujo">Ver recaudo</button>
         </div>
@@ -265,7 +270,7 @@
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
       <ul class="notas">
-        <li><strong>Usura − 1 punto:</strong> la financiera cobra la tasa de usura vigente menos un punto porcentual (serie oficial de la Superfinanciera). <strong>Usura máxima:</strong> cobra la usura vigente sin ese margen. <strong>Tasa fija 88,44 %:</strong> la misma tasa durante todo el crédito.</li>
+        <li><strong>Usura − 1 punto:</strong> la financiera cobra la tasa de usura vigente menos un punto porcentual (serie oficial de la Superfinanciera). <strong>Usura máxima:</strong> cobra la usura vigente sin ese margen. <strong>Tasa fija <span data-tasa-fija></span>:</strong> la misma tasa durante todo el crédito.</li>
         <li><strong>Sin justificaciones</strong> cuenta todo atraso; <strong>con justificaciones</strong> no cuenta los periodos con atraso justificado.</li>
         <li>Cada combinación es una simulación distinta del motor; las gráficas y las tablas cambian con la opción elegida.</li>
       </ul>
@@ -292,6 +297,18 @@
 const URL_FUNCION = 'https://fn-motor-cartera-respuestas.azurewebsites.net/api/contrato'
 
 const params = new URLSearchParams(location.search)
+// Única fuente de la tasa fija, los prefijos de las corridas y las sedes (los textos fijos de la página se rellenan desde aquí).
+const CONFIG = {
+  tasaFija: 0.8844,
+  prefijoFija: 'fija_',
+  prefijoMax: 'max_',
+  sedes: { CARTAGENA: 'Cartagena', MONTERIA: 'Montería', SINCELEJO: 'Sincelejo', BICIMOTOS: 'Bicimotos' },
+  sedeDefecto: 'CARTAGENA',
+}
+const TASA_FIJA_TXT = (CONFIG.tasaFija * 100).toFixed(2).replace('.', ',') + ' %'
+for (const n of document.querySelectorAll('[data-tasa-fija]')) n.textContent = TASA_FIJA_TXT
+const CORRIDA_FIJA = { sin: CONFIG.prefijoFija + 'sin_justificaciones', con: CONFIG.prefijoFija + 'con_justificaciones' }
+document.getElementById('act-just').replaceChildren(new Option('Sin justificaciones', CORRIDA_FIJA.sin), new Option('Con justificaciones', CORRIDA_FIJA.con))
 const MODO_DEMO = params.get('demo') === '1'
 
 // ?api= solo se acepta hacia localhost o hacia la propia función: un enlace ajeno no debe poder llevarse la clave.
@@ -336,8 +353,8 @@ function fechaCorta(f) {
 const texto = (s) => (s === null || s === undefined || s === '' ? '—' : String(s).replace(/_/g, ' '))
 const titulo = {
   sin_justificaciones: 'Sin justificaciones', con_justificaciones: 'Con justificaciones',
-  max_sin_justificaciones: 'Usura máxima, sin justificaciones', max_con_justificaciones: 'Usura máxima, con justificaciones',
-  fija_sin_justificaciones: 'Tasa fija 88,44 %, sin justificaciones', fija_con_justificaciones: 'Tasa fija 88,44 %, con justificaciones',
+  [CONFIG.prefijoMax + 'sin_justificaciones']: 'Usura máxima, sin justificaciones', [CONFIG.prefijoMax + 'con_justificaciones']: 'Usura máxima, con justificaciones',
+  [CORRIDA_FIJA.sin]: `Tasa fija ${TASA_FIJA_TXT}, sin justificaciones`, [CORRIDA_FIJA.con]: `Tasa fija ${TASA_FIJA_TXT}, con justificaciones`,
 }
 const rotuloCorrida = (k) => titulo[k] || texto(k)
 
@@ -545,7 +562,7 @@ function margenTexto(margen, inversion) {
 function tarjetaEpisodio(ep, i, total) {
   const pref = `ep${i}`
   const corridas = ep.corridas || {}
-  const claves = ['sin_justificaciones', 'con_justificaciones', 'max_sin_justificaciones', 'max_con_justificaciones', 'fija_sin_justificaciones', 'fija_con_justificaciones']
+  const claves = ['sin_justificaciones', 'con_justificaciones', CONFIG.prefijoMax + 'sin_justificaciones', CONFIG.prefijoMax + 'con_justificaciones', CORRIDA_FIJA.sin, CORRIDA_FIJA.con]
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
   const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
@@ -569,13 +586,13 @@ function tarjetaEpisodio(ep, i, total) {
     tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene simulaciones del motor.'))
     return tarjeta
   }
-  const hayMax = Object.keys(corridas).some((k) => k.startsWith('max_'))
-  const hayFija = Object.keys(corridas).some((k) => k.startsWith('fija_'))
+  const hayMax = Object.keys(corridas).some((k) => k.startsWith(CONFIG.prefijoMax))
+  const hayFija = Object.keys(corridas).some((k) => k.startsWith(CONFIG.prefijoFija))
   const zona = el('div')
   // Simulación elegida = prefijo de tasa ('' = usura − 1 punto, 'max_' = usura máxima, 'fija_' = tasa fija 88,44 %) + justificaciones.
   const nombre = (t, j) => `${t}${j}_justificaciones`
   const arranque = disponibles.includes('sin_justificaciones') ? 'sin_justificaciones' : disponibles[0]
-  const sel = { tasa: arranque.startsWith('max_') ? 'max_' : arranque.startsWith('fija_') ? 'fija_' : '', just: arranque.includes('con_') ? 'con' : 'sin' }
+  const sel = { tasa: arranque.startsWith(CONFIG.prefijoMax) ? CONFIG.prefijoMax : arranque.startsWith(CONFIG.prefijoFija) ? CONFIG.prefijoFija : '', just: arranque.includes('con_') ? 'con' : 'sin' }
   const radios = []
   const grupoDe = (leyenda, campo, opciones) => {
     const pildoras = el('div', { class: 'pildoras' })
@@ -589,7 +606,7 @@ function tarjetaEpisodio(ep, i, total) {
   }
   const opciones = el('div', { class: 'opciones', role: 'group', 'aria-label': 'Opciones de la simulación' })
   if (hayMax || hayFija) {
-    opciones.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [['max_', 'Usura máxima']] : []), ...(hayFija ? [['fija_', 'Tasa fija 88,44 %']] : [])]))
+    opciones.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [[CONFIG.prefijoMax, 'Usura máxima']] : []), ...(hayFija ? [[CONFIG.prefijoFija, `Tasa fija ${TASA_FIJA_TXT}`]] : [])]))
   }
   opciones.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
   const pintar = () => {
@@ -691,13 +708,13 @@ async function descargarExcel(ep, just, nombre) {
   const corridas = ep.corridas || {}
   XLSX.utils.book_append_sheet(libro, hojaMotor(XLSX, corridas[nombre('', just)]?.periodos), 'Motor - tasa histórica')
   XLSX.utils.book_append_sheet(libro, hojaReal(XLSX, ep), 'Sistema actual (real)')
-  XLSX.utils.book_append_sheet(libro, hojaMotor(XLSX, corridas[nombre('fija_', just)]?.periodos), 'Motor - tasa fija 88,44')
+  XLSX.utils.book_append_sheet(libro, hojaMotor(XLSX, corridas[nombre(CONFIG.prefijoFija, just)]?.periodos), `Motor - tasa fija ${TASA_FIJA_TXT.replace(' %', '')}`)
   XLSX.writeFile(libro, `contrato-${ep.id}-${just}-justificaciones.xlsx`.replace(/[^\w.-]/g, '_'))
 }
 
 function barraExcel(ep, justActual, nombre) {
   const boton = el('button', { type: 'button' }, 'Descargar Excel (3 hojas)')
-  const estado = el('span', { class: 'ayuda', role: 'status' }, 'Motor con tasa histórica, sistema actual y motor con tasa fija 88,44 %, según la opción de justificaciones elegida.')
+  const estado = el('span', { class: 'ayuda', role: 'status' }, `Motor con tasa histórica, sistema actual y motor con tasa fija ${TASA_FIJA_TXT}, según la opción de justificaciones elegida.`)
   boton.addEventListener('click', async () => {
     boton.disabled = true
     estado.textContent = 'Preparando el Excel…'
@@ -1020,8 +1037,8 @@ function crearDemo() {
       pagosReales: Object.entries(real).filter(([, v]) => v > 0).map(([n, v]) => ({ fecha: fechaDe(Number(n)), valorMiles: v / 1000, multaMiles: Number(n) === 8 ? 20 : 0 })),
       corridas: {
         sin_justificaciones: simular([], 0.01), con_justificaciones: simular([7], 0.01),
-        max_sin_justificaciones: simular([], 0), max_con_justificaciones: simular([7], 0),
-        fija_sin_justificaciones: simular([], 0, 0.8844), fija_con_justificaciones: simular([7], 0, 0.8844),
+        [CONFIG.prefijoMax + 'sin_justificaciones']: simular([], 0), [CONFIG.prefijoMax + 'con_justificaciones']: simular([7], 0),
+        [CORRIDA_FIJA.sin]: simular([], 0, CONFIG.tasaFija), [CORRIDA_FIJA.con]: simular([7], 0, CONFIG.tasaFija),
       },
     }],
   }
@@ -1038,6 +1055,47 @@ function mostrarEstado(msg, esError) {
   const e = $('estado')
   e.replaceChildren(esError ? el('span', { class: 'error', role: 'alert' }, msg) : document.createTextNode(msg || ''))
 }
+// ---------- sede: selector común a las tres pestañas ----------
+// La API informa qué sedes tienen datos (?sedes=1); si no informa ninguna, se muestran todas con un aviso.
+const LLAVE_SEDE = 'sede-consulta'
+function leerSede() { try { const v = localStorage.getItem(LLAVE_SEDE); return v && CONFIG.sedes[v] ? v : CONFIG.sedeDefecto } catch { return CONFIG.sedeDefecto } }
+function guardarSede(v) { try { localStorage.setItem(LLAVE_SEDE, v) } catch { /* sin almacenamiento: no pasa nada */ } }
+const sedeActual = () => $('sede').value || CONFIG.sedeDefecto
+function agregarSede(url) { url.searchParams.set('sede', sedeActual()); return url }
+function pintarSedes(disponibles) {
+  const actual = $('sede').value || leerSede()
+  const lista = disponibles && disponibles.length ? disponibles.filter((s) => CONFIG.sedes[s]) : Object.keys(CONFIG.sedes)
+  const sinDatos = !!disponibles && !lista.length
+  const mostrar = lista.length ? lista : Object.keys(CONFIG.sedes)
+  $('sede').replaceChildren(...mostrar.map((s) => new Option(CONFIG.sedes[s], s)))
+  $('sede').value = mostrar.includes(actual) ? actual : mostrar.includes(CONFIG.sedeDefecto) ? CONFIG.sedeDefecto : mostrar[0]
+  $('ayuda-sede').textContent = (disponibles && !disponibles.length) || sinDatos
+    ? 'La API no informó sedes con datos (sin datos); se muestran todas. El número de contrato se repite entre sedes.'
+    : 'El número de contrato se repite entre sedes: la consulta siempre es de una sola sede.'
+}
+let sedesCargadas = false
+async function cargarSedes() {
+  if (MODO_DEMO || sedesCargadas || !$('clave').value) return
+  try {
+    const url = new URL(urlApi)
+    url.searchParams.set('sedes', '1')
+    const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
+    if (!r.ok) return
+    const d = await r.json()
+    sedesCargadas = true
+    pintarSedes(Array.isArray(d.sedes) ? d.sedes : [])
+  } catch { /* se queda la lista completa */ }
+}
+function cambiarSede() {
+  guardarSede(sedeActual())
+  // Los resultados en pantalla son de otra sede: se limpian para no mezclar.
+  act.contratos = []
+  for (const id of ['act-just', 'act-filtro', 'act-buscar']) $(id).disabled = true
+  for (const id of ['resultado', 'act-resultado', 'flujo-resultado']) $(id).replaceChildren()
+  mostrarEstado('')
+  if (MODO_DEMO) mostrar(crearDemo())
+}
+
 function leerClave() { try { return sessionStorage.getItem('clave-consulta') || '' } catch { return '' } }
 function guardarClave(v) { try { sessionStorage.setItem('clave-consulta', v) } catch { /* sin almacenamiento: no pasa nada */ } }
 
@@ -1056,6 +1114,7 @@ async function consultar(ev) {
   try {
     const url = new URL(urlApi)
     url.searchParams.set('numero', numero)
+    agregarSede(url)
     const r = await fetch(url, { headers: { 'x-clave': clave }, cache: 'no-store' })
     if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
     let datos
@@ -1134,7 +1193,7 @@ function pintarActivos() {
     return act.desc ? -d : d
   })
   // Lo más importante arriba, y sin sesgo: las dos lecturas del motor (sin / con justificaciones) lado a lado, cada una con su filtro.
-  const LECT_ACT = [['fija_sin_justificaciones', 'Sin justificaciones'], ['fija_con_justificaciones', 'Con justificaciones']]
+  const LECT_ACT = [[CORRIDA_FIJA.sin, 'Sin justificaciones'], [CORRIDA_FIJA.con, 'Con justificaciones']]
   const totales = LECT_ACT.map(([kk, rot]) => [kk, rot, resumenActivos(filtrarActivos(kk), kk)])
   const columna = ([, rot, t]) => {
     const difMargen = (t.proy - t.inversion) - (t.vt - t.inversion)
@@ -1149,7 +1208,7 @@ function pintarActivos() {
   }
   const filaTotal = (rot, f) => el('tr', {}, el('th', { scope: 'row', class: 'izq', style: 'position:static;background:inherit;font-size:inherit;font-weight:400;white-space:normal' }, rot), totales.map(([, , t]) => el('td', {}, cop(f(t)))))
   const resumen = el('section', { class: 'veredicto', 'aria-label': 'Resumen de la cartera activa' },
-    el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(act.contratos.length)} contratos · motor a tasa fija 88,44 %`),
+    el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(act.contratos.length)} contratos · motor a tasa fija ${TASA_FIJA_TXT}`),
     el('p', { class: 'ayuda' }, 'Las dos lecturas del motor, lado a lado. «Sin justificaciones» cuenta todo atraso; «con justificaciones» no cuenta los periodos con atraso justificado. Ninguna de las dos es la predeterminada.'),
     el('div', { class: 'lecturas' }, totales.map(columna)),
     plegable('Más totales de la cartera (las dos lecturas)', false, 'totales',
@@ -1199,6 +1258,7 @@ async function verActivos() {
       guardarClave($('clave').value)
       const url = new URL(urlApi)
       url.searchParams.set('activos', '1')
+      agregarSede(url)
       const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
       if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
       datos = await r.json()
@@ -1218,7 +1278,7 @@ function crearDemoActivos() {
   const un = (n, ini, vencidas, marca, pagado) => ({
     id: `demo|${n}`, contrato: String(n), fechaInicio: ini, cuotas: 78, inversion: 6500000, realPagado: pagado, valorTotalMiles: 14430, saldoRealMiles: 14430 - pagado / 1000,
     // Con justificaciones el atraso justificado no cuenta: menos cuotas vencidas y menos cargos pendientes.
-    corridas: ['fija_con_justificaciones', 'fija_sin_justificaciones'].reduce((o, k) => { const f = k.includes('con_') ? 0.7 : 1; return { ...o, [k]: {
+    corridas: [CORRIDA_FIJA.con, CORRIDA_FIJA.sin].reduce((o, k) => { const f = k.includes('con_') ? 0.7 : 1; return { ...o, [k]: {
       simPagado: pagado * 0.95, simSaldoFinal: 6500000 - pagado * 0.5, simPendientes: vencidas * f * 180000, simCuotasVencidasFinal: vencidas * f,
       simMarcaRecuperacion: marca && f === 1, simPeriodos: 12, simProyectadoTotal: 12000000 - (1 - f) * 150000 } } }, {}),
   })
@@ -1233,7 +1293,7 @@ const MESES_ES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio'
 const nombreMes = (ym) => { const [a, m] = String(ym).split('-'); return `${MESES_ES[+m - 1] || ym} de ${a}` }
 const mesCorto = (ym) => { const [a, m] = String(ym).split('-'); return `${(MESES_ES[+m - 1] || '').slice(0, 3)} ${String(a).slice(2)}` }
 const ultimoDia = (ym) => { const [a, m] = String(ym).split('-'); return `${new Date(Date.UTC(+a, +m, 0)).getUTCDate()} de ${nombreMes(ym)}` }
-const LECTURAS = { sin: 'fija_sin_justificaciones', con: 'fija_con_justificaciones' }
+const LECTURAS = CORRIDA_FIJA
 const rotuloLectura = { sin: 'Sin justificaciones', con: 'Con justificaciones' }
 const otrosDe = (c) => (Number(c?.mora) || 0) + (Number(c?.cobranza) || 0) + (Number(c?.servicios) || 0)
 const partesDe = (c) => ({ cap: Number(c?.capital) || 0, int: Number(c?.interes) || 0, otr: otrosDe(c) })
@@ -1627,6 +1687,7 @@ async function cargarFlujo() {
   guardarClave($('clave').value)
   const url = new URL(urlApi)
   url.searchParams.set('flujo', '1')
+  agregarSede(url)
   const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
   if (!r.ok) throw Object.assign(new Error(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'), { mostrado: true })
   return r.json()
@@ -1690,7 +1751,7 @@ function crearDemoFlujo() {
     const sin = corrida(false), con = corrida(true)
     const real = estado === 'proyectado' ? null : { pagos: Math.round(sin.total * (estado === 'en_curso' ? 0.13 : 0.86 + azar() * 0.13)) }
     const carta = estado === 'cerrado' ? crearCartaDemo(azar, base) : null
-    meses.push({ mes, estado, motosActivas, real, carta, corridas: { fija_sin_justificaciones: sin, fija_con_justificaciones: con } })
+    meses.push({ mes, estado, motosActivas, real, carta, corridas: { [CORRIDA_FIJA.sin]: sin, [CORRIDA_FIJA.con]: con } })
   }
   return { corte, contratos: 1181, meses }
 }
@@ -1725,7 +1786,12 @@ $('act-buscar').addEventListener('input', pintarActivos)
 $('ver-flujo').addEventListener('click', verFlujo)
 
 $('formulario').addEventListener('submit', consultar)
+pintarSedes(null)
+$('sede').value = leerSede()
+$('sede').addEventListener('change', cambiarSede)
+$('clave').addEventListener('change', cargarSedes)
 $('clave').value = leerClave()
+cargarSedes()
 if (MODO_DEMO) {
   $('demo').hidden = false
   $('clave').closest('div').hidden = true
