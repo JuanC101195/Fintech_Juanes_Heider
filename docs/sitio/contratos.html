@@ -47,6 +47,7 @@
       .pestanas [role=tab] { flex: 1 1 0; padding: 8px 4px; font-size: 15px; }
       .pestanas .t-corto { display: inline; } .pestanas .t-largo { display: none; }
     }
+    .bg-mora { background: var(--s2); } .bg-cob { background: var(--s4); }
     .reglas { margin: 12px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; max-width: 720px; }
     .reglas h3 { margin: 0 0 6px; font-size: 15px; }
     .reglas ul { margin: 0; padding-left: 20px; font-size: 14px; }
@@ -443,22 +444,45 @@ function claseFila(p) {
 }
 const rotuloFila = { listo: 'Listo para recuperar', justificado: 'Justificado', sinpago: 'Sin pago' }
 
-function tablaAmortizacion(periodos, leyendaCaption) {
+// Texto humano del estado de un periodo (solo en pantalla; el CSV y el Excel siguen con el valor técnico).
+function estadoHumano(p) {
+  const marca = p.listoRecuperacion ? 'Listo para recuperar · ' : ''
+  const sinPago = !(Number(p.valorReal) > 0) || /sin_?pago/i.test(p.estado || '')
+  if (sinPago) {
+    const cv = Number(p.cuotasVencidas) || 0
+    return marca + (p.justificado ? 'No pagó esta semana (atraso justificado)' : `No pagó esta semana → ${dec(cv)} ${cv === 1 ? 'cuota vencida' : 'cuotas vencidas'}`)
+  }
+  const dias = Number(p.diasAtraso) || 0
+  const f = fechaPagoDe(p)
+  const dm = f ? fechaCorta(f).slice(0, 5) : ''
+  if (dias > 0) return marca + `Pagó${dm ? ' el ' + dm : ''}, ${dec(dias, 0)} ${dias === 1 ? 'día tarde' : 'días tarde'}${Number(p.cobranza) > 0 ? ' → cobranza ' + cop(p.cobranza) : ''}`
+  return marca + (p.justificado ? 'Al día (atraso justificado)' : 'Al día')
+}
+const MORA_COB = ['Mora y cobranza', (p) => cop((Number(p.interesMora) || 0) + (Number(p.cobranza) || 0)), '', (p) => (Number(p.interesMora) || 0) + (Number(p.cobranza) || 0)]
+// Vista corta (8 columnas) o completa (todas). El CSV y el Excel usan siempre COLUMNAS completas.
+function columnasVista(corta) {
+  if (!corta) return COLUMNAS
+  const por = Object.fromEntries(COLUMNAS.map((c) => [c[0], c]))
+  return ['Periodo', 'Vence', 'Fecha de pago', 'Pago real', 'Estado', 'Capital pagado', 'Interés'].map((n) => por[n]).concat([MORA_COB])
+}
+
+function tablaAmortizacion(periodos, leyendaCaption, corta = false) {
+  const COLS = columnasVista(corta)
   const cuerpo = el('tbody')
   for (const p of periodos) {
     const cl = claseFila(p)
     const tr = el('tr', { class: cl })
-    COLUMNAS.forEach(([n, f, alin], i) => {
+    COLS.forEach(([n, f, alin], i) => {
       if (n === 'Estado') {
-        const marca = cl ? el('strong', {}, rotuloFila[cl] + ' · ') : null
-        tr.append(el('td', { class: 'izq' }, marca, texto(p.estado)))
+        const marca = cl === 'justificado' ? el('strong', {}, rotuloFila[cl] + ' · ') : null
+        tr.append(el('td', { class: 'izq' }, marca, estadoHumano(p)))
       } else tr.append(el(i === 0 ? 'th' : 'td', { class: alin, scope: i === 0 ? 'row' : null }, f(p)))
     })
     cuerpo.append(tr)
   }
-  const cab = el('tr', {}, COLUMNAS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
-  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
-  const pie = el('tfoot', {}, el('tr', {}, COLUMNAS.map(([n, , alin, crudo], i) =>
+  const cab = el('tr', {}, COLS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
+  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Mora y cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
+  const pie = el('tfoot', {}, el('tr', {}, COLS.map(([n, , alin, crudo], i) =>
     i === 0 ? el('th', { scope: 'row', class: 'izq' }, 'Total')
       : SUMABLES.includes(n) ? el('td', {}, sumaDe(periodos, crudo) === null ? '—' : cop(sumaDe(periodos, crudo)))
         : el('td', { class: alin }))))
@@ -513,13 +537,39 @@ function cifrasDe(ep, c) {
   const valorTotal = ep.valorTotalMiles != null ? ep.valorTotalMiles * 1000 : null
   const proyMotor = r.simProyectadoTotal ?? null
   const dif = recaudoMotor - sistema
-  return { r, sistema, inversion, recaudoMotor, deuda, conDeuda, dif, bruto, sobrante: bruto - recaudoMotor, difPct: sistema > 0 ? dif / sistema : null, valorTotal, proyMotor, proyectado: valorTotal != null && proyMotor != null }
+  // Lo pagado, repartido como lo aplicaría el motor (capital, interés, mora, cobranza, servicios).
+  const sumaP = (f) => (c.periodos || []).reduce((t, p) => t + (Number(f(p)) || 0), 0)
+  const reparto = { cap: sumaP((p) => p.pagoCapital), int: sumaP((p) => p.pagoInteres), mora: sumaP((p) => p.pagoMora), cob: sumaP((p) => p.pagoCobranza),
+    srv: sumaP((p) => p.pagoServicios ?? (Number(p.pagoFondo) || 0) + (Number(p.pagoSeguro) || 0) + (Number(p.pagoAsistencia) || 0)) }
+  return { reparto, terminado: !!ep.fechaFin, r, sistema, inversion, recaudoMotor, deuda, conDeuda, dif, bruto, sobrante: bruto - recaudoMotor, difPct: sistema > 0 ? dif / sistema : null, valorTotal, proyMotor, proyectado: valorTotal != null && proyMotor != null }
 }
 
 // Lo primero que se ve: si con el motor se habría recaudado más, igual o menos (en efectivo), por cuánto, y las cifras clave.
+// Barra de reparto con los cinco conceptos y su leyenda.
+function repartoDetallado(rp) {
+  const partes = [['Capital', rp.cap, 'bg-cap'], ['Interés', rp.int, 'bg-int'], ['Mora', rp.mora, 'bg-mora'], ['Cobranza', rp.cob, 'bg-cob'], ['Servicios', rp.srv, 'bg-otr']]
+  const t = partes.reduce((a, [, v]) => a + v, 0)
+  return el('div', {},
+    el('div', { class: 'reparto', role: 'img', 'aria-label': 'Reparto de lo pagado: ' + partes.map(([n, v]) => `${n.toLowerCase()} ${pctDe(v, t)}`).join(', ') },
+      partes.map(([n, v, cls]) => el('span', { class: cls, style: `flex: 0 0 ${t > 0 ? (v / t) * 100 : 0}%`, title: `${n}: ${pctDe(v, t)}` }))),
+    el('ul', { class: 'leyenda', 'aria-label': 'Leyenda del reparto' }, partes.map(([n, v, cls]) => el('li', {}, el('span', { class: 'muestra ' + cls }), `${n} ${cop(v)} (${pctDe(v, t)})`))))
+}
+
 function veredicto(ep, x) {
   const { sistema, inversion, recaudoMotor, deuda, dif, difPct, valorTotal, proyMotor, proyectado } = x
   const igual = Math.abs(dif) < 1
+  if (igual && x.terminado && !proyectado) {
+    // Contrato terminado: la igualdad es por construcción (al motor se le dan los mismos pagos reales), así que lo informativo es cómo se reparte.
+    const rp = x.reparto
+    const aInteres = rp.int + rp.mora + rp.cob
+    return el('section', { class: 'veredicto', 'aria-label': 'Resumen de la comparación' },
+      el('p', { class: 'veredicto-titulo' }, `El cliente pagó lo mismo en los dos lados: ${cop(recaudoMotor)}. Lo que cambia es cómo se reparte ese dinero`),
+      repartoDetallado(rp),
+      el('p', {}, `Con las reglas del motor, de esos ${cop(recaudoMotor)}, ${cop(rp.cap)} habrían ido a capital y ${cop(aInteres)} a interés, mora y cobranza${rp.srv >= 1 ? ` (más ${cop(rp.srv)} de servicios)` : ''}; al final quedarían ${cop(deuda)} por cobrar.`),
+      el('div', { class: 'kpis' }, kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Estimada; igual en los dos lados' : 'Igual en los dos lados')),
+      deuda >= 1 ? el('p', { class: 'liquidacion', role: 'note' }, el('strong', {}, 'Deuda que el motor aún figura por cobrar (no es dinero recaudado): '), cop(deuda),
+        '. Es capital y cargos que el motor sigue mostrando pendientes; el cliente no los pagó, por eso no suma a lo recaudado ni al margen.') : null)
+  }
   const frase = igual ? 'Con el motor, lo recaudado habría sido igual que en el sistema actual' : dif > 0 ? 'Con el motor, lo recaudado habría sido mayor que en el sistema actual' : 'Con el motor, lo recaudado habría sido menor que en el sistema actual'
   const sub = igual ? 'recaudado en dinero, en los dos lados' : (difPct === null ? '' : `${signoDe(dif)}${pctDif(difPct)} frente a lo que pagó el cliente`) + (proyectado ? ' · a hoy' : '')
   return el('section', { class: 'veredicto', 'aria-label': 'Resumen de la comparación' },
@@ -651,6 +701,14 @@ function tarjetaEpisodio(ep, i, total) {
     opciones.append(grupoDe('Tasa aplicada', 'tasa', [['', 'Usura − 1 punto'], ...(hayMax ? [[CONFIG.prefijoMax, 'Usura máxima']] : []), ...(hayFija ? [[CONFIG.prefijoFija, `Tasa fija ${TASA_FIJA_TXT}`]] : [])]))
   }
   opciones.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
+  // Lo que la persona abrió o eligió se conserva al cambiar de opción.
+  const vistaTabla = { corta: true }
+  let abiertoGraf = false
+  const graficasPlegable = (ep2, c2, k2) => {
+    const d = plegable('Gráficas y resumen mensual', abiertoGraf, 'graficas', ...graficasYMensual(ep2, c2, k2))
+    d.addEventListener('toggle', () => { abiertoGraf = d.open })
+    return d
+  }
   const pintar = () => {
     // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este cliente.
     for (const [campo, valor, radio] of radios) {
@@ -661,8 +719,8 @@ function tarjetaEpisodio(ep, i, total) {
     const c = corridas[clave]
     zona.replaceChildren(
       resumenComparativo(ep, c),
-      plegable('Gráficas y resumen mensual', true, 'graficas', ...graficasYMensual(ep, c, clave)),
-      plegable('Tabla periodo a periodo (amortización simulada)', false, 'amortizacion', tablaCompleta(ep, c, clave)))
+      plegable('Tabla de cuotas, periodo a periodo', true, 'amortizacion', tablaCompleta(ep, c, clave, vistaTabla)),
+      graficasPlegable(ep, c, clave))
   }
   cabecera.append(barraExcel(ep, () => sel.just, nombre))
   tarjeta.append(opciones,
@@ -992,20 +1050,25 @@ function graficasYMensual(ep, c, clave) {
   ]
 }
 
-function tablaCompleta(ep, c, clave) {
+function tablaCompleta(ep, c, clave, vistaTabla = { corta: true }) {
   const periodos = c.periodos || []
   const cont = el('div')
   if (!periodos.length) { cont.append(el('p', { class: 'ayuda' }, 'No hay periodos para esta simulación.')); return cont }
   const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
   boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
+  const zonaTabla = el('div')
+  const vista = el('button', { type: 'button', class: 'secundario', 'aria-pressed': String(!vistaTabla.corta) }, vistaTabla.corta ? 'Ver todas las columnas' : 'Ver menos columnas')
+  const pintarTabla = () => zonaTabla.replaceChildren(el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de cuotas, ${rotuloCorrida(clave)}` },
+    tablaAmortizacion(periodos, `Cuotas simuladas del contrato ${ep.id} · ${rotuloCorrida(clave)}`, vistaTabla.corta)))
+  vista.addEventListener('click', () => { vistaTabla.corta = !vistaTabla.corta; vista.textContent = vistaTabla.corta ? 'Ver todas las columnas' : 'Ver menos columnas'; vista.setAttribute('aria-pressed', String(!vistaTabla.corta)); pintarTabla() })
+  pintarTabla()
   cont.append(
-    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), es la cifra que se compara con la cuota para decidir si la moto queda lista para recuperar; «Mora acumulada por cobrar» es solo la mora.`)),
+    el('div', { class: 'barra' }, boton, vista, el('span', { class: 'ayuda' }, `${periodos.length} periodos. El CSV y el Excel traen todas las columnas. En la vista completa, la columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), es la cifra que se compara con la cuota para decidir si la moto queda lista para recuperar; «Mora acumulada por cobrar» es solo la mora.`)),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-listo)' }), 'Listo para recuperar')),
-    el('div', { class: 'tabla-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla de amortización, ${rotuloCorrida(clave)}` },
-      tablaAmortizacion(periodos, `Amortización simulada del contrato ${ep.id} · ${rotuloCorrida(clave)}`)))
+    zonaTabla)
   return cont
 }
 
