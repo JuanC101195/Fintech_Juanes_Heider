@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 const aqui = path.dirname(fileURLToPath(import.meta.url))
 const sitio = path.resolve(aqui, '..')
 // Texto esperado de la nota de multas (único lugar donde se escribe).
-const NOTA_MULTAS = 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política vigente en perfil NEGOCIO).'
+const NOTA_MULTAS = 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política temporal).'
 // package.json desde el que se resuelve @playwright/test: PLAYWRIGHT_PACKAGE_JSON, o el front de Prestaya si existe (PC de Juan Esteban),
 // o el package.json de la carpeta actual (donde se instaló @playwright/test).
 const localPrestaya = 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json'
@@ -115,18 +115,29 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.getByText('Datos de ejemplo, no reales').first().waitFor()
   verificar((await page.locator('tbody tr').count()) > 0, 'la tabla de amortización se dibuja')
   const amort = page.locator('table:not(.mensual)').first()
+  const abrirGraficas = async () => { const d = page.locator('details.graficas').first(); if (!(await d.evaluate((e) => e.open))) await d.locator('> summary').click() }
+  // T5: tabla de cuotas abierta y por encima de las gráficas (plegadas); 8 columnas por defecto y estado en lenguaje humano.
+  const orden = await page.evaluate(() => { const t = document.querySelector('details.amortizacion'), g = document.querySelector('details.graficas'); return { tAbierta: t.open, gAbierta: g.open, antes: !!(t.compareDocumentPosition(g) & Node.DOCUMENT_POSITION_FOLLOWING) } })
+  verificar(orden.tAbierta && !orden.gAbierta && orden.antes, 'tabla de cuotas abierta, por encima de las gráficas que quedan plegadas')
+  const cortas = await amort.locator('thead th[scope=col]').allInnerTexts()
+  verificar(cortas.join('|') === 'Periodo|Vence|Fecha de pago|Pago real|Estado|Capital pagado|Interés|Mora y cobranza', `tabla con 8 columnas por defecto (${cortas.join('|')})`)
+  const estados = await amort.locator('tbody tr td:nth-child(5)').allInnerTexts()
+  verificar(estados.some((t) => /^Pagó el 21\/01, 1 día tarde/.test(t)) && estados.some((t) => /^No pagó esta semana → \d+ cuotas? vencidas?/.test(t)) && estados.some((t) => /Al día/.test(t)), `columna Estado en lenguaje humano (${estados.slice(0, 3).join(' / ')})`)
+  const humano = await page.evaluate(() => [estadoHumano({ valorReal: 100000, diasAtraso: 1, fechaVencimiento: '2025-01-20', instruccion: 'PagoValor', cobranza: 25000 }), estadoHumano({ valorReal: 0, estado: 'sin_pago', cuotasVencidas: 1 }), estadoHumano({ valorReal: 100000, diasAtraso: 0, cuotasVencidas: 0 })])
+  verificar(/^Pagó el 21\/01, 1 día tarde → cobranza \$ 25\.000$/.test(humano[0]) && humano[1] === 'No pagó esta semana → 1 cuota vencida' && humano[2] === 'Al día', `textos humanos del Estado (${humano.join(' / ')})`)
   const filas = await amort.locator('tbody tr').count()
   verificar(filas === 7, `corrida sin justificaciones: 7 periodos (hay ${filas})`)
   verificar((await page.locator('tr.listo').count()) === 1, 'una fila "listo para recuperar"')
   verificar((await page.locator('tr.sinpago').count()) === 2, 'dos filas "sin pago"')
   const dosGraficas = async () => {
+    await abrirGraficas()
     await page.locator('svg[role=img]').nth(1).waitFor()
     return page.locator('svg[role=img]').evaluateAll((l) => l.map((x) => x.querySelector('title')?.textContent))
   }
   const titulos = await dosGraficas()
   verificar(titulos.length === 2 && /Tasa efectiva anual/.test(titulos[0]) && /Interés cobrado/.test(titulos[1]), `aparecen las dos gráficas (${titulos.join(' | ')})`)
   verificar((await page.locator('svg[role=img]').first().locator('path').count()) === 2 && (await page.locator('svg[role=img]').first().locator('line[stroke-dasharray]').count()) === 1, 'la gráfica de tasa tiene líneas de tasa y usura y la punteada de la tasa real')
-  verificar(/implícita/.test(await page.locator('.bloque-grafica .ayuda').first().innerText()), 'aviso de tasa implícita visible')
+  verificar(/estimaci/.test(await page.locator('.bloque-grafica .ayuda').first().innerText()), 'aviso de tasa estimada visible')
   const veredictoTxt = await page.locator('.veredicto').first().innerText()
   verificar(/Con el motor, lo recaudado habría sido (igual|mayor|menor)/.test(veredictoTxt) && /Deuda que el motor aún figura por cobrar \(no es dinero recaudado\)/.test(veredictoTxt) && !/la financiera habría recaudado/.test(veredictoTxt), 'veredicto: compara dinero recaudado y muestra la deuda por cobrar aparte')
   const totalMensual = () => page.locator('table.mensual tfoot td').first().innerText()
@@ -137,6 +148,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar(t1 !== t2, `cambiar "Tasa aplicada" cambia la tabla mensual (${t1} -> ${t2})`)
   await page.getByLabel('Usura − 1 punto', { exact: true }).check()
   await page.locator('#resultado').getByLabel('Con justificaciones', { exact: true }).check()
+  await abrirGraficas()
   await page.locator('svg[role=img]').nth(1).waitFor()
   const filas2 = await amort.locator('tbody tr').count()
   verificar(((await page.locator('svg[role=img]').count()) === 2),'sigue habiendo dos gráficas tras cambiar de corrida')
@@ -146,7 +158,6 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar(p.length === 0, `sin desbordes de página ${JSON.stringify(p)}`)
   verificar(errores.length === 0, `0 errores JS (${errores.length}) ${errores.join(' | ')}`)
   // La tabla periodo a periodo va plegada: se abre para descargar el CSV.
-  await page.locator('details.amortizacion > summary').first().click()
   const [descarga] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar CSV' }).first().click()])
   const bytes = readFileSync(await descarga.path())
   const conBom = bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
@@ -177,6 +188,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar(x.fv.join('|') === '13/01/2025|13/01/2025|0|20/01/2025|21/01/2025|1' && x.sinPago.length >= 2 && x.sinPago.every((v) => v === '—'),
     `Excel: columna «Fecha de pago» (vence + días de atraso; «—» sin pago) ${JSON.stringify([x.fv, x.sinPago])}`)
   // En pantalla: columna junto a «Vence», 1 día de atraso => un día después, y «—» en las filas sin pago.
+  await page.getByRole('button', { name: 'Ver todas las columnas' }).click()
   const ths = await amort.locator('thead th[scope=col]').allInnerTexts()
   const iV = ths.indexOf('Vence')
   verificar(iV >= 0 && ths[iV + 1] === 'Fecha de pago' && ths.includes('Días de atraso'), `encabezados: «Fecha de pago» junto a «Vence» (${ths.slice(0, 5).join(' | ')})`)
@@ -187,6 +199,32 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.locator('details.desglose > summary').first().click()
   const nota = await page.locator('#nota-multas').first().innerText()
   verificar(nota === NOTA_MULTAS, `nota de multas visible (${nota})`)
+  // T1: bloque de reglas siempre visible, generado desde CONFIG.reglas, sin copias escritas a mano.
+  const reglas = await page.locator('#reglas-motor li').allInnerTexts()
+  verificar(reglas.length === 4 && /88,44 %/.test(reglas[0]) && /\$25\.000/.test(reglas[1]) && /360 días/.test(reglas[2]) && /multas.*no siguen una regla fija/.test(reglas[3]), `bloque «Reglas que usa el motor hoy» con 4 reglas (${reglas.join(' | ')})`)
+  verificar(await page.locator('#reglas-motor').isVisible(), 'el bloque de reglas está visible sin abrir nada')
+  // T2: sin jerga en lo visible (se abren los plegables para incluirlos).
+  await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true }))
+  const visibleTxt = await page.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('script').forEach((x) => x.remove()); return c.textContent })
+  const jerga = visibleTxt.match(/episodio|corrida|imputad|cohorte|implícita|numerador|reasignación nº|NEGOCIO|usura aplicada/gi)
+  verificar(!jerga, `sin jerga visible (${jerga ? [...new Set(jerga)].join(', ') : 'ok'})`)
+  verificar(/Tasa anual que de hecho pagó el cliente \(incluye multas\)/.test(visibleTxt), 'rótulo «Tasa anual que de hecho pagó el cliente»')
+  // T4: pestañas cortas sin scroll horizontal oculto en celular; ningún texto visible menor de 13 px.
+  const pest = await page.evaluate(() => { const b = document.querySelector('.pestanas'); return { sobra: b.scrollWidth - b.clientWidth, textos: [...b.querySelectorAll('[role=tab]')].map((t) => t.innerText.trim()) } })
+  verificar(ancho > 400 ? pest.sobra <= 0 : pest.sobra <= 0 && pest.textos.join('|') === 'Contrato|Activos|Recaudo', `pestañas sin scroll horizontal (${pest.textos.join('|')}, sobra ${pest.sobra})`)
+  const chicos = await page.evaluate(() => {
+    const lista = []
+    for (const e of document.body.querySelectorAll('*')) {
+      if (['SCRIPT', 'STYLE'].includes(e.tagName)) continue
+      const r = e.getBoundingClientRect()
+      if (!r.width || !r.height) continue
+      const propio = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())
+      if (propio && parseFloat(getComputedStyle(e).fontSize) < 13) lista.push(`${e.tagName}.${e.className} ${getComputedStyle(e).fontSize}`)
+    }
+    return [...new Set(lista)].slice(0, 8)
+  })
+  verificar(chicos.length === 0, `sin textos visibles menores de 13 px (${chicos.join(' | ')})`)
+  verificar(!/NEGOCIO/.test(await page.locator('body').textContent()) && /\$25\.000 por cada cuota/.test(await page.locator('[data-regla=cobranza]').textContent()), 'sin «perfil NEGOCIO»; la línea de «Cómo leer» sale de CONFIG')
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }
@@ -206,6 +244,10 @@ console.log('Consulta con función simulada')
     if (clave !== 'buena') return json(401, { error: 'clave' })
     if (url.searchParams.get('numero') === '7') return json(404, { error: 'no_encontrado' })
     if (url.searchParams.get('numero') === '8') return json(429, { error: 'demasiadas_consultas' })
+    if (url.searchParams.get('numero') === '9') return json(400, { error: 'sede_invalida' })
+    if (url.searchParams.get('numero') === '10') return json(500, { error: 'interno' })
+    if (url.searchParams.get('numero') === '11') return void setTimeout(() => json(200, DATOS), 3600)
+    if (url.searchParams.get('numero') === '12') return json(200, { numero: '12', episodios: [{ ...DATOS.episodios[0], id: 'FIN-12', estadoReal: 'NORMAL', fechaFin: '2025-06-01' }] })
     return json(200, DATOS)
   })
   await contexto.route((url) => !esLocal(url) && !url.hostname.endsWith('azurewebsites.net'), (r) => r.abort())
@@ -227,6 +269,30 @@ console.log('Consulta con función simulada')
   await consultar('buena', '8')
   await page.getByText(/Demasiadas consultas/).waitFor()
   verificar(true, '429 -> mensaje de demasiadas consultas')
+  // T3: errores y carga
+  await consultar('buena', '9')
+  await page.getByText(/La sede elegida no es válida/).waitFor()
+  verificar(!/número de contrato no es válido/.test(await page.locator('#estado').innerText()), '400 sede_invalida: no dice «número de contrato no válido»')
+  await consultar('buena', '10')
+  await page.getByText(/Hubo un problema en el servidor; intente de nuevo en un minuto/).waitFor()
+  verificar(true, '500 -> mensaje de problema en el servidor')
+  await consultar('buena', '11')
+  verificar(/Consultando/.test(await page.locator('#estado').innerText()) && (await page.locator('#estado .barra-carga').count()) === 0, 'carga: antes de 3 s solo «Consultando…»')
+  await page.getByText(/El servidor está despertando; la primera consulta suele tardar hasta 15 segundos/).waitFor()
+  verificar((await page.locator('#estado .barra-carga[role=progressbar]').count()) === 1 && (await page.locator('#estado').getAttribute('aria-live')) === 'polite', 'carga: tras 3 s aviso de servidor despertando con barra indeterminada, en región aria-live')
+  await page.getByRole('heading', { name: /Contrato EP-1/ }).waitFor()
+  verificar((await page.locator('#estado .barra-carga').count()) === 0, 'carga: la barra desaparece al llegar la respuesta')
+  // T5: contrato terminado con diferencia 0: titular honesto + reparto, sin «habría sido igual».
+  await consultar('buena', '12')
+  await page.getByRole('heading', { name: /Contrato FIN-12/ }).waitFor()
+  const vt = await page.locator('.veredicto').first().innerText()
+  verificar(/^El cliente pagó lo mismo en los dos lados: \$ 200\.000\. Lo que cambia es cómo se reparte ese dinero/.test(vt) && !/habría sido (igual|mayor|menor)/.test(vt), 'terminado y diferencia 0: «El cliente pagó lo mismo en los dos lados»')
+  verificar((await page.locator('.veredicto .reparto').count()) === 1 && /Capital.*Interés.*Mora.*Cobranza.*Servicios/s.test(vt), 'terminado: barra de reparto con Capital / Interés / Mora / Cobranza / Servicios')
+  verificar(/Con las reglas del motor, de esos \$ 200\.000, \$ [\d.]+ habrían ido a capital y \$ [\d.]+ a interés, mora y cobranza.*al final quedarían \$ [\d.]+ por cobrar\./s.test(vt), 'terminado: frase de reparto y saldo por cobrar')
+  await page.screenshot({ path: path.join(salida, 'contratos-terminado-celular.png'), fullPage: true })
+  await consultar('buena', '0123')
+  await page.getByRole('heading', { name: /Contrato EP-1/ }).waitFor()
+  verificar(/habría sido (igual|mayor|menor)/.test(await page.locator('.veredicto').first().innerText()), 'contrato activo: se mantiene el lenguaje comparativo')
   await consultar('buena', 'abc')
   await page.getByText(/no es válido/).waitFor()
   verificar(true, 'número inválido se rechaza en el navegador sin llamar a la función')
@@ -236,12 +302,13 @@ console.log('Consulta con función simulada')
   verificar(visto.at(-1).numero === '0123' && visto.at(-1).clave === 'buena', 'la cabecera x-clave y el número viajan a la función')
   verificar(visto.length === antes + 1, 'una sola petición por consulta')
   verificar((await page.getByRole('heading', { name: /Contrato EP-/ }).count()) === 2, 'dos episodios dibujados')
+  await page.locator('details.graficas > summary').nth(0).click(); await page.locator('details.graficas > summary').nth(1).click()
   await page.locator('svg[role=img]').nth(3).waitFor()
   verificar((await page.locator('svg[role=img]').count()) === 4, 'dos gráficas por episodio')
   verificar((await page.getByRole('group', { name: 'Tasa aplicada' }).count()) === 1, 'solo el episodio con corridas de usura máxima muestra el selector de tasa')
   await page.getByLabel('Usura máxima', { exact: true }).check()
   verificar(/75.000/.test(await page.locator('table.mensual tfoot td').first().innerText()), 'con usura máxima la tabla mensual refleja el interés de esa corrida')
-  verificar((await page.locator('.etiqueta', { hasText: 'imputada' }).count()) === 1, 'etiqueta "imputada" visible en el episodio 2')
+  verificar((await page.locator('.etiqueta', { hasText: 'estimada' }).count()) === 1, 'etiqueta "estimada" visible en el cliente 2')
   verificar(!page.url().includes('buena'), 'la clave no está en la URL')
   const guardada = await page.evaluate(() => [sessionStorage.getItem('clave-consulta'), localStorage.length])
   verificar(guardada[0] === 'buena' && guardada[1] === 0, 'clave en sessionStorage y nada en localStorage')
@@ -370,6 +437,9 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar((await svgs.count()) === 2 && (await svgs.evaluateAll((l) => l.every((s) => s.querySelector('title') && s.querySelector('desc')))), `recaudo: 2 gráficas de proyección accesibles con title y desc, hay ${await svgs.count()}`)
   verificar((await page.locator('#flujo-zona-proy .lectura').count()) === 2 && (await page.locator('#flujo-lectura-ambas').isChecked()), 'recaudo: la proyección arranca con «Ambas» (sin y con justificaciones)')
   const cifra = () => page.locator('#flujo-zona-proy .lectura .cifra-grande').first().evaluate((e) => e.firstChild.textContent)
+  await page.waitForTimeout(700)
+  const opac = await page.locator('#flujo-zona-proy .cifra-grande').first().evaluate((e) => { let o = 1; for (let n = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity); return o })
+  verificar(opac === 1, `la cifra grande de la proyección no queda atenuada tras cargar (opacidad ${opac})`)
   verificar(/31 de diciembre de 2026/.test(await page.locator('#flujo-fin-texto').innerText()), 'recaudo: el deslizador arranca en el 31 de diciembre de 2026')
   verificar(await page.getByRole('button', { name: '31 dic 2026' }).getAttribute('aria-pressed') === 'true', 'recaudo: el atajo «31 dic 2026» aparece marcado')
   const c1 = await cifra()
@@ -484,6 +554,8 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   // Cambiar a Cartagena desde otra pestaña: activos se vuelve a pedir y trae las 3 filas
   await page.getByLabel('Sede').selectOption('CARTAGENA')
   verificar((await page.locator('table.activos').count()) === 0, 'cambiar de sede limpia también activos y recaudo')
+  verificar(/Cambió a Cartagena: vuelva a consultar/.test(await page.locator('#estado').innerText()), 'cambiar de sede avisa «Cambió a Cartagena: vuelva a consultar»')
+  verificar(/Aún no ha consultado\. Pulse «Ver contratos activos»/.test(await page.locator('#act-resultado').textContent()) && /Aún no ha consultado\. Pulse «Ver recaudo»/.test(await page.locator('#flujo-resultado').textContent()), 'estados vacíos en Activos y Recaudo tras cambiar de sede')
   await page.getByRole('tab', { name: 'Contratos activos' }).click()
   await page.locator('#ver-activos').click()
   await page.locator('table.activos').waitFor()
