@@ -36,6 +36,11 @@
     .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
     form.consulta { display: grid; gap: 12px 16px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; max-width: 560px; }
     .campo-clave { max-width: 420px; margin-bottom: 4px; }
+    .barra-carga { display: block; height: 6px; margin-top: 8px; max-width: 360px; background: var(--cabecera); border-radius: 999px; overflow: hidden; }
+    .barra-carga > span { display: block; height: 100%; width: 35%; background: var(--primario); border-radius: 999px; animation: va-y-viene 1.4s ease-in-out infinite alternate; }
+    @keyframes va-y-viene { from { transform: translateX(0); } to { transform: translateX(185%); } }
+    @media (prefers-reduced-motion: reduce) { .barra-carga > span { animation: none; width: 100%; } }
+    .vacio { padding: 12px 0; }
     .reglas { margin: 12px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; max-width: 720px; }
     .reglas h3 { margin: 0 0 6px; font-size: 15px; }
     .reglas ul { margin: 0; padding-left: 20px; font-size: 14px; }
@@ -1076,11 +1081,31 @@ function crearDemo() {
 }
 
 // ---------- consulta ----------
+const MENSAJE_500 = 'Hubo un problema en el servidor; intente de nuevo en un minuto.'
+const MENSAJE_DEMORA = 'El servidor está despertando; la primera consulta suele tardar hasta 15 segundos.'
 const MENSAJES = {
   401: 'La clave es incorrecta o falta. Revísela e inténtelo de nuevo.',
   404: 'No se encontró ese número de contrato.',
   429: 'Demasiadas consultas seguidas. Espere un minuto e inténtelo otra vez.',
   400: 'El número de contrato no es válido: use solo dígitos (máximo 10).',
+}
+async function mensajeHttp(r, esContrato) {
+  if (r.status === 400) {
+    let cuerpo = ''
+    try { cuerpo = await r.text() } catch { /* sin cuerpo */ }
+    if (/sede_invalida/i.test(cuerpo)) return 'La sede elegida no es válida. Elija otra sede de la lista e inténtelo de nuevo.'
+    return esContrato ? MENSAJES[400] : 'La consulta no es válida. Revise los datos e inténtelo de nuevo.'
+  }
+  if (r.status >= 500) return MENSAJE_500
+  return MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'
+}
+// Carga progresiva: «Consultando…» y, pasados 3 s, aviso de que el servidor está despertando con barra indeterminada. Devuelve la función que la termina.
+function iniciarCarga(texto) {
+  mostrarEstado(texto)
+  const t = setTimeout(() => {
+    $('estado').replaceChildren(MENSAJE_DEMORA, el('span', { class: 'barra-carga', role: 'progressbar', 'aria-label': 'Consultando al servidor' }, el('span')))
+  }, 3000)
+  return () => clearTimeout(t)
 }
 function mostrarEstado(msg, esError) {
   const e = $('estado')
@@ -1117,13 +1142,19 @@ async function cargarSedes() {
     pintarSedes(Array.isArray(d.sedes) ? d.sedes : [])
   } catch { /* se queda la lista completa */ }
 }
+// Antes de consultar, las pestañas Activos y Recaudo dicen qué hacer en vez de quedar en blanco.
+function estadosVacios() {
+  $('act-resultado').replaceChildren(el('p', { class: 'ayuda vacio' }, 'Aún no ha consultado. Pulse «Ver contratos activos».'))
+  $('flujo-resultado').replaceChildren(el('p', { class: 'ayuda vacio' }, 'Aún no ha consultado. Pulse «Ver recaudo».'))
+}
 function cambiarSede() {
   guardarSede(sedeActual())
   // Los resultados en pantalla son de otra sede: se limpian para no mezclar.
   act.contratos = []
   for (const id of ['act-just', 'act-filtro', 'act-buscar']) $(id).disabled = true
-  for (const id of ['resultado', 'act-resultado', 'flujo-resultado']) $(id).replaceChildren()
-  mostrarEstado('')
+  $('resultado').replaceChildren()
+  estadosVacios()
+  mostrarEstado(`Cambió a ${CONFIG.sedes[sedeActual()]}: vuelva a consultar.`)
   if (MODO_DEMO) mostrar(crearDemo())
 }
 
@@ -1141,20 +1172,23 @@ async function consultar(ev) {
   const boton = $('consultar')
   boton.disabled = true
   $('resultado').replaceChildren()
-  mostrarEstado('Consultando…')
+  const finCarga = iniciarCarga('Consultando…')
   try {
     const url = new URL(urlApi)
     url.searchParams.set('numero', numero)
     agregarSede(url)
     const r = await fetch(url, { headers: { 'x-clave': clave }, cache: 'no-store' })
-    if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+    finCarga()
+    if (!r.ok) { mostrarEstado(await mensajeHttp(r, true), true); return }
     let datos
     try { datos = await r.json() } catch { mostrarEstado('La respuesta del servicio no se pudo leer.', true); return }
     mostrarEstado('')
     mostrar(datos)
   } catch {
+    finCarga()
     mostrarEstado('No hay conexión con el servicio. Revise su internet e inténtelo de nuevo (la primera consulta puede tardar unos segundos).', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1281,7 +1315,7 @@ async function verActivos() {
   if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
   const boton = $('ver-activos')
   boton.disabled = true
-  mostrarEstado('Consultando los contratos activos…')
+  const finCarga = iniciarCarga('Consultando los contratos activos…')
   try {
     let datos
     if (MODO_DEMO) datos = { contratos: crearDemoActivos() }
@@ -1291,7 +1325,7 @@ async function verActivos() {
       url.searchParams.set('activos', '1')
       agregarSede(url)
       const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
-      if (!r.ok) { mostrarEstado(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.', true); return }
+      if (!r.ok) { finCarga(); mostrarEstado(await mensajeHttp(r, false), true); return }
       datos = await r.json()
     }
     act.contratos = datos.contratos || []
@@ -1299,8 +1333,10 @@ async function verActivos() {
     mostrarEstado('')
     pintarActivos()
   } catch {
+    finCarga()
     mostrarEstado('No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1724,7 +1760,7 @@ async function cargarFlujo() {
   url.searchParams.set('flujo', '1')
   agregarSede(url)
   const r = await fetch(url, { headers: { 'x-clave': $('clave').value }, cache: 'no-store' })
-  if (!r.ok) throw Object.assign(new Error(MENSAJES[r.status] || 'El servicio no pudo atender la consulta. Inténtelo más tarde.'), { mostrado: true })
+  if (!r.ok) throw Object.assign(new Error(await mensajeHttp(r, false)), { mostrado: true })
   return r.json()
 }
 
@@ -1732,7 +1768,7 @@ async function verFlujo() {
   if (!MODO_DEMO && !$('clave').value) { mostrarEstado('Escriba la clave de consulta.', true); $('clave').focus(); return }
   const boton = $('ver-flujo')
   boton.disabled = true
-  mostrarEstado('Calculando el recaudo de la cartera activa…')
+  const finCarga = iniciarCarga('Calculando el recaudo de la cartera activa…')
   try {
     flujo.datos = await cargarFlujo()
     flujo.fin = null
@@ -1741,8 +1777,10 @@ async function verFlujo() {
     mostrarEstado('')
     pintarFlujo()
   } catch (e) {
+    finCarga()
     mostrarEstado(e && e.mostrado ? e.message : 'No hay conexión con el servicio o la respuesta no se pudo leer. Inténtelo de nuevo.', true)
   } finally {
+    finCarga()
     boton.disabled = false
   }
 }
@@ -1821,6 +1859,7 @@ $('act-buscar').addEventListener('input', pintarActivos)
 $('ver-flujo').addEventListener('click', verFlujo)
 
 $('formulario').addEventListener('submit', consultar)
+estadosVacios()
 pintarSedes(null)
 $('sede').value = leerSede()
 $('sede').addEventListener('change', cambiarSede)
