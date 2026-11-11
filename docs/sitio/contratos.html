@@ -266,7 +266,7 @@
         <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
         <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
-        <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
+        <li>Gasto de cobranza: $25.000 por cada cuota que se paga atrasada, aunque sea un día (política vigente en el perfil NEGOCIO); es una política temporal.</li>
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
       <ul class="notas">
@@ -1006,7 +1006,7 @@ function crearDemo() {
       const tasa = fija ?? usuraDe(n) - margen
       const interes = Math.round(saldo * semanal(tasa) / 100) * 100
       const mora = vencidas > 0 ? 2000 * vencidas : 0
-      const cobranza = vencidas > 0 && !sinPago ? 40000 : 0
+      const cobranza = vencidas > 0 && !sinPago ? CONFIG.cobranzaPorCuota : 0
       let resto = pago
       const toma = (x) => { const t = Math.min(x, resto); resto -= t; return t }
       const pCob = toma(cobranza), pMora = toma(mora), pInt = toma(interes), pServ = toma(SERVICIOS), pCap = toma(saldo)
