@@ -128,7 +128,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const conBom = bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf
   const csv = bytes.toString('utf8').replace(/^﻿/, '')
   const lineas = csv.trim().split(/\r?\n/)
-  verificar(lineas.length === 13 && conBom && lineas[0].startsWith('Periodo;Vence;Pago real'), `CSV descargado (${descarga.suggestedFilename()}): ${lineas.length} líneas, cabecera correcta, con BOM UTF-8`)
+  verificar(lineas.length === 13 && conBom && lineas[0].startsWith('Periodo;Vence;Fecha de pago;Pago real'), `CSV descargado (${descarga.suggestedFilename()}): ${lineas.length} líneas, cabecera correcta, con BOM UTF-8`)
   // Excel de 3 hojas: motor con tasa histórica, sistema actual (sin lógica: la hizo la empresa) y motor con tasa fija 88,44 %
   const [excel] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar Excel (3 hojas)' }).click()])
   const b64 = readFileSync(await excel.path()).toString('base64')
@@ -138,7 +138,8 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     const filas = (i) => X.utils.sheet_to_json(libro.Sheets[libro.SheetNames[i]], { header: 1 })
     const f1 = filas(0), c1 = f1[0]
     const col = (n) => c1.indexOf(n)
-    return { hojas: libro.SheetNames, cab1: c1, cab2: filas(1)[0], filas1: f1.length, filas3: filas(2).length, tasa3: filas(2)[1][7],
+    return { hojas: libro.SheetNames, cab1: c1, cab2: filas(1)[0], filas1: f1.length, filas3: filas(2).length, tasa3: filas(2)[1][filas(2)[0].indexOf('Tasa EA')], fv: [f1[1][col('Vence')], f1[1][col('Fecha de pago')], f1[1][col('Días de atraso')], f1[2][col('Vence')], f1[2][col('Fecha de pago')], f1[2][col('Días de atraso')]],
+      sinPago: f1.slice(1, -1).filter((f) => f[col('Pago real')] === 0).map((f) => f[col('Fecha de pago')]),
       tres: [f1[1][col('Fondo de garantías')], f1[1][col('Seguro')], f1[1][col('Asistencia')]], mora: [f1[2][col('Saldo en mora')], f1[2][col('Mora acumulada por cobrar')]],
       totalTres: [f1.at(-1)[col('Fondo de garantías')], f1.at(-1)[col('Seguro')], f1.at(-1)[col('Asistencia')]] }
   }, b64)
@@ -149,6 +150,19 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     `Excel: columnas de servicios abiertas en fondo, seguro y asistencia, y saldo en mora (${x.cab1.join(' | ')})`)
   verificar(x.tres.join() === '3500,500,1000' && x.totalTres[0] > 0 && x.totalTres[0] === 7 * x.totalTres[1] && x.totalTres[2] === 2 * x.totalTres[1] && x.mora.every((v) => typeof v === 'number'), `Excel: valores de las columnas nuevas ${JSON.stringify([x.tres, x.mora, x.totalTres])}`)
   verificar(x.filas1 > 2 && x.filas3 > 2 && x.tasa3 === 0.8844, `hojas del motor con datos y fila de totales (${x.filas1} y ${x.filas3} filas; tasa hoja 3 = ${x.tasa3})`)
+  verificar(x.fv.join('|') === '13/01/2025|13/01/2025|0|20/01/2025|21/01/2025|1' && x.sinPago.length >= 2 && x.sinPago.every((v) => v === '—'),
+    `Excel: columna «Fecha de pago» (vence + días de atraso; «—» sin pago) ${JSON.stringify([x.fv, x.sinPago])}`)
+  // En pantalla: columna junto a «Vence», 1 día de atraso => un día después, y «—» en las filas sin pago.
+  const ths = await amort.locator('thead th[scope=col]').allInnerTexts()
+  const iV = ths.indexOf('Vence')
+  verificar(iV >= 0 && ths[iV + 1] === 'Fecha de pago' && ths.includes('Días de atraso'), `encabezados: «Fecha de pago» junto a «Vence» (${ths.slice(0, 5).join(' | ')})`)
+  const celdas = async (r) => amort.locator('tbody tr').nth(r).locator('th, td').allInnerTexts()
+  const f2 = await celdas(1), fSin = await celdas(4)
+  verificar(f2[iV] === '20/01/2025' && f2[iV + 1] === '21/01/2025' && f2[ths.indexOf('Días de atraso')] === '1', `pantalla: periodo con 1 día de atraso paga un día después (${f2.slice(0, 5).join(' | ')})`)
+  verificar(fSin[iV + 1] === '—', `pantalla: sin pago muestra «—» (${fSin.slice(0, 5).join(' | ')})`)
+  await page.locator('details.desglose > summary').first().click()
+  const nota = await page.locator('#nota-multas').first().innerText()
+  verificar(nota === 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política vigente en perfil NEGOCIO).', `nota de multas visible (${nota})`)
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }
