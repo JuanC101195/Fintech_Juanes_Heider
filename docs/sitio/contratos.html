@@ -273,7 +273,7 @@
         <li><strong>Real (sistema actual):</strong> las fechas, el estado, los pagos de cuotas y las multas que el cliente efectivamente hizo. Es lo que pasó en la empresa.</li>
         <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
-        <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
+        <li>Cuando el contrato no es el primero de esa moto, la inversión es estimada (no un dato registrado).</li>
         <li data-regla="cobranza"></li>
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
@@ -284,7 +284,7 @@
       </ul>
       <p class="subtitulo">Las gráficas</p>
       <ul class="notas">
-        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la usura vigente y la tasa implícita del sistema actual.</li>
+        <li>La gráfica de tasa muestra, por fecha, la tasa que aplicó la financiera, la tasa máxima legal (usura) vigente y la tasa anual que de hecho pagó el cliente, estimada con todo lo que pagó.</li>
         <li>La gráfica de interés muestra, mes a mes, cuánto interés, mora y cobranza cobró la financiera frente a lo que el cliente pagó; el resumen mensual da las mismas cifras.</li>
       </ul>
       <p class="subtitulo">Contratos activos y recaudo</p>
@@ -478,7 +478,7 @@ function descargar(nombre, contenido) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-// ---------- episodio ----------
+// ---------- cliente (episodio) ----------
 function kpi(rotulo, valor, sub) {
   return el('div', { class: 'kpi' }, el('p', { class: 'kpi-rotulo' }, rotulo), el('p', { class: 'kpi-valor' }, valor), sub ? el('p', { class: 'kpi-sub' }, sub) : null)
 }
@@ -517,7 +517,7 @@ function veredicto(ep, x) {
     el('div', { class: 'kpis' },
       kpi('Sistema actual · recaudado', cop(sistema), `Margen ${cop(sistema - inversion)}`),
       kpi('Motor (simulado) · recaudado', cop(recaudoMotor), `Margen ${cop(recaudoMotor - inversion)}`),
-      kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Imputada (estimada); igual en los dos lados' : 'Igual en los dos lados'),
+      kpi('Inversión', cop(inversion), ep.inversionImputada ? 'Estimada; igual en los dos lados' : 'Igual en los dos lados'),
       proyectado ? kpi('Al final del plan', `${signoDe(proyMotor - valorTotal)}${cop(Math.abs(proyMotor - valorTotal))}`, `Motor ${cop(proyMotor)} · sistema actual ${cop(valorTotal)}`) : null),
     deuda >= 1 ? el('p', { class: 'liquidacion', role: 'note' }, el('strong', {}, 'Deuda que el motor aún figura por cobrar (no es dinero recaudado): '), cop(deuda),
       '. Es capital y cargos que el motor sigue mostrando pendientes; el cliente no los pagó, por eso no suma a lo recaudado ni al margen.') : null)
@@ -536,7 +536,7 @@ function desglose(ep, x) {
           valorTotal != null ? dato('Saldo por recaudar', cop(ep.saldoRealMiles != null ? ep.saldoRealMiles * 1000 : null)) : null,
           dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
           valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
-          dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas))),
+          dato('Tasa anual que de hecho pagó el cliente (incluye multas)', pct(r.realEA ?? r.realEaConMultas))),
         el('p', { class: 'ayuda', id: 'nota-multas' }, NOTA_MULTAS)),
       el('div', { class: 'columna' }, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
@@ -596,7 +596,7 @@ function tarjetaEpisodio(ep, i, total) {
   const claves = ['sin_justificaciones', 'con_justificaciones', CONFIG.prefijoMax + 'sin_justificaciones', CONFIG.prefijoMax + 'con_justificaciones', CORRIDA_FIJA.sin, CORRIDA_FIJA.con]
   const disponibles = claves.filter((k) => corridas[k])
   const tarjeta = el('article', { class: 'tarjeta', 'aria-labelledby': `${pref}-t` })
-  const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · episodio ${i + 1} de ${total}` : ''))
+  const cabecera = el('div', { class: 'cabecera-ep' }, el('h2', { id: `${pref}-t` }, `Contrato ${ep.id}`, total > 1 ? ` · cliente ${i + 1} de ${total} de esta moto` : ''))
   tarjeta.append(cabecera)
   // Lo esencial del contrato a la vista; la ficha técnica va plegada.
   tarjeta.append(el('dl', { class: 'datos compacta' },
@@ -604,17 +604,17 @@ function tarjetaEpisodio(ep, i, total) {
     dato('Inicio', fechaCorta(ep.fechaInicio)),
     dato('Fin', ep.fechaFin ? fechaCorta(ep.fechaFin) : 'Sin terminar'),
     dato('Cuotas', `${dec(ep.cuotas, 0)} de ${copMiles(ep.cuotaRealMiles)}`),
-    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'imputada') : null)))
+    dato('Inversión', cop(ep.inversion), ep.inversionImputada ? el('span', { class: 'etiqueta' }, 'estimada') : null)))
   tarjeta.append(plegable('Más datos del contrato', false, 'ficha',
     el('dl', { class: 'datos' },
-      dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Contrato posterior (reasignación nº ${i + 1})`),
-      dato('Cohorte', texto(ep.cohorte)),
-      dato('Línea de usura aplicada', texto(ep.lineaUsura)),
-      dato('Tasa inicial de usura aplicada (EA)', pct(ep.tasaInicialEA)),
+      dato('Posición', i === 0 ? 'Primer contrato de esta moto' : `Cliente ${i + 1} de esta moto (la moto se reasignó)`),
+      dato('Grupo de inicio (periodo en que arrancó)', texto(ep.cohorte)),
+      dato('Tipo de crédito que fija la tasa máxima legal', texto(ep.lineaUsura)),
+      dato('Tasa máxima legal (usura) al inicio, anual', pct(ep.tasaInicialEA)),
       dato('Días justificados', dec(ep.diasJustificados, 0)))))
 
   if (!disponibles.length) {
-    tarjeta.append(el('p', { class: 'ayuda' }, 'Este episodio no tiene simulaciones del motor.'))
+    tarjeta.append(el('p', { class: 'ayuda' }, 'Este cliente no tiene simulaciones del motor.'))
     return tarjeta
   }
   const hayMax = Object.keys(corridas).some((k) => k.startsWith(CONFIG.prefijoMax))
@@ -641,7 +641,7 @@ function tarjetaEpisodio(ep, i, total) {
   }
   opciones.append(grupoDe('Justificaciones', 'just', [['sin', 'Sin justificaciones'], ['con', 'Con justificaciones']]))
   const pintar = () => {
-    // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este episodio.
+    // Una opción se deshabilita si, combinada con la otra elección, la simulación no existe para este cliente.
     for (const [campo, valor, radio] of radios) {
       const otra = campo === 'tasa' ? nombre(valor, sel.just) : nombre(sel.tasa, valor)
       radio.disabled = !corridas[otra]
@@ -690,7 +690,7 @@ const FORMATO_COLUMNA = {
 const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
 
 function hojaMotor(XLSX, periodos) {
-  if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta corrida no está disponible para este contrato.']])
+  if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta simulación no está disponible para este contrato.']])
   const cab = COLUMNAS.map(([n]) => n)
   const filas = periodos.map((p) => COLUMNAS.map(([n, , , crudo]) => {
     const v = crudo(p)
@@ -821,14 +821,14 @@ function graficaTasa(periodos, realEA, nombreCorrida, id) {
   const todos = [...aplicada, ...usura]
   const envoltura = el('div')
   envoltura.append(el('h3', {}, 'Tasa efectiva anual por fecha'))
-  if (!todos.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay tasas por fecha para esta corrida.')); return envoltura }
+  if (!todos.length) { envoltura.append(el('p', { class: 'ayuda' }, 'No hay tasas por fecha para esta simulación.')); return envoltura }
   const xs = todos.map((q) => q[0])
   const x0 = Math.min(...xs)
   const x1 = Math.max(...xs)
   const vals = todos.map((q) => q[1]).concat(hayReal ? [Number(realEA)] : [])
   const rango = (s) => `entre ${pct1(Math.min(...s.map((q) => q[1])))} y ${pct1(Math.max(...s.map((q) => q[1])))}`
   const descripcion = `${nombreCorrida}. ` + (aplicada.length ? `Tasa aplicada por el motor ${rango(aplicada)}` : 'Sin tasa aplicada') +
-    (usura.length ? `; usura vigente ${rango(usura)}` : '') + (hayReal ? `; tasa implícita del sistema actual ${pct1(Number(realEA))}` : '') + '.'
+    (usura.length ? `; usura vigente ${rango(usura)}` : '') + (hayReal ? `; tasa anual estimada que pagó el cliente ${pct1(Number(realEA))}` : '') + '.'
   const grafica = responsivo((w) => {
     const alto = w < 500 ? 260 : 300
     const m = { i: 48, d: 58, s: 14, b: 30 }
@@ -879,9 +879,9 @@ function graficaTasa(periodos, realEA, nombreCorrida, id) {
   const leyenda = el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de la gráfica de tasa' },
     el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s1);border-top-width:4px' }), 'Tasa aplicada por el motor'),
     usura.length ? el('li', {}, el('span', { class: 'linea', style: 'border-top-color:var(--s2)' }), 'Usura vigente') : null,
-    hayReal ? el('li', {}, el('span', { class: 'linea punteada', style: 'border-top-color:var(--s3)' }), 'Tasa real implícita del sistema actual') : null)
+    hayReal ? el('li', {}, el('span', { class: 'linea punteada', style: 'border-top-color:var(--s3)' }), 'Tasa anual que de hecho pagó el cliente (estimada)') : null)
   envoltura.append(grafica, leyenda)
-  if (hayReal) envoltura.append(el('p', { class: 'ayuda' }, 'La tasa del sistema actual es implícita: calculada con todo lo que pagó el cliente (cuotas y multas) frente a la inversión; el sistema actual no separa interés.'))
+  if (hayReal) envoltura.append(el('p', { class: 'ayuda' }, 'Esta tasa es una estimación: se calcula con todo lo que pagó el cliente (cuotas y multas) frente a la inversión, porque el sistema actual no separa el interés.'))
   return envoltura
 }
 
@@ -988,7 +988,7 @@ function tablaCompleta(ep, c, clave) {
   const boton = el('button', { type: 'button', class: 'secundario' }, 'Descargar CSV')
   boton.addEventListener('click', () => descargar(`contrato-${ep.id}-${clave}.csv`.replace(/[^\w.-]/g, '_'), csvDe(periodos)))
   cont.append(
-    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), el numerador del cociente de la marca; «Mora acumulada por cobrar» es solo la mora.`)),
+    el('div', { class: 'barra' }, boton, el('span', { class: 'ayuda' }, `${periodos.length} periodos. La columna «Lógica aplicada» explica qué hizo el motor en cada uno. «Servicios» es lo causado; «Fondo de garantías», «Seguro» y «Asistencia» son lo pagado de servicios en el periodo. «Saldo en mora» es todo lo pendiente al cierre (capital vencido + interés, servicios, mora y cobranza por cobrar), es la cifra que se compara con la cuota para decidir si la moto queda lista para recuperar; «Mora acumulada por cobrar» es solo la mora.`)),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de colores' },
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-sinpago)' }), 'Sin pago'),
       el('li', {}, el('span', { class: 'muestra', style: 'background:var(--fila-just)' }), 'Justificado'),
@@ -1003,7 +1003,7 @@ function mostrar(datos) {
   const cont = $('resultado')
   const eps = datos.episodios || []
   const fragmentos = [el('h2', { class: 'solo-lectores' }, `Resultado del contrato ${datos.numero}`)]
-  if (eps.length > 1) fragmentos.push(el('p', {}, `El contrato ${datos.numero} tiene ${eps.length} episodios (la moto se reasignó entre clientes). Se muestran en orden de fecha de inicio.`))
+  if (eps.length > 1) fragmentos.push(el('p', {}, `El contrato ${datos.numero} tiene ${eps.length} clientes sucesivos (la moto se reasignó de un cliente a otro). Se muestran en orden de fecha de inicio.`))
   eps.forEach((ep, i) => fragmentos.push(tarjetaEpisodio(ep, i, eps.length)))
   cont.replaceChildren(...fragmentos)
 }
@@ -1470,7 +1470,8 @@ function cartaDe(m) {
   if (!c || typeof c !== 'object' || c.valor == null) return null
   return { pagos: n0(c.pagos), valor: n0(c.valor), porMotivo: c.porMotivo && typeof c.porMotivo === 'object' ? c.porMotivo : {} }
 }
-const nombreMotivo = (k) => `Carta ${String(k).replace(/^CARTA\s+/i, '').toLowerCase()}`
+const MOTIVOS_TILDE = { ADMINISTRACION: 'Administración', REALQUILER: 'Realquiler', CORRECCION: 'Corrección', PERDIDA: 'Pérdida' }
+const nombreMotivo = (k) => { const m = String(k).replace(/^CARTA\s+/i, '').trim().toUpperCase(); return `Carta ${(MOTIVOS_TILDE[m] || m.charAt(0) + m.slice(1).toLowerCase())}` }
 
 // ---- A) tabla mensual del año ----
 function pintarTabla() {
