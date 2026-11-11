@@ -266,7 +266,7 @@
         <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
         <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
-        <li>Gasto de cobranza: 40.000 por periodo con atraso; es un valor provisional.</li>
+        <li>Gasto de cobranza: $25.000 por cada cuota que se paga atrasada, aunque sea un día (política vigente en el perfil NEGOCIO); es una política temporal.</li>
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
       <ul class="notas">
@@ -304,6 +304,7 @@ const CONFIG = {
   prefijoMax: 'max_',
   sedes: { CARTAGENA: 'Cartagena', MONTERIA: 'Montería', SINCELEJO: 'Sincelejo', BICIMOTOS: 'Bicimotos' },
   sedeDefecto: 'CARTAGENA',
+  cobranzaPorCuota: 25000, // política vigente (perfil NEGOCIO): cobranza por cada cuota atrasada
 }
 const TASA_FIJA_TXT = (CONFIG.tasaFija * 100).toFixed(2).replace('.', ',') + ' %'
 for (const n of document.querySelectorAll('[data-tasa-fija]')) n.textContent = TASA_FIJA_TXT
@@ -363,9 +364,17 @@ function dato(rotulo, valor, extra) {
 }
 
 // ---------- tabla de amortización ----------
+// Fecha del pago = vencimiento + días de atraso, solo si hubo pago (instrucción distinta de sin pago). Devuelve 'AAAA-MM-DD' o ''.
+function fechaPagoDe(p) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.fechaVencimiento || '')
+  const dias = p.diasAtraso === null || p.diasAtraso === undefined ? NaN : Number(p.diasAtraso)
+  if (!m || Number.isNaN(dias) || !p.instruccion || /sin[_ ]?pago/i.test(p.instruccion)) return ''
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + Math.round(dias))).toISOString().slice(0, 10)
+}
 const COLUMNAS = [
   ['Periodo', (p) => p.periodo, 'izq', (p) => p.periodo],
   ['Vence', (p) => fechaCorta(p.fechaVencimiento), 'izq', (p) => p.fechaVencimiento ?? ''],
+  ['Fecha de pago', (p) => fechaCorta(fechaPagoDe(p)), 'izq', (p) => fechaPagoDe(p)],
   ['Pago real', (p) => cop(p.valorReal), '', (p) => p.valorReal],
   ['Días de atraso', (p) => dec(p.diasAtraso, 0), '', (p) => p.diasAtraso],
   ['Estado', null, 'izq', (p) => texto(p.estado)],
@@ -407,8 +416,8 @@ function tablaAmortizacion(periodos, leyendaCaption) {
   for (const p of periodos) {
     const cl = claseFila(p)
     const tr = el('tr', { class: cl })
-    COLUMNAS.forEach(([, f, alin], i) => {
-      if (i === 4) {
+    COLUMNAS.forEach(([n, f, alin], i) => {
+      if (n === 'Estado') {
         const marca = cl ? el('strong', {}, rotuloFila[cl] + ' · ') : null
         tr.append(el('td', { class: 'izq' }, marca, texto(p.estado)))
       } else tr.append(el(i === 0 ? 'th' : 'td', { class: alin, scope: i === 0 ? 'row' : null }, f(p)))
@@ -506,7 +515,8 @@ function desglose(ep, x) {
           valorTotal != null ? dato('Saldo por recaudar', cop(ep.saldoRealMiles != null ? ep.saldoRealMiles * 1000 : null)) : null,
           dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
           valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
-          dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas)))),
+          dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas))),
+        el('p', { class: 'ayuda', id: 'nota-multas' }, `Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $${agrupar(CONFIG.cobranzaPorCuota)} por cada cuota atrasada (política vigente en perfil NEGOCIO).`)),
       el('div', { class: 'columna' }, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente (aplicado al crédito)', cop(r.simPagado)),
@@ -663,10 +673,10 @@ function hojaMotor(XLSX, periodos) {
   const cab = COLUMNAS.map(([n]) => n)
   const filas = periodos.map((p) => COLUMNAS.map(([n, , , crudo]) => {
     const v = crudo(p)
-    return n === 'Vence' ? fechaCorta(v) : v === null || v === undefined ? '' : v
+    return n === 'Vence' || n === 'Fecha de pago' ? (v ? fechaCorta(v) : '—') : v === null || v === undefined ? '' : v
   }))
   const pie = COLUMNAS.map(([n], i) => (i === 0 ? 'Total' : SUMABLES.includes(n) ? (sumaDe(periodos, COLUMNAS[i][3]) ?? '') : ''))
-  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 18, 14, 14, 16, 16, 16, 16, 26, 120])
+  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 14, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 18, 14, 14, 16, 16, 16, 16, 26, 120])
 }
 
 function hojaReal(XLSX, ep) {
@@ -996,7 +1006,7 @@ function crearDemo() {
       const tasa = fija ?? usuraDe(n) - margen
       const interes = Math.round(saldo * semanal(tasa) / 100) * 100
       const mora = vencidas > 0 ? 2000 * vencidas : 0
-      const cobranza = vencidas > 0 && !sinPago ? 40000 : 0
+      const cobranza = vencidas > 0 && !sinPago ? CONFIG.cobranzaPorCuota : 0
       let resto = pago
       const toma = (x) => { const t = Math.min(x, resto); resto -= t; return t }
       const pCob = toma(cobranza), pMora = toma(mora), pInt = toma(interes), pServ = toma(SERVICIOS), pCap = toma(saldo)
@@ -1004,7 +1014,7 @@ function crearDemo() {
       const listo = vencidas >= 3
       filas.push({
         periodo: n, fechaVencimiento: fechaDe(n), instruccion: sinPago ? 'SinPago' : 'PagoValor', valorReal: pago,
-        diasAtraso: sinPago ? 0 : atrasoSem * 7, justificado: just, estado: listo ? 'listo_recuperacion' : sinPago ? (just ? 'justificado' : 'sin_pago') : vencidas > 0 ? 'en_mora' : 'al_dia',
+        diasAtraso: sinPago ? 0 : n === 2 ? 1 /* periodo 2: pagado con 1 día de atraso (demo) */ : atrasoSem * 7, justificado: just, estado: listo ? 'listo_recuperacion' : sinPago ? (just ? 'justificado' : 'sin_pago') : vencidas > 0 ? 'en_mora' : 'al_dia',
         cuotasVencidas: vencidas, saldoInicial: saldo, interesCorriente: interes, interesMora: mora, cobranza, servicios: SERVICIOS,
         cuotaFinanciera: CUOTA, pagoCapital: pCap, pagoInteres: pInt, pagoMora: pMora, pagoCobranza: pCob, pagoServicios: pServ,
         pagoFondo: Math.round(pServ * 0.7), pagoSeguro: Math.round(pServ * 0.1), pagoAsistencia: pServ - Math.round(pServ * 0.7) - Math.round(pServ * 0.1),
