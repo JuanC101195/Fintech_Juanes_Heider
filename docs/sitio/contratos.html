@@ -41,6 +41,12 @@
     @keyframes va-y-viene { from { transform: translateX(0); } to { transform: translateX(185%); } }
     @media (prefers-reduced-motion: reduce) { .barra-carga > span { animation: none; width: 100%; } }
     .vacio { padding: 12px 0; }
+    .pestanas .t-corto { display: none; }
+    @media (max-width: 520px) {
+      .pestanas { overflow-x: visible; }
+      .pestanas [role=tab] { flex: 1 1 0; padding: 8px 4px; font-size: 15px; }
+      .pestanas .t-corto { display: inline; } .pestanas .t-largo { display: none; }
+    }
     .reglas { margin: 12px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; max-width: 720px; }
     .reglas h3 { margin: 0 0 6px; font-size: 15px; }
     .reglas ul { margin: 0; padding-left: 20px; font-size: 14px; }
@@ -56,7 +62,7 @@
     .datos.compacta { gap: 4px 20px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 12px; }
     .opciones { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 16px 0 0; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; }
     .opciones fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
-    .opciones legend { font-size: 12px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; padding: 0; margin-bottom: 6px; }
+    .opciones legend { font-size: 13px; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; padding: 0; margin-bottom: 6px; }
     .opciones .pildoras { display: flex; flex-wrap: wrap; gap: 6px; }
     .opciones label { display: inline-flex; gap: 6px; align-items: center; margin: 0; padding: 5px 10px; border: 1px solid var(--borde); border-radius: 999px; background: var(--tarjeta); font-size: 14px; font-weight: 500; cursor: pointer; }
     .opciones label:has(input:checked) { border-color: var(--primario); color: var(--primario); font-weight: 700; box-shadow: inset 0 0 0 1px var(--primario); }
@@ -69,7 +75,7 @@
     .veredicto-cifra small { display: block; font-size: 14px; font-weight: 600; color: var(--suave); margin-top: 2px; }
     .kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 12px 0; }
     .kpi { background: var(--fondo); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-    .kpi-rotulo { font-size: 12px; color: var(--suave); margin: 0; }
+    .kpi-rotulo { font-size: 13px; color: var(--suave); margin: 0; }
     .kpi-valor { font-size: 18px; font-weight: 700; margin: 2px 0 0; overflow-wrap: anywhere; }
     .kpi-sub { font-size: 13px; color: var(--suave); margin: 2px 0 0; overflow-wrap: anywhere; }
     details.plegable { border: 1px solid var(--borde); border-radius: 12px; padding: 0 14px; margin: 12px 0; }
@@ -92,7 +98,7 @@
     .datos div { min-width: 0; }
     .datos dt { color: var(--suave); font-size: 13px; }
     .datos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
-    .etiqueta { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
+    .etiqueta { display: inline-block; font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: var(--aviso-fondo); color: var(--aviso-texto); margin-left: 6px; vertical-align: middle; }
     .comparacion { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 16px 0; }
     .comparacion > div { border: 1px solid var(--borde); border-radius: 12px; padding: 14px; min-width: 0; }
     .liquidacion { margin: 10px 0 0; padding: 10px 14px; border-left: 4px solid var(--aviso-borde, #c9a227); background: var(--aviso-fondo, #fff4d6); color: var(--aviso-texto, #5a4300); border-radius: 8px; font-size: 15px; line-height: 1.45; }
@@ -112,14 +118,14 @@
     tr.listo td, tr.listo th { background: var(--fila-listo); font-weight: 600; }
     .grafica { width: 100%; min-width: 0; }
     .grafica svg { display: block; max-width: 100%; height: auto; }
-    .g-texto { fill: var(--suave); font: 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    .g-valor { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-texto { fill: var(--suave); font: 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    .g-valor { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
     .g-eje { stroke: var(--borde); stroke-width: 1; }
     .g-rejilla { stroke: var(--borde); stroke-width: 1; opacity: .7; }
     .leyenda span.linea { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--texto); vertical-align: 4px; margin-right: 6px; }
     .leyenda span.punteada { border-top-style: dashed; }
     .bloque-grafica { margin: 20px 0; min-width: 0; }
-    td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 12px; line-height: 1.35; }
+    td.logica, th.logica { white-space: normal; min-width: 340px; max-width: 520px; font-size: 13px; line-height: 1.35; }
     tfoot th, tfoot td { font-weight: 700; background: var(--cabecera); border-top: 2px solid var(--borde); }
     .tabla-chica { max-width: 520px; }
     details { margin: 12px 0; }
@@ -147,7 +153,7 @@
     .deslizador label { font-size: 14px; }
     .deslizador output { display: block; font-weight: 800; font-size: 18px; margin: 2px 0 4px; }
     input[type=range] { width: 100%; accent-color: var(--primario); margin: 4px 0 8px; cursor: pointer; }
-    .extremos { display: flex; justify-content: space-between; font-size: 12px; color: var(--suave); margin: -4px 0 8px; }
+    .extremos { display: flex; justify-content: space-between; font-size: 13px; color: var(--suave); margin: -4px 0 8px; }
     .atajos { display: flex; flex-wrap: wrap; gap: 6px; }
     .atajos button { padding: 5px 12px; font-size: 13px; background: var(--tarjeta); color: var(--primario); }
     .atajos button[aria-pressed=true] { background: var(--primario); color: #fff; }
@@ -174,8 +180,8 @@
     table.anual tfoot tr.sub-cerrados th, table.anual tfoot tr.sub-cerrados td { border-top-width: 3px; }
     table.anual td.fuerte { font-weight: 700; }
     .mes-btn { background: transparent; color: var(--primario); border: 0; padding: 4px 2px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-    .pc { display: block; font-size: 12px; font-weight: 400; color: var(--suave); white-space: nowrap; font-style: normal; }
-    .est { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--borde); background: var(--cabecera); font-style: normal; }
+    .pc { display: block; font-size: 13px; font-weight: 400; color: var(--suave); white-space: nowrap; font-style: normal; }
+    .est { display: inline-block; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--borde); background: var(--cabecera); font-style: normal; }
     .est-curso { background: var(--aviso-fondo); color: var(--aviso-texto); border-color: transparent; }
     .est-proy { background: transparent; border: 1px dashed var(--suave); color: var(--suave); }
     .flota { margin: 0 0 12px; font-size: 16px; }
@@ -232,9 +238,9 @@
         <ul id="reglas-lista"></ul>
       </section>
       <div class="pestanas" role="tablist" aria-label="Qué consultar">
-        <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
-        <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
-        <button type="button" role="tab" id="tab-flujo" aria-selected="false" aria-controls="panel-flujo" tabindex="-1">Recaudo de la cartera activa</button>
+        <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno" aria-label="Un contrato"><span class="t-corto">Contrato</span><span class="t-largo">Un contrato</span></button>
+        <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1" aria-label="Contratos activos"><span class="t-corto">Activos</span><span class="t-largo">Contratos activos</span></button>
+        <button type="button" role="tab" id="tab-flujo" aria-selected="false" aria-controls="panel-flujo" tabindex="-1" aria-label="Recaudo de la cartera activa"><span class="t-corto">Recaudo</span><span class="t-largo">Recaudo de la cartera activa</span></button>
       </div>
       <div id="panel-uno" role="tabpanel" aria-labelledby="tab-uno">
         <form class="consulta" id="formulario" novalidate>
@@ -1290,7 +1296,7 @@ function pintarActivos() {
   const cab = el('tr', {}, el('th', { scope: 'col', class: 'izq' }, 'Detalle'), ...COLS_ACTIVOS.map(([id, rot, , , izq]) => {
     const activo = act.orden === id
     const b = el('button', { type: 'button', class: 'secundario', 'aria-label': `Ordenar por ${rot}` }, rot + (activo ? (act.desc ? ' ▼' : ' ▲') : ''))
-    b.style.cssText = 'padding:2px 6px;font-size:12px;border:0;font-weight:700'
+    b.style.cssText = 'padding:2px 6px;font-size:13px;border:0;font-weight:700'
     b.addEventListener('click', () => { act.desc = act.orden === id ? !act.desc : false; act.orden = id; pintarActivos() })
     return el('th', { class: izq ? 'izq' : '', scope: 'col', 'aria-sort': activo ? (act.desc ? 'descending' : 'ascending') : 'none' }, b)
   }))

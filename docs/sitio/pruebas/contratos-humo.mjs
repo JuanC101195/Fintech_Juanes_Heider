@@ -197,6 +197,21 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const jerga = visibleTxt.match(/episodio|corrida|imputad|cohorte|implícita|numerador|reasignación nº|NEGOCIO|usura aplicada/gi)
   verificar(!jerga, `sin jerga visible (${jerga ? [...new Set(jerga)].join(', ') : 'ok'})`)
   verificar(/Tasa anual que de hecho pagó el cliente \(incluye multas\)/.test(visibleTxt), 'rótulo «Tasa anual que de hecho pagó el cliente»')
+  // T4: pestañas cortas sin scroll horizontal oculto en celular; ningún texto visible menor de 13 px.
+  const pest = await page.evaluate(() => { const b = document.querySelector('.pestanas'); return { sobra: b.scrollWidth - b.clientWidth, textos: [...b.querySelectorAll('[role=tab]')].map((t) => t.innerText.trim()) } })
+  verificar(ancho > 400 ? pest.sobra <= 0 : pest.sobra <= 0 && pest.textos.join('|') === 'Contrato|Activos|Recaudo', `pestañas sin scroll horizontal (${pest.textos.join('|')}, sobra ${pest.sobra})`)
+  const chicos = await page.evaluate(() => {
+    const lista = []
+    for (const e of document.body.querySelectorAll('*')) {
+      if (['SCRIPT', 'STYLE'].includes(e.tagName)) continue
+      const r = e.getBoundingClientRect()
+      if (!r.width || !r.height) continue
+      const propio = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())
+      if (propio && parseFloat(getComputedStyle(e).fontSize) < 13) lista.push(`${e.tagName}.${e.className} ${getComputedStyle(e).fontSize}`)
+    }
+    return [...new Set(lista)].slice(0, 8)
+  })
+  verificar(chicos.length === 0, `sin textos visibles menores de 13 px (${chicos.join(' | ')})`)
   verificar(!/NEGOCIO/.test(await page.locator('body').textContent()) && /\$25\.000 por cada cuota/.test(await page.locator('[data-regla=cobranza]').textContent()), 'sin «perfil NEGOCIO»; la línea de «Cómo leer» sale de CONFIG')
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
@@ -397,6 +412,9 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   verificar((await svgs.count()) === 2 && (await svgs.evaluateAll((l) => l.every((s) => s.querySelector('title') && s.querySelector('desc')))), `recaudo: 2 gráficas de proyección accesibles con title y desc, hay ${await svgs.count()}`)
   verificar((await page.locator('#flujo-zona-proy .lectura').count()) === 2 && (await page.locator('#flujo-lectura-ambas').isChecked()), 'recaudo: la proyección arranca con «Ambas» (sin y con justificaciones)')
   const cifra = () => page.locator('#flujo-zona-proy .lectura .cifra-grande').first().evaluate((e) => e.firstChild.textContent)
+  await page.waitForTimeout(700)
+  const opac = await page.locator('#flujo-zona-proy .cifra-grande').first().evaluate((e) => { let o = 1; for (let n = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity); return o })
+  verificar(opac === 1, `la cifra grande de la proyección no queda atenuada tras cargar (opacidad ${opac})`)
   verificar(/31 de diciembre de 2026/.test(await page.locator('#flujo-fin-texto').innerText()), 'recaudo: el deslizador arranca en el 31 de diciembre de 2026')
   verificar(await page.getByRole('button', { name: '31 dic 2026' }).getAttribute('aria-pressed') === 'true', 'recaudo: el atajo «31 dic 2026» aparece marcado')
   const c1 = await cifra()
