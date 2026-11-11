@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 const aqui = path.dirname(fileURLToPath(import.meta.url))
 const sitio = path.resolve(aqui, '..')
 // Texto esperado de la nota de multas (único lugar donde se escribe).
-const NOTA_MULTAS = 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política vigente en perfil NEGOCIO).'
+const NOTA_MULTAS = 'Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $25.000 por cada cuota atrasada (política temporal).'
 // package.json desde el que se resuelve @playwright/test: PLAYWRIGHT_PACKAGE_JSON, o el front de Prestaya si existe (PC de Juan Esteban),
 // o el package.json de la carpeta actual (donde se instaló @playwright/test).
 const localPrestaya = 'C:/Users/LeNoVo/Desktop/Fintech/app/package.json'
@@ -187,6 +187,11 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.locator('details.desglose > summary').first().click()
   const nota = await page.locator('#nota-multas').first().innerText()
   verificar(nota === NOTA_MULTAS, `nota de multas visible (${nota})`)
+  // T1: bloque de reglas siempre visible, generado desde CONFIG.reglas, sin copias escritas a mano.
+  const reglas = await page.locator('#reglas-motor li').allInnerTexts()
+  verificar(reglas.length === 4 && /88,44 %/.test(reglas[0]) && /\$25\.000/.test(reglas[1]) && /360 días/.test(reglas[2]) && /multas.*no siguen una regla fija/.test(reglas[3]), `bloque «Reglas que usa el motor hoy» con 4 reglas (${reglas.join(' | ')})`)
+  verificar(await page.locator('#reglas-motor').isVisible(), 'el bloque de reglas está visible sin abrir nada')
+  verificar(!/NEGOCIO/.test(await page.locator('body').textContent()) && /\$25\.000 por cada cuota/.test(await page.locator('[data-regla=cobranza]').textContent()), 'sin «perfil NEGOCIO»; la línea de «Cómo leer» sale de CONFIG')
   await page.screenshot({ path: path.join(salida, `contratos-demo-${nombre}.png`), fullPage: true })
   await contexto.close()
 }

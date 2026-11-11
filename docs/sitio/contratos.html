@@ -36,6 +36,10 @@
     .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 16px; padding: 20px; margin: 0 0 20px; min-width: 0; }
     form.consulta { display: grid; gap: 12px 16px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; max-width: 560px; }
     .campo-clave { max-width: 420px; margin-bottom: 4px; }
+    .reglas { margin: 12px 0 4px; padding: 12px 14px; background: var(--cabecera); border-radius: 12px; max-width: 720px; }
+    .reglas h3 { margin: 0 0 6px; font-size: 15px; }
+    .reglas ul { margin: 0; padding-left: 20px; font-size: 14px; }
+    .reglas li { margin-bottom: 3px; }
     .pestanas { display: flex; gap: 4px; border-bottom: 1px solid var(--borde); margin: 16px 0 14px; overflow-x: auto; }
     .pestanas [role=tab] { background: transparent; color: var(--suave); border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 8px 14px; margin-bottom: -1px; white-space: nowrap; }
     .pestanas [role=tab]:hover { color: var(--texto); }
@@ -218,6 +222,10 @@
         <select id="sede" name="sede" aria-describedby="ayuda-sede"></select>
         <p class="ayuda" id="ayuda-sede">El número de contrato se repite entre sedes: la consulta siempre es de una sola sede.</p>
       </div>
+      <section class="reglas" id="reglas-motor" aria-labelledby="t-reglas">
+        <h3 id="t-reglas">Reglas que usa el motor hoy</h3>
+        <ul id="reglas-lista"></ul>
+      </section>
       <div class="pestanas" role="tablist" aria-label="Qué consultar">
         <button type="button" role="tab" id="tab-uno" aria-selected="true" aria-controls="panel-uno">Un contrato</button>
         <button type="button" role="tab" id="tab-activos" aria-selected="false" aria-controls="panel-activos" tabindex="-1">Contratos activos</button>
@@ -266,7 +274,7 @@
         <li><strong>Simulado (financiera):</strong> interés, mora, cobranza, servicios, capital, saldo, cuotas vencidas y marca de recuperación. Es lo que el motor habría calculado si la financiera hubiera aplicado sus reglas a esos mismos pagos.</li>
         <li>Los pagos reales se asignan por semana, a la cuota del periodo en que caen.</li>
         <li>Cuando el contrato no es el primero de esa moto, la inversión es imputada (estimada), no un dato registrado.</li>
-        <li>Gasto de cobranza: $25.000 por cada cuota que se paga atrasada, aunque sea un día (política vigente en el perfil NEGOCIO); es una política temporal.</li>
+        <li data-regla="cobranza"></li>
       </ul>
       <p class="subtitulo">Las opciones de comparación</p>
       <ul class="notas">
@@ -304,9 +312,20 @@ const CONFIG = {
   prefijoMax: 'max_',
   sedes: { CARTAGENA: 'Cartagena', MONTERIA: 'Montería', SINCELEJO: 'Sincelejo', BICIMOTOS: 'Bicimotos' },
   sedeDefecto: 'CARTAGENA',
-  cobranzaPorCuota: 25000, // política vigente (perfil NEGOCIO): cobranza por cada cuota atrasada
+  cobranzaPorCuota: 25000, // política temporal: cobranza por cada cuota pagada tarde
+  diasAnio: 360,
 }
 const TASA_FIJA_TXT = (CONFIG.tasaFija * 100).toFixed(2).replace('.', ',') + ' %'
+// Única fuente de las reglas que se muestran (bloque bajo la sede, «Cómo leer esta página» y nota de multas).
+const PLATA = (n) => '$' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+CONFIG.reglas = [
+  { id: 'tasa', texto: 'Tasa fija anual desde el desembolso', valor: TASA_FIJA_TXT },
+  { id: 'cobranza', texto: 'Cobranza por cada cuota pagada tarde, aunque sea un día (política temporal)', valor: PLATA(CONFIG.cobranzaPorCuota) },
+  { id: 'anio', texto: 'El interés se calcula con un año de', valor: `${CONFIG.diasAnio} días` },
+  { id: 'multas', texto: 'Las multas del sistema actual', valor: 'no siguen una regla fija' },
+]
+const REGLA = (id) => CONFIG.reglas.find((r) => r.id === id)
+const NOTA_MULTAS = `Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de ${REGLA('cobranza').valor} por cada cuota atrasada (política temporal).`
 for (const n of document.querySelectorAll('[data-tasa-fija]')) n.textContent = TASA_FIJA_TXT
 const CORRIDA_FIJA = { sin: CONFIG.prefijoFija + 'sin_justificaciones', con: CONFIG.prefijoFija + 'con_justificaciones' }
 document.getElementById('act-just').replaceChildren(new Option('Sin justificaciones', CORRIDA_FIJA.sin), new Option('Con justificaciones', CORRIDA_FIJA.con))
@@ -331,6 +350,8 @@ function el(tag, props, ...hijos) {
   for (const h of hijos.flat()) if (h !== null && h !== undefined && h !== false) e.append(h instanceof Node ? h : document.createTextNode(String(h)))
   return e
 }
+$('reglas-lista').replaceChildren(...CONFIG.reglas.map((r) => el('li', {}, r.texto + ': ', el('strong', {}, r.valor))))
+document.querySelector('[data-regla=cobranza]').textContent = `Gasto de cobranza: ${REGLA('cobranza').valor} por cada cuota que se paga atrasada, aunque sea un día; es una política temporal.`
 const agrupar = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 function cop(v) {
   if (v === null || v === undefined || Number.isNaN(Number(v))) return '—'
@@ -516,7 +537,7 @@ function desglose(ep, x) {
           dato(valorTotal != null ? 'Margen a hoy (pagado − inversión)' : 'Margen (total − inversión)', margenTexto(sistema - inversion, inversion)),
           valorTotal != null ? dato('Margen proyectado (valor total − inversión)', margenTexto(valorTotal - inversion, inversion)) : null,
           dato('Rentabilidad real (EA, con multas)', pct(r.realEA ?? r.realEaConMultas))),
-        el('p', { class: 'ayuda', id: 'nota-multas' }, `Las multas del sistema actual no siguen una regla fija; el motor aplica una cobranza de $${agrupar(CONFIG.cobranzaPorCuota)} por cada cuota atrasada (política vigente en perfil NEGOCIO).`)),
+        el('p', { class: 'ayuda', id: 'nota-multas' }, NOTA_MULTAS)),
       el('div', { class: 'columna' }, el('h3', {}, 'Financiera (simulado)'),
         el('dl', { class: 'datos' },
           dato('Pagado por el cliente (aplicado al crédito)', cop(r.simPagado)),
