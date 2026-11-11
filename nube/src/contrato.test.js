@@ -430,3 +430,105 @@ test('listarActivos usa un LEFT JOIN agregado en lugar de una subconsulta por fi
   assert.match(sql, /ANY\(\$1::text\[\]\)/)
   assert.deepStrictEqual(params, [['fija_con_justificaciones', 'fija_sin_justificaciones']])
 })
+
+// ---- sede: la llave es (sede, contrato) ----
+const sinColumna = () => Object.assign(new Error('column "sede" does not exist'), { code: '42703' })
+
+test('sede inválida responde 400 en los tres modos y en sedes=1, sin tocar la base', async () => {
+  const { m, f } = manejador()
+  for (const sede of ['', 'BOGOTA', 'x;DROP', ' ']) {
+    for (const modo of [{}, { activos: '1', numero: undefined }, { flujo: '1', numero: undefined }, { sedes: '1', numero: undefined }]) {
+      const r = await m({ ...base, ...modo, sede })
+      assert.strictEqual(r.status, 400, `${sede} ${JSON.stringify(modo)}`)
+      assert.deepStrictEqual(r.cuerpo, { error: 'sede_invalida' })
+    }
+  }
+  assert.strictEqual(f.llamadas.length, 0)
+})
+
+test('?sede= (en minúsculas también) filtra contrato, pago_real, resultado y periodo por sede y la respuesta la incluye', async () => {
+  const { m, f } = manejador({ contratos: [filaContrato('A', '2024-01-01')] })
+  const r = await m({ ...base, sede: 'monteria' })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual(r.cuerpo.sede, 'MONTERIA')
+  assert.strictEqual(f.llamadas.length, 4)
+  for (const l of f.llamadas) {
+    assert.match(l.sql, /sede = \$2/)
+    assert.strictEqual(l.params[l.params.length - 1], 'MONTERIA')
+  }
+  assert.deepStrictEqual(f.llamadas[0].params, [['1001'], 'MONTERIA'])
+  const sin = await m(base)
+  assert.strictEqual('sede' in sin.cuerpo, false)
+})
+
+test('activos=1 con sede: filtra c.sede, cruza resultado y pagos por sede; la llave de caché incluye la sede', async () => {
+  const sqls = []
+  let n = 0
+  const consultar = async (sql, params) => { n += 1; sqls.push({ sql, params }); return [] }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 60000, ahora: () => 0 })
+  const act = { ...base, activos: '1', numero: undefined }
+  const a = await m({ ...act, sede: 'SINCELEJO' })
+  assert.strictEqual(a.cuerpo.sede, 'SINCELEJO')
+  assert.match(sqls[0].sql, /r\.sede = c\.sede/)
+  assert.match(sqls[0].sql, /c\.sede = \$2/)
+  assert.match(sqls[0].sql, /FROM pago_real WHERE sede = \$2 GROUP BY id/)
+  assert.deepStrictEqual(sqls[0].params, [['fija_con_justificaciones', 'fija_sin_justificaciones'], 'SINCELEJO'])
+  await m({ ...act, sede: 'SINCELEJO' })
+  assert.strictEqual(n, 1, 'misma sede: caché')
+  await m({ ...act, sede: 'BICIMOTOS' })
+  assert.strictEqual(n, 2, 'otra sede: otra consulta')
+  await m(act)
+  assert.strictEqual(n, 3, 'sin sede: llave distinta')
+})
+
+test('flujo=1 con sede: todas las consultas filtran y los cruces incluyen sede', async () => {
+  const sqls = []
+  const consultar = async (sql, params) => {
+    sqls.push({ sql, params })
+    if (/FROM corte_activos/.test(sql)) return [{ corte: '2026-11-03' }]
+    return []
+  }
+  const m = crearManejador({ consultar, claveEsperada: CLAVE, ttlMs: 0 })
+  const r = await m({ ...base, flujo: '1', numero: undefined, sede: 'MONTERIA' })
+  assert.strictEqual(r.status, 200)
+  assert.strictEqual(r.cuerpo.sede, 'MONTERIA')
+  assert.strictEqual(sqls.length, 7)
+  for (const q of sqls) assert.ok(q.params.includes('MONTERIA'), q.sql)
+  const cerrados = sqls.find((q) => /FROM periodo p/.test(q.sql)).sql
+  assert.match(cerrados, /c\.sede = p\.sede/)
+  assert.match(cerrados, /a\.sede = c\.sede/)
+  assert.match(cerrados, /p\.sede = \$3/)
+  assert.match(sqls.find((q) => /FROM proyeccion p/.test(q.sql)).sql, /p\.sede = \$3/)
+  assert.match(sqls.find((q) => /FROM carta_fin_mes/.test(q.sql)).sql, /WHERE sede = \$1/)
+})
+
+test('fallback 42703: sin columna sede, CARTAGENA se consulta sin filtro; otra sede no devuelve datos', async () => {
+  const consultar = (llamadas) => async (sql, params) => {
+    llamadas.push({ sql, params })
+    if (/sede = \$|\.sede/.test(sql)) throw sinColumna()
+    if (/FROM contrato/.test(sql)) return [filaContrato('A', '2024-01-01')]
+    if (/FROM corte_activos/.test(sql)) return [{ corte: '2026-11-03' }]
+    if (/FROM contrato c JOIN resultado/.test(sql)) return [{ id: 'A', contrato: '1', fecha_inicio: '2026-01-01', corrida: 'fija_sin_justificaciones' }]
+    return []
+  }
+  for (const [modo, vacio] of [[{}, (r) => r.status === 404], [{ activos: '1', numero: undefined }, (r) => r.cuerpo.activos === 0], [{ flujo: '1', numero: undefined }, (r) => r.cuerpo.meses.length === 0]]) {
+    const ll = []
+    const m = crearManejador({ consultar: consultar(ll), claveEsperada: CLAVE, ttlMs: 0 })
+    const cart = await m({ ...base, ...modo, sede: 'CARTAGENA' })
+    assert.strictEqual(cart.status, 200, JSON.stringify(modo))
+    assert.strictEqual(cart.cuerpo.sede, 'CARTAGENA')
+    assert.ok(!vacio(cart) || modo.flujo, JSON.stringify(modo))
+    assert.ok(ll.some((l) => !/sede = \$|\.sede/.test(l.sql)), 'reintenta sin filtro')
+    const mon = await m({ ...base, ...modo, sede: 'MONTERIA' })
+    assert.ok(vacio(mon), `otra sede vacía ${JSON.stringify(modo)}`)
+  }
+})
+
+test('sedes=1 lista las sedes con datos y, sin columna sede, solo CARTAGENA', async () => {
+  const m1 = crearManejador({ consultar: async () => [{ sede: 'MONTERIA' }, { sede: 'CARTAGENA' }], claveEsperada: CLAVE, ttlMs: 0 })
+  const r = await m1({ ...base, sedes: '1', numero: undefined })
+  assert.deepStrictEqual(r.cuerpo.sedes, ['CARTAGENA', 'MONTERIA'])
+  assert.deepStrictEqual(r.cuerpo.todas, ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS'])
+  const m2 = crearManejador({ consultar: async () => { throw sinColumna() }, claveEsperada: CLAVE, ttlMs: 0 })
+  assert.deepStrictEqual((await m2({ ...base, sedes: '1', numero: undefined })).cuerpo.sedes, ['CARTAGENA'])
+})

@@ -161,7 +161,23 @@ jobs:
           cd "$RUNNER_TEMP/pw"
           npm init -y > /dev/null
           npm install --no-audit --no-fund @playwright/test@1.63.0
-          npx playwright install --with-deps chromium
+          # El espejo de paquetes de Ubuntu del runner falla a veces ("Temporary failure resolving azure.archive.ubuntu.com")
+          # y apt reintenta durante ~10 min. Se refrescan los índices, cada intento tiene tope de tiempo y se reintenta;
+          # si apt no responde, se baja solo Chromium (desde la CDN de Playwright, sin apt): la imagen del runner ya trae
+          # las librerías del sistema que usa.
+          instalado=0
+          for intento in 1 2 3; do
+            if timeout 120 sudo apt-get update && timeout 300 npx playwright install --with-deps chromium; then
+              instalado=1
+              break
+            fi
+            echo "Intento $intento fallido; espero y reintento"
+            sleep $((intento * 15))
+          done
+          if [ "$instalado" -ne 1 ]; then
+            echo "apt no respondió; se instala solo Chromium sin dependencias del sistema"
+            npx playwright install chromium
+          fi
           echo "PLAYWRIGHT_PACKAGE_JSON=$RUNNER_TEMP/pw/package.json" >> "$GITHUB_ENV"
 
       - name: Compilar la consola (apunta a localhost:8080)
