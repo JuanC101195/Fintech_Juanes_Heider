@@ -354,6 +354,15 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.locator('#ver-activos').click()
   await page.locator('#act-resultado table.activos tbody tr').first().waitFor()
   verificar((await page.locator('#act-resultado table.activos tbody tr').count()) === 3, 'activos: 3 contratos de ejemplo')
+  // La diferencia (motor − real) va justo después de «Pagado motor», en cada fila y en los totales.
+  const cabAct = await page.locator('#act-resultado table.activos thead th').allInnerTexts()
+  const lim = (s) => s.replace(/[ ▲▼]+$/, '').trim()
+  const iRealA = cabAct.map(lim).indexOf('Pagado real'), iSimA = cabAct.map(lim).indexOf('Pagado motor'), iDifA = cabAct.map(lim).indexOf('Diferencia (motor − real)')
+  const filasAct = await page.locator('#act-resultado table.activos tbody tr').evaluateAll((trs) => trs.map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent.trim())))
+  const peso = (s) => { const m = /^([+−-]?)\s*\$\s*([\d.]+)$/.exec(s); return m ? (m[1] === '−' || m[1] === '-' ? -1 : 1) * Number(m[2].replace(/\./g, '')) : NaN }
+  verificar(iRealA >= 0 && iSimA === iRealA + 1 && iDifA === iSimA + 1 && filasAct.every((f) => Math.abs(peso(f[iDifA]) - (peso(f[iSimA]) - peso(f[iRealA]))) <= 1), `activos: columna «Diferencia (motor − real)» tras «Pagado motor» e igual a motor − real en ${filasAct.length} contratos`)
+  verificar(/Diferencia: pagado por el motor − pagado real/.test(await page.locator('#act-resultado').textContent()), 'activos: los totales de la cartera incluyen la diferencia')
+  await page.screenshot({ path: path.join(salida, `contratos-activos-${nombre}.png`), fullPage: true })
   // Sin sesgo: el resumen trae las dos lecturas lado a lado y la tabla arranca en «Sin justificaciones» con rótulo visible.
   const lecturas = await page.locator('#act-resultado .lecturas .lectura h3').allInnerTexts()
   verificar(lecturas.length === 2 && /^Sin justificaciones/i.test(lecturas[0]) && /^Con justificaciones/i.test(lecturas[1]), `activos: resumen con las dos lecturas lado a lado (${lecturas.join(' | ')})`)
