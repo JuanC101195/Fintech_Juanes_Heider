@@ -508,7 +508,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     const sede = url.searchParams.get('sede')
     visto.push({ modo: ['sedes', 'activos', 'flujo', 'numero'].find((k) => url.searchParams.has(k)), sede })
     const json = (cuerpo, status = 200) => r.fulfill({ status, contentType: 'application/json', body: JSON.stringify(cuerpo), headers: cabeceras })
-    if (url.searchParams.has('sedes')) return json({ sedes: ['CARTAGENA', 'MONTERIA'], todas: ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS'], defecto: 'CARTAGENA' })
+    if (url.searchParams.has('sedes')) return json({ sedes: ['CARTAGENA', 'MONTERIA'], todas: ['CARTAGENA', 'MONTERIA', 'SINCELEJO'], defecto: 'CARTAGENA' })
     if (sede !== 'CARTAGENA' && sede !== 'MONTERIA') return json({ error: 'sede_invalida' }, 400)
     if (url.searchParams.has('activos')) return json({ sede, contratos: sede === 'CARTAGENA' ? demoActivos : demoActivos.slice(0, 1) })
     if (url.searchParams.has('flujo')) return json({ sede, ...demoFlujo })
@@ -581,7 +581,7 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   await page.getByLabel('Clave de consulta').fill('buena')
   await page.getByLabel('Clave de consulta').blur()
   await page.getByText(/sin datos/).waitFor()
-  verificar((await page.locator('#sede option').count()) === 4, 'sedes vacías: se muestran las 4 con aviso «sin datos»')
+  verificar((await page.locator('#sede option').count()) === 3, 'sedes vacías: se muestran las 3 con aviso «sin datos»')
   await contexto.close()
 }
 

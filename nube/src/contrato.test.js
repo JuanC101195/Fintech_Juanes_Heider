@@ -500,7 +500,7 @@ test('vista vacía para la sede (migrada, sin corrida terminada): filtra solo po
 })
 
 test('activos=1: filtra c, r y pagos por (sede, run_id), cruza resultado por las tres columnas y la caché lleva sede y run_id', async () => {
-  const b = migrada({ SINCELEJO: 'r1', BICIMOTOS: 'r9', CARTAGENA: 'legado' })
+  const b = migrada({ SINCELEJO: 'r1', MONTERIA: 'r9', CARTAGENA: 'legado' })
   let vigentes = 0
   const consultar = async (sql, params) => { if (/vw_corrida_vigente/.test(sql)) vigentes += 1; return b.consultar(sql, params) }
   const m = crearManejadorReal({ consultar, claveEsperada: CLAVE, ttlMs: 60000, ahora: () => 0 })
@@ -515,7 +515,7 @@ test('activos=1: filtra c, r y pagos por (sede, run_id), cruza resultado por las
   assert.deepStrictEqual(q.params, [['fija_con_justificaciones', 'fija_sin_justificaciones'], 'SINCELEJO', 'r1'])
   await m({ ...act, sede: 'SINCELEJO' })
   assert.strictEqual(b.sqls.length, 1, 'misma sede y run: caché')
-  await m({ ...act, sede: 'BICIMOTOS' })
+  await m({ ...act, sede: 'MONTERIA' })
   assert.strictEqual(b.sqls.length, 2, 'otra sede: otra consulta')
   const sin = await m(act)
   assert.strictEqual(b.sqls.length, 3, 'sin sede = CARTAGENA: llave distinta')
@@ -578,7 +578,7 @@ test('sedes=1 lista las sedes con datos y, sin columna sede, solo CARTAGENA', as
   const m1 = crearManejadorReal({ consultar: async () => [{ sede: 'MONTERIA' }, { sede: 'CARTAGENA' }], claveEsperada: CLAVE, ttlMs: 0 })
   const r = await m1({ ...base, sedes: '1', numero: undefined })
   assert.deepStrictEqual(r.cuerpo.sedes, ['CARTAGENA', 'MONTERIA'])
-  assert.deepStrictEqual(r.cuerpo.todas, ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS'])
+  assert.deepStrictEqual(r.cuerpo.todas, ['CARTAGENA', 'MONTERIA', 'SINCELEJO'])
   const m2 = crearManejadorReal({ consultar: async () => { throw sinColumna() }, claveEsperada: CLAVE, ttlMs: 0 })
   assert.deepStrictEqual((await m2({ ...base, sedes: '1', numero: undefined })).cuerpo.sedes, ['CARTAGENA'])
 })

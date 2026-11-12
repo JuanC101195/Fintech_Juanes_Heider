@@ -379,7 +379,7 @@ Rendimiento medido (`LoteApiTest.medirUnLoteDe500`, con el lote de 500 créditos
 
 ## Sede en `/api/contrato` (P7)
 
-El número de contrato se repite entre sedes: la llave es `(sede, contrato)`. Sedes permitidas (constante `SEDES` en `nube/src/contrato.js`): `CARTAGENA`, `MONTERIA`, `SINCELEJO`, `BICIMOTOS`.
+El número de contrato se repite entre sedes: la llave es `(sede, contrato)`. Sedes permitidas (constante `SEDES` en `nube/src/contrato.js`): `CARTAGENA`, `MONTERIA`, `SINCELEJO` (Bicimotos no aplica al motor).
 
 - `?sede=` es opcional en los tres modos (`numero`, `activos=1`, `flujo=1`); no distingue mayúsculas. Un valor no permitido (incluida la cadena vacía) responde `400 {"error":"sede_invalida"}`.
 - Con `sede`, todas las consultas filtran por ella y los cruces entre tablas la incluyen (`activas_fin_mes`, `periodo`, `pago_real`, `resultado`, `proyeccion`, `carta_fin_mes`, `corte_activos`). La respuesta añade `"sede"` y la caché la lleva en su llave.
