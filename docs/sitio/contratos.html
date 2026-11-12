@@ -405,6 +405,10 @@ function fechaPagoDe(p) {
   if (!m || Number.isNaN(dias) || !p.instruccion || /sin[_ ]?pago/i.test(p.instruccion)) return ''
   return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + Math.round(dias))).toISOString().slice(0, 10)
 }
+// Diferencia del periodo = lo que el motor cobra al cliente menos lo que pagó de verdad en el sistema actual (misma convención que el resto de la página).
+// null si la respuesta no trae el pago total del motor (respuestas viejas).
+const difPeriodo = (p) => (p.pagoTotalCliente === null || p.pagoTotalCliente === undefined ? null : Number(p.pagoTotalCliente) - (Number(p.valorReal) || 0))
+const copConSigno = (v) => (v === null ? '—' : `${signoDe(v)}${cop(Math.abs(v))}`)
 const COLUMNAS = [
   ['Periodo', (p) => p.periodo, 'izq', (p) => p.periodo],
   ['Vence', (p) => fechaCorta(p.fechaVencimiento), 'izq', (p) => p.fechaVencimiento ?? ''],
@@ -425,6 +429,7 @@ const COLUMNAS = [
   ['Asistencia', (p) => cop(p.pagoAsistencia), '', (p) => p.pagoAsistencia],
   ['Capital pagado', (p) => cop(p.pagoCapital), '', (p) => p.pagoCapital],
   ['Pago total', (p) => cop(p.pagoTotalCliente), '', (p) => p.pagoTotalCliente],
+  ['Diferencia (motor − real)', (p) => copConSigno(difPeriodo(p)), '', (p) => difPeriodo(p)],
   ['Saldo final', (p) => cop(p.saldoFinal), '', (p) => p.saldoFinal],
   ['Saldo en mora', (p) => cop(p.saldoEnMora), '', (p) => p.saldoEnMora],
   ['Mora acumulada por cobrar', (p) => cop(p.cxcMora), '', (p) => p.cxcMora],
@@ -482,10 +487,10 @@ function tablaAmortizacion(periodos, leyendaCaption, corta = false) {
     cuerpo.append(tr)
   }
   const cab = el('tr', {}, COLS.map(([n, , alin]) => el('th', { scope: 'col', class: alin }, n)))
-  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Mora y cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
+  const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Mora y cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total', 'Diferencia (motor − real)']
   const pie = el('tfoot', {}, el('tr', {}, COLS.map(([n, , alin, crudo], i) =>
     i === 0 ? el('th', { scope: 'row', class: 'izq' }, 'Total')
-      : SUMABLES.includes(n) ? el('td', {}, sumaDe(periodos, crudo) === null ? '—' : cop(sumaDe(periodos, crudo)))
+      : SUMABLES.includes(n) ? el('td', {}, sumaDe(periodos, crudo) === null ? '—' : n.startsWith('Diferencia') ? copConSigno(sumaDe(periodos, crudo)) : cop(sumaDe(periodos, crudo)))
         : el('td', { class: alin }))))
   const tabla = el('table', {}, el('caption', {}, leyendaCaption), el('thead', {}, cab), cuerpo, pie)
   // Las celdas de periodo son th de fila: se ven como celdas normales.
@@ -755,9 +760,9 @@ const FMT_COP = '"$ "#,##0;-"$ "#,##0;"$ "0'
 const FORMATO_COLUMNA = {
   'Pago real': FMT_COP, 'Saldo inicial': FMT_COP, 'Interés': FMT_COP, 'Mora': FMT_COP, 'Cobranza': FMT_COP, 'Servicios': FMT_COP,
   'Fondo de garantías': FMT_COP, 'Seguro': FMT_COP, 'Asistencia': FMT_COP, 'Saldo en mora': FMT_COP, 'Mora acumulada por cobrar': FMT_COP,
-  'Capital pagado': FMT_COP, 'Pago total': FMT_COP, 'Saldo final': FMT_COP, 'Tasa EA': '0.00%', 'Tasa mensual': '0.000%', 'Cuotas vencidas': '0.##',
+  'Capital pagado': FMT_COP, 'Pago total': FMT_COP, 'Diferencia (motor − real)': FMT_COP, 'Saldo final': FMT_COP, 'Tasa EA': '0.00%', 'Tasa mensual': '0.000%', 'Cuotas vencidas': '0.##',
 }
-const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total']
+const SUMABLES = ['Pago real', 'Interés', 'Mora', 'Cobranza', 'Servicios', 'Fondo de garantías', 'Seguro', 'Asistencia', 'Capital pagado', 'Pago total', 'Diferencia (motor − real)']
 
 function hojaMotor(XLSX, periodos) {
   if (!periodos || !periodos.length) return XLSX.utils.aoa_to_sheet([['Esta simulación no está disponible para este contrato.']])
@@ -767,7 +772,7 @@ function hojaMotor(XLSX, periodos) {
     return n === 'Vence' || n === 'Fecha de pago' ? (v ? fechaCorta(v) : '—') : v === null || v === undefined ? '' : v
   }))
   const pie = COLUMNAS.map(([n], i) => (i === 0 ? 'Total' : SUMABLES.includes(n) ? (sumaDe(periodos, COLUMNAS[i][3]) ?? '') : ''))
-  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 14, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 18, 14, 14, 16, 16, 16, 16, 26, 120])
+  return conFormato(XLSX, [cab, ...filas, pie], cab, [8, 12, 14, 16, 10, 22, 12, 16, 10, 12, 14, 12, 12, 14, 18, 14, 14, 16, 16, 18, 16, 16, 26, 120])
 }
 
 function hojaReal(XLSX, ep) {

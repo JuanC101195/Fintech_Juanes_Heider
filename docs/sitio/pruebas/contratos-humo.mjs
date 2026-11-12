@@ -164,6 +164,11 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   const csv = bytes.toString('utf8').replace(/^﻿/, '')
   const lineas = csv.trim().split(/\r?\n/)
   verificar(lineas.length === 13 && conBom && lineas[0].startsWith('Periodo;Vence;Fecha de pago;Pago real'), `CSV descargado (${descarga.suggestedFilename()}): ${lineas.length} líneas, cabecera correcta, con BOM UTF-8`)
+  // La diferencia (motor − real) viaja dentro del mismo CSV: Pago total − Pago real, por periodo.
+  const cabCsv = lineas[0].split(';'), iDif = cabCsv.indexOf('Diferencia (motor − real)'), iTot = cabCsv.indexOf('Pago total'), iReal = cabCsv.indexOf('Pago real')
+  const nCsv = (s) => (s === '' || s === undefined ? 0 : Number(s.replace(',', '.')))
+  const datosCsv = lineas.slice(1).map((l) => l.split(';'))
+  verificar(iDif === iTot + 1 && datosCsv.length > 0 && datosCsv.every((f) => Math.abs(nCsv(f[iDif]) - (nCsv(f[iTot]) - nCsv(f[iReal]))) < 0.01), `CSV: columna «Diferencia (motor − real)» junto a «Pago total» y igual a Pago total − Pago real en ${datosCsv.length} periodos`)
   // Excel de 3 hojas: motor con tasa histórica, sistema actual (sin lógica: la hizo la empresa) y motor con tasa fija 88,44 %
   const [excel] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Descargar Excel (3 hojas)' }).click()])
   const b64 = readFileSync(await excel.path()).toString('base64')
@@ -185,6 +190,18 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
     `Excel: columnas de servicios abiertas en fondo, seguro y asistencia, y saldo en mora (${x.cab1.join(' | ')})`)
   verificar(x.tres.join() === '3500,500,1000' && x.totalTres[0] > 0 && x.totalTres[0] === 7 * x.totalTres[1] && x.totalTres[2] === 2 * x.totalTres[1] && x.mora.every((v) => typeof v === 'number'), `Excel: valores de las columnas nuevas ${JSON.stringify([x.tres, x.mora, x.totalTres])}`)
   verificar(x.filas1 > 2 && x.filas3 > 2 && x.tasa3 === 0.8844, `hojas del motor con datos y fila de totales (${x.filas1} y ${x.filas3} filas; tasa hoja 3 = ${x.tasa3})`)
+  const d = await page.evaluate((datos) => {
+    const X = window.XLSX
+    const libro = X.read(datos, { type: 'base64' })
+    return [0, 2].map((h) => {
+      const f = X.utils.sheet_to_json(libro.Sheets[libro.SheetNames[h]], { header: 1 })
+      const c = f[0], iD = c.indexOf('Diferencia (motor − real)'), iT = c.indexOf('Pago total'), iR = c.indexOf('Pago real')
+      const cuerpo = f.slice(1, -1), total = f.at(-1)
+      const n = (v) => (typeof v === 'number' ? v : 0)
+      return { iD, iT, ok: cuerpo.every((r) => Math.abs(n(r[iD]) - (n(r[iT]) - n(r[iR]))) < 0.01), totalOk: Math.abs(n(total[iD]) - cuerpo.reduce((s, r) => s + n(r[iD]), 0)) < 0.01 }
+    })
+  }, b64)
+  verificar(d.every((h) => h.iD === h.iT + 1 && h.ok && h.totalOk), `Excel: «Diferencia (motor − real)» junto a «Pago total», igual a Pago total − Pago real y con su total, en las dos hojas del motor ${JSON.stringify(d)}`)
   verificar(x.fv.join('|') === '13/01/2025|13/01/2025|0|20/01/2025|21/01/2025|1' && x.sinPago.length >= 2 && x.sinPago.every((v) => v === '—'),
     `Excel: columna «Fecha de pago» (vence + días de atraso; «—» sin pago) ${JSON.stringify([x.fv, x.sinPago])}`)
   // En pantalla: columna junto a «Vence», 1 día de atraso => un día después, y «—» en las filas sin pago.
