@@ -163,8 +163,8 @@
     /* Tabla mensual del año y tarjetas del mes */
     .anual-scroll { max-height: none; }
     table.anual { font-size: 13px; }
-    table.anual th, table.anual td { padding: 6px 8px; }
-    table.anual th { white-space: normal; vertical-align: bottom; min-width: 82px; line-height: 1.25; }
+    table.anual th, table.anual td { padding: 6px 6px; }
+    table.anual th { white-space: normal; vertical-align: bottom; min-width: 70px; line-height: 1.25; }
     table.anual thead th:first-child { min-width: 92px; left: 0; z-index: 3; }
     table.anual th[scope=row] { position: sticky; left: 0; top: auto; z-index: 2; background: var(--tarjeta); text-align: left; font-weight: 700; font-size: 14px; white-space: nowrap; vertical-align: top; }
     table.anual tbody td, table.anual tfoot td { background: var(--tarjeta); vertical-align: top; }
@@ -180,6 +180,7 @@
     table.anual tfoot th[scope=row] { background: var(--cabecera); white-space: normal; }
     table.anual tfoot tr.sub-cerrados th, table.anual tfoot tr.sub-cerrados td { border-top-width: 3px; }
     table.anual td.fuerte { font-weight: 700; }
+    table.anual td.dif { white-space: nowrap; }
     .mes-btn { background: transparent; color: var(--primario); border: 0; padding: 4px 2px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
     .pc { display: block; font-size: 13px; font-weight: 400; color: var(--suave); white-space: nowrap; font-style: normal; }
     .est { display: inline-block; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--borde); background: var(--cabecera); font-style: normal; }
@@ -1582,9 +1583,11 @@ const nombreMotivo = (k) => { const m = String(k).replace(/^CARTA\s+/i, '').trim
 function pintarTabla() {
   const key = LECTURAS[flujo.lecTabla]
   const porMesMap = new Map(flujo.meses.map((m) => [m.mes, m]))
-  const acumulador = () => ({ cap: 0, int: 0, mc: 0, sv: 0, tot: 0, real: 0, conReal: 0, carta: 0, cartaPagos: 0, conCarta: 0, n: 0 })
+  const acumulador = () => ({ cap: 0, int: 0, mc: 0, sv: 0, tot: 0, real: 0, conReal: 0, difTot: 0, difReal: 0, difN: 0, carta: 0, cartaPagos: 0, conCarta: 0, n: 0 })
   const todo = acumulador(), cerrados = acumulador()
   const conPct = (v, t) => el('td', {}, cop(v), el('span', { class: 'pc' }, pctDe(v, t)))
+  // Diferencia = motor − sistema actual (igual que en el detalle del mes). Solo en meses cerrados: en uno en curso el real es parcial.
+  const celdaDif = (motor, realV, ok) => ok ? el('td', { class: 'dif' }, `${signoDe(motor - realV)}${cop(Math.abs(motor - realV))}`, realV > 0 ? el('span', { class: 'pc' }, `${signoDe(motor - realV)}${pctDif((motor - realV) / realV)} del real`) : null) : el('td', { class: 'dif' }, '—')
   const filas = []
   for (let i = 0; i < 12; i++) {
     const ym = `${flujo.anio}-${String(i + 1).padStart(2, '0')}`
@@ -1592,7 +1595,7 @@ function pintarTabla() {
     const f = cifrasMes(m, key)
     const nom = mayus(MESES_ES[i])
     if (!m || !f) {
-      filas.push(el('tr', { class: 'sin-datos' }, el('th', { scope: 'row', class: 'izq' }, nom), el('td', { colspan: 10, class: 'izq' }, 'Sin datos de este mes')))
+      filas.push(el('tr', { class: 'sin-datos' }, el('th', { scope: 'row', class: 'izq' }, nom), el('td', { colspan: 11, class: 'izq' }, 'Sin datos de este mes')))
       continue
     }
     const real = m.real && m.real.pagos != null ? n0(m.real.pagos) : null
@@ -1600,6 +1603,7 @@ function pintarTabla() {
     for (const acc of m.estado === 'cerrado' ? [todo, cerrados] : [todo]) {
       acc.cap += f.cap; acc.int += f.int; acc.mc += f.mc; acc.sv += f.sv; acc.tot += f.tot; acc.n += 1
       if (real !== null) { acc.real += real; acc.conReal += 1 }
+      if (real !== null && m.estado === 'cerrado') { acc.difTot += f.tot; acc.difReal += real; acc.difN += 1 }
       if (carta) { acc.carta += carta.valor; acc.cartaPagos += carta.pagos; acc.conCarta += 1 }
     }
     const clase = m.estado === 'en_curso' ? 'curso' : m.estado === 'proyectado' ? 'proy' : ''
@@ -1612,6 +1616,7 @@ function pintarTabla() {
       el('td', {}, cop(f.mc)), el('td', {}, cop(f.sv)),
       el('td', { class: 'fuerte' }, cop(f.tot)),
       el('td', {}, real === null ? '—' : cop(real), m.estado === 'en_curso' && real !== null ? el('span', { class: 'pc' }, 'hasta hoy') : null),
+      celdaDif(f.tot, real, real !== null && m.estado === 'cerrado'),
       el('td', {}, carta ? cop(carta.valor) : '—', carta ? el('span', { class: 'pc' }, `${agrupar(carta.pagos)} ${carta.pagos === 1 ? 'pago' : 'pagos'}`) : null),
       el('td', { class: 'izq' }, el('span', { class: `est est-${clase || 'cerrado'}` }, ETIQ_ESTADO[m.estado] || texto(m.estado))))
     tr.addEventListener('click', () => { seleccionarMes(ym); verTarjetas() })
@@ -1623,15 +1628,16 @@ function pintarTabla() {
     conPct(acc.cap, acc.tot), conPct(acc.int, acc.tot),
     el('td', {}, cop(acc.mc)), el('td', {}, cop(acc.sv)), el('td', { class: 'fuerte' }, cop(acc.tot)),
     el('td', {}, acc.conReal ? cop(acc.real) : '—', acc.conReal ? el('span', { class: 'pc' }, 'meses con dato') : null),
+    celdaDif(acc.difTot, acc.difReal, acc.difN > 0),
     el('td', {}, acc.conCarta ? cop(acc.carta) : '—', acc.conCarta ? el('span', { class: 'pc' }, `${agrupar(acc.cartaPagos)} ${acc.cartaPagos === 1 ? 'pago' : 'pagos'}`) : null),
     el('td', {}))
   const hayNoCerrados = todo.n > cerrados.n
   const pie = el('tfoot', {},
     cerrados.n ? filaTotal('Solo meses cerrados', `${cerrados.n} ${cerrados.n === 1 ? 'mes' : 'meses'}`, cerrados, 'sub-cerrados') : null,
     filaTotal(`Total de ${flujo.anio}`, hayNoCerrados ? 'incluye meses en curso o proyectados' : `${todo.n} meses`, todo, 'total-anio'))
-  const cab = ['Mes', 'Motos activas al último día del mes', 'Con cuota simulada ese mes', 'Capital', 'Intereses', 'Mora y cobranza', 'Servicios', 'Total del motor', 'Recaudo real del sistema actual', 'Pagos por carta (liquidaciones)', 'Estado']
+  const cab = ['Mes', 'Motos activas al último día del mes', 'Con cuota simulada ese mes', 'Capital', 'Intereses', 'Mora y cobranza', 'Servicios', 'Total del motor', 'Recaudo real del sistema actual', 'Diferencia (motor − real)', 'Pagos por carta (liquidaciones)', 'Estado']
   const tabla = el('table', { class: 'anual' }, el('caption', { class: 'solo-lectores' }, `Recaudo del motor por mes de ${flujo.anio}, ${rotuloLectura[flujo.lecTabla].toLowerCase()}`),
-    el('thead', {}, el('tr', {}, cab.map((n, i) => el('th', { scope: 'col', class: i === 0 || i === 10 ? 'izq' : '' }, n)))), el('tbody', {}, filas), pie)
+    el('thead', {}, el('tr', {}, cab.map((n, i) => el('th', { scope: 'col', class: i === 0 || i === 11 ? 'izq' : '' }, n)))), el('tbody', {}, filas), pie)
   $('flujo-tabla').replaceChildren(
     el('div', { class: 'tabla-scroll anual-scroll', tabindex: '0', role: 'region', 'aria-label': `Tabla mensual de ${flujo.anio}, ${rotuloLectura[flujo.lecTabla].toLowerCase()}` }, tabla),
     el('ul', { class: 'leyenda', 'aria-label': 'Leyenda de estados' },
