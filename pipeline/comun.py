@@ -8,7 +8,6 @@ SEDES = {
     "CARTAGENA": "server-motohoy.netbird.cloud",
     "MONTERIA": "server-motomonteria.netbird.cloud",
     "SINCELEJO": "server-motosince.netbird.cloud",
-    "BICIMOTOS": "server-bicimotos.netbird.cloud",
 }
 DB_NAME_DEFECTO = "db_packgps"
 RUN_ID_LEGADO = "legado"

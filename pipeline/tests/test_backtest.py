@@ -68,7 +68,7 @@ class TestBacktest(unittest.TestCase):
 
     # ---- sedes
     def test_tabla_de_sedes(self):
-        self.assertEqual(set(comun.SEDES), {"CARTAGENA", "MONTERIA", "SINCELEJO", "BICIMOTOS"})
+        self.assertEqual(set(comun.SEDES), {"CARTAGENA", "MONTERIA", "SINCELEJO"})
         self.assertEqual(comun.SEDES["MONTERIA"], "server-motomonteria.netbird.cloud")
         self.assertEqual(comun.validar_sede(" montería".replace("í", "i")), "MONTERIA")
         with self.assertRaises(ValueError):

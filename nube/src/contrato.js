@@ -109,7 +109,7 @@ const COLUMNAS_PERIODO =
   'saldo_inicial, interes_corriente, interes_mora, cobranza, servicios, pago_total_cliente, saldo_final, listo_recuperacion, ' +
   'tasa_ea, cuota_financiera, pago_capital, pago_interes, pago_mora, pago_cobranza, pago_servicios, capital_vencido'
 // Sedes del backtesting. El número de contrato se repite entre sedes: la llave es (sede, contrato).
-const SEDES = ['CARTAGENA', 'MONTERIA', 'SINCELEJO', 'BICIMOTOS']
+const SEDES = ['CARTAGENA', 'MONTERIA', 'SINCELEJO']
 const SEDE_DEFECTO = 'CARTAGENA'
 
 // Normaliza el parámetro ?sede=: undefined = no se envió; null = inválida; si no, la sede en mayúsculas.
