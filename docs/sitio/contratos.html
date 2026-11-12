@@ -109,6 +109,10 @@
     .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--suave); margin: 8px 0; padding: 0; list-style: none; }
     .leyenda span.muestra { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--borde); vertical-align: -2px; margin-right: 6px; }
     .tabla-scroll { overflow: auto; max-height: 70vh; border: 1px solid var(--borde); border-radius: 12px; }
+    /* Contratos activos: 14 columnas; encabezados en dos líneas y menos espacio entre columnas para que Pagado real, Pagado motor y la diferencia se vean juntas. */
+    table.activos th, table.activos td { padding: 6px 6px; }
+    table.activos th { white-space: normal; vertical-align: bottom; line-height: 1.25; min-width: 64px; }
+    table.activos th button { white-space: normal; text-align: right; line-height: 1.25; }
     table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
     caption { text-align: left; padding: 10px 12px; font-weight: 600; caption-side: top; }
     th, td { padding: 6px 10px; border-bottom: 1px solid var(--borde); white-space: nowrap; text-align: right; }
@@ -1316,6 +1320,8 @@ const COLS_ACTIVOS = [
   ['vt', 'Valor total negociado', (c) => c.valorTotalMiles ?? 0, (c) => (c.valorTotalMiles != null ? cop(c.valorTotalMiles * 1000) : '—')],
   ['real', 'Pagado real', (c) => c.realPagado ?? 0, (c) => cop(c.realPagado)],
   ['sim', 'Pagado motor', (c, k) => c.corridas[k].simPagado ?? 0, (c, k) => cop(c.corridas[k].simPagado)],
+  // Diferencia = lo que pagó el cliente en el motor menos lo que pagó de verdad en el sistema actual (misma convención del resto de la página).
+  ['dif', 'Diferencia (motor − real)', (c, k) => (c.corridas[k].simPagado ?? 0) - (c.realPagado ?? 0), (c, k) => { const d = (c.corridas[k].simPagado ?? 0) - (c.realPagado ?? 0); return `${signoDe(d)}${cop(Math.abs(d))}` }],
   ['inversion', 'Inversión', (c) => c.inversion ?? 0, (c) => cop(c.inversion)],
   ['saldo', 'Saldo capital', (c, k) => c.corridas[k].simSaldoFinal ?? 0, (c, k) => cop(c.corridas[k].simSaldoFinal)],
   ['pend', 'Otros pendientes', (c, k) => c.corridas[k].simPendientes ?? 0, (c, k) => cop(c.corridas[k].simPendientes)],
@@ -1346,7 +1352,7 @@ function pintarActivos() {
         kpi('Con 2 o más cuotas vencidas', agrupar(t.mora), 'contratos, según el motor'),
         kpi('Marcados para recuperar', agrupar(t.marca), 'contratos, según el motor')))
   }
-  const filaTotal = (rot, f) => el('tr', {}, el('th', { scope: 'row', class: 'izq', style: 'position:static;background:inherit;font-size:inherit;font-weight:400;white-space:normal' }, rot), totales.map(([, , t]) => el('td', {}, cop(f(t)))))
+  const filaTotal = (rot, f, conSigno = false) => el('tr', {}, el('th', { scope: 'row', class: 'izq', style: 'position:static;background:inherit;font-size:inherit;font-weight:400;white-space:normal' }, rot), totales.map(([, , t]) => el('td', {}, conSigno ? `${signoDe(f(t))}${cop(Math.abs(f(t)))}` : cop(f(t)))))
   const resumen = el('section', { class: 'veredicto', 'aria-label': 'Resumen de la cartera activa' },
     el('p', { class: 'veredicto-titulo' }, `Cartera activa · ${agrupar(act.contratos.length)} contratos · motor a tasa fija ${TASA_FIJA_TXT}`),
     el('p', { class: 'ayuda' }, 'Las dos lecturas del motor, lado a lado. «Sin justificaciones» cuenta todo atraso; «con justificaciones» no cuenta los periodos con atraso justificado. Ninguna de las dos es la predeterminada.'),
@@ -1359,6 +1365,7 @@ function pintarActivos() {
           filaTotal('Pagado real', (t) => t.real),
           filaTotal('Valor total negociado (se espera recaudar)', (t) => t.vt),
           filaTotal('Pagado por el motor', (t) => t.sim),
+          filaTotal('Diferencia: pagado por el motor − pagado real', (t) => t.sim - t.real, true),
           filaTotal('Proyectado por el motor al final del plan', (t) => t.proy),
           filaTotal('Saldo de capital', (t) => t.saldo),
           filaTotal('Otros pendientes (mora, cobranza, interés, servicios)', (t) => t.pend))))))
