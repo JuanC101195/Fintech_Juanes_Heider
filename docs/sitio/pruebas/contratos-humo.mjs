@@ -376,7 +376,17 @@ for (const [nombre, ancho, alto] of [['celular', 360, 800], ['escritorio', 1280,
   // A) tabla mensual del año: 12 meses, subtotal de cerrados y total del año
   const filasMes = page.locator('#flujo-tabla tbody tr[data-mes]')
   verificar((await page.inputValue('#flujo-anio')) === '2026' && (await filasMes.count()) === 12, 'recaudo: la tabla abre en 2026 con 12 filas (enero a diciembre)')
-  verificar((await page.locator('#flujo-tabla thead th').count()) === 11 && /Recaudo real del sistema actual\s+Pagos por carta \(liquidaciones\)/.test(await page.locator('#flujo-tabla thead').innerText()), 'recaudo: columnas de la tabla (mes + 10) con el recaudo real y, justo después, los pagos por carta')
+  verificar((await page.locator('#flujo-tabla thead th').count()) === 12 && /Recaudo real del sistema actual\s+Diferencia \(motor − real\)\s+Pagos por carta \(liquidaciones\)/.test(await page.locator('#flujo-tabla thead').innerText()), 'recaudo: columnas de la tabla (mes + 11) con el recaudo real, justo después la diferencia y luego los pagos por carta')
+  // La diferencia es motor − real y solo se muestra en meses cerrados con recaudo real; en meses en curso o proyectados va «—».
+  const difs = await page.locator('#flujo-tabla tbody tr[data-mes]').evaluateAll((trs) => trs.map((tr) => {
+    const num = (s) => { const m = /(-?)\$\s*([\d.]+)/.exec(s); return m ? (m[1] ? -1 : 1) * Number(m[2].replace(/\./g, '')) : null }
+    const td = tr.querySelectorAll('td')
+    const dif = td[8].childNodes[0] ? td[8].childNodes[0].textContent : ''
+    return { cerrada: !tr.classList.contains('curso') && !tr.classList.contains('proy'), motor: num(td[6].textContent), real: num(td[7].childNodes[0].textContent), dif, valor: dif.startsWith('−') ? -num(dif.slice(1)) : dif.startsWith('+') ? num(dif.slice(1)) : num(dif) }
+  }))
+  const cerradasConReal = difs.filter((d) => d.cerrada && d.real !== null)
+  verificar(cerradasConReal.length > 0 && cerradasConReal.every((d) => Math.abs(d.valor - (d.motor - d.real)) <= 1), `recaudo: la diferencia de cada mes cerrado es motor − real (${cerradasConReal.length} meses)`)
+  verificar(difs.filter((d) => !d.cerrada).every((d) => d.dif === '—'), 'recaudo: los meses en curso o proyectados no muestran diferencia')
   verificar((await page.inputValue('#flujo-tabla-lectura')) === 'sin' && (await page.locator('#flujo-resultado').getByLabel('Lectura de la tabla').isVisible()), 'recaudo: la tabla arranca en «Sin justificaciones» con el rótulo «Lectura de la tabla» visible')
   const estados = await filasMes.evaluateAll((l) => l.map((t) => t.querySelector('.est')?.textContent))
   verificar(estados.slice(0, 10).every((e) => e === 'Cerrado') && estados[10] === 'En curso' && estados[11] === 'Proyectado', `recaudo: estados Cerrado / En curso / Proyectado (${estados.join(', ')})`)
