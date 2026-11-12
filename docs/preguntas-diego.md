@@ -4,6 +4,14 @@ Salen de reproducir el Excel celda por celda (2026-10-08). El motor hoy **reprod
 
 > **Estado al 2026-11-06 (el detalle de rondas es del 22 oct).** Este consolidado es de la primera ronda (8 oct); casi todo está respondido (ver `decisiones.md`, D1 a D55, y `completitud-reglas.md`). Las rondas 5 y 6 se respondieron el 22 oct (`respuestas-diego-2026-10-22-ronda5-6.md`): prorrateo de la primera cuota (D48), pago antes de la primera cuota (D49), caso 13 (D50), usura a 1 día hábil (D51), costo de la dación (D52), límite de un crédito corto (D53) y recuperación solo marcada por el motor (D54) quedaron cerrados. Las rondas 7, 8 y 9 ya están respondidas (D56 a D64). Diego respondió el 31 oct 9 de las 11 de las rondas 10 y 11 (`respuestas-diego-2026-10-31-ronda10-11.md`, D65 a D73; el rediseño de servicios y cobranza en la ADR 0006). El 1 nov respondió las 13 abiertas (`respuestas-diego-2026-11-01-ronda12.md`, D74 a D83; ADR 0007). El 2 nov respondió la ronda 13 (D84 a D86, ADR 0008) y el 5 nov dejó abiertas las 2 de la ronda 14 y dio dos instrucciones nuevas (D88 temporal y D89, ADR 0009, `respuestas-diego-2026-11-05-ronda14-y-nuevas.md`). **Abiertas hoy (6 nov):** las 2 de la ronda 14 y las 4 de la ronda 15 (abajo).
 
+## Ronda 16 · Abierta (11 nov 2026)
+
+El Excel que Diego mandó el 11 nov (`logica para 1ra cuota parcial.xlsx`) cambia la regla de la primera cuota parcial que respondió en las rondas 10, 12 y 13 (D66, D79, D84). El motor sigue con la regla anterior hasta que responda. Ejemplo con su crédito (5.603.760, 64 cuotas semanales, 5 de 7 días, EA 88,44 %, servicios semanales de 65.000,55): con su lógica la primera cuota es de 173.292 y la última de 149.387; con la regla actual, de 136.960 y 208.482; intereses totales 2.473.018 contra 2.495.781. Su Excel traía la EA en 89,77 %; se usó 88,44 %, el tope certificado de noviembre de 2026.
+
+| ID | Pregunta | Opciones |
+|---|---|---|
+| R16-PRIMERA-CUOTA-EXCEL | ¿El motor pasa a la lógica de su Excel: cuota fija de capital más interés desde el inicio, primera cuota con interés y servicios por los días transcurridos pero con la cuota fija completa de capital más interés, sin capital diferido, y la última cuota menor? | (a) Sí, reemplaza la regla actual (D66, D79, D84) en todos los créditos. (b) Sí, pero solo para los créditos que se originen desde que entre en vigencia. (c) No: era solo para el simulador; el motor mantiene la regla actual. (d) Otra regla. |
+
 ## Ronda 15 · Abierta (6 nov 2026)
 
 Los supuestos con que el motor implementó las instrucciones del 5 nov (cobranza temporal de 25.000 y base 360). Siguen abiertas R14-SERVICIOS-CIERRE (Diego pidió volver a verla) y R14-MARCA-SEMANAS (con el ejemplo detallado que pidió).

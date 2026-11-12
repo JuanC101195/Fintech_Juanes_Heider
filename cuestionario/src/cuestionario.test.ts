@@ -90,7 +90,7 @@ describe('preguntas', () => {
     expect(TODAS.find((p) => p.id === 'R10-PERIODO-ATRASADO')!.respondida!.nota).toBeUndefined()
     expect(TODAS.find((p) => p.id === 'R11-SEGUROS-TRAS-SUSPENSION')!.respondida!.nota).toBeUndefined()
 
-    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R14-MARCA-SEMANAS', 'R14-SERVICIOS-CIERRE', 'R15-BASE-360', 'R15-COBRANZA-CUOTA', 'R15-COBRANZA-FIN', 'R15-COBRANZA-REEMPLAZA'])
+    expect(PREGUNTAS.map((p) => p.id).sort()).toEqual(['R14-MARCA-SEMANAS', 'R14-SERVICIOS-CIERRE', 'R15-BASE-360', 'R15-COBRANZA-CUOTA', 'R15-COBRANZA-FIN', 'R15-COBRANZA-REEMPLAZA', 'R16-PRIMERA-CUOTA-EXCEL'])
     for (const p of PREGUNTAS) expect(p.opciones.filter((o) => o.codigo !== CODIGO_PENDIENTE).length, p.id).toBeGreaterThanOrEqual(2)
   })
 
