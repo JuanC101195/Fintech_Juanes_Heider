@@ -2416,6 +2416,25 @@ const RONDA_15: Pregunta[] = [
   },
 ]
 
+// Ronda 16 (11 nov 2026): el Excel que Diego mandó el 11 de noviembre ("logica para 1ra cuota parcial.xlsx") cambia la regla de la
+// primera cuota parcial que respondió en las rondas 10, 12 y 13 (D66, D79, D84). El motor sigue aplicando la regla anterior hasta que responda.
+const RONDA_16: Pregunta[] = [
+  {
+    id: 'R16-PRIMERA-CUOTA-EXCEL',
+    bloque: PAGOS,
+    titulo: 'Primera cuota parcial: ¿el motor pasa a la lógica de su Excel (cuota fija completa, última cuota menor)?',
+    contexto:
+      'Usted mandó un Excel con la lógica que aplicó en el simulador: la cuota fija de capital más interés se calcula desde el inicio sobre todo el plazo y no cambia; en la primera cuota (parcial) el interés y los servicios se cobran solo por los días transcurridos, pero se cobra la cuota fija completa de capital más interés, así que se abona más capital y no queda capital diferido; la última cuota queda menor porque solo cobra el saldo pendiente. Hoy el motor aplica lo que usted respondió en las rondas 10, 12 y 13: la primera cuota es proporcional en todo (también el capital), el capital no cobrado no causa interés y la última cuota lo recoge. Ejemplo con el crédito de su Excel (5.603.760, 64 cuotas semanales, primera cuota de 5 días de 7, EA 88,44 %, servicios semanales de 65.000,55): con su lógica la primera cuota es de 173.292 (interés 48.985, capital 77.879, servicios 46.429) y la última de 149.387; con la regla actual del motor la primera es de 136.960 (capital 41.546) y la última de 208.482 (incluye 16.619 de capital no cobrado). Los intereses totales son 2.473.018 con su lógica y 2.495.781 con la actual: unos 22.800 menos. Una cuota regular es de 191.864. Nota: su Excel traía la EA en 89,77 %; usamos 88,44 %, que es el tope certificado de noviembre de 2026 y la tasa que ya maneja el motor.',
+    excelHoy: 'El Excel de casos no prorratea la primera cuota.',
+    opciones: [
+      { codigo: 'reemplaza-todos', texto: 'Sí: su Excel reemplaza la regla actual de primera cuota parcial (D66, D79 y D84) en todos los créditos' },
+      { codigo: 'reemplaza-nuevos', texto: 'Sí, pero solo para los créditos que se originen desde que la regla nueva entre en vigencia', detalle: 'Los créditos ya originados siguen con la regla anterior (cada crédito guarda la versión de reglas con que se originó).' },
+      { codigo: 'solo-simulador', texto: 'No: era solo para el simulador; el motor mantiene la regla actual (D66, D79 y D84)' },
+      { codigo: 'otro', texto: 'Otra regla', pideTexto: true },
+    ],
+  },
+]
+
 // Respondidas por el cuestionario (Diego, 2 de noviembre de 2026, 11:00): la ronda 13, 5 de 5 (docs/respuestas-diego-2026-11-02-ronda13.md). Quedan decididas D84 a D86; lo que dejó abierto va a la ronda 14.
 const REF_RONDA_13 = 'Ronda 13'
 const RESPONDIDAS_RONDA_13: Record<string, Omit<Respondida, 'fecha'>> = {
@@ -2506,7 +2525,7 @@ function conPendiente(p: Pregunta): Pregunta {
   return p.opciones.some((o) => o.codigo === CODIGO_PENDIENTE) ? p : { ...p, opciones: [...p.opciones, OPCION_PENDIENTE] }
 }
 
-export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12, ...RONDA_13, ...RONDA_14, ...RONDA_15].map((p) => {
+export const TODAS: Pregunta[] = [...BASE, ...RONDA_3, ...RONDA_4, ...RONDA_5, ...RONDA_6, ...RONDA_7, ...RONDA_8, ...RONDA_9, ...RONDA_10, ...RONDA_11, ...RONDA_12, ...RONDA_13, ...RONDA_14, ...RONDA_15, ...RONDA_16].map((p) => {
   if (RESPONDIDAS_RONDA_13[p.id]) return { ...p, respondida: { fecha: '2 nov 2026', ...RESPONDIDAS_RONDA_13[p.id] } }
   if (RESPONDIDAS_RONDA_12[p.id]) return { ...p, respondida: { fecha: '1 nov 2026', ...RESPONDIDAS_RONDA_12[p.id] } }
   if (RESPONDIDAS_RONDA_10_11[p.id]) return { ...p, respondida: { fecha: '31 oct 2026', ...RESPONDIDAS_RONDA_10_11[p.id] } }
