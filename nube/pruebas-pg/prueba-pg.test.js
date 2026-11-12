@@ -207,7 +207,7 @@ test('flujo=1: no mezcla sedes ni corridas (capital, motos, pagos reales y carta
   // Noviembre (proyección, 2 contratos de la corrida vigente): 40 + 40.
   assert.strictEqual(nov.corridas.fija_con_justificaciones.capital, 80)
   assert.strictEqual(nov.corridas.fija_con_justificaciones.contratos, 2)
-  assert.strictEqual(nov.real.pagos, 800 * 1000)
+  assert.strictEqual(nov.real.pagos, 0) // el único pago real inventado es del 10-oct: noviembre no tiene pagos reales
 
   const cart = (await migrada(pet({ flujo: '1' }))).cuerpo
   assert.strictEqual(cart.sede, 'CARTAGENA')
@@ -257,16 +257,16 @@ test('base sin migrar: numero, activos y flujo funcionan y coinciden con el cont
     const antes = await viejo(pet(modo))
     assert.strictEqual(nuevo.status, 200, JSON.stringify(modo))
     assert.strictEqual(antes.status, 200)
-    const { sede, ...resto } = nuevo.cuerpo
-    assert.strictEqual(sede, 'CARTAGENA')
+    // El contrato.js anterior (main, con P7) ya devuelve `sede`; lo único que P10 agrega es `runId`, y solo en bases migradas.
+    assert.strictEqual(nuevo.cuerpo.sede, 'CARTAGENA')
     assert.strictEqual('runId' in nuevo.cuerpo, false)
-    assert.deepStrictEqual(resto, antes.cuerpo, JSON.stringify(modo))
+    assert.deepStrictEqual(nuevo.cuerpo, antes.cuerpo, JSON.stringify(modo))
   }
   const num = (await legada(pet({ numero: '1428' }))).cuerpo
   assert.deepStrictEqual(marcasDe(num), [1])
   assert.strictEqual((await legada(pet({ activos: '1' }))).cuerpo.activos, 2)
   const fl = (await legada(pet({ flujo: '1' }))).cuerpo
-  assert.strictEqual(fl.meses[0].corridas.fija_con_justificaciones.capital, 20)
+  assert.strictEqual(fl.meses[0].corridas.fija_con_justificaciones.capital, 10) // marca 1 × 10; solo '1428' está en activas_fin_mes
 })
 
 test('base sin migrar: ?sede=CARTAGENA igual que sin sede; otra sede sin datos; sedes=1 solo CARTAGENA', async () => {
