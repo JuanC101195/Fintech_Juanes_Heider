@@ -63,7 +63,7 @@ record FechasCredito(LocalDate desembolso, LocalDate primerVencimiento, Calendar
      */
     FechasCredito validarContra(ReglasNegocio reglas, Periodicidad per) {
         int nominales = per.diasNominales();
-        if (reglas.capitalNoCobradoSinInteres() && calendario.diasDelPeriodo(1) > nominales) {
+        if (reglas.primerVencimientoDentroDelPeriodo() && calendario.diasDelPeriodo(1) > nominales) {
             throw ApiException.datoInvalido("El primer vencimiento (" + primerVencimiento + ") debe caer dentro del primer "
                     + "periodo: hay " + calendario.diasDelPeriodo(1) + " días desde el desembolso (" + desembolso
                     + ") y el periodo es de " + nominales, PRIMER_VENCIMIENTO);

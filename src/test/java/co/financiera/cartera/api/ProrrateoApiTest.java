@@ -112,19 +112,18 @@ class ProrrateoApiTest {
             JsonNode fila1 = con.get("plan").get(0);
             JsonNode fila1Sin = sin.get("plan").get(0);
             assertThat(bd(fila1.get("interes"))).isEqualByComparingTo(bd(pr.get("interesProrrateado")));
-            // Capital y servicios en proporción a los días (D79); lo no cobrado no causa interés (D84).
-            igualAlPeso(bd(fila1.get("capital")), Calc.multiplicar(bd(fila1Sin.get("capital")), fraccion));
+            // R16-PRIMERA-CUOTA-EXCEL (D90): la cuota financiera de la 1 es la cuota fija × días / nominales; cubre primero el
+            // interés de los días y el sobrante es capital. Servicios en la misma proporción.
+            igualAlPeso(bd(fila1.get("cuotaFinanciera")), Calc.multiplicar(bd(fila1Sin.get("cuotaFinanciera")), fraccion));
+            igualAlPeso(bd(fila1.get("capital")), bd(fila1.get("cuotaFinanciera")).subtract(bd(fila1.get("interes"))));
             for (String s : new String[] {"fondoGarantias", "asistencia", "seguro"}) {
                 igualAlPeso(bd(fila1.get(s)), Calc.multiplicar(bd(fila1Sin.get(s)), fraccion));
             }
-            igualAlPeso(bd(fila1.get("cuotaFinanciera")), bd(fila1.get("capital")).add(bd(fila1.get("interes"))));
-            // El resumen muestra la cuota regular, no la prorrateada.
+            // Desde la 2 la cuota fija se recalcula sobre el saldo que queda (no hay capital diferido): el resumen muestra
+            // esa cuota recalculada, que es la de todas las cuotas regulares.
             assertThat(bd(con.get("resumen").get("cuotaFinanciera")))
-                    .isEqualByComparingTo(bd(sin.get("resumen").get("cuotaFinanciera")));
-            assertThat(bd(con.get("resumen").get("cuotaTotal")))
-                    .isEqualByComparingTo(bd(sin.get("resumen").get("cuotaTotal")));
-            // Desde el periodo 2 el plan es el mismo (la última cuota recoge el capital no cobrado).
-            igualAlPeso(bd(con.get("plan").get(5).get("cuotaFinanciera")), bd(sin.get("plan").get(5).get("cuotaFinanciera")));
+                    .isEqualByComparingTo(bd(con.get("plan").get(1).get("cuotaFinanciera")));
+            igualAlPeso(bd(con.get("plan").get(5).get("cuotaFinanciera")), bd(con.get("plan").get(1).get("cuotaFinanciera")));
         }
 
         /** D84 (R13-PRIMERA-CUOTA-LARGA): con NEGOCIO una entrega a 43 días del primer vencimiento (mensual) se rechaza. */

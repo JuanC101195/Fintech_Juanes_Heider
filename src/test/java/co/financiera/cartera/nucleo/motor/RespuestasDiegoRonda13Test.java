@@ -27,6 +27,11 @@ class RespuestasDiegoRonda13Test {
     private static final BigDecimal CENTAVO = new BigDecimal("0.01");
     private final MotorCartera motor = new MotorCartera();
 
+    /** D79/D84 (antes de R16, D90): la primera cuota completa prorrateada sin interés sobre el capital no cobrado. */
+    private static ReglasNegocio conD84() {
+        return negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+    }
+
     private static ReglasNegocio negocio() {
         return ReglasNegocioConfiguradaTest.negocioAntesRonda15();   // cifras de la ronda, antes de D88 y D89
     }
@@ -84,18 +89,18 @@ class RespuestasDiegoRonda13Test {
 
         @Test
         void laUltimaCuotaSoloSumaElCapitalNoCobrado() {
-            List<Movimiento> sin = correr(negocio());
-            assertThat(negocio().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+            List<Movimiento> sin = correr(conD84());
+            assertThat(conD84().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
             // 100.406,51 de la cuota fija + 16.299,13 de capital no cobrado = 116.705,64 (el ejemplo de la pregunta).
             assertThat(fila(sin, 104).cuotaFinanciera()).isCloseTo(new BigDecimal("116705.64"), within(new BigDecimal("1")));
             // Con interés (D79) subía a 157.091,51.
-            List<Movimiento> con = correr(negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA));
+            List<Movimiento> con = correr(conD84().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA));
             assertThat(fila(con, 104).cuotaFinanciera()).isCloseTo(new BigDecimal("157091.51"), within(new BigDecimal("1")));
         }
 
         @Test
         void laCuotaFijaYElPlanSiguenIgualYElCapitalCierraEnLaCuotaN() {
-            List<Movimiento> m = correr(negocio());
+            List<Movimiento> m = correr(conD84());
             assertThat(m.getLast().periodo()).isEqualTo(104);
             assertThat(m.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
             BigDecimal cuotaFija = fila(m, 2).cuotaFinanciera();
@@ -106,8 +111,8 @@ class RespuestasDiegoRonda13Test {
 
         @Test
         void sinFechasNoCambiaNada() {
-            List<Movimiento> a = motor.ejecutar(conOperacionDelExcel().conReglas(negocio()));
-            List<Movimiento> b = motor.ejecutar(conOperacionDelExcel().conReglas(negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA)));
+            List<Movimiento> a = motor.ejecutar(conOperacionDelExcel().conReglas(conD84()));
+            List<Movimiento> b = motor.ejecutar(conOperacionDelExcel().conReglas(conD84().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA)));
             assertThat(fila(a, 104).cuotaFinanciera()).isEqualByComparingTo(fila(b, 104).cuotaFinanciera());
         }
     }

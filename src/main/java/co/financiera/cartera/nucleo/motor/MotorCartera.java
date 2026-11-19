@@ -246,6 +246,12 @@ public final class MotorCartera {
             BigDecimal recibido = prelacion.recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
             Reparto reparto = prelacion.repartir(recibido, saldoInicial, causado);
             prelacion.actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
+            // R16-PRIMERA-CUOTA-EXCEL (D90): tras la primera cuota proporcional la cuota fija se recalcula sobre el saldo del
+            // plan que queda, en las cuotas restantes (el plazo no cambia y no hay capital diferido).
+            if (periodo == 1 && causado.cuotaPorComponentes() && escenario.reglas().cuotaProporcionalRecalculada()
+                    && s.cuotasVigentes > 1) {
+                s.cuota = Amortizacion.cuotaFija(s.tasas.periodica(), s.cuotasVigentes - 1, s.saldoPlan);
+            }
             boolean pagoCompleto = recibido.compareTo(restar(cuotaTotal, Calc.EPSILON_SALDO)) >= 0;
 
             // 4. Abono extraordinario o prepago, después de la cuota del periodo. Con PRIMERO_PENDIENTES (A4)

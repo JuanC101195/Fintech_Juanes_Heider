@@ -111,6 +111,9 @@ final class Causador {
      */
     private Cuota prorratear(Cuota completa, BigDecimal baseInteres, boolean ultimaConSaldo) {
         int diasReales = s.escenario.diasPrimerPeriodo().getAsInt();
+        if (s.reglas().cuotaProporcionalRecalculada()) {
+            return cuotaProporcional(completa, baseInteres, diasReales);
+        }
         BigDecimal interes = multiplicar(baseInteres,
                 restar(Calc.potencia(sumar(Calc.UNO, s.tasas.diaria()), diasReales), Calc.UNO));
         if (!s.reglas().prorrateaCuotaCompleta()) {
@@ -118,6 +121,27 @@ final class Causador {
         }
         BigDecimal fraccion = fraccionPrimerPeriodo(diasReales);
         BigDecimal capital = ultimaConSaldo ? completa.capital() : multiplicar(completa.capital(), fraccion);
+        return new Cuota(interes, capital, completa.servicios().proporcion(fraccion));
+    }
+
+    /**
+     * R16-PRIMERA-CUOTA-EXCEL (Diego 2026-11-19, D90): la cuota financiera de la primera cuota es la cuota fija × la fracción
+     * del periodo; cubre primero el interés de los días, (1 + tasa del periodo)^fracción − 1 (con base 360 es lo mismo que
+     * (1 + diaria)^días − 1; con 365 es la conversión del Excel de Diego) y el sobrante va a capital, sin pasar del saldo
+     * del plan. Los servicios van en la misma proporción. El motor recalcula la cuota fija después del periodo 1.
+     */
+    private Cuota cuotaProporcional(Cuota completa, BigDecimal baseInteres, int diasReales) {
+        BigDecimal fraccion = fraccionPrimerPeriodo(diasReales);
+        BigDecimal interes = multiplicar(baseInteres,
+                restar(Calc.potencia(sumar(Calc.UNO, s.tasas.periodica()), fraccion.doubleValue()), Calc.UNO));
+        // Si el periodo no causa capital (sin pago y sin causación) no hay nada que proporcionar; si la primera cuota es
+        // también la última (crédito de una cuota) cierra el saldo, como cualquier última cuota.
+        BigDecimal capital;
+        if (completa.capital().signum() == 0 || s.cuotasVigentes <= 1) {
+            capital = completa.capital();
+        } else {
+            capital = noNegativo(min(completa.capital(), restar(multiplicar(s.cuota, fraccion), interes)));
+        }
         return new Cuota(interes, capital, completa.servicios().proporcion(fraccion));
     }
 

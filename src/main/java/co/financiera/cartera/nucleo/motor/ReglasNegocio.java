@@ -359,7 +359,16 @@ public record ReglasNegocio(
          * completa) y la última cuota solo suma ese capital. Además la entrega no puede ser más de un periodo antes del
          * primer vencimiento: el primer vencimiento siempre cae dentro del primer periodo.
          */
-        CUOTA_COMPLETA_SIN_INTERES
+        CUOTA_COMPLETA_SIN_INTERES,
+        /**
+         * R16-PRIMERA-CUOTA-EXCEL (Diego 2026-11-19, D90, Excel «logica para 1ra cuota parcial mejorado»): la cuota
+         * financiera de la primera cuota es la cuota fija (PMT sobre el monto, la tasa del periodo y el plazo) × días reales
+         * / días nominales; se aplica primero al interés de los días ((1 + tasa del periodo)^(días/nominales) − 1) y el
+         * sobrante va a capital. Los servicios van en la misma proporción. Desde la segunda cuota la cuota fija se recalcula
+         * con PMT sobre el saldo que queda, en plazo − 1 periodos: no hay capital diferido y la última cuota cierra el
+         * saldo. Como con {@link #CUOTA_COMPLETA_SIN_INTERES}, el primer vencimiento cae dentro del primer periodo.
+         */
+        CUOTA_PROPORCIONAL_RECALCULADA
     }
 
     public enum OrdenPrelacion {
@@ -1078,6 +1087,16 @@ public record ReglasNegocio(
     public boolean prorrateaCuotaCompleta() {
         return prorrateoPrimeraCuota && (alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA
                 || alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+    }
+
+    /** R16-PRIMERA-CUOTA-EXCEL (D90): primera cuota fija proporcional a los días y cuota recalculada desde la segunda. */
+    public boolean cuotaProporcionalRecalculada() {
+        return prorrateoPrimeraCuota && alcanceProrrateoPrimeraCuota == AlcanceProrrateo.CUOTA_PROPORCIONAL_RECALCULADA;
+    }
+
+    /** D84 y D90: si el primer vencimiento debe caer dentro del primer periodo (no se permite una entrega más larga). */
+    public boolean primerVencimientoDentroDelPeriodo() {
+        return capitalNoCobradoSinInteres() || cuotaProporcionalRecalculada();
     }
 
     /** R13-PRIMERA-CUOTA-INTERES (D84): si el capital que la primera cuota no cobra queda sin causar interés. */
