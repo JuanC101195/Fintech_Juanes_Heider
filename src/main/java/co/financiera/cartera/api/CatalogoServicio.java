@@ -117,11 +117,17 @@ final class CatalogoServicio {
                     "Qué se prorratea en la primera cuota por los días reales: solo el interés o la cuota completa (capital y servicios en proporción a los días; el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden) o, desde la ronda 16, la cuota fija proporcional a los días con la cuota recalculada sobre el saldo desde la segunda",
                     "P5-PRORRATEO / R10-PRIMERA-CUOTA / R12-PRIMERA-CUOTA-DETALLE / R16-PRIMERA-CUOTA-EXCEL"),
             new ClaveDto("cobranzaPorCuotaAtrasada",
-                    "TEMPORAL: cargo fijo de cobranza por cada cuota que vence sin quedar pagada a tiempo (atraso de 1 día o más, pago parcial o sin pago), una sola vez por cuota y primero en la prelación; con valor reemplaza la cobranza anterior (cociente, cobro por periodo y valor diario); 0 = apagado",
-                    "D88 / R15-COBRANZA-CUOTA"),
+                    "Cargo fijo de cobranza por cada cuota que vence sin quedar pagada a tiempo (atraso de 1 día o más, pago parcial o sin pago), una sola vez por cuota y primero en la prelación; reemplaza para siempre la cobranza anterior (cociente, cobro por periodo y valor diario) y rige para los créditos vivos y los nuevos; 0 = apagado",
+                    "D88 / R15-COBRANZA-CUOTA / R15-COBRANZA-REEMPLAZA / R15-COBRANZA-FIN"),
             new ClaveDto("baseDiasAnio",
                     "Base de días del año para convertir la EA: 365 (periódica (1 + EA)^(1/ppa) − 1, diaria con 365) o 360 (periódica (1 + EA)^(días del periodo/360) − 1 con 7, 15 o 30 días, diaria con 360); solo cambia la semanal",
-                    "D89 / R15-BASE-360"));
+                    "D89 / R15-BASE-360"),
+            new ClaveDto("alcanceCobranzaPorCuota",
+                    "Cuándo se cobra el cargo por cuota atrasada: solo si la cuota del periodo no se paga completa a tiempo, o además cuando la cuota se paga a tiempo pero queda algo pendiente de antes",
+                    "D91 / R15-COBRANZA-CUOTA"),
+            new ClaveDto("contadorVencidasPorCociente",
+                    "Si las cuotas vencidas se miden como saldo en mora ÷ cuota total (una sola medida para el contador, la marca y la cobranza) en vez de contar periodos atrasados",
+                    "D92 / R14-MARCA-SEMANAS"));
 
     private final PerfilesReglas perfiles;
 

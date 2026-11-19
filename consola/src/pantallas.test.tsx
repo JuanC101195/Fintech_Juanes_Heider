@@ -273,7 +273,7 @@ describe('Reglas', () => {
   it('muestra cada regla en lenguaje de negocio, sin nombres internos, con su referencia y lo por confirmar', async () => {
     abrir('#/reglas')
     const lista = await screen.findByRole('list', { name: 'Reglas por perfil' })
-    expect(within(lista).getAllByRole('listitem')).toHaveLength(34)
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(36)
     // D88 (temporal) y D89 (ronda 15) en lenguaje de negocio.
     expect(sp(lista.textContent ?? '')).toContain('$ 25.000 por cada cuota que se paga tarde')
     expect(lista.textContent).toContain('Año de 360 días')

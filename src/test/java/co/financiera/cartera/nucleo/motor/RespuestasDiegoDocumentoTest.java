@@ -50,7 +50,8 @@ class RespuestasDiegoDocumentoTest {
     private static ReglasNegocio negocio() {
         try {
             return ReglasNegocio.desde(ReglasNegocioConfiguradaTest.configuracion())
-                    .conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO);   // antes de D88 y D89 (ronda 15)
+                    .conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO)
+                    .conAlcanceCobranzaPorCuota(ReglasNegocio.AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO).conContadorVencidasPorCociente(false);   // antes de D88 y D89 (ronda 15)
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

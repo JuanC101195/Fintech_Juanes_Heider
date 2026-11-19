@@ -307,13 +307,16 @@ final class Causador {
      * fuera del plazo vigente (ya no vence ninguna cuota), sin saldo, con la cobranza inactiva del crédito ni en una semana
      * sin pago que no causa mora (P-16 en {@code false}).
      */
-    Causacion conCobranzaPorCuotaAtrasada(Causacion c, PeriodoACausar p, Instruccion pago, BigDecimal cuotaTotal) {
+    Causacion conCobranzaPorCuotaAtrasada(Causacion c, PeriodoACausar p, Instruccion pago, BigDecimal cuotaTotal,
+            boolean cubreLoExigible) {
         ReglasNegocio reglas = s.reglas();
         if (!reglas.cobranzaPorCuotaAtrasadaActiva() || !s.escenario.cobranzaActiva() || p.sinPagoSinMora()
                 || esCero(p.saldoInicial()) || p.numero() > s.cuotasVigentes) {
             return c;
         }
-        return p.dias() > 0 || !cubreLaCuota(pago, cuotaTotal) ? c.conCobranza(reglas.cobranzaPorCuotaAtrasada()) : c;
+        // R15-COBRANZA-CUOTA (D91): una sola vez por periodo, sea por la cuota o por lo pendiente de antes.
+        return p.dias() > 0 || !cubreLaCuota(pago, cuotaTotal) || !cubreLoExigible
+                ? c.conCobranza(reglas.cobranzaPorCuotaAtrasada()) : c;
     }
 
     /** Si el pago del periodo, por sí solo, alcanza la cuota total del periodo (D88). */
@@ -351,6 +354,19 @@ final class Causador {
         BigDecimal cobranza = multiplicar(Calc.bd(s.p.periodicidad().diasNominales()), s.p.cobranzaDiaria());
         BigDecimal tope = reglas.topeCobranzaPorPago();
         return tope == null ? cobranza : min(cobranza, tope);
+    }
+
+    /**
+     * R14-MARCA-SEMANAS (D92): cuotas vencidas = parte entera de saldo en mora ÷ valor total de la cuota, con los saldos del
+     * cierre del periodo (0 sin saldo en mora o sin cuota).
+     */
+    int cuotasVencidasPorCociente() {
+        BigDecimal cuota = valorCuotaParaCobranza();
+        BigDecimal enMora = saldoEnMora();
+        if (cuota.signum() <= 0 || enMora.compareTo(Calc.EPSILON_SALDO) <= 0) {
+            return 0;
+        }
+        return Calc.dividir(enMora, cuota).setScale(0, java.math.RoundingMode.FLOOR).intValueExact();
     }
 
     /**
