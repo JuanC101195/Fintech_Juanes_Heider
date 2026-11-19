@@ -48,19 +48,19 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        int maximo = RUTAS_LOTE.contains(request.getRequestURI()) ? maximoLote : this.maximo;
+        int tope = RUTAS_LOTE.contains(request.getRequestURI()) ? maximoLote : this.maximo;
         long largo = request.getContentLengthLong();
-        if (largo > maximo) {
-            rechazar(response, maximo);
+        if (largo > tope) {
+            rechazar(response, tope);
             return;
         }
         if (largo >= 0) {
             chain.doFilter(request, response);
             return;
         }
-        byte[] cuerpo = request.getInputStream().readNBytes(maximo + 1);
-        if (cuerpo.length > maximo) {
-            rechazar(response, maximo);
+        byte[] cuerpo = request.getInputStream().readNBytes(tope + 1);
+        if (cuerpo.length > tope) {
+            rechazar(response, tope);
             return;
         }
         chain.doFilter(new CuerpoEnMemoria(request, cuerpo), response);

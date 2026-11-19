@@ -141,16 +141,24 @@ public class CarteraController {
         respuesta.setHeader("Link", "<" + sucesora + ">; rel=\"successor-version\"");
     }
 
+    /**
+     * Ruta anterior de {@link #ejecutar(EjecutarRequest)}.
+     *
+     * Obsoleta: use {@code POST /api/v1/escenarios}; se retira cuando ningún cliente la use.
+     */
     @Hidden
-    @Deprecated
     @PostMapping("/escenarios/ejecutar")
     public EjecucionResponse ejecutarObsoleta(@RequestBody EjecutarRequest request, HttpServletResponse respuesta) {
         avisarObsoleta(respuesta, RUTA_ESCENARIOS);
         return ejecutar(request);
     }
 
+    /**
+     * Ruta anterior de {@link #ejecutarLote(List, HttpServletResponse)}.
+     *
+     * Obsoleta: use {@code POST /api/v1/escenarios/lotes}; se retira cuando ningún cliente la use.
+     */
     @Hidden
-    @Deprecated
     @PostMapping("/escenarios/ejecutar-lote")
     public void ejecutarLoteObsoleta(@RequestBody List<EjecutarRequest> lote, HttpServletResponse respuesta)
             throws IOException {
@@ -158,8 +166,12 @@ public class CarteraController {
         ejecutarLote(lote, respuesta);
     }
 
+    /**
+     * Ruta anterior de {@link #clasificar(ClasificarRequest)}.
+     *
+     * Obsoleta: use {@code POST /api/v1/clasificaciones}; se retira cuando ningún cliente la use.
+     */
     @Hidden
-    @Deprecated
     @PostMapping("/pagos/clasificar")
     public ClasificacionResponse clasificarObsoleta(@RequestBody ClasificarRequest request,
             HttpServletResponse respuesta) {
