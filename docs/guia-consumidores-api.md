@@ -41,7 +41,7 @@ Responde el resumen del crédito (cuota, servicios, totales) y el plan de pagos 
 - **Perfil de reglas:** `NEGOCIO` aplica las reglas vigentes de la financiera; `EXCEL` reproduce el Excel de casos de referencia. Para producción use `NEGOCIO`.
 - **Errores:** siempre `{codigo, mensaje, detalle}`. Programe contra `codigo` (estable), no contra `mensaje` (texto para personas). En los errores de validación, `detalle.campo` dice qué dato falló.
 - **Primera petición lenta:** el servicio está en un plan gratuito y se duerme si no se usa. Si estuvo inactivo, la primera petición puede tardar unos 30 segundos. Use un timeout de al menos 60 s.
-- **Lotes:** `POST /api/v1/escenarios/ejecutar-lote` acepta hasta 500 escenarios y responde NDJSON (una línea JSON por escenario).
+- **Lotes:** `POST /api/v1/escenarios/lotes` acepta hasta 500 escenarios y responde NDJSON (una línea JSON por escenario).
 
 ## Endpoints
 
@@ -50,10 +50,10 @@ Responde el resumen del crédito (cuota, servicios, totales) y el plan de pagos 
 | GET | `/api/v1/catalogo` | Líneas de crédito, periodicidades, perfiles y tipos de instrucción |
 | GET | `/api/v1/reglas` | Reglas de negocio vigentes y de dónde sale cada una |
 | POST | `/api/v1/simulaciones` | Cuota y plan de pagos de un crédito nuevo |
-| POST | `/api/v1/escenarios/ejecutar` | Un crédito con pagos tarde, parciales, abonos, prepagos, cambios de tasa, dación o retoma |
-| POST | `/api/v1/escenarios/ejecutar-lote` | Hasta 500 escenarios en una petición (NDJSON) |
+| POST | `/api/v1/escenarios` | Un crédito con pagos tarde, parciales, abonos, prepagos, cambios de tasa, dación o retoma |
+| POST | `/api/v1/escenarios/lotes` | Hasta 500 escenarios en una petición (NDJSON) |
 | GET | `/api/v1/casos` | Los 13 casos de referencia |
-| GET | `/api/v1/casos/{numero}` | Ejecuta un caso de referencia |
-| POST | `/api/v1/pagos/clasificar` | En qué caso de negocio cae un pago |
+| GET | `/api/v1/casos/{numero}` | Un caso de referencia con su resultado |
+| POST | `/api/v1/clasificaciones` | La clasificación de un pago: en qué caso de negocio cae |
 
 El detalle de cada campo está en Swagger UI y en [`api.md`](api.md).

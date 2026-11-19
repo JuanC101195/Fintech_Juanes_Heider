@@ -23,8 +23,9 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
 
     static final String CODIGO = "CUERPO_DEMASIADO_GRANDE";
 
-    /** Única ruta con un tope propio: el lote de escenarios trae hasta 500 créditos. */
-    static final String RUTA_LOTE = "/api/v1/escenarios/ejecutar-lote";
+    /** Únicas rutas con un tope propio: el lote de escenarios trae hasta 500 créditos (la nueva y la obsoleta). */
+    static final java.util.Set<String> RUTAS_LOTE = java.util.Set.of("/api/v1/escenarios/lotes",
+            "/api/v1/escenarios/ejecutar-lote");
     static final int MAXIMO_LOTE_POR_DEFECTO = 8 * 1024 * 1024;
 
     private final int maximo;
@@ -47,19 +48,19 @@ public class FiltroTamanoCuerpo extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        int maximo = RUTA_LOTE.equals(request.getRequestURI()) ? maximoLote : this.maximo;
+        int tope = RUTAS_LOTE.contains(request.getRequestURI()) ? maximoLote : this.maximo;
         long largo = request.getContentLengthLong();
-        if (largo > maximo) {
-            rechazar(response, maximo);
+        if (largo > tope) {
+            rechazar(response, tope);
             return;
         }
         if (largo >= 0) {
             chain.doFilter(request, response);
             return;
         }
-        byte[] cuerpo = request.getInputStream().readNBytes(maximo + 1);
-        if (cuerpo.length > maximo) {
-            rechazar(response, maximo);
+        byte[] cuerpo = request.getInputStream().readNBytes(tope + 1);
+        if (cuerpo.length > tope) {
+            rechazar(response, tope);
             return;
         }
         chain.doFilter(new CuerpoEnMemoria(request, cuerpo), response);

@@ -47,9 +47,13 @@ class OpenApiTest {
         JsonNode api = new ObjectMapper().readTree(r.body());
         assertThat(api.get("openapi").asString()).startsWith("3.");
         assertThat(api.get("info").get("title").asString()).isEqualTo("API del motor de cartera");
+        // Solo sustantivos: la acción la da el método HTTP. Las rutas con verbo obsoletas no salen en el contrato.
         assertThat(api.get("paths").propertyNames()).containsExactlyInAnyOrder("/api/v1/catalogo", "/api/v1/reglas",
-                "/api/v1/simulaciones", "/api/v1/escenarios/ejecutar", "/api/v1/escenarios/ejecutar-lote",
-                "/api/v1/casos", "/api/v1/casos/{numero}", "/api/v1/pagos/clasificar");
+                "/api/v1/simulaciones", "/api/v1/escenarios", "/api/v1/escenarios/lotes",
+                "/api/v1/casos", "/api/v1/casos/{numero}", "/api/v1/clasificaciones");
+        for (String ruta : api.get("paths").propertyNames()) {
+            assertThat(ruta).as("ruta sin verbos").doesNotContain("ejecutar", "clasificar", "calcular", "simular");
+        }
         JsonNode esquema = api.get("components").get("securitySchemes").get(ConfiguracionOpenApi.ESQUEMA_CLAVE);
         assertThat(esquema.get("type").asString()).isEqualTo("apiKey");
         assertThat(esquema.get("in").asString()).isEqualTo("header");
