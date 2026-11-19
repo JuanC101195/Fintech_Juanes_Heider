@@ -1,0 +1,946 @@
+openapi: 3.1.0
+info:
+  description: |-
+    Motor de reglas de cartera de la financiera: simula créditos de moto (cuotas semanales, quincenales o mensuales), ejecuta escenarios de pagos (pagos tarde, parciales, abonos, prepagos, cambios de tasa, dación y retoma) y clasifica un pago en el caso de negocio que le corresponde.
+
+    **Autenticación.** Cada petición a `/api/v1/**` lleva la cabecera `X-API-Key` con la clave que entrega la financiera. Sin clave válida responde 401; con una clave de solo lectura, los POST responden 403.
+
+    **Dinero y tasas.** Viajan como texto decimal sin redondear (por ejemplo `"5904400"` o `"0.8762"`), para no perder precisión. Las fechas van en formato `yyyy-MM-dd`.
+
+    **Perfiles de reglas.** `perfilReglas` = `NEGOCIO` (las reglas vigentes de la financiera, el valor por defecto en simulaciones y escenarios) o `EXCEL` (reproduce el Excel de casos tal cual).
+
+    **Errores.** Todos responden `{codigo, mensaje, detalle}` con un código estable: 400 `VALIDACION` (dato inválido; `detalle.campo` dice cuál), `PLAZO_MAXIMO`, `ABONO_MAYOR_QUE_SALDO` y `LOTE_DEMASIADO_GRANDE`; 401 `NO_AUTORIZADO`; 403 `PROHIBIDO`; 404 `CASO_INEXISTENTE`; 413 `CUERPO_DEMASIADO_GRANDE`; 500 `ASIENTO_DESCUADRADO` o `ERROR_INTERNO`.
+
+    **Disponibilidad.** El servicio corre en un plan gratuito: si estuvo inactivo, la primera petición puede tardar unos 30 segundos.
+  title: API del motor de cartera
+  version: 1.0.0
+servers:
+- description: Azure App Service
+  url: https://motor-cartera-api-jc.azurewebsites.net
+security:
+- claveApi: []
+tags:
+- description: "Simulación de créditos, escenarios de pago y clasificación de pagos"
+  name: Motor de cartera
+paths:
+  /api/v1/casos:
+    get:
+      description: Los 13 casos de referencia (los 12 del Excel de casos y el abono
+        extra con pendientes).
+      operationId: casos
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CasoResumenDto"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Casos de negocio
+      tags:
+      - Motor de cartera
+  /api/v1/casos/{numero}:
+    get:
+      description: "Corre el caso con las reglas EXCEL (por defecto) o NEGOCIO; con\
+        \ fechaDesembolso y primerVencimiento, con la primera cuota prorrateada."
+      operationId: caso
+      parameters:
+      - description: "Número del caso, de 1 a 13"
+        in: path
+        name: numero
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - description: EXCEL (por defecto) o NEGOCIO
+        in: query
+        name: perfilReglas
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: fechaDesembolso
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: primerVencimiento
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CasoResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: No existe el caso (CASO_INEXISTENTE)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Ejecutar un caso de referencia
+      tags:
+      - Motor de cartera
+  /api/v1/catalogo:
+    get:
+      description: "Líneas de crédito con su tasa y plazo, periodicidades, perfiles\
+        \ de reglas, tipos de instrucción de pago y las claves de reglas de negocio."
+      operationId: catalogo
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogoResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Catálogo del producto
+      tags:
+      - Motor de cartera
+  /api/v1/escenarios/ejecutar:
+    post:
+      description: "Corre un crédito con instrucciones por periodo (pago tarde, parcial,\
+        \ por valor, sin pago, abono extra, prepago, cambio de tasa, usura, dació\
+        n o retoma) y devuelve cada periodo con su causación, el reparto del pago\
+        \ por prelación, los saldos y los asientos contables."
+      operationId: ejecutar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EjecutarRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EjecucionResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: La clave es de solo lectura (PROHIBIDO)
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: El cuerpo supera el tamaño máximo (CUERPO_DEMASIADO_GRANDE)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Ejecutar un escenario de pagos
+      tags:
+      - Motor de cartera
+  /api/v1/escenarios/ejecutar-lote:
+    post:
+      description: "Hasta 500 escenarios en una petición. Responde NDJSON (application/x-ndjson):\
+        \ una línea por escenario, en orden, con el mismo resultado de /escenarios/ejecutar\
+        \ o {indice, codigo, mensaje, detalle} si ese escenario falla."
+      operationId: ejecutarLote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/EjecutarRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/x-ndjson: {}
+          description: Una línea JSON por escenario
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: La clave es de solo lectura (PROHIBIDO)
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: El cuerpo supera el tamaño máximo (CUERPO_DEMASIADO_GRANDE)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Ejecutar un lote de escenarios
+      tags:
+      - Motor de cartera
+  /api/v1/pagos/clasificar:
+    post:
+      description: "Dice en qué caso de negocio cae un pago (al día, tarde, parcial,\
+        \ abono, prepago...) según lo exigible del crédito en ese periodo."
+      operationId: clasificar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClasificarRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClasificacionResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: La clave es de solo lectura (PROHIBIDO)
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: El cuerpo supera el tamaño máximo (CUERPO_DEMASIADO_GRANDE)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Clasificar un pago
+      tags:
+      - Motor de cartera
+  /api/v1/reglas:
+    get:
+      description: "Los perfiles EXCEL y NEGOCIO con el valor de cada regla, su descripció\
+        n y la pregunta o decisión de donde sale."
+      operationId: reglas
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReglasResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Reglas de negocio vigentes
+      tags:
+      - Motor de cartera
+  /api/v1/simulaciones:
+    post:
+      description: "Calcula la cuota, los servicios y el plan de pagos completo de\
+        \ un crédito nuevo, pagado al día. Con fechaDesembolso y primerVencimiento\
+        \ (juntas) la primera cuota se prorratea por los días reales."
+      operationId: simular
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditoRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulacionResponse"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Dato inválido o regla del crédito (VALIDACION, PLAZO_MAXIMO,\
+            \ ABONO_MAYOR_QUE_SALDO, LOTE_DEMASIADO_GRANDE)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: Falta una clave válida en X-API-Key (NO_AUTORIZADO)
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: La clave es de solo lectura (PROHIBIDO)
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: El cuerpo supera el tamaño máximo (CUERPO_DEMASIADO_GRANDE)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDto"
+          description: "Error interno (ASIENTO_DESCUADRADO, ERROR_INTERNO)"
+      summary: Simular un crédito
+      tags:
+      - Motor de cartera
+components:
+  schemas:
+    AsientoDto:
+      type: object
+      properties:
+        cuadra:
+          type: boolean
+        evento:
+          type: string
+        lineas:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineaAsientoDto"
+        periodo:
+          type: integer
+          format: int32
+        totalCreditos:
+          type: string
+        totalDebitos:
+          type: string
+    CasoResponse:
+      type: object
+      properties:
+        asientos:
+          type: array
+          items:
+            $ref: "#/components/schemas/AsientoDto"
+        caso:
+          $ref: "#/components/schemas/CasoResumenDto"
+        credito:
+          $ref: "#/components/schemas/CreditoRequest"
+        instrucciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstruccionDto"
+        movimientos:
+          type: array
+          items:
+            $ref: "#/components/schemas/MovimientoDto"
+        perfilReglas:
+          type: string
+        resumen:
+          $ref: "#/components/schemas/ResumenEjecucion"
+    CasoResumenDto:
+      type: object
+      properties:
+        descripcion:
+          type: string
+        fuente:
+          type: string
+        nombre:
+          type: string
+        numero:
+          type: integer
+          format: int32
+    CatalogoResponse:
+      type: object
+      properties:
+        lineas:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineaDto"
+        modalidadesAbono:
+          type: array
+          items:
+            type: string
+        modalidadesCambioTasa:
+          type: array
+          items:
+            type: string
+        perfilesReglas:
+          type: array
+          items:
+            type: string
+        periodicidades:
+          type: array
+          items:
+            $ref: "#/components/schemas/PeriodicidadDto"
+        tiposInstruccion:
+          type: array
+          items:
+            type: string
+        tiposRecuperacion:
+          type: array
+          items:
+            type: string
+        valoresPorDefecto:
+          type: object
+          additionalProperties:
+            type: string
+    ClasificacionResponse:
+      type: object
+      properties:
+        abonoExtra:
+          type: string
+        pagoCorriente:
+          type: string
+    ClasificarRequest:
+      type: object
+      properties:
+        valorAdeudado:
+          type: string
+        valorRecibido:
+          type: string
+    ClaveDto:
+      type: object
+      properties:
+        clave:
+          type: string
+        descripcion:
+          type: string
+        fuente:
+          type: string
+    CreditoRequest:
+      type: object
+      properties:
+        cobranzaActiva:
+          type: boolean
+        cuotas:
+          type: integer
+          format: int32
+        fechaDesembolso:
+          type: string
+        gastosComerciales:
+          type: string
+        gpsPlataforma:
+          type: string
+        linea:
+          type: string
+        matriculaRunt:
+          type: string
+        meses:
+          type: integer
+          format: int32
+        pagoInicial:
+          type: string
+        perfilReglas:
+          type: string
+        periodicidad:
+          type: string
+        plazoLimitePeriodos:
+          type: integer
+          format: int32
+        prenda:
+          type: string
+        primerVencimiento:
+          type: string
+        soat:
+          type: string
+        valorMoto:
+          type: string
+    DeudaDto:
+      type: object
+      properties:
+        capital:
+          type: string
+        cobranza:
+          type: string
+        interesCorriente:
+          type: string
+        mora:
+          type: string
+        servicios:
+          $ref: "#/components/schemas/ServiciosDto"
+        total:
+          type: string
+    EjecucionResponse:
+      type: object
+      properties:
+        asientos:
+          type: array
+          items:
+            $ref: "#/components/schemas/AsientoDto"
+        movimientos:
+          type: array
+          items:
+            $ref: "#/components/schemas/MovimientoDto"
+        resumen:
+          $ref: "#/components/schemas/ResumenEjecucion"
+    EjecutarRequest:
+      type: object
+      properties:
+        credito:
+          $ref: "#/components/schemas/CreditoRequest"
+        incluirAsientos:
+          type: boolean
+        instrucciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstruccionDto"
+        perfilReglas:
+          type: string
+    ErrorDto:
+      properties:
+        codigo:
+          type: string
+        detalle:
+          type: object
+          additionalProperties:
+            type: object
+        mensaje:
+          type: string
+    FilaPlan:
+      type: object
+      properties:
+        asistencia:
+          type: string
+        capital:
+          type: string
+        cuotaFinanciera:
+          type: string
+        cuotaTotal:
+          type: string
+        fondoGarantias:
+          type: string
+        interes:
+          type: string
+        ivaSeguroTodoRiesgo:
+          type: string
+        mes:
+          type: integer
+          format: int32
+        periodo:
+          type: integer
+          format: int32
+        saldo:
+          type: string
+        saldoInicial:
+          type: string
+        seguro:
+          type: string
+        seguroTodoRiesgo:
+          type: string
+    InstruccionDto:
+      type: object
+      properties:
+        causaMoraYServicios:
+          type: boolean
+        costoRecuperacion:
+          type: string
+        diasAtraso:
+          type: integer
+          format: int32
+        diasDesdeUltimaCuota:
+          type: integer
+          format: int32
+        fraccion:
+          type: string
+        modalidad:
+          type: string
+        nuevaTasaEA:
+          type: string
+        periodo:
+          type: integer
+          format: int32
+        tipo:
+          type: string
+        tipoRecuperacion:
+          type: string
+        usuraEA:
+          type: string
+        valor:
+          type: string
+        valorMoto:
+          type: string
+    LineaAsientoDto:
+      type: object
+      properties:
+        credito:
+          type: string
+        cuenta:
+          type: string
+        debito:
+          type: string
+        explicacion:
+          type: string
+        nombreCuenta:
+          type: string
+    LineaDto:
+      type: object
+      properties:
+        codigo:
+          type: string
+        nombre:
+          type: string
+        periodicidades:
+          type: array
+          items:
+            type: string
+        plazoMaximoMeses:
+          type: integer
+          format: int32
+        tasaEA:
+          type: string
+    MovimientoDto:
+      type: object
+      properties:
+        abonoExtra:
+          type: string
+        capitalContractual:
+          type: string
+        capitalVencido:
+          type: string
+        capitalVencidoInicial:
+          type: string
+        capitalVigente:
+          type: string
+        cobranzaCausada:
+          type: string
+        costoRecuperacion:
+          type: string
+        costoRecuperacionAsumido:
+          type: string
+        cuotaFinanciera:
+          type: string
+        cuotasVencidas:
+          type: integer
+          format: int32
+        cxcCobranza:
+          type: string
+        cxcFondoGarantias:
+          type: string
+        cxcInteresCorriente:
+          type: string
+        cxcMora:
+          type: string
+        cxcServicios:
+          type: string
+        cxcServiciosPorConcepto:
+          $ref: "#/components/schemas/ServiciosDto"
+        cxpDeudor:
+          type: string
+        deudaAExtinguir:
+          type: string
+        estado:
+          type: string
+        etiqueta:
+          type: string
+        evento:
+          type: string
+        extinguido:
+          $ref: "#/components/schemas/DeudaDto"
+        interesCorriente:
+          type: string
+        interesMora:
+          type: string
+        interesPrepago:
+          type: string
+        inventario:
+          type: string
+        listoParaRecuperacion:
+          type: boolean
+        mes:
+          type: integer
+          format: int32
+        pagoCapital:
+          type: string
+        pagoCobranza:
+          type: string
+        pagoExtraordinario:
+          type: string
+        pagoInteresCorriente:
+          type: string
+        pagoMora:
+          type: string
+        pagoRecibido:
+          type: string
+        pagoServicios:
+          type: string
+        pagoTerceros:
+          $ref: "#/components/schemas/ServiciosDto"
+        pagoTotalCliente:
+          type: string
+        pagosServicios:
+          $ref: "#/components/schemas/ServiciosDto"
+        pendientesPagadosExtra:
+          $ref: "#/components/schemas/DeudaDto"
+        periodo:
+          type: integer
+          format: int32
+        prepagoCapital:
+          type: string
+        saldoFinal:
+          type: string
+        saldoInicial:
+          type: string
+        serviciosCausados:
+          $ref: "#/components/schemas/ServiciosDto"
+        sobranteCliente:
+          type: string
+        tasaPeriodica:
+          type: string
+    PeriodicidadDto:
+      type: object
+      properties:
+        adjetivo:
+          type: string
+        codigo:
+          type: string
+        cuotasMaximas:
+          type: integer
+          format: int32
+        diasNominales:
+          type: integer
+          format: int32
+        periodosPorAnio:
+          type: integer
+          format: int32
+        porConfirmar:
+          type: boolean
+        unidadCuota:
+          type: string
+    ProrrateoDto:
+      type: object
+      properties:
+        aplicado:
+          type: boolean
+        diasNominales:
+          type: integer
+          format: int32
+        diasPrimerPeriodo:
+          type: integer
+          format: int32
+        diferencia:
+          type: string
+        fechaDesembolso:
+          type: string
+        interesProrrateado:
+          type: string
+        interesSinProrrateo:
+          type: string
+        primerVencimiento:
+          type: string
+    ReglasResponse:
+      type: object
+      properties:
+        archivoNegocio:
+          type: string
+        claves:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClaveDto"
+        perfiles:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+    ResumenEjecucion:
+      type: object
+      properties:
+        cuotasVencidasMax:
+          type: integer
+          format: int32
+        estadoFinal:
+          type: string
+        listoParaRecuperacion:
+          type: boolean
+        montoFinanciado:
+          type: string
+        perfilReglas:
+          type: string
+        periodoFinal:
+          type: integer
+          format: int32
+        periodoListoParaRecuperacion:
+          type: integer
+          format: int32
+        prorrateoPrimeraCuota:
+          $ref: "#/components/schemas/ProrrateoDto"
+        saldoFinal:
+          type: string
+        totalPagadoCliente:
+          type: string
+    ResumenSimulacion:
+      type: object
+      properties:
+        cuotaFinanciera:
+          type: string
+        cuotaTotal:
+          type: string
+        cuotas:
+          type: integer
+          format: int32
+        linea:
+          type: string
+        montoFinanciado:
+          type: string
+        perfilReglas:
+          type: string
+        periodicidad:
+          type: string
+        porConfirmar:
+          type: array
+          items:
+            type: string
+        prorrateoPrimeraCuota:
+          $ref: "#/components/schemas/ProrrateoDto"
+        serviciosPorCuota:
+          type: string
+        tasaEA:
+          type: string
+        tasaPeriodo:
+          type: string
+        totalIntereses:
+          type: string
+        totalPagado:
+          type: string
+        totalServicios:
+          type: string
+    ServiciosDto:
+      type: object
+      properties:
+        asistencia:
+          type: string
+        fondoGarantias:
+          type: string
+        ivaSeguroTodoRiesgo:
+          type: string
+        seguro:
+          type: string
+        seguroTodoRiesgo:
+          type: string
+        total:
+          type: string
+    SimulacionResponse:
+      type: object
+      properties:
+        plan:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilaPlan"
+        resumen:
+          $ref: "#/components/schemas/ResumenSimulacion"
+  securitySchemes:
+    claveApi:
+      description: "Clave que entrega la financiera (rol CONSUMIDOR: todo; LECTURA:\
+        \ solo GET de catálogo, reglas y casos)"
+      in: header
+      name: X-API-Key
+      type: apiKey
