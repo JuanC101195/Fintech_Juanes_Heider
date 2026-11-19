@@ -45,6 +45,11 @@ class RespuestasDiegoRonda12Test {
     private static final BigDecimal CENTAVO = new BigDecimal("0.01");
     private final MotorCartera motor = new MotorCartera();
 
+    /** D79/D84 (antes de R16, D90): la primera cuota completa prorrateada sin interés sobre el capital no cobrado. */
+    private static ReglasNegocio conD84() {
+        return negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+    }
+
     private static ReglasNegocio negocio() {
         return ReglasNegocioConfiguradaTest.negocioAntesRonda15();   // cifras de la ronda, antes de D88 y D89
     }
@@ -276,10 +281,10 @@ class RespuestasDiegoRonda12Test {
 
         @Test
         void capitalYServiciosVanEnProporcionALosDiasYElInteresPorLosDiasReales() {
-            assertThat(negocio().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
+            assertThat(conD84().alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.CUOTA_COMPLETA_SIN_INTERES);
             assertThat(ReglasNegocio.EXCEL.alcanceProrrateoPrimeraCuota()).isEqualTo(AlcanceProrrateo.SOLO_INTERES);
-            List<Movimiento> completa = correr(negocio());
-            List<Movimiento> soloInteres = correr(negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES));
+            List<Movimiento> completa = correr(conD84());
+            List<Movimiento> soloInteres = correr(conD84().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES));
             Movimiento uno = fila(completa, 1);
             Movimiento p5 = fila(soloInteres, 1);
             BigDecimal tresSeptimos = Calc.dividir(bd(3), bd(7));
@@ -296,7 +301,7 @@ class RespuestasDiegoRonda12Test {
 
         @Test
         void elCapitalNoCobradoLoRecogeLaUltimaCuotaYElPlanCierraEnLaCuotaN() {
-            List<Movimiento> m = correr(negocio());
+            List<Movimiento> m = correr(conD84());
             assertThat(m.getLast().periodo()).isEqualTo(104);
             assertThat(m.getLast().estado()).isEqualTo(EstadoCredito.CANCELADO);
             BigDecimal capital = m.stream().map(Movimiento::capitalContractual).reduce(Calc.CERO, Calc::sumar);
@@ -310,8 +315,8 @@ class RespuestasDiegoRonda12Test {
 
         @Test
         void losServiciosNoCobradosSePierden() {
-            List<Movimiento> m = correr(negocio());
-            Servicios porCuota = Servicios.porCuota(Operacion.ejemploExcel().montoFinanciado(), P, negocio().porcentajeTodoRiesgo());
+            List<Movimiento> m = correr(conD84());
+            Servicios porCuota = Servicios.porCuota(Operacion.ejemploExcel().montoFinanciado(), P, conD84().porcentajeTodoRiesgo());
             BigDecimal causados = m.stream().map(x -> x.serviciosCausados().total()).reduce(Calc.CERO, Calc::sumar);
             BigDecimal esperado = Calc.multiplicar(porCuota.total(), Calc.sumar(bd(103), Calc.dividir(bd(3), bd(7))));
             assertThat(causados).isCloseTo(esperado, within(CENTAVO));
@@ -322,7 +327,7 @@ class RespuestasDiegoRonda12Test {
         void conMasDiasQueElPeriodoCapitalYServiciosVanCompletos() {
             // Con CUOTA_COMPLETA (D79, sin la ronda 13): 10 días de 7, solo el interés cuenta los días de más. NEGOCIO ya no lo
             // permite (R13-PRIMERA-CUOTA-LARGA, D84): ver RespuestasDiegoRonda13Test.
-            ReglasNegocio d79 = negocio().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA);
+            ReglasNegocio d79 = conD84().conAlcanceProrrateoPrimeraCuota(AlcanceProrrateo.CUOTA_COMPLETA);
             CalendarioPagos diez = CalendarioPagos.semanal(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 10, 13));
             Movimiento uno = fila(motor.ejecutar(conOperacionDelExcel().conReglas(d79).conCalendario(diez)), 1);
             Movimiento sinFechas = fila(motor.ejecutar(conOperacionDelExcel().conReglas(d79)), 1);
