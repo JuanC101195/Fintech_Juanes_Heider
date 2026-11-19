@@ -317,7 +317,10 @@ class PropiedadesFinancierasAuditTest {
                 // plazo pactado, con cobranza activa, saldo y mora en la semana sin pago, siempre lo causa.
                 boolean aTiempo = !cierreSinPago && (pagoDelPeriodo == null || pagoDelPeriodo instanceof Instruccion.PagoAlDia
                         || pagoDelPeriodo instanceof Instruccion.PagoContractual pc && pc.diasAtraso() == 0);
-                if (aTiempo && m.cobranzaCausada().signum() > 0) {
+                // D91 (CON_PENDIENTES): una cuota a tiempo sí lo causa si el periodo anterior cerró con algo pendiente.
+                boolean sinPendienteAntes = prev == null || prev.estado() != EstadoCredito.EN_MORA;
+                boolean soloLaCuota = rn.alcanceCobranzaPorCuota() == ReglasNegocio.AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO;
+                if (aTiempo && (soloLaCuota || sinPendienteAntes) && m.cobranzaCausada().signum() > 0) {
                     violacion("I16 cargo temporal en una cuota pagada a tiempo", id, repro);
                 }
                 boolean sinPagoConMora = pagoDelPeriodo instanceof Instruccion.SinPago sp

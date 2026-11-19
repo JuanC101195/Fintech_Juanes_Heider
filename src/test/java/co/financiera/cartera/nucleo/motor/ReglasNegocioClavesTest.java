@@ -119,6 +119,8 @@ class ReglasNegocioClavesTest {
                 "redondeoCuotaAlPeso", "sobranteComoCuentaPorPagar", "umbralesCuentanCuotaEnCurso",
                 "seguroTodoRiesgoPorcentajeMensual", "causacionServicios", "umbralCocienteCobranza", "baseMoraCobranza",
                 "comparacionCobranza", "marcaPorCociente", "alcanceProrrateoPrimeraCuota", "cobranzaPorCuotaAtrasada",
-                "baseDiasAnio");
+                "baseDiasAnio",
+                "alcanceCobranzaPorCuota",
+                "contadorVencidasPorCociente");
     }
 }

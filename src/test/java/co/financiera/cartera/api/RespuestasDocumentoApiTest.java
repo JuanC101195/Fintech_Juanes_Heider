@@ -105,7 +105,7 @@ class RespuestasDocumentoApiTest {
         assertThat(excel.get("cambioTasaSobreCapitalVigente").asString()).isEqualTo("false");
         assertThat(excel.get("cobranzaDiaria").isNull()).isTrue();
         assertThat(excel.get("cuotasVencidasParaRecuperacion").isNull()).isTrue();
-        assertThat(r.get("claves")).hasSize(34);
+        assertThat(r.get("claves")).hasSize(36);
         // Ronda 8 (Diego 2026-10-28).
         assertThat(negocio.get("cobranzaPorPeriodo").asString()).isEqualTo("40000");
         assertThat(excel.get("cobranzaPorPeriodo").isNull()).isTrue();

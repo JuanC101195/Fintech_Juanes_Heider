@@ -16,7 +16,7 @@ class VersionReglasTest {
      * Huella fija del perfil EXCEL. Si cambia, cambió el formato canónico o una regla del Excel: las dos cosas son
      * versiones nuevas y deben decidirse a propósito (ADR 0004), nunca regenerarse en silencio.
      */
-    private static final String HUELLA_EXCEL = "dc2dc0bcd8376aa292515c4bd0813651c5fd54ee4db8ae732e449cc02b0efd3a";
+    private static final String HUELLA_EXCEL = "9b630ee3ae6e33181a8dd4e201c77da478bda61c7c5399b4538c1d962b72c8b9";
 
     @Test
     void elContenidoCanonicoTieneElFormatoYTodasLasClavesEnOrden() {
@@ -41,6 +41,8 @@ marcaPorCociente=false
 alcanceProrrateoPrimeraCuota=SOLO_INTERES
 cobranzaPorCuotaAtrasada=0
 baseDiasAnio=365
+alcanceCobranzaPorCuota=CUOTA_DEL_PERIODO
+contadorVencidasPorCociente=false
 """);
     }
 

@@ -37,6 +37,8 @@ const VALORES: Record<string, string> = {
   SOLO_INTERES: 'Solo el interés, por los días reales; capital y servicios completos',
   CUOTA_COMPLETA: 'La cuota completa, proporcional a los días: el capital no cobrado lo recoge la última cuota y los servicios no cobrados se pierden',
   CUOTA_COMPLETA_SIN_INTERES: 'La cuota completa, proporcional a los días: el capital no cobrado no causa interés y lo suma la última cuota; los servicios no cobrados se pierden; el primer vencimiento cae dentro del primer periodo',
+  CUOTA_DEL_PERIODO: 'Solo cuando la cuota del periodo no se paga completa a tiempo',
+  CON_PENDIENTES: 'Cuando la cuota no se paga completa a tiempo y también cuando se paga a tiempo pero queda algo pendiente de antes',
   CUOTA_PROPORCIONAL_RECALCULADA: 'La cuota fija proporcional a los días: primero el interés de los días y el resto a capital; servicios en la misma proporción; desde la segunda cuota la cuota fija se recalcula sobre el saldo (sin capital diferido)',
   true: 'Sí',
   false: 'No',

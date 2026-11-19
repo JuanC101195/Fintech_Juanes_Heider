@@ -232,7 +232,8 @@ class HallazgosAuditoriaTest {
      */
     private static ReglasNegocio negocio() {
         try {
-            return PropiedadesFinancierasAuditTest.negocio().conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO);
+            return PropiedadesFinancierasAuditTest.negocio().conBaseDiasAnio(365).conCobranzaPorCuotaAtrasada(BigDecimal.ZERO)
+                    .conAlcanceCobranzaPorCuota(co.financiera.cartera.nucleo.motor.ReglasNegocio.AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO).conContadorVencidasPorCociente(false);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

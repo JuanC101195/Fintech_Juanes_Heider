@@ -157,6 +157,13 @@ import java.math.BigDecimal;
  *                                 periódica (1 + EA)^(días/360) − 1 con los días nominales del periodo (7, 15, 30) y diaria
  *                                 (1 + EA)^(1/360) − 1. Quincenal y mensual no cambian (15/360 = 1/24, 30/360 = 1/12); la
  *                                 semanal pasa de ^(1/52) a ^(7/360) y siete días de la diaria dan exactamente la semanal.
+ * @param alcanceCobranzaPorCuota  cuándo se causa el cargo de {@link #cobranzaPorCuotaAtrasada} (R15-COBRANZA-CUOTA, Diego
+ *                                 2026-11-18, D91): solo cuando la cuota del periodo no se cubre a tiempo, o además cuando la
+ *                                 cuota se paga a tiempo y queda algo pendiente de antes
+ * @param contadorVencidasPorCociente R14-MARCA-SEMANAS (Diego 2026-11-18, D92): «no deberían existir 2 marcaciones diferentes
+ *                                 sino solo una que sea el resultado de saldo en mora ÷ cuota total». Con {@code true} las
+ *                                 cuotas vencidas de cada periodo son la parte entera de ese cociente al cierre (la misma
+ *                                 medida de la marca y de la cobranza); con {@code false} (el Excel) se cuentan periodos.
  */
 public record ReglasNegocio(
         OrdenPrelacion prelacion,
@@ -192,7 +199,9 @@ public record ReglasNegocio(
         boolean marcaPorCociente,
         AlcanceProrrateo alcanceProrrateoPrimeraCuota,
         BigDecimal cobranzaPorCuotaAtrasada,
-        int baseDiasAnio) {
+        int baseDiasAnio,
+        AlcanceCobranzaPorCuota alcanceCobranzaPorCuota,
+        boolean contadorVencidasPorCociente) {
 
     /** Clave de {@link #diasMora}; se repite en la validación y en {@link #desde}. */
     private static final String DIAS_MORA = "diasMora";
@@ -242,6 +251,7 @@ public record ReglasNegocio(
         }
         validarRonda10(causacionServicios, umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza);
         java.util.Objects.requireNonNull(alcanceProrrateoPrimeraCuota, ALCANCE_PRORRATEO);
+        java.util.Objects.requireNonNull(alcanceCobranzaPorCuota, "alcanceCobranzaPorCuota");
         if (cobranzaPorCuotaAtrasada != null && cobranzaPorCuotaAtrasada.signum() < 0) {
             throw new IllegalArgumentException("La cobranza por cuota atrasada no puede ser negativa: " + cobranzaPorCuotaAtrasada);
         }
@@ -306,7 +316,20 @@ public record ReglasNegocio(
             .alcanceProrrateoPrimeraCuota(AlcanceProrrateo.SOLO_INTERES)
             .cobranzaPorCuotaAtrasada(BigDecimal.ZERO)
             .baseDiasAnio(co.financiera.cartera.nucleo.Tasas.BASE_365)
+            .alcanceCobranzaPorCuota(AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO)
+            .contadorVencidasPorCociente(false)
             .construir();
+
+    /** R15-COBRANZA-CUOTA (D91): cuándo causa el cargo de cobranza por cuota atrasada (D88). */
+    public enum AlcanceCobranzaPorCuota {
+        /** Supuesto de la ronda 15: solo si la cuota del periodo no se cubre a tiempo (atraso, parcial o sin pago). */
+        CUOTA_DEL_PERIODO,
+        /**
+         * Diego (2026-11-18): una vez por cada cuota, «pero también cuando la cuota se paga a tiempo y queda algo pendiente
+         * de antes»: lo recibido en el periodo no cubre todo lo exigible a la fecha (lo pendiente de antes + la cuota).
+         */
+        CON_PENDIENTES
+    }
 
     /** Cómo se causan el fondo de garantías, la asistencia y los seguros en los periodos dentro del plazo (D17, D60, D70). */
     public enum CausacionServicios {
@@ -572,7 +595,9 @@ public record ReglasNegocio(
             booleana("marcaPorCociente", Constructor::marcaPorCociente),
             enumerada(ALCANCE_PRORRATEO, AlcanceProrrateo.class, Constructor::alcanceProrrateoPrimeraCuota),
             decimal("cobranzaPorCuotaAtrasada", Constructor::cobranzaPorCuotaAtrasada),
-            entera("baseDiasAnio", Constructor::baseDiasAnio));
+            entera("baseDiasAnio", Constructor::baseDiasAnio),
+            enumerada("alcanceCobranzaPorCuota", AlcanceCobranzaPorCuota.class, Constructor::alcanceCobranzaPorCuota),
+            booleana("contadorVencidasPorCociente", Constructor::contadorVencidasPorCociente));
 
     static {
         verificarTabla();
@@ -753,6 +778,21 @@ public record ReglasNegocio(
         return copia().baseDiasAnio(valor).construir();
     }
 
+    /** D91 (R15-COBRANZA-CUOTA): cuándo causa el cargo de cobranza por cuota atrasada. */
+    public ReglasNegocio conAlcanceCobranzaPorCuota(AlcanceCobranzaPorCuota valor) {
+        return copia().alcanceCobranzaPorCuota(valor).construir();
+    }
+
+    /** D92 (R14-MARCA-SEMANAS): si las cuotas vencidas se miden con el cociente saldo en mora ÷ cuota total. */
+    public ReglasNegocio conContadorVencidasPorCociente(boolean valor) {
+        return copia().contadorVencidasPorCociente(valor).construir();
+    }
+
+    /** D91: si el cargo por cuota atrasada también se causa cuando la cuota se paga a tiempo y queda algo pendiente. */
+    public boolean cobranzaPorCuotaConPendientes() {
+        return cobranzaPorCuotaAtrasadaActiva() && alcanceCobranzaPorCuota == AlcanceCobranzaPorCuota.CON_PENDIENTES;
+    }
+
     /**
      * D88 (temporal, ADR 0009): si rige el cargo de cobranza por cuota atrasada. Mientras rige, reemplaza la cobranza
      * anterior (cociente, cobro por periodo, días × valor diario).
@@ -806,6 +846,8 @@ public record ReglasNegocio(
         private AlcanceProrrateo alcanceProrrateoPrimeraCuota;
         private BigDecimal cobranzaPorCuotaAtrasada;
         private int baseDiasAnio;
+        private AlcanceCobranzaPorCuota alcanceCobranzaPorCuota;
+        private boolean contadorVencidasPorCociente;
 
         /** Vacío: hay que fijar todo (los booleanos quedan en {@code false}); para partir de algo, {@link #copia()}. */
         public Constructor() {
@@ -847,6 +889,8 @@ public record ReglasNegocio(
             alcanceProrrateoPrimeraCuota = r.alcanceProrrateoPrimeraCuota;
             cobranzaPorCuotaAtrasada = r.cobranzaPorCuotaAtrasada;
             baseDiasAnio = r.baseDiasAnio;
+            alcanceCobranzaPorCuota = r.alcanceCobranzaPorCuota;
+            contadorVencidasPorCociente = r.contadorVencidasPorCociente;
         }
 
         public Constructor prelacion(OrdenPrelacion valor) {
@@ -1019,6 +1063,16 @@ public record ReglasNegocio(
             return this;
         }
 
+        public Constructor alcanceCobranzaPorCuota(AlcanceCobranzaPorCuota valor) {
+            alcanceCobranzaPorCuota = valor;
+            return this;
+        }
+
+        public Constructor contadorVencidasPorCociente(boolean valor) {
+            contadorVencidasPorCociente = valor;
+            return this;
+        }
+
         public ReglasNegocio construir() {
             return new ReglasNegocio(
                     prelacion, formulaMora, baseInteres, topeCobranzaPorPago, baseServicios,
@@ -1029,7 +1083,8 @@ public record ReglasNegocio(
                     cobranzaPorPeriodo, cuotasVencidasParaSuspenderServicios, redondeoCuotaAlPeso, sobranteComoCuentaPorPagar,
                     umbralesCuentanCuotaEnCurso, seguroTodoRiesgoPorcentajeMensual, causacionServicios,
                     umbralCocienteCobranza, baseMoraCobranza, comparacionCobranza, marcaPorCociente,
-                    alcanceProrrateoPrimeraCuota, cobranzaPorCuotaAtrasada, baseDiasAnio);
+                    alcanceProrrateoPrimeraCuota, cobranzaPorCuotaAtrasada, baseDiasAnio,
+                    alcanceCobranzaPorCuota, contadorVencidasPorCociente);
         }
     }
 

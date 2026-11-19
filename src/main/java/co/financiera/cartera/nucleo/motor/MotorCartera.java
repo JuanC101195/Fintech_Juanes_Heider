@@ -241,8 +241,14 @@ public final class MotorCartera {
             BigDecimal cuotaTotal = sumar(cuotaDelPeriodo, causado.servicios().total());
             // D88 (temporal, ADR 0009): el cargo por cuota atrasada depende de si el pago del periodo cubre su cuota a
             // tiempo (con la cuota total ya calculada); si se causa, va primero en la prelación.
+            // R15-COBRANZA-CUOTA (D91): con CON_PENDIENTES también se causa si lo recibido no cubre todo lo exigible a la
+            // fecha (lo pendiente de antes + la cuota), aunque la cuota se pague a tiempo.
+            boolean cubreLoExigible = !escenario.reglas().cobranzaPorCuotaConPendientes()
+                    || prelacion.recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado)
+                            .compareTo(restar(prelacion.exigibleALaFecha(causado), Calc.EPSILON_SALDO)) >= 0;
             causado = causador.conCobranzaPorCuotaAtrasada(causado,
-                    new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, false), pago, cuotaTotal);
+                    new Causador.PeriodoACausar(periodo, saldoInicial, sinPagoSinMora, dias, false), pago, cuotaTotal,
+                    cubreLoExigible);
             BigDecimal recibido = prelacion.recibido(pago, cuotaTotal, cuotaDelPeriodo, saldoInicial, causado);
             Reparto reparto = prelacion.repartir(recibido, saldoInicial, causado);
             prelacion.actualizarSaldos(saldoInicial, causado, reparto, sinPagoSinMora);
@@ -274,6 +280,11 @@ public final class MotorCartera {
             // A4: un abono o prepago que pagó todo lo pendiente deja al cliente al día.
             if (s.pendientesPagadosExtra.total().signum() > 0 && esCero(pendiente)) {
                 cuotasVencidas = 0;
+            }
+            // R14-MARCA-SEMANAS (D92): una sola medida; las cuotas vencidas son la parte entera de saldo en mora ÷ cuota total
+            // al cierre, la misma que decide la marca y la cobranza.
+            if (escenario.reglas().contadorVencidasPorCociente()) {
+                cuotasVencidas = causador.cuotasVencidasPorCociente();
             }
             Servicios recaudado = reparto.servicios().mas(cierre.servicios());
             Servicios giro = girar(periodo, recaudado.mas(s.pendientesPagadosExtra.servicios()), estado);

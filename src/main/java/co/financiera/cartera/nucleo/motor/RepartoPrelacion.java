@@ -49,10 +49,16 @@ final class RepartoPrelacion {
             // en la primera cuota prorrateada (P5-PRORRATEO), de la cuota de ese periodo.
             case PagoParcial x -> min(multiplicar(x.fraccion(), sumar(cuotaDelPeriodo, s.serviciosPorCuota.total())), exigible);
             case PagoValor x -> min(x.valor(), exigible);
-            case PagoAlDia x -> min(sumar(pendienteSinCapital, s.capitalVencido, c.capitalContractual()), exigible);
+            case PagoAlDia x -> min(exigibleALaFecha(c), exigible);
             case SinPago x -> CERO;
             default -> throw new IllegalStateException("Instrucción de pago no soportada: " + pago);
         };
+    }
+
+    /** Lo exigible a la fecha: todo lo pendiente de antes más lo causado en el periodo, sin el capital futuro. */
+    BigDecimal exigibleALaFecha(Causacion c) {
+        return sumar(s.cxcCobranza, c.cobranza(), s.cxcMora, c.mora(), s.cxcInteres, c.interes(),
+                s.cxcServicios.total(), c.servicios().total(), s.capitalVencido, c.capitalContractual());
     }
 
     /**

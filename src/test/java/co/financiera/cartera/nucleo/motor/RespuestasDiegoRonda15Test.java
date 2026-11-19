@@ -37,8 +37,9 @@ class RespuestasDiegoRonda15Test {
     private static final BigDecimal CENTAVO = new BigDecimal("0.01");
     private final MotorCartera motor = new MotorCartera();
 
+    /** Las instrucciones del 5 nov con los supuestos de la ronda 15, antes de las respuestas del 18 nov (D91 y D92). */
     private static ReglasNegocio negocio() {
-        return ReglasNegocioConfiguradaTest.negocio();
+        return ReglasNegocioConfiguradaTest.negocio().conAlcanceCobranzaPorCuota(ReglasNegocio.AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO).conContadorVencidasPorCociente(false);
     }
 
     private static Movimiento fila(List<Movimiento> m, int periodo) {

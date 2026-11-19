@@ -59,7 +59,8 @@ class ReglasNegocioConfiguradaTest {
      */
     static ReglasNegocio negocioAntesRonda15() {
         return negocio().conBaseDiasAnio(co.financiera.cartera.nucleo.Tasas.BASE_365)
-                .conCobranzaPorCuotaAtrasada(java.math.BigDecimal.ZERO);
+                .conCobranzaPorCuotaAtrasada(java.math.BigDecimal.ZERO)
+                .conAlcanceCobranzaPorCuota(ReglasNegocio.AlcanceCobranzaPorCuota.CUOTA_DEL_PERIODO).conContadorVencidasPorCociente(false);   // antes de D91 y D92
     }
 
     /**
