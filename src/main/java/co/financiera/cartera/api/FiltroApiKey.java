@@ -22,8 +22,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * Autenticación OPCIONAL por clave (cabecera {@code X-API-Key}). Si {@code cartera.api.claves} está vacía o ausente
  * no hace nada. Con claves, cada una se configura como {@code sha256hex:ROL} (separadas por coma): nunca se guarda
  * ni se registra la clave en claro. Roles: {@code CONSUMIDOR} (todo {@code /api/v1/**}) y {@code LECTURA} (solo GET
- * de catálogo, reglas y casos). Sin clave válida responde 401; con rol insuficiente, 403. Exentos: OPTIONS (CORS) y
- * {@code /actuator/health}.
+ * de catálogo, reglas y casos). Sin clave válida responde 401; con rol insuficiente, 403. Exentos: OPTIONS (CORS),
+ * {@code /actuator/health} y la documentación del contrato ({@code /v3/api-docs}, {@code /swagger-ui}), que no expone datos.
  */
 public class FiltroApiKey extends OncePerRequestFilter {
 
@@ -111,7 +111,8 @@ public class FiltroApiKey extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (claves.isEmpty() || "OPTIONS".equalsIgnoreCase(request.getMethod()) || esSalud(request)) {
+        if (claves.isEmpty() || "OPTIONS".equalsIgnoreCase(request.getMethod()) || esSalud(request)
+                || esDocumentacion(request)) {
             chain.doFilter(request, response);
             return;
         }
@@ -132,6 +133,13 @@ public class FiltroApiKey extends OncePerRequestFilter {
     private static boolean esSalud(HttpServletRequest request) {
         String ruta = request.getRequestURI();
         return "/actuator/health".equals(ruta) || ruta.startsWith("/actuator/health/");
+    }
+
+    /** El contrato OpenAPI y Swagger UI (solo GET): describen el API, no devuelven datos. */
+    private static boolean esDocumentacion(HttpServletRequest request) {
+        String ruta = request.getRequestURI();
+        return "GET".equals(request.getMethod()) && (ruta.equals("/v3/api-docs") || ruta.startsWith("/v3/api-docs/")
+                || ruta.equals("/v3/api-docs.yaml") || ruta.equals("/swagger-ui.html") || ruta.startsWith("/swagger-ui/"));
     }
 
     private static boolean permiteLectura(HttpServletRequest request) {
