@@ -11,12 +11,20 @@ curl localhost:8080/api/v1/catalogo
 ## Convenciones
 
 - Base `/api/v1`, JSON en camelCase.
+- **Rutas REST: sustantivos en plural y kebab-case; la acción la da el método HTTP.** `GET` consulta y `POST` envía datos para que el motor los procese (`POST /escenarios` = enviar un escenario para evaluarlo). Como el motor no guarda nada, los `POST` responden `200` con el resultado y no `201` con un recurso nuevo.
+- **Rutas obsoletas** (con verbo, hasta el 2026-11-19): siguen respondiendo igual, pero no salen en el contrato OpenAPI y avisan con las cabeceras `Deprecation: @1795046400` y `Link: <ruta nueva>; rel="successor-version"` (RFC 9745). Se retirarán cuando ningún cliente las use (`RutasRestTest`).
+
+  | Obsoleta | Usar |
+  |---|---|
+  | `POST /api/v1/escenarios/ejecutar` | `POST /api/v1/escenarios` |
+  | `POST /api/v1/escenarios/ejecutar-lote` | `POST /api/v1/escenarios/lotes` |
+  | `POST /api/v1/pagos/clasificar` | `POST /api/v1/clasificaciones` |
 - **Dinero y tasas como string decimal**: `BigDecimal.stripTrailingZeros().toPlainString()`, sin notación científica y **sin redondear**. El motor trabaja con DECIMAL128 (D4), así que una cuota sale como `"219092.9355960436057213056188035084"`; el front redondea al mostrar (Diego, P-05: 0 decimales en pantalla). El cero va como `"0"`.
 - En los requests los decimales también van como string (`"5100000"`); Jackson acepta además un número JSON.
 - Perfiles de reglas (`perfilReglas`):
   - `EXCEL` = `ReglasNegocio.EXCEL`, el comportamiento del Excel de Diego del 11 de octubre.
   - `NEGOCIO` = `ReglasNegocio.desde(config/reglas-negocio.properties)`, las respuestas de negocio. Ruta configurable con `cartera.reglas.archivo`; si el archivo no existe, NEGOCIO queda igual a EXCEL.
-  - Por defecto: `NEGOCIO` en `/simulaciones` y `/escenarios/ejecutar`; `EXCEL` en `/casos/{numero}`, porque de ahí salen los casos 1 a 12.
+  - Por defecto: `NEGOCIO` en `/simulaciones` y `/escenarios`; `EXCEL` en `/casos/{numero}`, porque de ahí salen los casos 1 a 12.
 - CORS: `http://localhost:5173` y `https://juanc101195.github.io` (propiedad `cartera.api.cors.origenes`), métodos GET, POST y OPTIONS, cabeceras `Content-Type` y `X-API-Key`.
 - Cabeceras de seguridad en toda respuesta: `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` y, en `/api/**`, `Cache-Control: no-store`. Las respuestas JSON de más de 1 KB se comprimen (gzip) si el cliente manda `Accept-Encoding`.
 - **Autenticación opcional** (`X-API-Key`): apagada por defecto. Con `cartera.api.claves` (variable `CARTERA_API_CLAVES`) configurada, toda petición salvo `OPTIONS` y `/actuator/health` necesita la cabecera. Roles `CONSUMIDOR` (todo `/api/v1/**`) y `LECTURA` (solo `GET` de `/catalogo`, `/reglas` y `/casos*`). Cómo activarla: `docs/despliegue.md`.
@@ -149,7 +157,7 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
   -d '{"linea":"CPPU","periodicidad":"QUINCENAL","cuotas":48,"meses":null,"valorMoto":"5100000","pagoInicial":"0","perfilReglas":"NEGOCIO"}'
 ```
 
-Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs), `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente) y `cobranzaActiva` (COB-6: si al crédito se le causan gastos de cobranza; `true` por defecto, como el Excel; en `false` un pago tardío causa mora pero no cobranza) y `fechaDesembolso` + `primerVencimiento` (juntas; ver "Fechas y prorrateo de la primera cuota" abajo). Con el perfil NEGOCIO el valor diario de la cobranza sale de la clave `cobranzaDiaria`. Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios/ejecutar`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
+Request (`CreditoRequest`): se manda `cuotas` **o** `meses` (con meses, cuotas = ROUNDDOWN(meses × periodos por año / 12)). Si llegan los dos deben coincidir. Opcionales: `linea` (CPPU), `periodicidad` (SEMANAL), `valorMoto`, `pagoInicial` (0), `matriculaRunt`, `soat`, `prenda`, `gpsPlataforma`, `gastosComerciales` (los de Inputs), `plazoLimitePeriodos` (horizonte de proyección con saldo pendiente) y `cobranzaActiva` (COB-6: si al crédito se le causan gastos de cobranza; `true` por defecto, como el Excel; en `false` un pago tardío causa mora pero no cobranza) y `fechaDesembolso` + `primerVencimiento` (juntas; ver "Fechas y prorrateo de la primera cuota" abajo). Con el perfil NEGOCIO el valor diario de la cobranza sale de la clave `cobranzaDiaria`. Sin `plazoLimitePeriodos`, con el perfil NEGOCIO el límite son 24 meses en periodos del crédito (104 semanas, 48 quincenas, 24 meses; R4-PLAZO-LIMITE) y con EXCEL las 120 semanas del Excel convertidas (120 / 55 / 27). Eso vale también para `/escenarios`: con NEGOCIO una instrucción en la semana 110 de un crédito de 104 cuotas da 400, salvo que el request traiga `plazoLimitePeriodos`.
 
 ```json
 {"resumen": {"linea": "CPPU", "perfilReglas": "NEGOCIO", "montoFinanciado": "5904400", "tasaEA": "0.8762",
@@ -173,7 +181,7 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
 
 #### Fechas y prorrateo de la primera cuota (P5-PRORRATEO, D48)
 
-`CreditoRequest` acepta dos campos opcionales, **juntos o ninguno**: `fechaDesembolso` y `primerVencimiento`, en ISO `yyyy-MM-dd`. Valen en `/simulaciones`, en el `credito` de `/escenarios/ejecutar` y como parámetros de `/casos/{numero}`. Con ellos el API arma el `CalendarioPagos` del crédito y se lo pasa al motor (`Escenario.conCalendario`); si el perfil tiene `prorrateoPrimeraCuota = true` (NEGOCIO), el **interés** del periodo 1 se cobra por los días reales entre las dos fechas con la tasa diaria: saldo × ((1 + tasa diaria)^días − 1). El capital y los servicios de esa cuota van completos y desde el periodo 2 todo sigue igual. Con EXCEL las fechas se aceptan y se validan, pero no cambian nada.
+`CreditoRequest` acepta dos campos opcionales, **juntos o ninguno**: `fechaDesembolso` y `primerVencimiento`, en ISO `yyyy-MM-dd`. Valen en `/simulaciones`, en el `credito` de `/escenarios` y como parámetros de `/casos/{numero}`. Con ellos el API arma el `CalendarioPagos` del crédito y se lo pasa al motor (`Escenario.conCalendario`); si el perfil tiene `prorrateoPrimeraCuota = true` (NEGOCIO), el **interés** del periodo 1 se cobra por los días reales entre las dos fechas con la tasa diaria: saldo × ((1 + tasa diaria)^días − 1). El capital y los servicios de esa cuota van completos y desde el periodo 2 todo sigue igual. Con EXCEL las fechas se aceptan y se validan, pero no cambian nada.
 
 **Sin las fechas la respuesta es idéntica a la de antes**: no aparece ningún campo nuevo (los ejemplos `catalogo.json`, `simulacion-quincenal.json` y `caso-13-negocio.json` no cambian).
 
@@ -190,7 +198,7 @@ Validación (400 `VALIDACION`, `detalle.campo` = el campo culpable):
 
 No hay tope a los días del primer periodo (Diego no lo ha fijado): un primer vencimiento lejano da un interés alto, no un error. El API nunca usa la fecha de hoy: las dos fechas las manda quien llama.
 
-Con fechas, el `resumen` de `/simulaciones` y de `/escenarios/ejecutar` (y de `/casos/{numero}`) trae `prorrateoPrimeraCuota`:
+Con fechas, el `resumen` de `/simulaciones` y de `/escenarios` (y de `/casos/{numero}`) trae `prorrateoPrimeraCuota`:
 
 ```bash
 curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/json' -d '{"linea":"CPPU","periodicidad":"MENSUAL","cuotas":24,
@@ -219,12 +227,12 @@ curl -X POST localhost:8080/api/v1/simulaciones -H 'Content-Type: application/js
 
 Con fechas, `resumen.cuotaFinanciera`, `serviciosPorCuota` y `cuotaTotal` de `/simulaciones` son los de una **cuota regular** (la del periodo 2); la primera, prorrateada, está en `plan[0]`. `totalPagado` y `totalIntereses` ya incluyen el prorrateo. Ejemplos completos: [`api-ejemplos/simulacion-mensual-prorrateo.json`](api-ejemplos/simulacion-mensual-prorrateo.json) y [`api-ejemplos/escenario-semanal-prorrateo.json`](api-ejemplos/escenario-semanal-prorrateo.json).
 
-### POST /api/v1/escenarios/ejecutar
+### POST /api/v1/escenarios
 
 Corre el motor con instrucciones por periodo; los periodos sin instrucción son pagos a tiempo.
 
 ```bash
-curl -X POST localhost:8080/api/v1/escenarios/ejecutar -H 'Content-Type: application/json' -d '{
+curl -X POST localhost:8080/api/v1/escenarios -H 'Content-Type: application/json' -d '{
   "credito": {"linea":"CPPU","periodicidad":"SEMANAL","cuotas":104,"valorMoto":"5100000","pagoInicial":"0"},
   "perfilReglas": "NEGOCIO",
   "instrucciones": [{"periodo":40,"tipo":"SIN_PAGO","causaMoraYServicios":true},
@@ -275,7 +283,7 @@ Response:
 
 ```bash
 # Abono mayor que el saldo → 400 ABONO_MAYOR_QUE_SALDO
-curl -X POST localhost:8080/api/v1/escenarios/ejecutar -H 'Content-Type: application/json' \
+curl -X POST localhost:8080/api/v1/escenarios -H 'Content-Type: application/json' \
   -d '{"credito":{"cuotas":104},"instrucciones":[{"periodo":10,"tipo":"ABONO_EXTRA","valor":"99000000"}]}'
 ```
 
@@ -303,21 +311,21 @@ curl 'localhost:8080/api/v1/casos/13?perfilReglas=NEGOCIO&fechaDesembolso=2026-1
 
 Con `fechaDesembolso` y `primerVencimiento` el caso corre con su calendario (ver "Fechas y prorrateo de la primera cuota"): el `credito` devuelto las trae y el `resumen` trae `prorrateoPrimeraCuota`. Sin ellas el caso es el del Excel tal cual.
 
-La respuesta de `/escenarios/ejecutar` (`resumen`, `movimientos`, `asientos`) más:
+La respuesta de `/escenarios` (`resumen`, `movimientos`, `asientos`) más:
 
 - `caso`: número, nombre, descripción y fuente.
 - `perfilReglas`: el perfil con que corrió.
 - `credito`: el crédito del caso en formato de request (incluye `plazoLimitePeriodos`: en el caso 8, 100 con EXCEL y 104 con NEGOCIO por X4, 24 meses de `plazoLimiteMeses`; 120 en el 9 con los dos perfiles; y `cobranzaActiva`, `true`).
 - `instrucciones`: las del caso en formato de request, con todos los campos de su tipo explícitos. Las instrucciones "desde el periodo N" (caso 9: pago con 14 días de atraso desde el mes 10) llegan expandidas, una por periodo.
 
-Mandar `credito` + `instrucciones` a `/escenarios/ejecutar` con el mismo perfil da el mismo resultado (`CarteraControllerTest.lasInstruccionesDelCasoSeReejecutanIgual`). Ejemplo completo: [`api-ejemplos/caso-13-negocio.json`](api-ejemplos/caso-13-negocio.json).
+Mandar `credito` + `instrucciones` a `/escenarios` con el mismo perfil da el mismo resultado (`CarteraControllerTest.lasInstruccionesDelCasoSeReejecutanIgual`). Ejemplo completo: [`api-ejemplos/caso-13-negocio.json`](api-ejemplos/caso-13-negocio.json).
 
-### POST /api/v1/pagos/clasificar
+### POST /api/v1/clasificaciones
 
 ABN-4 (`ClasificacionPago`): divide un valor recibido en pago corriente y abono extra.
 
 ```bash
-curl -X POST localhost:8080/api/v1/pagos/clasificar -H 'Content-Type: application/json' \
+curl -X POST localhost:8080/api/v1/clasificaciones -H 'Content-Type: application/json' \
   -d '{"valorRecibido":"400000","valorAdeudado":"355667"}'
 # {"pagoCorriente":"355667","abonoExtra":"44333"}
 ```
@@ -332,7 +340,7 @@ Respuestas reales del API (no se editan a mano). `EjemplosApiTest` las compara e
 | `simulacion-quincenal.json` | `POST /api/v1/simulaciones` con CPPU, quincenal, 48 cuotas, NEGOCIO |
 | `caso-13-negocio.json` | `GET /api/v1/casos/13?perfilReglas=NEGOCIO` |
 | `simulacion-mensual-prorrateo.json` | `POST /api/v1/simulaciones` con CPPU, mensual, 24 cuotas, NEGOCIO, desembolso 2026-10-23 y primer vencimiento 2026-12-05 (43 días) |
-| `escenario-semanal-prorrateo.json` | `POST /api/v1/escenarios/ejecutar` con CPPU, semanal, 104 cuotas, NEGOCIO, sin instrucciones ni asientos, desembolso 2026-10-23 y primer vencimiento 2026-11-03 (11 días) |
+| `escenario-semanal-prorrateo.json` | `POST /api/v1/escenarios` con CPPU, semanal, 104 cuotas, NEGOCIO, sin instrucciones ni asientos, desembolso 2026-10-23 y primer vencimiento 2026-11-03 (11 días) |
 
 ## Devolverle a Diego la hoja Validaciones llena (HU-17b)
 
@@ -364,18 +372,18 @@ Aplica solo a `GET /api/contrato?activos=1` y `GET /api/contrato?flujo=1`; la ru
 - **Por defecto NO se pagina**: sin `pagina` ni `tamano` se devuelve `{ activos, contratos }` completo, porque `docs/sitio/contratos.html` pide `?activos=1` y espera todos los contratos en una sola respuesta. La página adoptará la paginación en otro paquete.
 - **Rendimiento**: el recaudo real por contrato (`SUM(pago_real)`) se calcula con un `LEFT JOIN` a una subconsulta agregada por `id`, no con una subconsulta correlacionada por fila.
 
-## Escenarios por lote (`POST /api/v1/escenarios/ejecutar-lote`)
+## Escenarios por lote (`POST /api/v1/escenarios/lotes`)
 
-Ejecuta varios escenarios en una sola petición. El cuerpo es una **lista** de `EjecutarRequest` (el mismo objeto de `/escenarios/ejecutar`), de 1 a **500** ítems. La respuesta es `application/x-ndjson`: una línea JSON por ítem, **en el mismo orden** de la lista, escrita y vaciada a medida que se calcula (el servidor no acumula el lote).
+Ejecuta varios escenarios en una sola petición. El cuerpo es una **lista** de `EjecutarRequest` (el mismo objeto de `/escenarios`), de 1 a **500** ítems. La respuesta es `application/x-ndjson`: una línea JSON por ítem, **en el mismo orden** de la lista, escrita y vaciada a medida que se calcula (el servidor no acumula el lote).
 
-- Línea de éxito: exactamente la respuesta de `/escenarios/ejecutar` para ese ítem (`resumen`, `movimientos`, `asientos`).
+- Línea de éxito: exactamente la respuesta de `/escenarios` para ese ítem (`resumen`, `movimientos`, `asientos`).
 - Línea de error: `{"indice": 2, "codigo": "VALIDACION", "mensaje": "...", "detalle": {...}}`, con el `indice` base 0 del ítem en la lista y los mismos códigos que el resto del API (`VALIDACION`, `ABONO_MAYOR_QUE_SALDO`, `ASIENTO_DESCUADRADO`, `ERROR_INTERNO`). Un ítem que falla no tumba el lote: las demás líneas salen normales y el estado HTTP es 200.
 - Errores de toda la petición (antes de emitir nada, JSON normal): lista vacía o cuerpo que no es una lista → 400 `VALIDACION`; más de 500 ítems → 400 `LOTE_DEMASIADO_GRANDE` con `detalle: {recibidos, maximo}` y el mensaje `El lote trae 501 escenarios; el máximo es 500`.
 - Tope de cuerpo: solo esta ruta admite hasta 8 MB (`FiltroTamanoCuerpo.MAXIMO_LOTE_POR_DEFECTO`); el resto del API conserva los 256 KB. Pasarse responde 413 `CUERPO_DEMASIADO_GRANDE`.
 
 Rendimiento medido (`LoteApiTest.medirUnLoteDe500`, con el lote de 500 créditos semanales de 104 cuotas y 3 instrucciones cada uno, con asientos, vía MockMvc en el PC de desarrollo y tras calentar la JVM): **6727 ms por 500 créditos, 13,45 ms/crédito** (incluye serializar la petición y la respuesta completa). Es una medida de referencia de una sola corrida, no un compromiso de latencia.
 
-`LoteApiTest` corre los 13 casos del Excel por lote y compara cada línea, campo a campo, con la respuesta de `/escenarios/ejecutar`.
+`LoteApiTest` corre los 13 casos del Excel por lote y compara cada línea, campo a campo, con la respuesta de `/escenarios`.
 
 ## Sede en `/api/contrato` (P7)
 

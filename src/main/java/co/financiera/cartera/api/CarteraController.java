@@ -11,6 +11,7 @@ import co.financiera.cartera.api.Dtos.EjecutarRequest;
 import co.financiera.cartera.api.Dtos.ReglasResponse;
 import co.financiera.cartera.api.Dtos.SimulacionResponse;
 import co.financiera.cartera.api.PerfilesReglas.Perfil;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -64,20 +65,24 @@ public class CarteraController {
         return servicio.simular(credito);
     }
 
-    @Operation(summary = "Ejecutar un escenario de pagos", description = "Corre un crédito con instrucciones por periodo (pago tarde, parcial, por valor, sin pago, abono extra, prepago, cambio de tasa, usura, dación o retoma) y devuelve cada periodo con su causación, el reparto del pago por prelación, los saldos y los asientos contables.")
-    @PostMapping("/escenarios/ejecutar")
+    /**
+     * Las rutas son sustantivos y la acción la da el método HTTP (POST = enviar un escenario para evaluarlo). El motor
+     * no guarda el escenario: responde 200 con el resultado, sin crear un recurso consultable después.
+     */
+    @Operation(summary = "Evaluar un escenario de pagos", description = "Recibe un crédito con instrucciones por periodo (pago tarde, parcial, por valor, sin pago, abono extra, prepago, cambio de tasa, usura, dación o retoma) y devuelve cada periodo con su causación, el reparto del pago por prelación, los saldos y los asientos contables. No guarda nada: cada petición trae el historial completo del crédito.")
+    @PostMapping("/escenarios")
     public EjecucionResponse ejecutar(@RequestBody EjecutarRequest request) {
         return servicio.ejecutar(request);
     }
 
     /**
      * Hasta {@value ServicioCartera#LOTE_MAXIMO} escenarios en una petición; responde NDJSON (una línea por ítem, en
-     * orden): el mismo resultado de {@code /escenarios/ejecutar} o {@code {indice, codigo, mensaje, detalle}} si ese
+     * orden): el mismo resultado de {@code POST /escenarios} o {@code {indice, codigo, mensaje, detalle}} si ese
      * ítem falla. Un lote vacío o de más de 500 responde 400 antes de emitir nada.
      */
-    @Operation(summary = "Ejecutar un lote de escenarios", description = "Hasta 500 escenarios en una petición. Responde NDJSON (application/x-ndjson): una línea por escenario, en orden, con el mismo resultado de /escenarios/ejecutar o {indice, codigo, mensaje, detalle} si ese escenario falla.")
+    @Operation(summary = "Evaluar un lote de escenarios", description = "Hasta 500 escenarios en una petición. Responde NDJSON (application/x-ndjson): una línea por escenario, en orden, con el mismo resultado de POST /escenarios o {indice, codigo, mensaje, detalle} si ese escenario falla.")
     @ApiResponse(responseCode = "200", description = "Una línea JSON por escenario", content = @Content(mediaType = NDJSON))
-    @PostMapping("/escenarios/ejecutar-lote")
+    @PostMapping("/escenarios/lotes")
     public void ejecutarLote(@RequestBody List<EjecutarRequest> lote, HttpServletResponse respuesta) throws IOException {
         servicio.validarLote(lote);
         respuesta.setStatus(HttpServletResponse.SC_OK);
@@ -108,7 +113,7 @@ public class CarteraController {
      * Sin perfil corre con las reglas del Excel, que es de donde salen los casos 1 a 12. Con {@code fechaDesembolso}
      * y {@code primerVencimiento} (opcionales, juntas) el caso corre con fechas (P5-PRORRATEO).
      */
-    @Operation(summary = "Ejecutar un caso de referencia", description = "Corre el caso con las reglas EXCEL (por defecto) o NEGOCIO; con fechaDesembolso y primerVencimiento, con la primera cuota prorrateada.")
+    @Operation(summary = "Consultar un caso de referencia", description = "Devuelve el caso con su resultado calculado: con las reglas EXCEL (por defecto) o NEGOCIO; con fechaDesembolso y primerVencimiento, con la primera cuota prorrateada.")
     @GetMapping("/casos/{numero}")
     public CasoResponse caso(@Parameter(description = "Número del caso, de 1 a 13") @PathVariable int numero,
             @Parameter(description = "EXCEL (por defecto) o NEGOCIO") @RequestParam(required = false) String perfilReglas,
@@ -118,9 +123,47 @@ public class CarteraController {
                 primerVencimiento);
     }
 
-    @Operation(summary = "Clasificar un pago", description = "Dice en qué caso de negocio cae un pago (al día, tarde, parcial, abono, prepago...) según lo exigible del crédito en ese periodo.")
-    @PostMapping("/pagos/clasificar")
+    @Operation(summary = "Clasificar un pago", description = "Recibe un pago y devuelve su clasificación: en qué caso de negocio cae (al día, tarde, parcial, abono, prepago...) según lo exigible del crédito en ese periodo.")
+    @PostMapping("/clasificaciones")
     public ClasificacionResponse clasificar(@RequestBody ClasificarRequest request) {
         return servicio.clasificar(request);
+    }
+
+    // Rutas anteriores (con verbo), obsoletas desde 2026-11-19. Siguen respondiendo igual para no romper a la consola
+    // ni al backtesting, pero no salen en el contrato OpenAPI y avisan con las cabeceras Deprecation y Link (RFC 9745).
+
+    static final String RUTA_ESCENARIOS = "/api/v1/escenarios";
+    static final String RUTA_LOTES = "/api/v1/escenarios/lotes";
+    static final String RUTA_CLASIFICACIONES = "/api/v1/clasificaciones";
+
+    private static void avisarObsoleta(HttpServletResponse respuesta, String sucesora) {
+        respuesta.setHeader("Deprecation", "@1795046400"); // 2026-11-19T00:00:00Z
+        respuesta.setHeader("Link", "<" + sucesora + ">; rel=\"successor-version\"");
+    }
+
+    @Hidden
+    @Deprecated
+    @PostMapping("/escenarios/ejecutar")
+    public EjecucionResponse ejecutarObsoleta(@RequestBody EjecutarRequest request, HttpServletResponse respuesta) {
+        avisarObsoleta(respuesta, RUTA_ESCENARIOS);
+        return ejecutar(request);
+    }
+
+    @Hidden
+    @Deprecated
+    @PostMapping("/escenarios/ejecutar-lote")
+    public void ejecutarLoteObsoleta(@RequestBody List<EjecutarRequest> lote, HttpServletResponse respuesta)
+            throws IOException {
+        avisarObsoleta(respuesta, RUTA_LOTES);
+        ejecutarLote(lote, respuesta);
+    }
+
+    @Hidden
+    @Deprecated
+    @PostMapping("/pagos/clasificar")
+    public ClasificacionResponse clasificarObsoleta(@RequestBody ClasificarRequest request,
+            HttpServletResponse respuesta) {
+        avisarObsoleta(respuesta, RUTA_CLASIFICACIONES);
+        return clasificar(request);
     }
 }

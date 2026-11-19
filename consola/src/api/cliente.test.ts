@@ -36,7 +36,7 @@ describe('cliente HTTP', () => {
     const f = vi.fn().mockReturnValue(respuesta({ resumen: {}, movimientos: [] }))
     const peticion = { credito, perfilReglas: 'NEGOCIO' as const, instrucciones: [{ periodo: 42, tipo: 'ABONO_EXTRA' as const, valor: '1500000', modalidad: 'MENOR_PLAZO' }], incluirAsientos: true }
     await crearCliente('http://api', f).ejecutar(peticion)
-    expect(f.mock.calls[0][0]).toBe('http://api/api/v1/escenarios/ejecutar')
+    expect(f.mock.calls[0][0]).toBe('http://api/api/v1/escenarios')
     expect(JSON.parse(f.mock.calls[0][1].body)).toEqual(peticion)
   })
 

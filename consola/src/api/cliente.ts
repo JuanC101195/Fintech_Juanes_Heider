@@ -69,7 +69,7 @@ export function crearCliente(urlBase: string, fetchImpl: Fetch = (e, i) => fetch
     catalogo: () => pedir<Catalogo>('/catalogo'),
     reglas: () => pedir<Reglas>('/reglas'),
     simular: (credito) => post<Simulacion>('/simulaciones', credito),
-    ejecutar: (peticion) => post<Ejecucion>('/escenarios/ejecutar', peticion),
+    ejecutar: (peticion) => post<Ejecucion>('/escenarios', peticion),
     casos: () => pedir<CasoResumen[]>('/casos'),
     caso: (numero, perfil) => pedir<CasoDetalle>(`/casos/${numero}?perfilReglas=${perfil}`),
   }
